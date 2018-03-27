@@ -1,1 +1,24 @@
-��������� ��� �������� �������������
+Платформа для создания микросервисов на основе Spring Boot, Spring Cloud, Spring Data, CXF.
+
+= Подключение
+
+Устанавливаем родителький maven артефакт:
+[source,xml]
+----
+<parent>
+    <groupId>net.n2oapp.platform</groupId>
+    <artifactId>n2o-platform-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+</parent>
+----
+
+Добавляем стартеры:
+[source,xml]
+----
+<dependency>
+    <groupId>net.n2oapp.platform</groupId>
+    <artifactId>n2o-platform-starter-jaxrs</artifactId>
+</dependency>
+----
+
+Работаем!
