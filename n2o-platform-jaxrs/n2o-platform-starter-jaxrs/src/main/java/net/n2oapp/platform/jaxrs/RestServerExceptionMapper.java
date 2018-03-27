@@ -1,0 +1,21 @@
+package net.n2oapp.platform.jaxrs;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.context.MessageSource;
+import org.springframework.context.support.MessageSourceAccessor;
+
+import javax.ws.rs.ext.Provider;
+
+/**
+ * Преобразование любых исключений в ответ {@link RestMessage} REST сервиса
+ */
+@Provider
+public class RestServerExceptionMapper implements RestExceptionMapper<Exception> {
+
+    @Override
+    public RestMessage toMessage(Exception exception) {
+        RestMessage message = new RestMessage(exception.getMessage());
+        message.setStackTrace(ExceptionUtils.getStackFrames(exception));
+        return message;
+    }
+}

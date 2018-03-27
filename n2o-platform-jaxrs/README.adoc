@@ -1,0 +1,219 @@
+Этот проект обеспечивает интеграцию JaxRS провайдера CXF и моделей Spring Data Common через автоконфигурацию Spring Boot.
+Устанавливает настройки окружения (такие как базовый путь к rest сервисам, формат даты и т.д.) согласно требованиям платформы.
+
+= Возможности
+
+* Автоматическое разворачивание REST сервисов (`javax.ws.rs.*`)
+* Автоматическое подключение REST прокси клиентов
+* Интеграция со Swagger (`io.swagger.annotations.*`)
+* Прозрачная работа с моделями Spring Data: `Page`, `Pageable`, `Sort`
+* Обработка и возврат сообщений об ошибках i18n клиенту в виде json
+* Логирование всех запросов / ответов (можно отключить через `jaxrs.log-in=false` `jaxrs.log-out=false`)
+* Включение JSR303 валидаций на REST сервисах (можно отключить через `jaxrs.jsr303=false`)
+
+= Подключение
+
+Для автоматического разворачивания REST сервисов в Spring Boot приложении нужно добавить зависимость:
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-starter-jaxrs</artifactId>
+</dependency>
+----
+
+= Использование
+
+== Сервер
+
+=== Интерфейс и реализация
+
+Чтобы написать REST сервис нужно создать интерфейс с аннотациями JaxRs:
+[source,java]
+----
+@Path("/example")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
+public interface SomeRest {
+    ...
+}
+----
+
+Создать класс реализующий интерфейс и подключить его к Spring, например, аннотацией `@Controller`:
+[source,java]
+----
+@Controller
+public class SomeRestImpl implements SomeRest {
+    ...
+}
+----
+
+=== Паджинация
+
+Чтобы сервисы принимали параметры паджинации и возвращали страницу данных
+с общим количеством записей, можно использовать классы Spring Data:
+[source,java]
+----
+@GET
+@Path("/search")
+Page<SomeModel> search(@BeanParam SomeCriteria criteria);
+----
+
+Класс критериев поиска `SomeCriteria` нужен для задания фильтров и должен расширять класс `RestCriteria`,
+который в свою очередь является реализацией интерфейса `Pageable`.
+[source,java]
+----
+public class SomeCriteria extends RestCriteria {
+    @QueryParam("name")
+    private String likeName;
+    @QueryParam("date")
+    private Date dateBegin;
+
+    //getters setters
+}
+----
+
+Класс `Page` возвращает список записей одной страницы (`getContent`) и общее количество записей ('getTotalElements').
+
+=== Валидации
+
+Чтобы проверить входные данные сервисов на валидность, удобно использовать аннотации JSR303, такие как `@NotNull`, `@Size` и др.
+[source,java]
+----
+@Validated
+public class SomeModel {
+    private Long id;
+    private @NotBlank String name;
+    private @Past Date date;
+    //getters setters
+}
+----
+
+
+Для того, чтобы активировать аннотации JSR303, необходимо пометить аргументы REST метода аннотацией `@Valid`:
+[source,java]
+----
+@POST
+@Path("/")
+Long create(@Valid SomeModel model);
+----
+
+Если валидации не используются, обработчика валидаций можно отключить настройкой `jaxrs.jsr303=false`.
+
+=== Исключения и локализация
+
+=== Логирование
+
+Все запросы и ответы, и сервера, и клиента логгируются по умолчанию. Их можно отключить настройкой `jaxrs.log-in=false`, `jaxrs.log-out=false`.
+
+=== Документирование
+
+
+== Прокси клиент
+
+=== Сканирование
+
+Чтобы подключить REST прокси клиент, как обычный Spring бин, необходимо задать настройкой `cxf.jaxrs.client.classes-scan-packages` пакеты, в которых находятся интерфейсы JaxRs сервисов.
+На класс конфигурации Spring необходимо повесить аннотацию `@EnableJaxRsProxyClient`:
+
+[source,java]
+----
+@Configuration
+@EnableJaxRsProxyClient
+public class ExampleConfiguration {
+  ...
+}
+----
+
+Адрес REST сервисов задаётся настройкой:
+----
+cxf.jaxrs.client.address=http://localhost:8080/api
+----
+
+Далее подключаем прокси клиент через аннотацию `@Autowired`:
+[source,java]
+----
+@Service
+public class SomeServiceImpl {
+  @Autowired
+  private SomeRest client;//REST прокси клиент
+
+  ...
+}
+----
+
+=== Обработка исключений
+
+Все исключения, которые произошли на REST сервере, содержат в теле ответа следующую информацию:
+[source,json]
+----
+{
+  "message" : "Внутрення ошибка приложения",
+  "stackTrace":[
+    "...",
+    "\tat ...",
+    "\tat ...",
+    "\tat ...",
+    "\tat ..."
+  ]
+}
+----
+
+Если произошло исключение валидаций jsr303, то в ответе приходит следующая информация:
+[source,json]
+----
+{
+  "errors" : [
+    {
+      "field" : "create.arg0.date",
+      "message":"должно быть в прошлом"
+    },
+    { "field" : "create.arg0.name",
+      "message" : "не может быть пусто"
+    }
+  ]
+
+}
+----
+
+При использовании REST прокси клиента, исключения возникшие на сервере,
+автоматически выбрасываются и на клиенте. Класс исключений: `RestException`.
+
+== Веб клиент
+
+=== Инициализация
+
+Для подключения WEB клиента, необходимо на класс конфигурации Spring повесить аннотацию `@EnableJaxRsWebClient`:
+[source,java]
+----
+@Configuration
+@EnableJaxRsWebClient
+public class ExampleConfiguration {
+  ...
+}
+----
+
+Адрес REST сервисов задаётся настройкой:
+----
+cxf.jaxrs.client.address=http://localhost:8080/api
+----
+
+Далее, для выполнения запросов к REST сервисам, через аннотацию `@Autowired` подключаем клиента:
+[source,java]
+----
+@Service
+public class ExampleServiceImpl {
+  @Autowired
+  private Client client;
+
+  ...
+}
+----
+
+
+=== Формат даты и времени
+В качестве формата даты и времени в параметрах запроса, в теле запроса и ответа
+используется формат *ISO8601*:
+----
+YYYY-MM-DDThh:mm:ss[.sss]
+----
