@@ -40,13 +40,13 @@ public class Messages {
 
     /**
      * Получить локализованное сообщение из произвольного исключения.
-     * Если исключение {@link MessageException}, то локализованное сообщение с параметрами.
+     * Если исключение {@link UserException}, то локализованное сообщение с параметрами.
      * @param exception Исключение
      * @return Локализованное сообщение
      */
     public String getMessage(Exception exception) {
-        if (exception instanceof MessageException)
-            return getMessage(exception.getMessage(), ((MessageException)exception).getArgs());
+        if (exception instanceof UserException)
+            return getMessage(exception.getMessage(), ((UserException)exception).getArgs());
         else
             return getMessage(exception.getMessage());
     }

@@ -35,22 +35,22 @@ public class I18nTest {
     }
 
     /**
-     * Проверка локализации исключений {@link MessageException} и подключения глобального {@link org.springframework.context.MessageSource}
+     * Проверка локализации исключений {@link UserException} и подключения глобального {@link org.springframework.context.MessageSource}
      */
     @Test
     public void exceptions() {
         try {
-            throw new MessageException("test1");
+            throw new UserException("test1");
         } catch (Exception e) {
             assertThat(messages.getMessage(e), is("Тест"));
         }
         try {
-            throw new MessageException("test2").set("раз").set(2);
+            throw new UserException("test2").set("раз").set(2);
         } catch (Exception e) {
             assertThat(messages.getMessage(e), is("Тест раз и 2"));
         }
         try {
-            throw new MessageException();//unexpected
+            throw new UserException();//unexpected
         } catch (Exception e) {
             assertThat(messages.getMessage(e), is("Внутренняя ошибка приложения"));
         }
@@ -61,7 +61,7 @@ public class I18nTest {
         }
         Message message = new Message("test2").set("раз").set(2);
         try {
-            throw new MessageException(message);
+            throw new UserException(message);
         } catch (Exception e) {
             assertThat(messages.getMessage(e), is("Тест раз и 2"));
         }
