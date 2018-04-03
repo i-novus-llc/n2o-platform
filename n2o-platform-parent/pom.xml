@@ -20,6 +20,19 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- N2O Platform -->
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-i18n</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-starter-jaxrs</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- CXF -->
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-spring-boot-starter-jaxrs</artifactId>
