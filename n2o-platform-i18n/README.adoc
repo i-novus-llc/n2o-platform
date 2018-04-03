@@ -6,7 +6,7 @@
 * Автоматическая регистрация `MessageSource`, `MessageSourceAccessor`
 * Сканирование любых файлов локализации в определенном пакете
 (настройка `i18n.global.package-name`, по умолчанию в `messages`)
-* Класс исключения `MessageException` с поддержкой локализации сообщений
+* Класс исключения `UserException` с поддержкой локализации сообщений
 
 = Подключение
 
@@ -15,7 +15,7 @@
 ----
 <dependency>
   <groupId>net.n2oapp.platform</groupId>
-  <artifactId>n2o-platform-starter-i18n</artifactId>
+  <artifactId>n2o-platform-i18n</artifactId>
 </dependency>
 ----
 
@@ -32,18 +32,26 @@ private Messages messages;
 messages.getMessage("example.code", "первый параметр", "второй");
 ----
 
-Коды сообщений должны локализовываться в файлах с базовым именем `messages.properties`, расположенных в корне ресурсов проекта.
+
+=== Локализованные исключения
+
+Для выбрасывания исключений с кодом сообщения и параметрами используется класс `UserException`:
+[source,java]
+----
+throw new UserException("example.code").set("раз").set("два");
+----
+
+=== Хранение сообщений
+
+[WARN]
+====
+Базовое имя файла локализации должно быть уникально!
+====
+
+Коды сообщений должны храниться в файлах с базовым именем `messages.properties`, расположенных в корне ресурсов проекта.
 По умолчанию используется системная локаль. Пример файла с английской локалью: `messages_en.properties`.
 
 [source,text]
 ----
 example.code=Пример сообщения с параметрами {0} и {1}
-----
-
-=== Исключения
-
-Для выбрасывания исключений с кодом сообщения и параметрами используется класс `MessageException`:
-[source,java]
-----
-throw new MessageException("example.code").set("раз").set("два");
 ----
