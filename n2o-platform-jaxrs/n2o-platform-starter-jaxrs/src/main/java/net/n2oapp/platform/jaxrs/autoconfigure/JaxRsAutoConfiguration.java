@@ -128,7 +128,6 @@ public class JaxRsAutoConfiguration {
 
     @Bean
     @ConditionalOnClass(Messages.class)
-    @ConditionalOnBean(Messages.class)
     MessageExceptionMapper messageExceptionMapper(Messages messages) {
         return new MessageExceptionMapper(messages);
     }

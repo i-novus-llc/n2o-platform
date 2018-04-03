@@ -1,6 +1,6 @@
 package net.n2oapp.platform.jaxrs.example.impl;
 
-import net.n2oapp.platform.i18n.MessageException;
+import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.example.api.SomeCriteria;
 import net.n2oapp.platform.jaxrs.example.api.SomeModel;
 import net.n2oapp.platform.jaxrs.example.api.SomeRest;
@@ -49,7 +49,7 @@ public class SomeRestImpl implements SomeRest {
         if (model.getId() == null)
             throw new IllegalArgumentException("Field [id] mustn't be null");
         if (model.getId() < 0)
-            throw new MessageException("example.idPositive").set(model.getId());
+            throw new UserException("example.idPositive").set(model.getId());
     }
 
     @Override

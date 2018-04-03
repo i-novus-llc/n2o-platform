@@ -1,15 +1,15 @@
 package net.n2oapp.platform.jaxrs;
 
-import net.n2oapp.platform.i18n.MessageException;
+import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.i18n.Messages;
 
 import javax.ws.rs.ext.Provider;
 
 /**
- * Конвертация исключения {@link MessageException}, содержащего локализованное сообщение, в ответ REST сервиса.
+ * Конвертация исключения {@link UserException}, содержащего локализованное сообщение, в ответ REST сервиса.
  */
 @Provider
-public class MessageExceptionMapper implements RestExceptionMapper<MessageException> {
+public class MessageExceptionMapper implements RestExceptionMapper<UserException> {
 
     private Messages messages;
 
@@ -18,7 +18,7 @@ public class MessageExceptionMapper implements RestExceptionMapper<MessageExcept
     }
 
     @Override
-    public RestMessage toMessage(MessageException exception) {
+    public RestMessage toMessage(UserException exception) {
         return new RestMessage(messages.getMessage(exception.getMessage(), exception.getArgs()));
     }
 }

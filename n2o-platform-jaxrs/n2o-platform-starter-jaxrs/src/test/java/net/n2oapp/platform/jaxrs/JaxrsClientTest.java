@@ -1,5 +1,6 @@
 package net.n2oapp.platform.jaxrs;
 
+import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.example.api.SomeCriteria;
 import net.n2oapp.platform.jaxrs.example.api.SomeModel;
 import net.n2oapp.platform.jaxrs.example.api.SomeRest;
@@ -11,7 +12,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -117,7 +117,7 @@ public class JaxrsClientTest {
     }
 
     /**
-     * Проверка локализации сообщений, выбрасываемых исключением i18n {@link net.n2oapp.platform.i18n.MessageException}
+     * Проверка локализации сообщений, выбрасываемых исключением i18n {@link UserException}
      */
     @Test
     public void i18n() {
