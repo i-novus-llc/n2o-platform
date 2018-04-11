@@ -69,7 +69,7 @@ public class I18nAutoConfiguration {
             Set<String> baseNames = new HashSet<>();
             String pack = (!packageName.endsWith("/") ? packageName + "/" : packageName);
             PathMatchingResourcePatternResolver r = new PathMatchingResourcePatternResolver();
-            Resource[] resources = r.getResources("classpath*:" + pack + "/*.properties");
+            Resource[] resources = r.getResources("classpath*:" + pack + "*.properties");
             for (Resource resource : resources) {
                 int endIdx = resource.getFilename().indexOf('_');
                 if (endIdx < 0) {
