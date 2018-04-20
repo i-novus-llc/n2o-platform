@@ -14,7 +14,7 @@
     </parent>
 
     <properties>
-        <cxf.version>3.1.11</cxf.version>
+        <cxf.version>3.1.15</cxf.version>
         <swagger.version>3.0.17</swagger.version>
     </properties>
 
@@ -28,7 +28,22 @@
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
-                <artifactId>n2o-platform-starter-jaxrs</artifactId>
+                <artifactId>n2o-platform-jaxrs-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-jaxrs-autoconfigure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-starter-jaxrs-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-starter-jaxrs-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -36,6 +51,12 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-spring-boot-starter-jaxrs</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-spring-boot-autoconfigure</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
 
