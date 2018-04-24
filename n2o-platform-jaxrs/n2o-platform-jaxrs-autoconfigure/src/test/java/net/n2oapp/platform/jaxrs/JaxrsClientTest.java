@@ -1,7 +1,6 @@
 package net.n2oapp.platform.jaxrs;
 
 import net.n2oapp.platform.i18n.UserException;
-import net.n2oapp.platform.jaxrs.common.RestException;
 import net.n2oapp.platform.jaxrs.example.api.SomeCriteria;
 import net.n2oapp.platform.jaxrs.example.api.SomeModel;
 import net.n2oapp.platform.jaxrs.example.api.SomeRest;

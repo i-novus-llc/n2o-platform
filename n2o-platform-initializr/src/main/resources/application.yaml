@@ -1,0 +1,76 @@
+initializr:
+  groupId:
+    value: net.n2oapp.microservice
+  artifactId:
+    value: n2o-microservice-demo
+  version:
+    value: ${project.version}
+  packageName:
+    value: net.n2oapp.microservice.demo
+  name:
+    value:
+  description:
+    value:
+  javaVersions:
+    - id: 1.8
+      default: true
+  languages:
+    - name: Java
+      id: java
+      default: true
+  packagings:
+    - name: Jar
+      id: jar
+      default: true
+    - name: War
+      id: war
+      default: false
+  types:
+    - name: Maven Project
+      id: maven-project
+      description: Generate a Maven based project archive
+      tags:
+        build: maven
+        format: project
+      default: true
+      action: /starter.zip
+  bootVersions:
+    - name: 1.5.7
+      id: 1.5.7.RELEASE
+  dependencies:
+    - name: N2O
+      content:
+        - name: N2O Framework
+          id: n2o-framework
+          groupId: net.n2oapp.framework
+          artifactId: n2o-spring-boot-starter
+          description: Frontend framework for WEB
+          aliases:
+            - n2o
+        - name: JaxRs Server
+          id: n2o-jaxrs-server
+          groupId: net.n2oapp.platform
+          artifactId: n2o-platform-starter-jaxrs-server
+          description: Rest server provider powered by CXF
+          bom: n2o-platform-bom
+          aliases:
+            - jaxrs server
+        - name: JaxRs Client
+          id: n2o-jaxrs-Client
+          groupId: net.n2oapp.platform
+          artifactId: n2o-platform-starter-jaxrs-client
+          description: Rest proxy client provider powered by CXF
+          bom: n2o-platform-bom
+          aliases:
+            - jaxrs client
+  env:
+    repositories:
+      i-novus-releases:
+        name: I-Novus Repository
+        url: http://maven.i-novus.ru/libs-release/
+    boms:
+      n2o-platform-bom:
+        groupId: net.n2oapp.platform
+        artifactId: n2o-platform-bom
+        version: ${project.version}
+        repositories: i-novus-releases

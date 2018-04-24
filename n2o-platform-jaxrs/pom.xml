@@ -5,7 +5,6 @@
 
     <artifactId>n2o-platform-jaxrs</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
 
     <parent>
         <groupId>net.n2oapp.platform</groupId>
@@ -15,7 +14,7 @@
     </parent>
 
     <modules>
-        <module>n2o-platform-jaxrs-common</module>
+        <module>n2o-platform-jaxrs-commons</module>
         <module>n2o-platform-jaxrs-autoconfigure</module>
         <module>n2o-platform-starter-jaxrs-server</module>
         <module>n2o-platform-starter-jaxrs-client</module>

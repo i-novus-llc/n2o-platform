@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>net.n2oapp.platform</groupId>
+    <artifactId>n2o-platform-bom</artifactId>
+    <version>${n2o-platform.version}</version>
+    <packaging>pom</packaging>
+
+    <parent>
+        <groupId>net.n2oapp.parent</groupId>
+        <artifactId>parent</artifactId>
+        <version>2.0</version>
+    </parent>
+
+    <properties>
+        <n2o-platform.version>1.0-SNAPSHOT</n2o-platform.version>
+        <n2o.version>6.1.18</n2o.version>
+        <cxf.version>3.1.15</cxf.version>
+        <swagger.version>3.0.17</swagger.version>
+        <modelmapper.version>1.1.0</modelmapper.version>
+        <commons.version>2.6</commons.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- N2O Platform -->
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-i18n-commons</artifactId>
+                <version>${n2o-platform.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-i18n-autoconfigure</artifactId>
+                <version>${n2o-platform.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-jaxrs-commons</artifactId>
+                <version>${n2o-platform.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-jaxrs-autoconfigure</artifactId>
+                <version>${n2o-platform.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-starter-jaxrs-server</artifactId>
+                <version>${n2o-platform.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-starter-jaxrs-client</artifactId>
+                <version>${n2o-platform.version}</version>
+            </dependency>
+
+            <!--N2O Framework-->
+            <dependency>
+                <groupId>net.n2oapp.framework</groupId>
+                <artifactId>n2o-api</artifactId>
+                <version>${n2o.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.framework</groupId>
+                <artifactId>n2o-engine</artifactId>
+                <version>${n2o.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.framework</groupId>
+                <artifactId>n2o-config</artifactId>
+                <version>${n2o.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.framework</groupId>
+                <artifactId>n2o-engine-rest</artifactId>
+                <version>${n2o.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.framework</groupId>
+                <artifactId>n2o-header</artifactId>
+                <version>${n2o.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.framework</groupId>
+                <artifactId>n2o-access</artifactId>
+                <version>${n2o.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.framework</groupId>
+                <artifactId>n2o-context</artifactId>
+                <version>${n2o.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.framework</groupId>
+                <artifactId>n2o-processing</artifactId>
+                <version>${n2o.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.framework</groupId>
+                <artifactId>n2o-ui</artifactId>
+                <version>${n2o.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.framework</groupId>
+                <artifactId>n2o-config-ehcache</artifactId>
+                <version>${n2o.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+
+            <!-- Spring -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>Edgware.RELEASE</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- CXF -->
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-spring-boot-starter-jaxrs</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-spring-boot-autoconfigure</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-rs-service-description</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-rs-service-description-swagger</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                <artifactId>jackson-jaxrs-json-provider</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-http</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-jaxws</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.webjars</groupId>
+                <artifactId>swagger-ui</artifactId>
+                <version>${swagger.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-rs-client</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+
+            <!-- Modelmapper -->
+            <dependency>
+                <groupId>org.modelmapper</groupId>
+                <artifactId>modelmapper</artifactId>
+                <version>${modelmapper.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.modelmapper.extensions</groupId>
+                <artifactId>modelmapper-spring</artifactId>
+                <version>${modelmapper.version}</version>
+            </dependency>
+
+            <!-- Commons -->
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>${commons.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>

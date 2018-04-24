@@ -2,7 +2,7 @@ package net.n2oapp.platform.jaxrs.example.api;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.n2oapp.platform.jaxrs.common.RestCriteria;
+import net.n2oapp.platform.jaxrs.RestCriteria;
 import org.springframework.data.domain.Sort;
 
 import javax.ws.rs.QueryParam;

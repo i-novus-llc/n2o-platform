@@ -5,27 +5,16 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>n2o-platform-jaxrs-autoconfigure</artifactId>
+    <artifactId>n2o-platform-jaxrs-commons</artifactId>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-platform-jaxrs</artifactId>
         <version>1.0-SNAPSHOT</version>
-        <relativePath>..</relativePath>
     </parent>
 
     <dependencies>
-
-        <dependency>
-            <groupId>net.n2oapp.platform</groupId>
-            <artifactId>n2o-platform-jaxrs-commons</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-spring-boot-autoconfigure</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>net.n2oapp.platform</groupId>
@@ -46,7 +35,6 @@
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-rs-service-description-swagger</artifactId>
-            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -62,13 +50,16 @@
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
-            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-frontend-jaxws</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>swagger-ui</artifactId>
-            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -76,10 +67,10 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
+        <!-- CLIENT -->
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-rs-client</artifactId>
-            <optional>true</optional>
         </dependency>
 
         <!-- TEST -->
@@ -98,12 +89,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>net.n2oapp.platform</groupId>
-            <artifactId>n2o-platform-i18n-autoconfigure</artifactId>
             <scope>test</scope>
         </dependency>
 
