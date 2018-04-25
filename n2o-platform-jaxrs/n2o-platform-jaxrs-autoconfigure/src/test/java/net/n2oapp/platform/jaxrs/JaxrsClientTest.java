@@ -33,11 +33,10 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = JaxrsClientTest.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
         properties = {"debug=true", "server.port=9876", "cxf.jaxrs.client.address=http://localhost:${server.port}/api"})
-@EnableJaxRsProxyClient
 public class JaxrsClientTest {
 
     @Autowired
-    @Qualifier("jaxRsProxyClient")
+    @Qualifier("someRestJaxRsProxyClient")//в контексте теста есть 2 бина SomeRest: SomeRestImpl и прокси клиент
     private SomeRest client;
 
     /**
