@@ -7,14 +7,11 @@
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
 
-    <properties>
-        <revision>1.0-SNAPSHOT</revision>
-    </properties>
-
     <parent>
         <groupId>net.n2oapp.parent</groupId>
         <artifactId>parent</artifactId>
         <version>2.0</version>
+        <relativePath/>
     </parent>
 
     <modules>

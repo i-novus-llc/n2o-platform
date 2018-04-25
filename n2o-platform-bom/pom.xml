@@ -4,13 +4,14 @@
 
     <groupId>net.n2oapp.platform</groupId>
     <artifactId>n2o-platform-bom</artifactId>
-    <version>${n2o-platform.version}</version>
+    <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>net.n2oapp.parent</groupId>
         <artifactId>parent</artifactId>
         <version>2.0</version>
+        <relativePath/>
     </parent>
 
     <properties>
