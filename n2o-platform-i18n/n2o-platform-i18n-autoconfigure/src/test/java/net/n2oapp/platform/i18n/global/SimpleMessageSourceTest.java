@@ -32,7 +32,7 @@ public class SimpleMessageSourceTest {
         try {
             // Это сообщение не будет найдено, т.к. оно находится в пакете "global",
             // а подключен только messages.properties.
-            messageSource.getMessage("test.message", null, Locale.getDefault());
+            messageSource.getMessage("test.message", null, Locale.forLanguageTag("ru"));
             fail();
         } catch (Exception e) {
             assertThat(e, instanceOf(NoSuchMessageException.class));

@@ -1,11 +1,15 @@
 package net.n2oapp.platform.i18n;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Locale;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -19,6 +23,11 @@ import static org.hamcrest.Matchers.is;
         webEnvironment = SpringBootTest.WebEnvironment.NONE)
 public class I18nTest {
     private @Autowired Messages messages;
+
+    @Before
+    public void setUp() throws Exception {
+        LocaleContextHolder.setLocale(Locale.forLanguageTag("ru"));
+    }
 
     /**
      * Проверка, что {@link Messages} локализуют сообщения с кодом и без, с параметрами и без.

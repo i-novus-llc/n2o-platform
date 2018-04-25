@@ -29,6 +29,6 @@ public class PackageScanMessageSourceTest {
     public void test() {
         // Это сообщение находится в global/test.properties.
         // Оно будет найдено, т.к. включено сканирование базовых имен по пакету "global".
-        assertThat(messageSource.getMessage("test.message", null, Locale.getDefault()), is("Глобальное сообщение"));
+        assertThat(messageSource.getMessage("test.message", null, Locale.forLanguageTag("ru")), is("Глобальное сообщение"));
     }
 }

@@ -77,7 +77,7 @@ public class I18nAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     MessageSourceAccessor messageSourceAccessor(MessageSource messageSource) {
-        return new MessageSourceAccessor(messageSource, new Locale("ru"));
+        return new MessageSourceAccessor(messageSource);
     }
 
     @Bean
