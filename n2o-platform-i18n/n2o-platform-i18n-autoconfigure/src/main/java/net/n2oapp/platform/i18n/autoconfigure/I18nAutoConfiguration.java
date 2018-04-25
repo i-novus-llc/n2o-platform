@@ -16,10 +16,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Автоматическая конфигурация интернационализации
@@ -80,7 +77,7 @@ public class I18nAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     MessageSourceAccessor messageSourceAccessor(MessageSource messageSource) {
-        return new MessageSourceAccessor(messageSource);
+        return new MessageSourceAccessor(messageSource, new Locale("ru"));
     }
 
     @Bean
