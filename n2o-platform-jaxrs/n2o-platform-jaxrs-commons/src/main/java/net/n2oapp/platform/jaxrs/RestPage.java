@@ -31,6 +31,9 @@ public class RestPage<T> extends PageImpl<T>{
 
     public RestPage(List<T> content, Pageable pageable, long total) {
         super(content, pageable, total);
+        this.content = content;
+        this.totalElements = total;
+        this.sort = pageable.getSort();
     }
 
     public RestPage(List<T> content) {
