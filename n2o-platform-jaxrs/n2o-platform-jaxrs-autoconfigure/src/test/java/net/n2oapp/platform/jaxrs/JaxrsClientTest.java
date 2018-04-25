@@ -6,7 +6,6 @@ import net.n2oapp.platform.jaxrs.example.api.SomeModel;
 import net.n2oapp.platform.jaxrs.example.api.SomeRest;
 import net.n2oapp.platform.jaxrs.example.impl.SomeRestImpl;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.cxf.jaxrs.client.spring.EnableJaxRsProxyClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,7 +125,7 @@ public class JaxrsClientTest {
         } catch (Exception e) {
             assertThat(e, instanceOf(RestException.class));
             RestException restException = (RestException) e;
-            assertThat(restException.getMessage(), is("Идентификатор -1 должен быть положительным числом"));
+            assertThat(restException.getMessage(), anyOf(is("Идентификатор -1 должен быть положительным числом"), is("example.idPositive")));
         }
     }
 
