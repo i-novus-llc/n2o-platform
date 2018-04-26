@@ -5,7 +5,7 @@
     <groupId>net.n2oapp.platform</groupId>
     <artifactId>n2o-platform</artifactId>
     <packaging>pom</packaging>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
 
     <parent>
         <groupId>net.n2oapp.parent</groupId>
