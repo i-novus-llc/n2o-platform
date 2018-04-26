@@ -4,7 +4,7 @@
 
     <groupId>net.n2oapp.platform</groupId>
     <artifactId>n2o-platform-bom</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -28,32 +28,32 @@
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-i18n-commons</artifactId>
-                <version>0.2-SNAPSHOT</version>
+                <version>0.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-i18n-autoconfigure</artifactId>
-                <version>0.2-SNAPSHOT</version>
+                <version>0.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-jaxrs-commons</artifactId>
-                <version>0.2-SNAPSHOT</version>
+                <version>0.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-jaxrs-autoconfigure</artifactId>
-                <version>0.2-SNAPSHOT</version>
+                <version>0.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-jaxrs-server</artifactId>
-                <version>0.2-SNAPSHOT</version>
+                <version>0.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-jaxrs-client</artifactId>
-                <version>0.2-SNAPSHOT</version>
+                <version>0.4-SNAPSHOT</version>
             </dependency>
 
             <!--N2O Framework-->
