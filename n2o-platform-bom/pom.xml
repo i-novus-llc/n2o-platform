@@ -8,9 +8,10 @@
     <packaging>pom</packaging>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-dependencies</artifactId>
-        <version>1.5.7.RELEASE</version>
+        <groupId>net.n2oapp.parent</groupId>
+        <artifactId>parent</artifactId>
+        <version>2.0</version>
+        <relativePath/>
     </parent>
 
     <properties>
