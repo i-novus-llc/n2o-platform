@@ -14,6 +14,10 @@
         <relativePath/>
     </parent>
 
+    <properties>
+        <versions-maven-plugin.version>2.5</versions-maven-plugin.version>
+    </properties>
+
     <modules>
         <module>n2o-platform-bom</module>
         <module>n2o-platform-parent</module>
