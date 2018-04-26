@@ -12,15 +12,6 @@
 
 = Подключение
 
-Для автоматического разворачивания REST сервисов в Spring Boot приложении добавьте зависимость:
-[source,xml]
-----
-<dependency>
-  <groupId>net.n2oapp.platform</groupId>
-  <artifactId>n2o-platform-starter-jaxrs-server</artifactId>
-</dependency>
-----
-
 Для подключения REST прокси клиентов добавьте зависимость:
 [source,xml]
 ----
@@ -33,6 +24,27 @@
 = Использование
 
 == Сервер
+
+=== Подключение
+
+Добавьте зависимость:
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-starter-jaxrs-server</artifactId>
+</dependency>
+----
+
+=== Инициализация
+
+Задаёте следующие настройки:
+[source,python]
+----
+cxf.path=/api
+cxf.jaxrs.component-scan=true
+cxf.servlet.init.service-list-path=/info
+----
 
 === Интерфейс и реализация
 
@@ -56,10 +68,14 @@ public class SomeRestImpl implements SomeRest {
 }
 ----
 
-=== Паджинация
+[NOTE]
+Разделение на интерфейс и класс требуется для использования прокси клиентов.
+Более того, желательно чтобы интерфейсы и классы были в разных Maven модулях.
 
-Чтобы сервисы принимали параметры паджинации и возвращали страницу данных
-с общим количеством записей, можно использовать классы Spring Data:
+=== Паджинация, сортировки и фильтры
+
+Чтобы сервисы принимали параметры паджинации и сортировки, а возвращали одну страницу данных
+и общее количество записей, можно использовать классы Spring Data:
 [source,java]
 ----
 @GET
@@ -67,7 +83,10 @@ public class SomeRestImpl implements SomeRest {
 Page<SomeModel> search(@BeanParam SomeCriteria criteria);
 ----
 
-Класс критериев поиска `SomeCriteria` нужен для задания фильтров и должен расширять класс `RestCriteria`,
+Класс `Page` возвращает список записей одной страницы (`getContent`)
+и общее количество записей (`getTotalElements`).
+
+Для задания сортировок и фильтров используйте классы критериев поиска (`SomeCriteria`), они должны расширять класс `RestCriteria`,
 который в свою очередь является реализацией интерфейса `Pageable`.
 [source,java]
 ----
@@ -80,9 +99,6 @@ public class SomeCriteria extends RestCriteria {
     //getters setters
 }
 ----
-
-Класс `Page` возвращает список записей одной страницы (`getContent`)
-и общее количество записей (`getTotalElements`).
 
 === Валидации
 
