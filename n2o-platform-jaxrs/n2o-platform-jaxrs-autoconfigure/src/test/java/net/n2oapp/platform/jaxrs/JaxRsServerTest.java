@@ -24,8 +24,8 @@ import static org.hamcrest.Matchers.instanceOf;
 
 @SpringBootApplication
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = JaxrsServerTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class JaxrsServerTest {
+@SpringBootTest(classes = JaxRsServerTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class JaxRsServerTest {
     @LocalServerPort
     private int port;
 

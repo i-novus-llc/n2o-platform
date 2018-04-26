@@ -1,6 +1,8 @@
 package net.n2oapp.platform.jaxrs;
 
 import net.n2oapp.platform.i18n.UserException;
+import net.n2oapp.platform.jaxrs.autoconfigure.EnableJaxRsProxyClient;
+import net.n2oapp.platform.jaxrs.autoconfigure.JaxRsClientAutoConfiguration;
 import net.n2oapp.platform.jaxrs.example.api.SomeCriteria;
 import net.n2oapp.platform.jaxrs.example.api.SomeModel;
 import net.n2oapp.platform.jaxrs.example.api.SomeRest;
@@ -30,9 +32,9 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @SpringBootApplication
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = JaxrsClientTest.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-        properties = {"debug=true", "server.port=9876", "cxf.jaxrs.client.address=http://localhost:${server.port}/api"})
-public class JaxrsClientTest {
+@SpringBootTest(classes = JaxRsClientTest.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
+        properties = {"server.port=9876"})
+public class JaxRsClientTest {
 
     @Autowired
     @Qualifier("someRestJaxRsProxyClient")//в контексте теста есть 2 бина SomeRest: SomeRestImpl и прокси клиент
