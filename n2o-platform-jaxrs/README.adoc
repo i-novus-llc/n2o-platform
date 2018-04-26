@@ -1,24 +1,32 @@
-Этот проект обеспечивает интеграцию JaxRS провайдера CXF и моделей Spring Data Common через автоконфигурацию Spring Boot.
-Устанавливает настройки окружения (такие как базовый путь к rest сервисам, формат даты и т.д.) согласно требованиям платформы.
+Эта библиотека обеспечивает интеграцию JaxRS провайдера `CXF` и моделей `Spring Data Common` через автоконфигурацию `Spring Boot`.
 
 = Возможности
 
-* Автоматическое разворачивание REST сервисов (`javax.ws.rs.*`)
+* Автоматическое разворачивание REST сервисов (`@Path`)
 * Автоматическое подключение REST прокси клиентов
-* Интеграция со Swagger (`io.swagger.annotations.*`)
+* Интеграция со Swagger (`@Api*`)
 * Прозрачная работа с моделями Spring Data: `Page`, `Pageable`, `Sort`
-* Обработка и возврат сообщений об ошибках i18n клиенту в виде json
-* Логирование всех запросов / ответов (можно отключить через `jaxrs.log-in=false` `jaxrs.log-out=false`)
+* Обработка и возврат локализованных сообщений об ошибках клиенту в виде json
+* Логирование всех запросов / ответов (можно отключить через `jaxrs.log-in=false`, `jaxrs.log-out=false`)
 * Включение JSR303 валидаций на REST сервисах (можно отключить через `jaxrs.jsr303=false`)
 
 = Подключение
 
-Для автоматического разворачивания REST сервисов в Spring Boot приложении нужно добавить зависимость:
+Для автоматического разворачивания REST сервисов в Spring Boot приложении добавьте зависимость:
 [source,xml]
 ----
 <dependency>
   <groupId>net.n2oapp.platform</groupId>
-  <artifactId>n2o-platform-starter-jaxrs</artifactId>
+  <artifactId>n2o-platform-starter-jaxrs-server</artifactId>
+</dependency>
+----
+
+Для подключения REST прокси клиентов добавьте зависимость:
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-starter-jaxrs-client</artifactId>
 </dependency>
 ----
 
@@ -28,7 +36,7 @@
 
 === Интерфейс и реализация
 
-Чтобы написать REST сервис нужно создать интерфейс с аннотациями JaxRs:
+Чтобы написать REST сервис, создайте интерфейс с аннотациями JaxRs:
 [source,java]
 ----
 @Path("/example")
@@ -39,7 +47,7 @@ public interface SomeRest {
 }
 ----
 
-Создать класс реализующий интерфейс и подключить его к Spring, например, аннотацией `@Controller`:
+Создайте класс реализующий интерфейс и подключите его к Spring, например, аннотацией `@Controller`:
 [source,java]
 ----
 @Controller
@@ -73,7 +81,8 @@ public class SomeCriteria extends RestCriteria {
 }
 ----
 
-Класс `Page` возвращает список записей одной страницы (`getContent`) и общее количество записей ('getTotalElements').
+Класс `Page` возвращает список записей одной страницы (`getContent`)
+и общее количество записей (`getTotalElements`).
 
 === Валидации
 
@@ -83,8 +92,10 @@ public class SomeCriteria extends RestCriteria {
 @Validated
 public class SomeModel {
     private Long id;
-    private @NotBlank String name;
-    private @Past Date date;
+    @NotBlank
+    private String name;
+    @Past
+    private Date date;
     //getters setters
 }
 ----
@@ -102,53 +113,12 @@ Long create(@Valid SomeModel model);
 
 === Исключения и локализация
 
-=== Логирование
+Все исключения возвращаются клиенту в виде json:
 
-Все запросы и ответы, и сервера, и клиента логгируются по умолчанию. Их можно отключить настройкой `jaxrs.log-in=false`, `jaxrs.log-out=false`.
-
-=== Документирование
-
-
-== Прокси клиент
-
-=== Сканирование
-
-Чтобы подключить REST прокси клиент, как обычный Spring бин, необходимо задать настройкой `cxf.jaxrs.client.classes-scan-packages` пакеты, в которых находятся интерфейсы JaxRs сервисов.
-На класс конфигурации Spring необходимо повесить аннотацию `@EnableJaxRsProxyClient`:
-
-[source,java]
-----
-@Configuration
-@EnableJaxRsProxyClient
-public class ExampleConfiguration {
-  ...
-}
-----
-
-Адрес REST сервисов задаётся настройкой:
-----
-cxf.jaxrs.client.address=http://localhost:8080/api
-----
-
-Далее подключаем прокси клиент через аннотацию `@Autowired`:
-[source,java]
-----
-@Service
-public class SomeServiceImpl {
-  @Autowired
-  private SomeRest client;//REST прокси клиент
-
-  ...
-}
-----
-
-=== Обработка исключений
-
-Все исключения, которые произошли на REST сервере, содержат в теле ответа следующую информацию:
 [source,json]
 ----
 {
-  "message" : "Внутрення ошибка приложения",
+  "message" : "Some error",
   "stackTrace":[
     "...",
     "\tat ...",
@@ -158,26 +128,130 @@ public class SomeServiceImpl {
   ]
 }
 ----
+В поле `message` попадает сообщение исключения, в поле `stackTrace` весь список строк java стектрейса.
 
-Если произошло исключение валидаций jsr303, то в ответе приходит следующая информация:
+Чтобы локализовать сообщение для клиента, выбрасывайте специальное исключение `UserException`:
+[source,java]
+----
+throw new UserException("example.code")
+            .set("раз")
+            .set("два");
+----
+Подробнее о нем написано в модуле `n2o-platform-i18n`.
+
+Чтобы передать сообщение под каждое поле формы используйте JSR303 валидации.
+В этом случае в json ответ добавится поле `errors`:
+
 [source,json]
 ----
 {
   "errors" : [
     {
-      "field" : "create.arg0.date",
-      "message":"должно быть в прошлом"
-    },
-    { "field" : "create.arg0.name",
+      "field" : "create.arg0.name",
       "message" : "не может быть пусто"
     }
   ]
+}
+----
+А http статус будет `400`.
 
+=== Логирование
+
+Все запросы и ответы, и сервера, и клиента логгируются по умолчанию. Их можно отключить настройкой `jaxrs.log-in=false`, `jaxrs.log-out=false`.
+
+=== Документирование
+
+Используйте на рест сервисах аннотации `@Api*` из пакета `io.swagger.annotations`.
+[source,java]
+----
+@Path("/example")
+@Api("Пример документирования REST сервиса")
+public interface SomeRest {
+    @GET
+    @Path("/search")
+    @ApiOperation("Найти что-нибудь")
+    @ApiResponse(code = 200, message = "Нашли что-то")
+    Page<SomeModel> search(@BeanParam SomeCriteria criteria);
+    ...
 }
 ----
 
-При использовании REST прокси клиента, исключения возникшие на сервере,
-автоматически выбрасываются и на клиенте. Класс исключений: `RestException`.
+В настройках приложения задайте путь к REST сервисам со swagger аннотациями и другие параметры:
+[source,python]
+----
+jaxrs.swagger.enabled=true
+jaxrs.swagger.title=REST сервисы для примера
+jaxrs.swagger.version=1.0
+jaxrs.swagger.resource-package=net.n2oapp.microservice.example
+----
+
+Ссылка на документацию Swagger будет доступна по адресу `/api/info`.
+
+image::images\README-f585f.png[]
+
+== Прокси клиент
+
+=== Поиск JaxRs интерфейсов
+
+Чтобы подключить REST прокси клиент, как обычный Spring бин, задайте следующие настройки:
+[source,python]
+----
+#Включение поиска и регистрации прокси клиентов
+cxf.jaxrs.client.classes-scan=true
+#Пакет, в котором искать JaxRs интерфейсы
+cxf.jaxrs.client.classes-scan-packages=net.n2oapp.microservice.example
+#Адрес, где развернуты REST сервисы
+cxf.jaxrs.client.address=http://localhost:8080/api
+----
+
+В этом случае сработает автоконфигурация `JaxRsClientAutoConfiguration` и создадутся прокси клиенты под каждый найденный интерфейс.
+
+=== Выборочное подключение
+
+Если вам требуются сервисы развернутые на разных адресах, то нужно использовать более тонкий способ настройки с помощью аннотации `@EnableJaxRsProxyClient`:
+[source,java]
+----
+import net.n2oapp.platform.jaxrs.autoconfigure.EnableJaxRsProxyClient;
+...
+@Configuration
+@EnableJaxRsProxyClient(
+  classes = SomeRest.class,
+  address = "${myapp.url}/example/api")
+public class ExampleConfiguration {
+  ...
+}
+----
+
+
+=== Использование
+
+Используйте REST прокси клиенты как обычные Spring бины:
+[source,java]
+----
+@Service
+public class ConsumerServiceImpl {
+  @Autowired
+  private SomeRest client;//REST прокси клиент
+
+  ...
+}
+----
+Каждый вызов метода прокси клиента будет делать http запрос к сервису.
+
+=== Обработка исключений
+
+При использовании REST прокси клиентов, исключения возникшие на сервере,
+автоматически выбрасываются и на клиенте. Класс исключений: `RestException`:
+[source,java]
+----
+try {
+   client.create(model);
+ } catch (RestException e) {
+   e.getMessage();//Локализованное сообщение
+   e.getErrors();//Ошибки JSR303 валидаций
+ }
+----
+При этом стектрейс исключения `RestException` будет содержать в себе стектрейс от сервера.
 
 == Веб клиент
 
@@ -194,15 +268,18 @@ public class ExampleConfiguration {
 ----
 
 Адрес REST сервисов задаётся настройкой:
+[source,python]
 ----
 cxf.jaxrs.client.address=http://localhost:8080/api
 ----
 
-Далее, для выполнения запросов к REST сервисам, через аннотацию `@Autowired` подключаем клиента:
+=== Использование
+
+Для выполнения запросов к REST сервисам, через аннотацию `@Autowired` подключаем клиента:
 [source,java]
 ----
 @Service
-public class ExampleServiceImpl {
+public class ConsumerServiceImpl {
   @Autowired
   private Client client;
 
