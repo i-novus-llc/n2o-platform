@@ -23,6 +23,7 @@ import java.util.stream.Stream;
  * @see EnableJaxRsProxyClient
  */
 public class JaxRsProxyClientRegistrar implements ImportBeanDefinitionRegistrar, EnvironmentAware {
+    private Environment environment;
     private List<Class<?>> classes = Collections.emptyList();
     private String scanPackages;
     private String address;
@@ -48,7 +49,7 @@ public class JaxRsProxyClientRegistrar implements ImportBeanDefinitionRegistrar,
             return;
         String address = attributes.getString("address");
         if (address != null && !address.isEmpty())
-            this.address = address;
+            this.address = environment.resolvePlaceholders(address);
         Class<?>[] classes = attributes.getClassArray("classes");
         if (classes == null || classes.length == 0)
             classes = attributes.getClassArray("value");
@@ -95,6 +96,7 @@ public class JaxRsProxyClientRegistrar implements ImportBeanDefinitionRegistrar,
 
     @Override
     public void setEnvironment(Environment environment) {
+        this.environment = environment;
         this.scanPackages = environment.getProperty("cxf.jaxrs.client.classes-scan-packages");
         this.address = environment.getProperty("cxf.jaxrs.client.address");
         this.accept = environment.getProperty("cxf.jaxrs.client.accept", "");
