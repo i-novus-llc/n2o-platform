@@ -15,7 +15,6 @@
     </parent>
 
     <properties>
-        <n2o-platform.version>1.0-SNAPSHOT</n2o-platform.version>
         <n2o.version>6.1.21</n2o.version>
         <cxf.version>3.1.15</cxf.version>
         <swagger.version>3.0.17</swagger.version>
@@ -29,32 +28,32 @@
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-i18n-commons</artifactId>
-                <version>${n2o-platform.version}</version>
+                <version>1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-i18n-autoconfigure</artifactId>
-                <version>${n2o-platform.version}</version>
+                <version>1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-jaxrs-commons</artifactId>
-                <version>${n2o-platform.version}</version>
+                <version>1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-jaxrs-autoconfigure</artifactId>
-                <version>${n2o-platform.version}</version>
+                <version>1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-jaxrs-server</artifactId>
-                <version>${n2o-platform.version}</version>
+                <version>1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-jaxrs-client</artifactId>
-                <version>${n2o-platform.version}</version>
+                <version>1.0-SNAPSHOT</version>
             </dependency>
 
             <!--N2O Framework-->
