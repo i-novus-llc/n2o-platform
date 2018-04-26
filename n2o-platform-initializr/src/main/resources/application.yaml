@@ -45,6 +45,7 @@ initializr:
           groupId: net.n2oapp.framework
           artifactId: n2o-spring-boot-starter
           description: Frontend framework for WEB
+          bom: n2o-platform-bom
           aliases:
             - n2o
         - name: JaxRs Server
