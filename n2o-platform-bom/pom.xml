@@ -8,15 +8,14 @@
     <packaging>pom</packaging>
 
     <parent>
-        <groupId>net.n2oapp.parent</groupId>
-        <artifactId>parent</artifactId>
-        <version>2.0</version>
-        <relativePath/>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>1.5.7.RELEASE</version>
     </parent>
 
     <properties>
         <n2o-platform.version>1.0-SNAPSHOT</n2o-platform.version>
-        <n2o.version>6.1.18</n2o.version>
+        <n2o.version>6.1.21</n2o.version>
         <cxf.version>3.1.15</cxf.version>
         <swagger.version>3.0.17</swagger.version>
         <modelmapper.version>1.1.0</modelmapper.version>
@@ -204,6 +203,13 @@
                 <groupId>commons-lang</groupId>
                 <artifactId>commons-lang</artifactId>
                 <version>${commons.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-all</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
