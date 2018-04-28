@@ -10,13 +10,16 @@
     <parent>
         <groupId>net.n2oapp.parent</groupId>
         <artifactId>parent</artifactId>
-        <version>2.0</version>
-        <relativePath/>
+        <version>2.1</version>
+        <relativePath />
     </parent>
 
-    <properties>
-        <versions-maven-plugin.version>2.5</versions-maven-plugin.version>
-    </properties>
+    <scm>
+        <connection>scm:git:https://git.i-novus.ru/platform/n2o.git</connection>
+        <url>https://git.i-novus.ru/platform/n2o</url>
+        <developerConnection>scm:git:https://git.i-novus.ru/platform/n2o.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
 
     <modules>
         <module>n2o-platform-bom</module>
@@ -25,4 +28,27 @@
         <module>n2o-platform-jaxrs</module>
         <module>n2o-platform-initializr</module>
     </modules>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.yaml</include>
+                    <include>**/*.adoc</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>**/*.properties</exclude>
+                    <exclude>**/*.yaml</exclude>
+                    <exclude>**/*.adoc</exclude>
+                </excludes>
+            </resource>
+        </resources>
+    </build>
 </project>
