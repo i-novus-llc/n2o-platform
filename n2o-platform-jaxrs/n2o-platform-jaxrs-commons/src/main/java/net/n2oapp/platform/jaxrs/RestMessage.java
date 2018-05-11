@@ -7,6 +7,7 @@ import java.util.List;
  * Сообщение, возвращаемое в ответе REST сервиса
  */
 public class RestMessage implements Serializable {
+    private static final long serialVersionUID = 139886274946702785L;
     private String message;
     private List<Error> errors;
     private String[] stackTrace;
@@ -23,6 +24,7 @@ public class RestMessage implements Serializable {
     }
 
     public static class Error implements Serializable {
+        private static final long serialVersionUID = -6241752723478340674L;
         private String field;
         private String message;
 

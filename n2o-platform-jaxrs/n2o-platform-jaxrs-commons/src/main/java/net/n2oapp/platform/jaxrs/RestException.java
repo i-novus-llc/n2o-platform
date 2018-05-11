@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
  * Исключение, выбрасываемое на клиенте при возникновении исключения в REST сервисе
  */
 public class RestException extends RuntimeException {
+    private static final long serialVersionUID = 111344339012373978L;
     private static final Pattern STACKTRACE_ELEMENT_PATTERN = Pattern.compile(".+\\(.+:[0-9]+\\)");
 
     private RestMessage restMessage;

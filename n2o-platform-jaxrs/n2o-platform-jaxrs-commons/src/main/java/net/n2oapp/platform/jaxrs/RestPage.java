@@ -12,7 +12,8 @@ import java.util.List;
 /**
  * Страница данных Spring Data серилизуемая через Jackson ObjectMapper
  */
-public class RestPage<T> extends PageImpl<T>{
+public class RestPage<T> extends PageImpl<T> {
+    private static final long serialVersionUID = -7939773709100742007L;
     private long totalElements;
     private List<T> content;
     private Sort sort;

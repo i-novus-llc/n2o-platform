@@ -8,6 +8,7 @@ import java.util.Collections;
  * Исключение, содержащее локализованное сообщение, понятное конечному пользователю.
  */
 public class UserException extends RuntimeException {
+    private static final long serialVersionUID = 2552353701499979545L;
     private static final Message UNEXPECTED_ERROR = new Message("exception.unexpectedError");
 
     private transient Object[] args;
