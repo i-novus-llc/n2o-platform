@@ -35,7 +35,7 @@ public class JaxRsProxyClientRegistrar implements ImportBeanDefinitionRegistrar,
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
         overrideProperties(importingClassMetadata);
         if (classes.isEmpty())
-            classes = findClasses(registry);
+            classes = findClasses();
         classes.forEach(c -> registerJaxRsProxyClient(registry, c));
     }
 
@@ -60,7 +60,7 @@ public class JaxRsProxyClientRegistrar implements ImportBeanDefinitionRegistrar,
             this.scanPackages = Stream.of(scanPackages).reduce((a,b) -> a + "," + b).get();
     }
 
-    private List<Class<?>> findClasses(BeanDefinitionRegistry beanRegistry) {
+    private List<Class<?>> findClasses() {
         if (scanPackages == null)
             throw new IllegalArgumentException("You need to set property [cxf.jaxrs.client.classes-scan-packages]");
         final Map<Class<? extends Annotation>, Collection<Class<?>>> classes;
