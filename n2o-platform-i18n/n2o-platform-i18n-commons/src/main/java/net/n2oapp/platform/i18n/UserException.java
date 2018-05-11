@@ -10,7 +10,7 @@ import java.util.Collections;
 public class UserException extends RuntimeException {
     private static final Message UNEXPECTED_ERROR = new Message("exception.unexpectedError");
 
-    private Object[] args;
+    private transient Object[] args;
 
     public UserException(Message message) {
         super(message.getCode());
