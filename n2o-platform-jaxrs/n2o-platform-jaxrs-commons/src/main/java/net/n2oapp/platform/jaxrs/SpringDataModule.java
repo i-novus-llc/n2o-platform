@@ -24,6 +24,11 @@ import java.io.IOException;
  * серилизовать / десерилизовать базовые модели Spring Data, такие как Page, Pageable, Sort и т.п.
  */
 public class SpringDataModule extends SimpleModule {
+    static final String DIRECTION = "direction";
+    static final String PROPERTY = "property";
+    static final String CONTENT = "content";
+    static final String TOTAL_ELEMENTS = "totalElements";
+    static final String SORT = "sort";
 
     public SpringDataModule()
     {
@@ -46,10 +51,10 @@ public class SpringDataModule extends SimpleModule {
         @Override
         public void serialize(Page value, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeStartObject();
-            gen.writeObjectField("content", value.getContent());
-            gen.writeNumberField("totalElements", value.getTotalElements());
+            gen.writeObjectField(CONTENT, value.getContent());
+            gen.writeNumberField(TOTAL_ELEMENTS, value.getTotalElements());
             if (value.getSort() != null)
-                gen.writeObjectField("sort", value.getSort());
+                gen.writeObjectField(SORT, value.getSort());
             gen.writeEndObject();
         }
     }
@@ -63,8 +68,8 @@ public class SpringDataModule extends SimpleModule {
         @Override
         public void serialize(Sort.Order value, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeStartObject();
-            gen.writeStringField("property", value.getProperty());
-            gen.writeStringField("direction", value.getDirection().name().toLowerCase());
+            gen.writeStringField(PROPERTY, value.getProperty());
+            gen.writeStringField(DIRECTION, value.getDirection().name().toLowerCase());
             gen.writeEndObject();
         }
     }
@@ -78,9 +83,9 @@ public class SpringDataModule extends SimpleModule {
             Sort.Order[] orders = new Sort.Order[node.size()];
             int i = 0;
             for (JsonNode obj : node) {
-                Sort.Direction direction = obj.get("direction") != null ?
-                        Sort.Direction.valueOf(obj.get("direction").asText().toUpperCase()) : null;
-                orders[i] = new Sort.Order(direction, obj.get("property").asText());
+                Sort.Direction direction = obj.get(DIRECTION) != null ?
+                        Sort.Direction.valueOf(obj.get(DIRECTION).asText().toUpperCase()) : null;
+                orders[i] = new Sort.Order(direction, obj.get(PROPERTY).asText());
                 i++;
             }
             return new Sort(orders);
