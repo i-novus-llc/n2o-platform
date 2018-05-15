@@ -23,8 +23,6 @@
 
 Работаем!
 
-= Расширение
-
 Если родительский `parent` артефакт уже есть, то для управления зависимостями можно использовать BOM:
 [source,xml]
 ----
@@ -38,3 +36,9 @@
   </dependencies>
 </dependencyManagement>
 ----
+
+Смотрите так же:
+
+* link:/n2o-platform-i18n/README.adoc[Интернационализация]
+* link:/n2o-platform-jaxrs/README.adoc[Сервер и клиент JaxRS]
+* link:/n2o-platform-initializr/README.adoc[Spring Boot Initializr]
