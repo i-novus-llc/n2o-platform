@@ -1,3 +1,5 @@
+image:https://git.i-novus.ru/platform/n2o/badges/master/pipeline.svg[link="https://git.i-novus.ru/platform/n2o/commits/master",title="pipeline status"]
+
 Платформа для создания микросервисов на основе Spring Boot, Spring Cloud, Spring Data, CXF.
 
 = Подключение
