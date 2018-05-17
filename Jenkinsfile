@@ -1,10 +1,5 @@
 pipeline {
   agent any
-    // Get Artifactory server instance, defined in the Artifactory Plugin administration page.
-    def server = Artifactory.server "jfrog"
-    // Create an Artifactory Maven instance.
-    def rtMaven = Artifactory.newMavenBuild()
-    def buildInfo
   stages {
     stage('Checkout') {
       steps {
@@ -12,19 +7,14 @@ pipeline {
       }
     }
 
-    stage('Artifactory configuration') {
+    stage('Maven build') {
+        def rtMaven = Artifactory.newMavenBuild()
         // Tool name from Jenkins configuration
         rtMaven.tool = "default"
         // Set Artifactory repositories for dependencies resolution and artifacts deployment.
-        rtMaven.deployer releaseRepo:'libs-release-local', snapshotRepo:'libs-snapshot-local', server: server
-        rtMaven.resolver releaseRepo:'libs-release', snapshotRepo:'libs-snapshot', server: server
-    }
-
-    stage('Maven build') {
-        buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean install'
-    }
-
-    stage('Publish build info') {
+        rtMaven.deployer releaseRepo:'libs-release-local', snapshotRepo:'libs-snapshot-local', server: Artifactory.server "jfrog"
+        rtMaven.resolver releaseRepo:'libs-release', snapshotRepo:'libs-snapshot', server: Artifactory.server "jfrog"
+        def buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean install'
         server.publishBuildInfo buildInfo
     }
   }
