@@ -1,11 +1,11 @@
 pipeline {
   agent any
-  stages {
     // Get Artifactory server instance, defined in the Artifactory Plugin administration page.
     def server = Artifactory.server "jfrog"
     // Create an Artifactory Maven instance.
     def rtMaven = Artifactory.newMavenBuild()
     def buildInfo
+  stages {
     stage('Checkout') {
       steps {
         git url: 'https://git.i-novus.ru/platform/n2o.git', branch: 'master'
