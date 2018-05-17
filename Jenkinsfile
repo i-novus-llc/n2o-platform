@@ -8,6 +8,7 @@ pipeline {
     }
 
     stage('Maven build') {
+      steps {
         def rtMaven = Artifactory.newMavenBuild()
         // Tool name from Jenkins configuration
         rtMaven.tool = "default"
@@ -16,6 +17,7 @@ pipeline {
         rtMaven.resolver releaseRepo:'libs-release', snapshotRepo:'libs-snapshot', server: Artifactory.server "jfrog"
         def buildInfo = rtMaven.run pom: 'pom.xml', goals: 'clean install'
         server.publishBuildInfo buildInfo
+      }
     }
   }
 }
