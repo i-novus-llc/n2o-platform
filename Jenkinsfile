@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        git url: 'https://git.i-novus.ru/platform/n2o.git', branch: 'master'
+        git url: 'https://git.i-novus.ru/platform/n2o.git', branch: 'master', credentialsId: ci
       }
     }
 
