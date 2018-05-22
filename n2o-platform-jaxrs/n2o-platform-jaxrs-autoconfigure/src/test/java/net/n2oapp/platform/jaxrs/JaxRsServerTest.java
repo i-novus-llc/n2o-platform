@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.instanceOf;
 
@@ -30,11 +31,17 @@ public class JaxRsServerTest {
     private int port;
 
     /**
-     * Проверка, что REST сервис был автоматически найден и поднят по пути /api/example/search.
+     * Проверка, что REST сервис был автоматически найден и поднят по пути /api/info.
      */
     @Test
     public void info() {
-        Response response = client().path("example").path("search").head();
+        Response response = client().path("info").get();
+        assertThat(response.getStatus(), equalTo(200));
+        String html = response.readEntity(String.class);
+        assertThat(html, containsString("Endpoint address"));
+        assertThat(html, containsString("Swagger"));
+        assertThat(html, containsString("WADL"));
+        response = client().path("example").path("search").head();
         assertThat(response.getStatus(), equalTo(200));
     }
 
