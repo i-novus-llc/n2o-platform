@@ -1,4 +1,5 @@
 image:https://git.i-novus.ru/platform/n2o/badges/master/pipeline.svg[link="https://git.i-novus.ru/platform/n2o/commits/master",title="pipeline status"]
+image:https://sonar.i-novus.ru/api/project_badges/measure?project=net.n2oapp.platform%3An2o-platform&metric=coverage[link="https://sonar.i-novus.ru/component_measures?id=net.n2oapp.platform%3An2o-platform&metric=Coverage",title="coverage status"]
 
 Платформа для создания микросервисов на основе Spring Boot, Spring Cloud, Spring Data, CXF.
 
