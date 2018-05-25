@@ -26,6 +26,20 @@
 </dependency>
 ----
 
+В модуль который планируете запускать, добавьте зависимости (в следующих версиях возможно вынесут в стартер n2o-platform-starter-jaxrs-server):
+[source,xml]
+----
+<dependency>
+    <groupId>org.apache.cxf</groupId>
+    <artifactId>cxf-rt-rs-client</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+----
+
+
 === Инициализация
 
 Задаёте следующие настройки:
@@ -167,6 +181,25 @@ throw new UserException("example.code")
 
 === Документирование
 
+Добавьте в модуль с `api` следующие зависимости:
+
+[source,json]
+----
+<dependency>
+    <groupId>javax.ws.rs</groupId>
+    <artifactId>javax.ws.rs-api</artifactId>
+    <!--В будущем версии будут в BOM-->
+    <version>2.0.1</version>
+</dependency>
+
+<dependency>
+    <groupId>io.swagger</groupId>
+    <artifactId>swagger-annotations</artifactId>
+    <!--В будущем версии будут в BOM-->
+    <version>1.5.12</version>
+</dependency>
+----
+
 Используйте на рест сервисах аннотации `@Api*` из пакета `io.swagger.annotations`.
 [source,java]
 ----
@@ -191,7 +224,7 @@ jaxrs.swagger.version=1.0
 jaxrs.swagger.resource-package=net.n2oapp.microservice.example
 ----
 
-Ссылка на документацию Swagger будет доступна по адресу `/api/info`.
+Ссылка на документацию Swagger будет доступна по адресу `/api/info` (cxf.path + cxf.servlet.init.service-list-path).
 
 image::images\README-f585f.png[]
 
