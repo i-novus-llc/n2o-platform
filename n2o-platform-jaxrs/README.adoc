@@ -10,18 +10,8 @@
 * Логирование всех запросов / ответов (можно отключить через `jaxrs.log-in=false`, `jaxrs.log-out=false`)
 * Включение JSR303 валидаций на REST сервисах (можно отключить через `jaxrs.jsr303=false`)
 
-= Подключение
 
-Для подключения REST прокси клиентов добавьте зависимость:
-[source,xml]
-----
-<dependency>
-  <groupId>net.n2oapp.platform</groupId>
-  <artifactId>n2o-platform-starter-jaxrs-client</artifactId>
-</dependency>
-----
-
-= Использование
+= Инструкции
 
 == Сервер
 
@@ -206,6 +196,17 @@ jaxrs.swagger.resource-package=net.n2oapp.microservice.example
 image::images\README-f585f.png[]
 
 == Прокси клиент
+
+=== Подключение
+
+Для подключения REST прокси клиентов добавьте зависимость:
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-starter-jaxrs-client</artifactId>
+</dependency>
+----
 
 === Поиск JaxRs интерфейсов
 
