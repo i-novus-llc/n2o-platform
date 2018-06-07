@@ -15,46 +15,46 @@ import java.util.Objects;
  * Универсальный способ передачи параметров фильтрации, паджинации и сортировки в REST запросе
  */
 public class RestCriteria implements Pageable {
-    private @QueryParam("page") @DefaultValue("0") int page;
-    private @QueryParam("size") @DefaultValue("10") int size;
+    private @QueryParam("page") @DefaultValue("0") int pageNumber;
+    private @QueryParam("size") @DefaultValue("10") int pageSize;
     private @QueryParam("sort") List<Sort.Order> orders;
 
     public RestCriteria() {
     }
 
-    public RestCriteria(int page, int size, Sort sort) {
-        this(page, size);
+    public RestCriteria(int pageNumber, int pageSize, Sort sort) {
+        this(pageNumber, pageSize);
         orders = new ArrayList<>();
         sort.forEach(orders::add);
     }
 
-    public RestCriteria(int page, int size) {
-        if (page < 0) {
+    public RestCriteria(int pageNumber, int pageSize) {
+        if (pageNumber < 0) {
             throw new IllegalArgumentException("Page index must not be less than zero!");
-        } else if (size < 1) {
+        } else if (pageSize < 1) {
             throw new IllegalArgumentException("Page size must not be less than one!");
         } else {
-            this.page = page;
-            this.size = size;
+            this.pageNumber = pageNumber;
+            this.pageSize = pageSize;
         }
     }
 
     @Override
     @JsonProperty("size")
     public int getPageSize() {
-        return this.size;
+        return this.pageSize;
     }
 
     @Override
     @JsonProperty("page")
     public int getPageNumber() {
-        return this.page;
+        return this.pageNumber;
     }
 
     @Override
     @JsonIgnore
     public int getOffset() {
-        return this.page * this.size;
+        return this.pageNumber * this.pageSize;
     }
 
     @Override
@@ -67,12 +67,12 @@ public class RestCriteria implements Pageable {
             return null;
     }
 
-    public void setPage(int page) {
-        this.page = page;
+    public void setPageNumber(int pageNumber) {
+        this.pageNumber = pageNumber;
     }
 
-    public void setSize(int size) {
-        this.size = size;
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
     }
 
     @JsonIgnore
@@ -98,7 +98,7 @@ public class RestCriteria implements Pageable {
     @Override
     @JsonIgnore
     public boolean hasPrevious() {
-        return this.page > 0;
+        return this.pageNumber > 0;
     }
 
     @JsonIgnore
@@ -117,12 +117,11 @@ public class RestCriteria implements Pageable {
         if (this == o) return true;
         if (!(o instanceof RestCriteria)) return false;
         RestCriteria that = (RestCriteria) o;
-        return page == that.page &&
-                size == that.size;
+        return pageNumber == that.pageNumber && pageSize == that.pageSize;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(page, size);
+        return Objects.hash(pageNumber, pageSize);
     }
 }
