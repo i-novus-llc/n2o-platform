@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Sort;
 
 import javax.validation.ValidatorFactory;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 /**
@@ -87,6 +88,11 @@ public class JaxRsServerAutoConfiguration {
     @Bean
     TypedParamConverter<Sort.Order> sortParameterConverter() {
         return new SortParameterConverter();
+    }
+
+    @Bean
+    TypedParamConverter<ZonedDateTime> zonedDateTimeTypedParamConverter() {
+        return new ZonedDateTimeParamConverter();
     }
 
     @Bean
