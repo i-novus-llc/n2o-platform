@@ -4,7 +4,7 @@
 
     <groupId>net.n2oapp.platform</groupId>
     <artifactId>n2o-platform-bom</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -30,32 +30,32 @@
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-i18n-commons</artifactId>
-                <version>1.1-SNAPSHOT</version>
+                <version>1.1</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-i18n-autoconfigure</artifactId>
-                <version>1.1-SNAPSHOT</version>
+                <version>1.1</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-jaxrs-commons</artifactId>
-                <version>1.1-SNAPSHOT</version>
+                <version>1.1</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-jaxrs-autoconfigure</artifactId>
-                <version>1.1-SNAPSHOT</version>
+                <version>1.1</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-jaxrs-server</artifactId>
-                <version>1.1-SNAPSHOT</version>
+                <version>1.1</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-jaxrs-client</artifactId>
-                <version>1.1-SNAPSHOT</version>
+                <version>1.1</version>
             </dependency>
 
             <!--N2O Framework-->
@@ -234,4 +234,8 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+  <scm>
+    <tag>1.1</tag>
+  </scm>
 </project>
