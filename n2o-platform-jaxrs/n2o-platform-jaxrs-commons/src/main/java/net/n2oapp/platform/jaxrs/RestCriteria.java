@@ -15,6 +15,10 @@ import java.util.Objects;
  * Универсальный способ передачи параметров фильтрации, паджинации и сортировки в REST запросе
  */
 public class RestCriteria implements Pageable {
+
+    public static final int FIRST_PAGE_NUMBER = 0;
+    public static final int MIN_PAGE_SIZE = 1;
+
     private @QueryParam("page") @DefaultValue("0") int pageNumber;
     private @QueryParam("size") @DefaultValue("10") int pageSize;
     private @QueryParam("sort") List<Sort.Order> orders;
@@ -29,9 +33,9 @@ public class RestCriteria implements Pageable {
     }
 
     public RestCriteria(int pageNumber, int pageSize) {
-        if (pageNumber < 0) {
+        if (pageNumber < FIRST_PAGE_NUMBER) {
             throw new IllegalArgumentException("Page index must not be less than zero!");
-        } else if (pageSize < 1) {
+        } else if (pageSize < MIN_PAGE_SIZE) {
             throw new IllegalArgumentException("Page size must not be less than one!");
         } else {
             this.pageNumber = pageNumber;
@@ -92,13 +96,13 @@ public class RestCriteria implements Pageable {
 
     @JsonIgnore
     public Pageable previous() {
-        return this.getPageNumber() == 0 ? this : new RestCriteria(this.getPageNumber() - 1, this.getPageSize(), this.getSort());
+        return this.getPageNumber() == FIRST_PAGE_NUMBER ? this : new RestCriteria(this.getPageNumber() - 1, this.getPageSize(), this.getSort());
     }
 
     @Override
     @JsonIgnore
     public boolean hasPrevious() {
-        return this.pageNumber > 0;
+        return this.pageNumber > FIRST_PAGE_NUMBER;
     }
 
     @JsonIgnore
@@ -109,7 +113,7 @@ public class RestCriteria implements Pageable {
     @Override
     @JsonIgnore
     public Pageable first() {
-        return new RestCriteria(0, this.getPageSize(), this.getSort());
+        return new RestCriteria(FIRST_PAGE_NUMBER, this.getPageSize(), this.getSort());
     }
 
     @Override
