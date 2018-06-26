@@ -9,7 +9,6 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Универсальный способ передачи параметров фильтрации, паджинации и сортировки в REST запросе
