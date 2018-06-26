@@ -116,16 +116,4 @@ public class RestCriteria implements Pageable {
         return new RestCriteria(FIRST_PAGE_NUMBER, this.getPageSize(), this.getSort());
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof RestCriteria)) return false;
-        RestCriteria that = (RestCriteria) o;
-        return pageNumber == that.pageNumber && pageSize == that.pageSize;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(pageNumber, pageSize);
-    }
 }
