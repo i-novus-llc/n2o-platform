@@ -5,6 +5,7 @@ import net.n2oapp.platform.test.PortFinder;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -204,6 +205,7 @@ public class EmbeddedPgAutoConfiguration {
                 }
             } catch (SQLException e) {
                 logger.error("cannot init db", e);
+                throw new BeanCreationException("cannot create datasource", e);
             }
 
 
