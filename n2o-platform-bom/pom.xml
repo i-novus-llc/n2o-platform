@@ -57,6 +57,16 @@
                 <artifactId>n2o-platform-starter-jaxrs-client</artifactId>
                 <version>1.2-SNAPSHOT</version>
             </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-test-autoconfigure</artifactId>
+                <version>1.2-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-starter-test</artifactId>
+                <version>1.2-SNAPSHOT</version>
+            </dependency>
 
             <!--N2O Framework-->
             <dependency>
