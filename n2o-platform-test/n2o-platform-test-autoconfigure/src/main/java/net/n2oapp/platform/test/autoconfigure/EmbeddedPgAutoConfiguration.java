@@ -163,6 +163,7 @@ public class EmbeddedPgAutoConfiguration {
                 pg = EmbeddedPostgres.builder().setPgBinaryResolver(new PatchedPgBinaryResolver()).setCleanDataDirectory(true).setPort(port).start();
             } catch (IOException e) {
                 logger.error("cannot build EmbeddedPostgres", e);
+                throw new BeanCreationException("cannot create datasource", e);
             }
             DataSource dataSource = pg.getPostgresDatabase();
             try (Connection connection = dataSource.getConnection();
