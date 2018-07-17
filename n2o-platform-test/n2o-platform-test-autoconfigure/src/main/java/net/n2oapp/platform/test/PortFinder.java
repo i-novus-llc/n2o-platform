@@ -18,12 +18,11 @@ public class PortFinder {
 
     private static List<Integer> usedList = new CopyOnWriteArrayList();
 
-    public static int getPort() {
-        return getUnusedPort(MIN_PORT_NUMBER);
+    private PortFinder() {
     }
 
-
-    private PortFinder() {
+    public static int getPort() {
+        return getUnusedPort(MIN_PORT_NUMBER);
     }
 
     @SuppressWarnings("all")

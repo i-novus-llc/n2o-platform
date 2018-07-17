@@ -39,8 +39,8 @@ public class RandomPortEnvPostProcessor implements EnvironmentPostProcessor {
             PropertySource<?> source = propertySources.get(PROPERTY_SOURCE_NAME);
             if (source instanceof MapPropertySource) {
                 target = (MapPropertySource) source;
-                for (String key : map.keySet()) {
-                    target.getSource().put(key, map.get(key));
+                for (Map.Entry<String,Object> entry : map.entrySet()) {
+                    target.getSource().put(entry.getKey(), entry.getValue());
                 }
             }
         }

@@ -37,6 +37,8 @@ import java.sql.SQLException;
 @Configuration
 public class EmbeddedPgAutoConfiguration {
 
+    private static final Logger logger = LoggerFactory.getLogger(EmbeddedPgAutoConfiguration.class);
+
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "test", name = "embedded-pg", havingValue = "true")
@@ -75,7 +77,7 @@ public class EmbeddedPgAutoConfiguration {
             if (holder != null) {
                 String beanName = holder.getBeanName();
                 boolean primary = holder.getBeanDefinition().isPrimary();
-                logger.info("Replacing '{0}' DataSource bean with {1} embedded version", beanName, primary ? "primary " : "");
+                logger.info("Replacing '{}' DataSource bean with {} embedded version", beanName, primary ? "primary " : "");
                 registry.registerBeanDefinition(beanName,
                         createEmbeddedBeanDefinition(primary));
             }
@@ -159,7 +161,7 @@ public class EmbeddedPgAutoConfiguration {
 
                 pg = EmbeddedPostgres.builder().setPgBinaryResolver(new PatchedPgBinaryResolver()).setCleanDataDirectory(true).setPort(port).start();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                logger.error("cannot build EmbeddedPostgres", e);
             }
             DataSource dataSource = pg.getPostgresDatabase();
             try (Connection connection = dataSource.getConnection();
@@ -201,8 +203,7 @@ public class EmbeddedPgAutoConfiguration {
                     dictPreparedStatement.executeUpdate();
                 }
             } catch (SQLException e) {
-                throw new RuntimeException(e);
-
+                logger.error("cannot init db", e);
             }
 
 
