@@ -57,8 +57,6 @@ public class EmbeddedPgTest {
 </dependency>
 ----
 
-=== Поиск JaxRs интерфейсов
-
 Чтобы подключить REST прокси клиент, как обычный Spring бин, задайте следующие настройки:
 [source,python]
 ----
