@@ -57,18 +57,7 @@ public class EmbeddedPgTest {
 </dependency>
 ----
 
-Чтобы подключить REST прокси клиент, как обычный Spring бин, задайте следующие настройки:
-[source,python]
-----
-#Включение поиска и регистрации прокси клиентов
-cxf.jaxrs.client.classes-scan=true
-#Пакет, в котором искать JaxRs интерфейсы
-cxf.jaxrs.client.classes-scan-packages=net.n2oapp.microservice.example
-#Адрес, где развернуты REST сервисы
-cxf.jaxrs.client.address=http://localhost:${server.port}/test/api
-----
-
-И добавить аннотацию над тестовым классом
+и аннотацию @DefinePort над тестовым классом
 [source,java]
 ----
 @RunWith(SpringRunner.class)
