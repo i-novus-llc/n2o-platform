@@ -1,5 +1,8 @@
 package net.n2oapp.platform.test;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
@@ -7,6 +10,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class PortFinder {
+
+    private static final Logger logger = LoggerFactory.getLogger(PortFinder.class);
 
     private static final int MIN_PORT_NUMBER = 49152;
     private static final int MAX_PORT_NUMBER = 65535;
@@ -18,7 +23,10 @@ public class PortFinder {
     }
 
 
+    private PortFinder() {
+    }
 
+    @SuppressWarnings("all")
     private static int getUnusedPort(int startPort) {
         while (!available(startPort) || usedList.contains(startPort)) {
             startPort++;
@@ -37,27 +45,12 @@ public class PortFinder {
             throw new IllegalArgumentException("Invalid start port: " + port);
         }
 
-        ServerSocket ss = null;
-        DatagramSocket ds = null;
-        try {
-            ss = new ServerSocket(port);
+        try(ServerSocket ss = new ServerSocket(port); DatagramSocket ds = new DatagramSocket(port);) {
             ss.setReuseAddress(true);
-            ds = new DatagramSocket(port);
             ds.setReuseAddress(true);
             return true;
         } catch (IOException e) {
-        } finally {
-            if (ds != null) {
-                ds.close();
-            }
-
-            if (ss != null) {
-                try {
-                    ss.close();
-                } catch (IOException e) {
-                    /* should not be thrown */
-                }
-            }
+            logger.error("cannot search port", e );
         }
 
         return false;

@@ -5,7 +5,6 @@ import net.n2oapp.platform.test.PortFinder;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -38,17 +37,11 @@ import java.sql.SQLException;
 @Configuration
 public class EmbeddedPgAutoConfiguration {
 
-    private final Environment environment;
-
-    EmbeddedPgAutoConfiguration(Environment environment) {
-        this.environment = environment;
-    }
-
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "test", name = "embedded-pg", havingValue = "true")
     public DataSource dataSource() {
-        return new EmbeddedDataSourceFactory(this.environment).getEmbeddedDatabase();
+        return new EmbeddedDataSourceFactory().getEmbeddedDatabase();
     }
 
     @Bean
@@ -64,8 +57,7 @@ public class EmbeddedPgAutoConfiguration {
                 .getLogger(EmbeddedDataSourceBeanFactoryPostProcessor.class);
 
         @Override
-        public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry)
-                throws BeansException {
+        public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
             Assert.isInstanceOf(ConfigurableListableBeanFactory.class, registry,
                     "Test Database Auto-configuration can only be "
                             + "used with a ConfigurableListableBeanFactory");
@@ -73,8 +65,8 @@ public class EmbeddedPgAutoConfiguration {
         }
 
         @Override
-        public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
-                throws BeansException {
+        public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+            // Do nothing
         }
 
         private void process(BeanDefinitionRegistry registry,
@@ -83,8 +75,7 @@ public class EmbeddedPgAutoConfiguration {
             if (holder != null) {
                 String beanName = holder.getBeanName();
                 boolean primary = holder.getBeanDefinition().isPrimary();
-                logger.info("Replacing '" + beanName + "' DataSource bean with "
-                        + (primary ? "primary " : "") + "embedded version");
+                logger.info("Replacing '{0}' DataSource bean with {1} embedded version", beanName, primary ? "primary " : "");
                 registry.registerBeanDefinition(beanName,
                         createEmbeddedBeanDefinition(primary));
             }
@@ -132,7 +123,7 @@ public class EmbeddedPgAutoConfiguration {
 
         @Override
         public void setEnvironment(Environment environment) {
-            this.factory = new EmbeddedDataSourceFactory(environment);
+            this.factory = new EmbeddedDataSourceFactory();
         }
 
         @Override
@@ -159,15 +150,9 @@ public class EmbeddedPgAutoConfiguration {
 
     private static class EmbeddedDataSourceFactory {
 
-        private final Environment environment;
-
-        EmbeddedDataSourceFactory(Environment environment) {
-            this.environment = environment;
-        }
-
         public DataSource getEmbeddedDatabase(){
             int port = PortFinder.getPort();
-            String DB_NAME = "db_"+port;
+            String dbName = "db_"+port;
 
             EmbeddedPostgres pg = null;
             try {
@@ -192,10 +177,10 @@ public class EmbeddedPgAutoConfiguration {
                                  "ALTER MAPPING\n" +
                                  "FOR word, hword, hword_part\n" +
                                  "WITH ispell_ru, russian_stem; " +
-                                 "DROP DATABASE IF EXISTS " + DB_NAME + "; CREATE DATABASE " + DB_NAME + ";"
+                                 "DROP DATABASE IF EXISTS " + dbName + "; CREATE DATABASE " + dbName + ";"
                  );) {
                 preparedStatement.executeUpdate();
-                DataSource ds = pg.getDatabase("postgres", DB_NAME);
+                DataSource ds = pg.getDatabase("postgres", dbName);
                 try (
                         Connection userDbCon = ds.getConnection();
                         PreparedStatement dictPreparedStatement = userDbCon.prepareStatement(
@@ -221,7 +206,7 @@ public class EmbeddedPgAutoConfiguration {
             }
 
 
-            return pg.getDatabase("postgres", DB_NAME);
+            return pg.getDatabase("postgres", dbName);
 
         }
     }
