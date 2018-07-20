@@ -1,0 +1,83 @@
+= Документация
+:toc:
+:toclevels: 3
+:toc-title: Содержание
+
+= Возможности
+
+Эта библиотека позволяет упростить интеграционное тестирование с помощью `Spring Boot`.
+
+* Автоматическое разворачивание Postgresql с рандомной бд и на рандомному порту
+* Автоматическое подключение REST прокси клиентов по рандомному порту
+
+
+
+= Инструкции
+
+== Разворачивание Postgresql
+
+=== Подключение
+
+Добавьте зависимость:
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-starter-test</artifactId>
+</dependency>
+----
+
+=== Инициализация
+
+Над классом теста указываете аннотацию EnableEmbeddedPg:
+[source,java]
+----
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = Application.class)
+@EnableEmbeddedPg
+public class EmbeddedPgTest {
+    ...
+}
+----
+
+[NOTE]
+Создастся DataSource spring-bean с подключением с супер пользователем к бд с сгенерированным названием и портом.
+
+
+== Поднятие сервера и прокси-клиента на произвольном порту
+
+=== Подключение
+
+Для подключения добавьте зависимость:
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-starter-test</artifactId>
+</dependency>
+----
+
+и аннотацию @DefinePort над тестовым классом
+[source,java]
+----
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = Application.class,
+        properties = {
+                "cxf.servlet.init.service-list-path=/info",
+                "cxf.path=/test/api",
+                "cxf.jaxrs.component-scan=true",
+                "cxf.jaxrs.client.classes-scan=true",
+                "cxf.jaxrs.client.classes-scan-packages=net.n2oapp.microservice.example",
+                "cxf.jaxrs.client.address=http://localhost:${server.port}/test/api",
+        },
+        webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@DefinePort
+public class DefinePortTest {
+    ...
+}
+----
+
+В этом случае поднимутся сервер и клиент на произвольном порту.
+
+
+
