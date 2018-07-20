@@ -3,6 +3,7 @@ package net.n2oapp.platform.jaxrs.autoconfigure;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
@@ -16,6 +17,7 @@ import org.apache.cxf.jaxrs.validation.JAXRSBeanValidationInInterceptor;
 import org.apache.cxf.spring.boot.autoconfigure.CxfProperties;
 import org.apache.cxf.validation.BeanValidationInInterceptor;
 import org.apache.cxf.validation.BeanValidationProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -28,7 +30,9 @@ import org.springframework.data.domain.Sort;
 
 import javax.validation.ValidatorFactory;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Автоматическая конфигурация REST сервисов
@@ -41,10 +45,13 @@ public class JaxRsServerAutoConfiguration {
 
     private final JaxRsProperties jaxRsProperties;
     private final CxfProperties cxfProperties;
+    private List<NamedType> types;
 
-    public JaxRsServerAutoConfiguration(CxfProperties cxfProperties, JaxRsProperties jaxRsProperties) {
+
+    public JaxRsServerAutoConfiguration(CxfProperties cxfProperties, JaxRsProperties jaxRsProperties, @Autowired(required = false)List<NamedType> types) {
         this.cxfProperties = cxfProperties;
         this.jaxRsProperties = jaxRsProperties;
+        this.types = types;
     }
 
     @Bean("swagger2Feature")
@@ -72,6 +79,10 @@ public class JaxRsServerAutoConfiguration {
         mapper.registerModule(new SpringDataModule());
         mapper.registerModule(new JavaTimeModule());
         mapper.setDateFormat(new ISO8601DateFormat());
+        if(types != null ) {
+            mapper.disableDefaultTyping();
+            types.forEach(mapper::registerSubtypes);
+        }
         return mapper;
     }
 
