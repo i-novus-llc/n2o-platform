@@ -10,6 +10,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = StringModel.class, name = "stringModel")
 })
-public class ValueMixin {
+public abstract class ValueMixin {
 
 }

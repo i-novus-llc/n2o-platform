@@ -1,12 +1,10 @@
 package net.n2oapp.platform.jaxrs;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.autoconfigure.EnableJaxRsProxyClient;
 import net.n2oapp.platform.jaxrs.autoconfigure.JaxRsClientAutoConfiguration;
-import net.n2oapp.platform.jaxrs.example.api.SomeCriteria;
-import net.n2oapp.platform.jaxrs.example.api.SomeModel;
-import net.n2oapp.platform.jaxrs.example.api.SomeRest;
-import net.n2oapp.platform.jaxrs.example.api.StringModel;
+import net.n2oapp.platform.jaxrs.example.api.*;
 import net.n2oapp.platform.jaxrs.example.impl.SomeRestImpl;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Assert;
@@ -41,6 +39,10 @@ public class JaxRsClientTest {
     @Autowired
     @Qualifier("someRestJaxRsProxyClient")//в контексте теста есть 2 бина SomeRest: SomeRestImpl и прокси клиент
     private SomeRest client;
+
+    @Autowired
+    @Qualifier("cxfObjectMapper")
+    ObjectMapper mapper;
 
     /**
      * Проверка, что REST прокси клиент обрабатывает Pageable параметры и параметры фильтрации.
@@ -135,7 +137,20 @@ public class JaxRsClientTest {
 
     @Test
     public void testAbstractModel() throws Exception {
+        mapper.addMixIn(AbstractModel.class, ValueMixin.class);
         Assert.assertTrue(client.searchModel(new SomeCriteria()).getContent().get(0) instanceof StringModel);
+
+    }
+
+    @Test
+    public void testSimpleDeser() throws Exception {
+        AbstractModel model = new StringModel();
+        model.setValue("fdfdfdf");
+        mapper.addMixIn(AbstractModel.class, ValueMixin.class);
+        String json = mapper.writeValueAsString(model);
+        System.out.println(json) ;
+        AbstractModel abstractModel = mapper.readValue(json, AbstractModel.class);
+
 
     }
 }
