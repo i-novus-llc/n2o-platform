@@ -80,7 +80,6 @@ public class JaxRsServerAutoConfiguration {
         mapper.registerModule(new JavaTimeModule());
         mapper.setDateFormat(new ISO8601DateFormat());
         if(types != null ) {
-            mapper.disableDefaultTyping();
             types.forEach(mapper::registerSubtypes);
         }
         return mapper;

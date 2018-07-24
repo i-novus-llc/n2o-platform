@@ -4,8 +4,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import net.n2oapp.platform.jaxrs.example.api.SomeCriteria;
-import net.n2oapp.platform.jaxrs.example.api.SomeModel;
 import org.springframework.data.domain.Page;
 
 import javax.validation.Valid;
@@ -26,6 +24,12 @@ public interface SomeRest {
     @ApiOperation("Найти страницу моделей по критериям поиска")
     @ApiResponse(code = 200, message = "Страница моделей")
     Page<SomeModel> search(@BeanParam SomeCriteria criteria);
+
+    @GET
+    @Path("/search/model")
+    @ApiOperation("Поиск абстрактной модели")
+    @ApiResponse(code = 200, message = "Страница моделей")
+    Page<AbstractModel> searchModel(@BeanParam SomeCriteria criteria);
 
     @GET
     @Path("/list")

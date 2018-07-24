@@ -6,8 +6,10 @@ import net.n2oapp.platform.jaxrs.autoconfigure.JaxRsClientAutoConfiguration;
 import net.n2oapp.platform.jaxrs.example.api.SomeCriteria;
 import net.n2oapp.platform.jaxrs.example.api.SomeModel;
 import net.n2oapp.platform.jaxrs.example.api.SomeRest;
+import net.n2oapp.platform.jaxrs.example.api.StringModel;
 import net.n2oapp.platform.jaxrs.example.impl.SomeRestImpl;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,4 +133,9 @@ public class JaxRsClientTest {
         }
     }
 
+    @Test
+    public void testAbstractModel() throws Exception {
+        Assert.assertTrue(client.searchModel(new SomeCriteria()).getContent().get(0) instanceof StringModel);
+
+    }
 }
