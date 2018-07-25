@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleAbstractTypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -41,28 +40,6 @@ public class SpringDataModule extends SimpleModule {
         this.addSerializer(new SortOrderSerializer());
         this.addDeserializer(Sort.class, new SortDeserializer());
         this.setMixInAnnotation(Page.class, PageMixin.class);
-    }
-
-    static class PageSerializer extends StdSerializer<Page> {
-
-        PageSerializer() {
-            super(Page.class);
-        }
-
-        @Override
-        public void serialize(Page value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            gen.writeStartObject();
-            gen.writeObjectField(CONTENT, value.getContent());
-            gen.writeNumberField(TOTAL_ELEMENTS, value.getTotalElements());
-            if (value.getSort() != null)
-                gen.writeObjectField(SORT, value.getSort());
-            gen.writeEndObject();
-        }
-
-        @Override
-        public void serializeWithType(Page value, JsonGenerator gen, SerializerProvider serializers, TypeSerializer typeSer) throws IOException {
-            super.serializeWithType(value, gen, serializers, typeSer);
-        }
     }
 
     static class SortOrderSerializer extends StdSerializer<Sort.Order> {
