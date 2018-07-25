@@ -3,7 +3,6 @@ package net.n2oapp.platform.jaxrs.autoconfigure;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
@@ -45,13 +44,13 @@ public class JaxRsServerAutoConfiguration {
 
     private final JaxRsProperties jaxRsProperties;
     private final CxfProperties cxfProperties;
-    private List<NamedType> types;
+    private List<MapperPreparer> mapperPreparers;
 
 
-    public JaxRsServerAutoConfiguration(CxfProperties cxfProperties, JaxRsProperties jaxRsProperties, @Autowired(required = false)List<NamedType> types) {
+    public JaxRsServerAutoConfiguration(CxfProperties cxfProperties, JaxRsProperties jaxRsProperties, @Autowired(required = false)List<MapperPreparer> mapperPreparers) {
         this.cxfProperties = cxfProperties;
         this.jaxRsProperties = jaxRsProperties;
-        this.types = types;
+        this.mapperPreparers = mapperPreparers;
     }
 
     @Bean("swagger2Feature")
@@ -79,8 +78,8 @@ public class JaxRsServerAutoConfiguration {
         mapper.registerModule(new SpringDataModule());
         mapper.registerModule(new JavaTimeModule());
         mapper.setDateFormat(new ISO8601DateFormat());
-        if(types != null ) {
-            types.forEach(mapper::registerSubtypes);
+        if(mapperPreparers != null) {
+            mapperPreparers.forEach(preparer -> preparer.prepare(mapper));
         }
         return mapper;
     }

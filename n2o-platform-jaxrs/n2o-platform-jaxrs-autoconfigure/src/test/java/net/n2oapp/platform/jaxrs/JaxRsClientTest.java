@@ -1,9 +1,8 @@
 package net.n2oapp.platform.jaxrs;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.n2oapp.platform.i18n.UserException;
-import net.n2oapp.platform.jaxrs.autoconfigure.EnableJaxRsProxyClient;
-import net.n2oapp.platform.jaxrs.autoconfigure.JaxRsClientAutoConfiguration;
 import net.n2oapp.platform.jaxrs.example.api.*;
 import net.n2oapp.platform.jaxrs.example.impl.SomeRestImpl;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -14,7 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -35,6 +37,23 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 @SpringBootTest(classes = JaxRsClientTest.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
         properties = {"server.port=9876"})
 public class JaxRsClientTest {
+
+    @Configuration
+    public static class JaxRsClientTestConfig {
+        @Bean
+        public MapperPreparer mapperPreparer() {
+            return new MapperPreparer() {
+                @Override
+                public void prepare(ObjectMapper mapper) {
+                    mapper.addMixIn(AbstractModel.class, ValueMixin.class);
+                    mapper.writerFor(new TypeReference<PageImpl<AbstractModel>>() {
+                    });
+                }
+            };
+        }
+
+    }
+
 
     @Autowired
     @Qualifier("someRestJaxRsProxyClient")//в контексте теста есть 2 бина SomeRest: SomeRestImpl и прокси клиент
@@ -137,20 +156,9 @@ public class JaxRsClientTest {
 
     @Test
     public void testAbstractModel() throws Exception {
-        mapper.addMixIn(AbstractModel.class, ValueMixin.class);
+
         Assert.assertTrue(client.searchModel(new SomeCriteria()).getContent().get(0) instanceof StringModel);
 
     }
 
-    @Test
-    public void testSimpleDeser() throws Exception {
-        AbstractModel model = new StringModel();
-        model.setValue("fdfdfdf");
-        mapper.addMixIn(AbstractModel.class, ValueMixin.class);
-        String json = mapper.writeValueAsString(model);
-        System.out.println(json) ;
-        AbstractModel abstractModel = mapper.readValue(json, AbstractModel.class);
-
-
-    }
 }
