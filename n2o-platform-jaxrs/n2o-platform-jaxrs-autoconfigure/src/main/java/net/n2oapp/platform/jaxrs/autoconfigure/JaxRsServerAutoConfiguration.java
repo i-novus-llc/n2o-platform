@@ -44,13 +44,13 @@ public class JaxRsServerAutoConfiguration {
 
     private final JaxRsProperties jaxRsProperties;
     private final CxfProperties cxfProperties;
-    private List<MapperPreparer> mapperPreparers;
+    private List<MapperConfigurer> mapperConfigurers;
 
 
-    public JaxRsServerAutoConfiguration(CxfProperties cxfProperties, JaxRsProperties jaxRsProperties, @Autowired(required = false)List<MapperPreparer> mapperPreparers) {
+    public JaxRsServerAutoConfiguration(CxfProperties cxfProperties, JaxRsProperties jaxRsProperties, @Autowired(required = false)List<MapperConfigurer> mapperConfigurers) {
         this.cxfProperties = cxfProperties;
         this.jaxRsProperties = jaxRsProperties;
-        this.mapperPreparers = mapperPreparers;
+        this.mapperConfigurers = mapperConfigurers;
     }
 
     @Bean("swagger2Feature")
@@ -78,8 +78,8 @@ public class JaxRsServerAutoConfiguration {
         mapper.registerModule(new SpringDataModule());
         mapper.registerModule(new JavaTimeModule());
         mapper.setDateFormat(new ISO8601DateFormat());
-        if(mapperPreparers != null) {
-            mapperPreparers.forEach(preparer -> preparer.prepare(mapper));
+        if(mapperConfigurers != null) {
+            mapperConfigurers.forEach(preparer -> preparer.configure(mapper));
         }
         return mapper;
     }

@@ -39,6 +39,7 @@ public class RestPage<T> extends PageImpl<T> {
 
     public RestPage(List<T> content) {
         super(content);
+        this.content = content;
     }
 
     public RestPage() {

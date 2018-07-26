@@ -6,7 +6,6 @@ import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.example.api.*;
 import net.n2oapp.platform.jaxrs.example.impl.SomeRestImpl;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +19,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Optional;
@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
@@ -38,36 +38,16 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
         properties = {"server.port=9876"})
 public class JaxRsClientTest {
 
-    @Configuration
-    public static class JaxRsClientTestConfig {
-        @Bean
-        public MapperPreparer mapperPreparer() {
-            return new MapperPreparer() {
-                @Override
-                public void prepare(ObjectMapper mapper) {
-                    mapper.addMixIn(AbstractModel.class, ValueMixin.class);
-                    mapper.writerFor(new TypeReference<PageImpl<AbstractModel>>() {
-                    });
-                }
-            };
-        }
-
-    }
-
 
     @Autowired
     @Qualifier("someRestJaxRsProxyClient")//в контексте теста есть 2 бина SomeRest: SomeRestImpl и прокси клиент
     private SomeRest client;
 
-    @Autowired
-    @Qualifier("cxfObjectMapper")
-    ObjectMapper mapper;
-
     /**
      * Проверка, что REST прокси клиент обрабатывает Pageable параметры и параметры фильтрации.
      */
     @Test
-    public void pagingAndFiltering() throws ParseException {
+    public void pagingAndFiltering() throws Exception {
         SomeCriteria criteria = new SomeCriteria(2, 20);
         criteria.setLikeName("John");
         SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy hh:mm");
@@ -79,6 +59,18 @@ public class JaxRsClientTest {
         assertThat(page.getContent().get(0).getId(), equalTo(40L));
         assertThat(page.getContent().get(0).getName(), equalTo("John"));
         assertThat(page.getContent().get(0).getDate(), equalTo(df.parse("01.01.2018 01:00")));
+        Method[] declaredMethods = page.getClass().getDeclaredMethods();
+        RestPage expectedPage = new RestPage(page.getContent());
+        expectedPage.setTotalElements(page.getTotalElements());
+        StringBuilder expectedStringOfValues = new StringBuilder();
+        StringBuilder actualStringOfValues = new StringBuilder();
+        for (Method method : declaredMethods) {
+            if(method.getName().startsWith("get") && method.getParameterCount() == 0) {
+                expectedStringOfValues.append(method.invoke(expectedPage));
+                actualStringOfValues.append(method.invoke(page));
+            }
+        }
+        assertThat(actualStringOfValues.toString(), equalTo(expectedStringOfValues.toString()));
     }
 
     /**
@@ -154,10 +146,26 @@ public class JaxRsClientTest {
         }
     }
 
+    /**
+     * Проверка сериализации/десериализации Page c абстрактным типом
+     * @throws Exception
+     */
     @Test
-    public void testAbstractModel() throws Exception {
+    public void pageOfAbstractModel() throws Exception {
+       assertTrue(client.searchModel(new SomeCriteria()).getContent().get(0) instanceof StringModel);
 
-        Assert.assertTrue(client.searchModel(new SomeCriteria()).getContent().get(0) instanceof StringModel);
+    }
+
+    @Configuration
+    public static class JaxRsClientTestConfig {
+        @Bean
+        public MapperConfigurer mapperPreparer() {
+            return mapper -> {
+                mapper.addMixIn(AbstractModel.class, ValueMixin.class);
+                mapper.writerFor(new TypeReference<PageImpl<AbstractModel>>() {
+                });
+            };
+        }
 
     }
 
