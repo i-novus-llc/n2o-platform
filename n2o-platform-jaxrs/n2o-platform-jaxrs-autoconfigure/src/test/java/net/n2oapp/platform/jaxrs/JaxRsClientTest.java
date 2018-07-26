@@ -6,6 +6,7 @@ import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.example.api.*;
 import net.n2oapp.platform.jaxrs.example.impl.SomeRestImpl;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,7 +153,7 @@ public class JaxRsClientTest {
      */
     @Test
     public void pageOfAbstractModel() throws Exception {
-       assertTrue(client.searchModel(new SomeCriteria()).getContent().get(0) instanceof StringModel);
+       assertThat(client.searchModel(new SomeCriteria()).getContent().get(0), instanceOf(StringModel.class));
 
     }
 
