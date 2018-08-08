@@ -15,7 +15,7 @@ public class UserException extends RuntimeException {
 
     private transient Object[] args;
 
-    private transient final List<Message> messages;
+    private final transient List<Message> messages;
 
     public UserException(Message message) {
         super(message.getCode());
