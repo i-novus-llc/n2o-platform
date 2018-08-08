@@ -15,11 +15,12 @@ public class UserException extends RuntimeException {
 
     private transient Object[] args;
 
-    private transient List<Message> messages;
+    private transient final List<Message> messages;
 
     public UserException(Message message) {
         super(message.getCode());
         this.args = message.getArgs();
+        this.messages = null;
     }
 
     public UserException(List<Message> messages) {
@@ -31,14 +32,17 @@ public class UserException extends RuntimeException {
     public UserException(Message message, Throwable cause) {
         super(message.getCode(), cause);
         this.args = message.getArgs();
+        this.messages = null;
     }
 
     public UserException(String code) {
         super(code);
+        this.messages = null;
     }
 
     public UserException(String code, Throwable cause) {
         super(code, cause);
+        this.messages = null;
     }
 
     public UserException() {
@@ -72,7 +76,4 @@ public class UserException extends RuntimeException {
         return messages;
     }
 
-    public void setMessages(List<Message> messages) {
-        this.messages = messages;
-    }
 }
