@@ -23,8 +23,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -155,6 +157,23 @@ public class JaxRsClientTest {
     public void pageOfAbstractModel() throws Exception {
        assertThat(client.searchModel(new SomeCriteria()).getContent().get(0), instanceOf(StringModel.class));
 
+    }
+
+    /**
+     * Проверка списка ошибок
+     */
+    @Test
+    public void userExceptionsWithMessageList() {
+        try {
+            client.throwErrors();
+            fail();
+        } catch (Exception e) {
+            assertThat(e, instanceOf(RestException.class));
+            RestException restException = (RestException) e;
+            assertThat(restException.getErrors().size(), equalTo(3));
+            List<String> errorTextList = restException.getErrors().stream().map(RestMessage.Error::getMessage).collect(Collectors.toList());
+            assertThat(errorTextList, anyOf(hasItems("Ошибка пользователя раз", "Ошибка пользователя два", "Другая ошибка пользователя"), hasItems("user.error1", "user.error1", "user.error2")));
+        }
     }
 
     @Configuration
