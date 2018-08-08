@@ -73,4 +73,10 @@ public interface SomeRest {
     @ApiOperation("Удалить запись")
     @ApiResponse(code = 200, message = "Запись удалена")
     void delete(@PathParam("id") Long id);
+
+    @POST
+    @Path("/multipleErrors")
+    @ApiOperation("Список ошибок")
+    void throwErrors();
+
 }

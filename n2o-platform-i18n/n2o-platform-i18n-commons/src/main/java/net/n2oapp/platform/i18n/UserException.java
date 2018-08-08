@@ -3,6 +3,8 @@ package net.n2oapp.platform.i18n;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Исключение, содержащее локализованное сообщение, понятное конечному пользователю.
@@ -13,10 +15,18 @@ public class UserException extends RuntimeException {
 
     private transient Object[] args;
 
+    private transient List<Message> messages;
+
     public UserException(Message message) {
         super(message.getCode());
         this.args = message.getArgs();
     }
+
+    public UserException(List<Message> messages) {
+        super(messages.stream().map(Message::getCode).collect(Collectors.joining(",\n")));
+        this.messages = messages;
+    }
+
 
     public UserException(Message message, Throwable cause) {
         super(message.getCode(), cause);
@@ -56,5 +66,13 @@ public class UserException extends RuntimeException {
         list.add(argument);
         this.args = list.toArray();
         return this;
+    }
+
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<Message> messages) {
+        this.messages = messages;
     }
 }

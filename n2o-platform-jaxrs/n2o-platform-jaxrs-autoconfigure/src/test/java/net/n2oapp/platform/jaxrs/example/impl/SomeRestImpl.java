@@ -1,5 +1,6 @@
 package net.n2oapp.platform.jaxrs.example.impl;
 
+import net.n2oapp.platform.i18n.Message;
 import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.example.api.*;
 import org.springframework.data.domain.Page;
@@ -7,6 +8,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.BeanParam;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -60,6 +63,15 @@ public class SomeRestImpl implements SomeRest {
     @Override
     public void delete(Long id) {
 
+    }
+
+    @Override
+    public void throwErrors() {
+        List<Message> messages  = new ArrayList<>(3);
+        messages.add(new Message("user.error1", "раз"));
+        messages.add(new Message("user.error1", "два"));
+        messages.add( new Message("user.error2"));
+        throw new UserException(messages);
     }
 
     private List<SomeModel> findAll(SomeCriteria criteria) {
