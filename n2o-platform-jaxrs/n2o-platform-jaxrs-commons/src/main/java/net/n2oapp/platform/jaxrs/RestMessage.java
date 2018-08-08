@@ -36,6 +36,10 @@ public class RestMessage implements Serializable {
             this.message = message;
         }
 
+        public Error(String message) {
+            this(null, message);
+        }
+
         public String getField() {
             return field;
         }
