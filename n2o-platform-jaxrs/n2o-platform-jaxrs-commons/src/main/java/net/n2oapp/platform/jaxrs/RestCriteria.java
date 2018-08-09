@@ -68,7 +68,6 @@ public class RestCriteria implements Pageable {
         if (pageNumber < FIRST_PAGE_NUMBER) {
             throw new IllegalArgumentException("Page index must not be less than zero!");
         } else {
-
             this.pageNumber = pageNumber;
         }
     }
