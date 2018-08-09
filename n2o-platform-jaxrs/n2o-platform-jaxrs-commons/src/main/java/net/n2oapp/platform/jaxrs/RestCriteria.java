@@ -32,14 +32,8 @@ public class RestCriteria implements Pageable {
     }
 
     public RestCriteria(int pageNumber, int pageSize) {
-        if (pageNumber < FIRST_PAGE_NUMBER) {
-            throw new IllegalArgumentException("Page index must not be less than zero!");
-        } else if (pageSize < MIN_PAGE_SIZE) {
-            throw new IllegalArgumentException("Page size must not be less than one!");
-        } else {
-            this.pageNumber = pageNumber;
-            this.pageSize = pageSize;
-        }
+        this.setPageNumber(pageNumber);
+        this.setPageSize(pageSize);
     }
 
     @Override
@@ -71,11 +65,20 @@ public class RestCriteria implements Pageable {
     }
 
     public void setPageNumber(int pageNumber) {
-        this.pageNumber = pageNumber;
+        if (pageNumber < FIRST_PAGE_NUMBER) {
+            throw new IllegalArgumentException("Page index must not be less than zero!");
+        } else {
+
+            this.pageNumber = pageNumber;
+        }
     }
 
     public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
+        if (pageSize < MIN_PAGE_SIZE) {
+            throw new IllegalArgumentException("Page size must not be less than one!");
+        } else {
+            this.pageSize = pageSize;
+        }
     }
 
     @JsonIgnore
