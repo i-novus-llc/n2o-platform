@@ -60,11 +60,11 @@ public class EmbeddedPgTest {
 [source,java]
 ----
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = Application.class,
+@SpringBootTest(classes = <YourSpringBootMainClass>.class,
         properties = {
                 "cxf.jaxrs.client.classes-scan=true",
                 "cxf.jaxrs.client.classes-scan-packages=<your.package>",
-                "cxf.jaxrs.client.address=http://localhost:${server.port}/test/api",
+                "cxf.jaxrs.client.address=http://localhost:${server.port}/<your.rest.path>",
         },
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @DefinePort
