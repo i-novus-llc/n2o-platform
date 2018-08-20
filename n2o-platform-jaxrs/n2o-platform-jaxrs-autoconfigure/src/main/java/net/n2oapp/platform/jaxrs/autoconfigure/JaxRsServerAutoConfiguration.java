@@ -112,13 +112,17 @@ public class JaxRsServerAutoConfiguration {
     @Bean
     @ConditionalOnProperty(prefix="jaxrs", name="log-in", matchIfMissing = true)
     LoggingInInterceptor loggingInInterceptor() {
-        return new AnnotatedLoggingInInterceptor();
+        AnnotatedLoggingInInterceptor loggingInInterceptor = new AnnotatedLoggingInInterceptor();
+        loggingInInterceptor.setLimit(-1);             // no limit
+        return loggingInInterceptor;
     }
 
     @Bean
     @ConditionalOnProperty(prefix="jaxrs", name="log-out", matchIfMissing = true)
     LoggingOutInterceptor loggingOutInterceptor() {
-        return new AnnotatedLoggingOutInterceptor();
+        LoggingOutInterceptor loggingOutInterceptor = new AnnotatedLoggingOutInterceptor();
+        loggingOutInterceptor.setLimit(-1);             // no limit
+        return loggingOutInterceptor;
     }
 
     @Bean
