@@ -28,6 +28,7 @@
         <module>n2o-platform-jaxrs</module>
         <module>n2o-platform-initializr</module>
         <module>n2o-platform-test</module>
+        <module>n2o-platform-actuator</module>
     </modules>
 
     <build>
