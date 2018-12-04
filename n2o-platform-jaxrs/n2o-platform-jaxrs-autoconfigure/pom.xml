@@ -116,6 +116,12 @@
             <artifactId>n2o-platform-i18n-autoconfigure</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>2.1</version>
+        </dependency>
         <!-- /TEST -->
 
     </dependencies>
