@@ -3,7 +3,7 @@
     <parent>
         <artifactId>n2o-platform-actuator</artifactId>
         <groupId>net.n2oapp.platform</groupId>
-        <version>1.6-SNAPSHOT</version>
+        <version>2.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -26,6 +26,12 @@
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>

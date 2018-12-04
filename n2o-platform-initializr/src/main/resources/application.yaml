@@ -35,8 +35,8 @@ initializr:
       default: true
       action: /starter.zip
   bootVersions:
-    - name: 1.5.7
-      id: 1.5.7.RELEASE
+    - name: 2.1.1
+      id: 2.1.1.RELEASE
   dependencies:
     - name: N2O
       content:
