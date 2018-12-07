@@ -3,14 +3,12 @@ package net.n2oapp.platform.actuate.autoconfigure;
 import net.n2oapp.platform.actuate.health.KafkaHealthIndicator;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.*;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
-import org.springframework.kafka.test.rule.KafkaEmbedded;
 import org.springframework.util.SocketUtils;
 
 import java.util.HashMap;
@@ -21,19 +19,14 @@ import java.util.Map;
  * @since 06.09.2018
  */
 public class KafkaHealthIndicatorTest {
-    private EmbeddedKafkaRule kafkaEmbedded;
-    private KafkaTemplate kafkaTemplate;
+    @ClassRule
+    public static EmbeddedKafkaRule kafkaEmbedded = new EmbeddedKafkaRule(1);
 
-    @After
-    public void shutdownKafka() throws Exception {
-        if (this.kafkaEmbedded != null) {
-            this.kafkaEmbedded.after();
-        }
-    }
+    private KafkaTemplate kafkaTemplate;
 
     @Test
     public void kafkaIsUp() throws Exception {
-        startKafka();
+        initKafkaTemplate(this.kafkaEmbedded.getEmbeddedKafka().getBrokersAsString());
 
         KafkaHealthIndicator healthIndicator = new KafkaHealthIndicator(this.kafkaTemplate);
         Health health = healthIndicator.health();
@@ -49,12 +42,6 @@ public class KafkaHealthIndicatorTest {
         Health health = healthIndicator.health();
 
         assert health.getStatus() == Status.DOWN;
-    }
-
-    private void startKafka() throws Exception {
-        this.kafkaEmbedded = new KafkaEmbedded(1, true);
-        this.kafkaEmbedded.before();
-        initKafkaTemplate(this.kafkaEmbedded.getEmbeddedKafka().getBrokersAsString());
     }
 
     private void initKafkaTemplate(String bootstrapServers) {
