@@ -83,13 +83,11 @@
         <dependency>
             <groupId>javax.xml.ws</groupId>
             <artifactId>jaxws-api</artifactId>
-            <version>2.3.1</version>
         </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.4</version>
         </dependency>
 
         <!-- TEST -->
@@ -115,12 +113,6 @@
             <groupId>net.n2oapp.platform</groupId>
             <artifactId>n2o-platform-i18n-autoconfigure</artifactId>
             <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-            <version>2.1</version>
         </dependency>
         <!-- /TEST -->
 

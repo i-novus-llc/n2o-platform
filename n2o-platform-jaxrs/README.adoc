@@ -193,15 +193,11 @@ throw new UserException("example.code")
 <dependency>
     <groupId>javax.ws.rs</groupId>
     <artifactId>javax.ws.rs-api</artifactId>
-    <!--В будущем версии будут в BOM-->
-    <version>2.0.1</version>
 </dependency>
 
 <dependency>
     <groupId>io.swagger</groupId>
     <artifactId>swagger-annotations</artifactId>
-    <!--В будущем версии будут в BOM-->
-    <version>1.5.12</version>
 </dependency>
 ----
 

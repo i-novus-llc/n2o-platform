@@ -31,8 +31,7 @@ public class SpringDataModule extends SimpleModule {
     static final String TOTAL_ELEMENTS = "totalElements";
     static final String SORT = "sort";
 
-    public SpringDataModule()
-    {
+    public SpringDataModule() {
         super(PackageVersion.VERSION);
         SimpleAbstractTypeResolver resolver = new SimpleAbstractTypeResolver();
         resolver.addMapping(Pageable.class, RestCriteria.class);
@@ -42,18 +41,22 @@ public class SpringDataModule extends SimpleModule {
         this.setMixInAnnotation(Page.class, PageMixin.class);
     }
 
-    static class SortOrderSerializer extends StdSerializer<Sort.Order> {
+    static class SortOrderSerializer extends StdSerializer<Sort> {
 
         SortOrderSerializer() {
-            super(Sort.Order.class);
+            super(Sort.class);
         }
 
         @Override
-        public void serialize(Sort.Order value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            gen.writeStartObject();
-            gen.writeStringField(PROPERTY, value.getProperty());
-            gen.writeStringField(DIRECTION, value.getDirection().name().toLowerCase());
-            gen.writeEndObject();
+        public void serialize(Sort value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeStartArray();
+            for (Sort.Order order : value) {
+                gen.writeStartObject();
+                gen.writeStringField(PROPERTY, order.getProperty());
+                gen.writeStringField(DIRECTION, order.getDirection().name().toLowerCase());
+                gen.writeEndObject();
+            }
+            gen.writeEndArray();
         }
     }
 
@@ -77,7 +80,7 @@ public class SpringDataModule extends SimpleModule {
 
 
     @JsonDeserialize(as = RestPage.class)
-    @JsonIgnoreProperties({"last", "number", "numberOfElements", "size", "totalPages", "first"})
+    @JsonIgnoreProperties({"last", "number", "numberOfElements", "size", "totalPages", "first", "pageable", "empty"})
     static class PageMixin {
 
 

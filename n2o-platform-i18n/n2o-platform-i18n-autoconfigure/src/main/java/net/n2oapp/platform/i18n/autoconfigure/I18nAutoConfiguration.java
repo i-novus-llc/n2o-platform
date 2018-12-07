@@ -5,6 +5,8 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.context.MessageSourceProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -27,33 +29,36 @@ public class I18nAutoConfiguration {
 
     @Configuration
     @ConditionalOnProperty(prefix = "i18n", name = "global.enabled", matchIfMissing = true)
-    @EnableConfigurationProperties({I18nProperties.class, MessageSourceAutoConfiguration.class})
+    @EnableConfigurationProperties({I18nProperties.class})
     public static class GlobalMessageSourceConfiguration {
         private I18nProperties i18nProperties;
-        private MessageSourceAutoConfiguration messageSourceProperties;
 
-        public GlobalMessageSourceConfiguration(I18nProperties i18nProperties,
-                                     MessageSourceAutoConfiguration messageSourceProperties) {
+        @Bean
+        @ConfigurationProperties(prefix = "spring.messages")
+        public MessageSourceProperties messageSourceProperties() {
+            return new MessageSourceProperties();
+        }
+
+        public GlobalMessageSourceConfiguration(I18nProperties i18nProperties) {
             this.i18nProperties = i18nProperties;
-            this.messageSourceProperties = messageSourceProperties;
         }
 
         @Bean
         MessageSource messageSource() throws IOException {
             ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
             List<String> baseNames = new ArrayList<>();
-            if (StringUtils.hasText(messageSourceProperties.getBasename())) {
+            if (StringUtils.hasText(messageSourceProperties().getBasename())) {
                 baseNames.addAll((StringUtils.commaDelimitedListToSet(
-                        StringUtils.trimAllWhitespace(messageSourceProperties.getBasename()))));
+                        StringUtils.trimAllWhitespace(messageSourceProperties().getBasename()))));
             }
             baseNames.addAll(scanBaseNames(i18nProperties.getGlobal().getPackageName()));
             messageSource.setBasenames(baseNames.toArray(new String[baseNames.size()]));
-            if (messageSourceProperties.getEncoding() != null) {
-                messageSource.setDefaultEncoding(messageSourceProperties.getEncoding().name());
+            if (messageSourceProperties().getEncoding() != null) {
+                messageSource.setDefaultEncoding(messageSourceProperties().getEncoding().name());
             }
-            messageSource.setFallbackToSystemLocale(messageSourceProperties.isFallbackToSystemLocale());
-            messageSource.setCacheSeconds(messageSourceProperties.getCacheSeconds());
-            messageSource.setAlwaysUseMessageFormat(messageSourceProperties.isAlwaysUseMessageFormat());
+            messageSource.setFallbackToSystemLocale(messageSourceProperties().isFallbackToSystemLocale());
+            Optional.ofNullable(messageSourceProperties().getCacheDuration()).ifPresent(duration -> messageSource.setCacheSeconds((int)duration.toSeconds()));
+            messageSource.setAlwaysUseMessageFormat(messageSourceProperties().isAlwaysUseMessageFormat());
             return messageSource;
         }
 

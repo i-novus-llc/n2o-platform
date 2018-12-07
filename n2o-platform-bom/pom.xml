@@ -10,18 +10,19 @@
     <parent>
         <groupId>net.n2oapp.parent</groupId>
         <artifactId>parent</artifactId>
-        <version>2.3</version>
+        <version>3.0</version>
         <relativePath />
     </parent>
 
     <properties>
         <n2o.version>6.1.21</n2o.version>
         <cxf.version>3.2.7</cxf.version>
-        <swagger.version>3.0.17</swagger.version>
-        <swagger-annotations.version>1.5.12</swagger-annotations.version>
+        <swagger.version>3.20.1</swagger.version>
+        <swagger-annotations.version>1.5.21</swagger-annotations.version>
         <jaxrs-api.version>2.1.1</jaxrs-api.version>
-        <modelmapper.version>1.1.0</modelmapper.version>
+        <modelmapper.version>2.3.2</modelmapper.version>
         <commons.version>2.6</commons.version>
+        <spring.cloud.version>Finchley.RELEASE</spring.cloud.version>
     </properties>
 
     <dependencyManagement>
@@ -136,7 +137,7 @@
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>Edgware.RELEASE</version>
+                <version>${spring.cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

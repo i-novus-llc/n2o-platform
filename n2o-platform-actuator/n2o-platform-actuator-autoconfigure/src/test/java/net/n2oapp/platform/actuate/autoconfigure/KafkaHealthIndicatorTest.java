@@ -9,6 +9,7 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.kafka.test.rule.KafkaEmbedded;
 import org.springframework.util.SocketUtils;
 
@@ -20,7 +21,7 @@ import java.util.Map;
  * @since 06.09.2018
  */
 public class KafkaHealthIndicatorTest {
-    private KafkaEmbedded kafkaEmbedded;
+    private EmbeddedKafkaRule kafkaEmbedded;
     private KafkaTemplate kafkaTemplate;
 
     @After
@@ -53,7 +54,7 @@ public class KafkaHealthIndicatorTest {
     private void startKafka() throws Exception {
         this.kafkaEmbedded = new KafkaEmbedded(1, true);
         this.kafkaEmbedded.before();
-        initKafkaTemplate(this.kafkaEmbedded.getBrokersAsString());
+        initKafkaTemplate(this.kafkaEmbedded.getEmbeddedKafka().getBrokersAsString());
     }
 
     private void initKafkaTemplate(String bootstrapServers) {

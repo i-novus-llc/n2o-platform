@@ -13,6 +13,7 @@ import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -41,15 +42,15 @@ public class EmbeddedPgAutoConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(EmbeddedPgAutoConfiguration.class);
 
     @Bean
+    public static EmbeddedDataSourceBeanFactoryPostProcessor embeddedDataSourceBeanFactoryPostProcessor() {
+        return new EmbeddedDataSourceBeanFactoryPostProcessor();
+    }
+
+    @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "test", name = "embedded-pg", havingValue = "true")
     public DataSource dataSource() {
         return new EmbeddedDataSourceFactory().getEmbeddedDatabase();
-    }
-
-    @Bean
-    public static EmbeddedDataSourceBeanFactoryPostProcessor embeddedDataSourceBeanFactoryPostProcessor() {
-        return new EmbeddedDataSourceBeanFactoryPostProcessor();
     }
 
     @Order(Ordered.LOWEST_PRECEDENCE)
@@ -64,7 +65,7 @@ public class EmbeddedPgAutoConfiguration {
             Assert.isInstanceOf(ConfigurableListableBeanFactory.class, registry,
                     "Test Database Auto-configuration can only be "
                             + "used with a ConfigurableListableBeanFactory");
-            process(registry, (ConfigurableListableBeanFactory) registry);
+            process(registry, (DefaultListableBeanFactory) registry);
         }
 
         @Override
@@ -73,7 +74,8 @@ public class EmbeddedPgAutoConfiguration {
         }
 
         private void process(BeanDefinitionRegistry registry,
-                             ConfigurableListableBeanFactory beanFactory) {
+                             DefaultListableBeanFactory beanFactory) {
+            beanFactory.setAllowBeanDefinitionOverriding(true);
             BeanDefinitionHolder holder = getDataSourceBeanDefinition(beanFactory);
             if (holder != null) {
                 String beanName = holder.getBeanName();
@@ -153,9 +155,9 @@ public class EmbeddedPgAutoConfiguration {
 
     private static class EmbeddedDataSourceFactory {
 
-        public DataSource getEmbeddedDatabase(){
+        public DataSource getEmbeddedDatabase() {
             int port = PortFinder.getPort();
-            String dbName = "db_"+port;
+            String dbName = "db_" + port;
 
             EmbeddedPostgres pg = null;
             try {
