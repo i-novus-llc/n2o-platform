@@ -12,7 +12,7 @@ initializr:
   description:
     value:
   javaVersions:
-    - id: 1.8
+    - id: 11
       default: true
   languages:
     - name: Java
