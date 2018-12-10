@@ -77,9 +77,7 @@ public class SpringDataModule extends SimpleModule {
 
 
     @JsonDeserialize(as = RestPage.class)
-    @JsonIgnoreProperties({"last", "number", "numberOfElements", "size", "totalPages", "first"})
+    @JsonIgnoreProperties({"last", "number", "numberOfElements", "size", "totalPages", "first", "pageable", "empty"})
     static class PageMixin {
-
-
     }
 }

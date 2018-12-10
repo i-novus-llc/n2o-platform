@@ -1,6 +1,5 @@
 package net.n2oapp.platform.jaxrs;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,17 +16,11 @@ public class RestPage<T> extends PageImpl<T> {
     private long totalElements;
     private List<T> content;
     private Sort sort;
-    @JsonIgnore
     private int number;
-    @JsonIgnore
     private int numberOfElements;
-    @JsonIgnore
     private int size;
-    @JsonIgnore
     private int totalPages;
-    @JsonIgnore
     private boolean first;
-    @JsonIgnore
     private boolean last;
 
     public RestPage(List<T> content, Pageable pageable, long total) {
