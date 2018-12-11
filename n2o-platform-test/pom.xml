@@ -14,9 +14,7 @@
         <relativePath>../n2o-platform-parent</relativePath>
     </parent>
 
-
     <artifactId>n2o-platform-test</artifactId>
     <packaging>pom</packaging>
-
 
 </project>
