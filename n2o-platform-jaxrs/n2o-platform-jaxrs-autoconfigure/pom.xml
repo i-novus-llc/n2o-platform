@@ -85,11 +85,6 @@
             <artifactId>jaxws-api</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-        </dependency>
-
         <!-- TEST -->
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -112,6 +107,12 @@
         <dependency>
             <groupId>net.n2oapp.platform</groupId>
             <artifactId>n2o-platform-i18n-autoconfigure</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- /TEST -->

@@ -155,24 +155,4 @@ public class JaxRsServerAutoConfiguration {
         return new RestClientExceptionMapper();
     }
 
-//    @Bean
-//    LocalValidatorFactoryBean localValidatorFactoryBean(MessageSource messageSource) {
-//        LocalValidatorFactoryBean localValidatorFactoryBean = new LocalValidatorFactoryBean();
-//        localValidatorFactoryBean.setValidationMessageSource(messageSource);
-//        return localValidatorFactoryBean;
-//    }
-
-
-//    @Bean(name = Bus.DEFAULT_BUS_ID, destroyMethod = "shutdown")
-//    public SpringBus springBus(@Autowired(required = false) Collection<Interceptor<Message>> interceptors) {
-//        SpringBus springBus = new SpringBus();
-//        if (interceptors != null && !interceptors.isEmpty()) {
-//            springBus.getInInterceptors().addAll(interceptors);
-//            springBus.getInFaultInterceptors().addAll(interceptors);
-//            springBus.getOutInterceptors().addAll(interceptors);
-//            springBus.getOutFaultInterceptors().addAll(interceptors);
-//        }
-//        return springBus;
-//    }
-
 }
