@@ -1,12 +1,10 @@
 package net.n2oapp.platform.jaxrs;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.example.api.*;
 import net.n2oapp.platform.jaxrs.example.impl.SomeRestImpl;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
