@@ -3,6 +3,9 @@ image:https://sonar.i-novus.ru/api/project_badges/measure?project=net.n2oapp.pla
 
 Платформа для создания микросервисов на основе Spring Boot, Spring Cloud, Spring Data, CXF.
 
+= Требования
+Данная версия платформы протестирована с использованием Open JDK 11
+
 = Подключение
 
 Устанавливаем родителький maven артефакт:
@@ -11,7 +14,7 @@ image:https://sonar.i-novus.ru/api/project_badges/measure?project=net.n2oapp.pla
 <parent>
     <groupId>net.n2oapp.platform</groupId>
     <artifactId>n2o-platform-parent</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
 </parent>
 ----
 
@@ -34,7 +37,7 @@ image:https://sonar.i-novus.ru/api/project_badges/measure?project=net.n2oapp.pla
     <dependency>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-platform-bom</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>2.0-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
     </dependency>

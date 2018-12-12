@@ -1,10 +1,9 @@
 package net.n2oapp.platform.actuate.autoconfigure;
 
 import net.n2oapp.platform.actuate.health.KafkaHealthIndicator;
-import org.springframework.boot.actuate.autoconfigure.CompositeHealthIndicatorConfiguration;
-import org.springframework.boot.actuate.autoconfigure.ConditionalOnEnabledHealthIndicator;
-import org.springframework.boot.actuate.autoconfigure.ManagementServerProperties;
-import org.springframework.boot.actuate.autoconfigure.ManagementServerPropertiesAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.health.CompositeHealthIndicatorConfiguration;
+import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
+import org.springframework.boot.actuate.autoconfigure.web.servlet.ServletManagementContextAutoConfiguration;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -13,7 +12,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
 import java.util.Map;
 
@@ -23,23 +27,17 @@ import java.util.Map;
  */
 @Configuration
 @ConditionalOnWebApplication
-@AutoConfigureBefore(ManagementServerPropertiesAutoConfiguration.class)
+@PropertySource("classpath:/META-INF/net/n2oapp/platform/actuate/monitoring.properties")
+@AutoConfigureBefore(ServletManagementContextAutoConfiguration.class)
 public class ActuatorAutoConfiguration {
     static final String ACTUATOR_CONTEXT_PATH = "/monitoring";
 
-    private ManagementServerProperties managementServerProperties;
-
-    @Bean
-    @ConditionalOnMissingBean
-    public ManagementServerProperties managementServerProperties() {
-        if (managementServerProperties == null) {
-            ManagementServerProperties properties = new ManagementServerProperties();
-            properties.setContextPath(ACTUATOR_CONTEXT_PATH);
-            properties.getSecurity().setEnabled(false);
-            managementServerProperties = properties;
+    @Configuration
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public static class MonitoringSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
+        protected void configure(HttpSecurity http) throws Exception {
+            http.antMatcher(ACTUATOR_CONTEXT_PATH + "/**").authorizeRequests().anyRequest().permitAll();
         }
-
-        return managementServerProperties;
     }
 
     @Configuration

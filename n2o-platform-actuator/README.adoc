@@ -1,7 +1,7 @@
 = Возможности
 
 Эта библиотека обеспечивает оптимальную конфигурацию по умолчанию и открывает доступ к мониторингу приложения через Spring Actuator.
-Общая инструкция по использованию Spring Actuator: https://docs.spring.io/spring-boot/docs/1.5.7.RELEASE//reference/htmlsingle/
+Общая инструкция по использованию Spring Actuator: https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/
 
 * Сервисы актуатора доступны без авторизации, предполагается разграничение доступа средствами окружения
 * Контекст сервисов актуатора: `/monitoring`
@@ -11,4 +11,4 @@
 = Подключение
 
 Актуатор подключен по умолчанию в n2o-platform-parent.
-Выключить актуатор можно стандартной настройкой: `endpoints.enabled: false`
+Задать доступные endpoint'ы можно стандартной настройкой: `management.endpoints.web.exposure.include=endpointName`

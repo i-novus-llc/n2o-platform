@@ -50,7 +50,7 @@ public class RestCriteria implements Pageable {
 
     @Override
     @JsonIgnore
-    public int getOffset() {
+    public long getOffset() {
         return this.pageNumber * this.pageSize;
     }
 
@@ -117,4 +117,18 @@ public class RestCriteria implements Pageable {
         return new RestCriteria(FIRST_PAGE_NUMBER, this.getPageSize(), this.getSort());
     }
 
+    @JsonIgnore
+    static Pageable unpaged() {
+        return Pageable.unpaged();
+    }
+
+    @JsonIgnore
+    public boolean isPaged() {
+        return true;
+    }
+
+    @JsonIgnore
+    public boolean isUnpaged() {
+        return !isPaged();
+    }
 }

@@ -31,20 +31,6 @@
 </dependency>
 ----
 
-В модуль который планируете запускать, добавьте зависимости (в следующих версиях возможно вынесут в стартер n2o-platform-starter-jaxrs-server):
-[source,xml]
-----
-<dependency>
-    <groupId>org.apache.cxf</groupId>
-    <artifactId>cxf-rt-rs-client</artifactId>
-</dependency>
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-web</artifactId>
-</dependency>
-----
-
-
 === Инициализация
 
 Задаёте следующие настройки:
@@ -68,7 +54,7 @@ public interface SomeRest {
 }
 ----
 
-Создайте класс реализующий интерфейс и подключите его к Spring, например, аннотацией `@Controller`:
+Создайте класс реализующий интерфейс и добавьте его в Spring Context как bean, например, аннотацией `@Controller`:
 [source,java]
 ----
 @Controller
@@ -92,8 +78,8 @@ public class SomeRestImpl implements SomeRest {
 Page<SomeModel> search(@BeanParam SomeCriteria criteria);
 ----
 
-Класс `Page` возвращает список записей одной страницы (`getContent`)
-и общее количество записей (`getTotalElements`).
+Класс `Page` возвращает список записей одной страницы (`getContent`), общее количество записей (`getTotalElements`)
+и заданные сортировки.
 
 Для задания сортировок и фильтров используйте классы критериев поиска (`SomeCriteria`), они должны расширять класс `RestCriteria`,
 который в свою очередь является реализацией интерфейса `Pageable`.
@@ -188,21 +174,20 @@ throw new UserException("example.code")
 
 Добавьте в модуль с `api` следующие зависимости:
 
-[source,json]
+[source,xml]
 ----
 <dependency>
-    <groupId>javax.ws.rs</groupId>
-    <artifactId>javax.ws.rs-api</artifactId>
-    <!--В будущем версии будут в BOM-->
-    <version>2.0.1</version>
+    <groupId>net.n2oapp.platform</groupId>
+    <artifactId>n2o-platform-jaxrs-commons</artifactId>
 </dependency>
+----
 
-<dependency>
-    <groupId>io.swagger</groupId>
-    <artifactId>swagger-annotations</artifactId>
-    <!--В будущем версии будут в BOM-->
-    <version>1.5.12</version>
-</dependency>
+Для совместимости со старыми версиями платформы `api`-модуль нужно собирать с указанием:
+[source,xml]
+----
+<properties>
+    <java.version>1.8</java.version>
+</properties>
 ----
 
 Используйте на рест сервисах аннотации `@Api*` из пакета `io.swagger.annotations`.
@@ -245,6 +230,7 @@ image::images\README-f585f.png[]
   <artifactId>n2o-platform-starter-jaxrs-client</artifactId>
 </dependency>
 ----
+Также вам понадобится зависимость от `api`-модуля, где лежат ваши интерфейсы сервисов с аннотациями jaxrs.
 
 === Поиск JaxRs интерфейсов
 
@@ -257,6 +243,17 @@ cxf.jaxrs.client.classes-scan=true
 cxf.jaxrs.client.classes-scan-packages=net.n2oapp.microservice.example
 #Адрес, где развернуты REST сервисы
 cxf.jaxrs.client.address=http://localhost:8080/api
+----
+Добавьте аннотацию `@EnableJaxRsProxyClient` в конфигурацию Spring:
+[source,java]
+----
+import net.n2oapp.platform.jaxrs.autoconfigure.EnableJaxRsProxyClient;
+...
+@Configuration
+@EnableJaxRsProxyClient
+public class ExampleConfiguration {
+  ...
+}
 ----
 
 В этом случае сработает автоконфигурация `JaxRsClientAutoConfiguration` и создадутся прокси клиенты под каждый найденный интерфейс.
