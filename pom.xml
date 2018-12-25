@@ -11,7 +11,7 @@
     <parent>
         <groupId>net.n2oapp.parent</groupId>
         <artifactId>parent</artifactId>
-        <version>3.0</version>
+        <version>5.0</version>
         <relativePath/>
     </parent>
 
@@ -31,29 +31,6 @@
         <module>n2o-platform-test</module>
         <module>n2o-platform-actuator</module>
     </modules>
-
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>**/*.properties</include>
-                    <include>**/*.yaml</include>
-                    <include>**/*.adoc</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>false</filtering>
-                <excludes>
-                    <exclude>**/*.properties</exclude>
-                    <exclude>**/*.yaml</exclude>
-                    <exclude>**/*.adoc</exclude>
-                </excludes>
-            </resource>
-        </resources>
-    </build>
 
 </project>
 
