@@ -16,4 +16,5 @@
         <module>n2o-platform-i18n-commons</module>
         <module>n2o-platform-i18n-autoconfigure</module>
     </modules>
+
 </project>
