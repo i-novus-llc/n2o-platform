@@ -17,13 +17,11 @@
         <dependency>
             <groupId>net.n2oapp.platform</groupId>
             <artifactId>n2o-platform-jaxrs-autoconfigure</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>net.n2oapp.platform</groupId>
             <artifactId>n2o-platform-i18n-autoconfigure</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>

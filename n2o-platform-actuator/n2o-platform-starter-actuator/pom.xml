@@ -17,7 +17,6 @@
         <dependency>
             <groupId>net.n2oapp.platform</groupId>
             <artifactId>n2o-platform-actuator-autoconfigure</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
