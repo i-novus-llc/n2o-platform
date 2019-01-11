@@ -34,6 +34,7 @@ public class ActuatorAutoConfiguration {
 
     @Configuration
     @Order(Ordered.HIGHEST_PRECEDENCE)
+    @ConditionalOnClass(WebSecurityConfigurerAdapter.class)
     public static class MonitoringSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
         protected void configure(HttpSecurity http) throws Exception {
             http.antMatcher(ACTUATOR_CONTEXT_PATH + "/**").authorizeRequests().anyRequest().permitAll();
