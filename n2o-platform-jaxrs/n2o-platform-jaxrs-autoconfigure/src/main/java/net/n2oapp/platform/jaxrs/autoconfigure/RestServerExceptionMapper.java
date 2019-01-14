@@ -1,5 +1,7 @@
-package net.n2oapp.platform.jaxrs;
+package net.n2oapp.platform.jaxrs.autoconfigure;
 
+import net.n2oapp.platform.jaxrs.RestExceptionMapper;
+import net.n2oapp.platform.jaxrs.RestMessage;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.ws.rs.ext.Provider;

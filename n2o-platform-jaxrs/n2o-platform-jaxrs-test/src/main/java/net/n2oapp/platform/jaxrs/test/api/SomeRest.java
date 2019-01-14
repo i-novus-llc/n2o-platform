@@ -1,4 +1,4 @@
-package net.n2oapp.platform.jaxrs.example.api;
+package net.n2oapp.platform.jaxrs.test.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.Date;
 import java.util.List;
 
 /**

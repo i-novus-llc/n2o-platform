@@ -10,6 +10,7 @@ import java.util.Date;
  */
 public class DateParameterConverter implements TypedParamConverter<Date> {
 
+    public static final String DATE_FORMAT_PATTERN = "EEE MMM dd HH:mm:ss zzz yyyy";
     private String format;
 
     /**

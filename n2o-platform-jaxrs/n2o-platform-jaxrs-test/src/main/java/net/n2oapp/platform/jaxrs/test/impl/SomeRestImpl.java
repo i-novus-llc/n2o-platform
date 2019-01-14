@@ -1,16 +1,15 @@
-package net.n2oapp.platform.jaxrs.example.impl;
+package net.n2oapp.platform.jaxrs.test.impl;
 
 import net.n2oapp.platform.i18n.Message;
 import net.n2oapp.platform.i18n.UserException;
-import net.n2oapp.platform.jaxrs.example.api.*;
+import net.n2oapp.platform.jaxrs.test.api.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Controller;
 
-import javax.ws.rs.BeanParam;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -28,8 +27,8 @@ public class SomeRestImpl implements SomeRest {
     }
 
     @Override
-    public Page<AbstractModel> searchModel( SomeCriteria criteria) {
-        return new PageImpl<AbstractModel>(Collections.singletonList(new StringModel()), criteria, 1);
+    public Page<AbstractModel> searchModel(SomeCriteria criteria) {
+        return new PageImpl<>(Collections.singletonList(new StringModel()), criteria, 1);
     }
 
     @Override

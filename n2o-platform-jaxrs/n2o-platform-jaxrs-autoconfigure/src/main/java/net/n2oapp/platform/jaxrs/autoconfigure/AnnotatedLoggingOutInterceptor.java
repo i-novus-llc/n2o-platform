@@ -1,4 +1,4 @@
-package net.n2oapp.platform.jaxrs;
+package net.n2oapp.platform.jaxrs.autoconfigure;
 
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 

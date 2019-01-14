@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Sort;
 
 import javax.validation.ValidatorFactory;
+import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
@@ -77,7 +78,7 @@ public class JaxRsServerAutoConfiguration {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.registerModule(new SpringDataModule());
         mapper.registerModule(new JavaTimeModule());
-        mapper.setDateFormat(new ISO8601DateFormat());
+        mapper.setDateFormat(new SimpleDateFormat(DateParameterConverter.DATE_FORMAT_PATTERN));
         if(mapperConfigurers != null) {
             mapperConfigurers.forEach(preparer -> preparer.configure(mapper));
         }
@@ -91,7 +92,7 @@ public class JaxRsServerAutoConfiguration {
 
     @Bean
     TypedParamConverter<Date> dateParameterConverter() {
-        return new DateISOParameterConverter();
+        return new DateParameterConverter(DateParameterConverter.DATE_FORMAT_PATTERN);
     }
 
     @Bean

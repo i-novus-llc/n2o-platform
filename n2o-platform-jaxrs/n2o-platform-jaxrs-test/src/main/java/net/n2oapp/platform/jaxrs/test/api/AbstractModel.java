@@ -1,4 +1,4 @@
-package net.n2oapp.platform.jaxrs.example.api;
+package net.n2oapp.platform.jaxrs.test.api;
 
 public abstract class AbstractModel<T> {
 

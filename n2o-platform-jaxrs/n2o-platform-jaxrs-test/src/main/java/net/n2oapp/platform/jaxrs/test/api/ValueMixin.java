@@ -1,4 +1,4 @@
-package net.n2oapp.platform.jaxrs.example.api;
+package net.n2oapp.platform.jaxrs.test.api;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
