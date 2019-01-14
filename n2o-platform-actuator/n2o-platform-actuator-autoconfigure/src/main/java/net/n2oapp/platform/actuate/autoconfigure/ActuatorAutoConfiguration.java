@@ -30,7 +30,7 @@ import java.util.Map;
 @PropertySource("classpath:/META-INF/net/n2oapp/platform/actuate/monitoring.properties")
 @AutoConfigureBefore(ServletManagementContextAutoConfiguration.class)
 public class ActuatorAutoConfiguration {
-    static final String ACTUATOR_CONTEXT_PATH = "/monitoring";
+    public static final String ACTUATOR_CONTEXT_PATH = "/monitoring";
 
     @Configuration
     @Order(Ordered.HIGHEST_PRECEDENCE)

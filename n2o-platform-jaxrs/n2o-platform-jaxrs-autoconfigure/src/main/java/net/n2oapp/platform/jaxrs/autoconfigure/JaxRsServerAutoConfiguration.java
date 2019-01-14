@@ -44,13 +44,11 @@ public class JaxRsServerAutoConfiguration {
 
     private final JaxRsProperties jaxRsProperties;
     private final CxfProperties cxfProperties;
-    private List<MapperConfigurer> mapperConfigurers;
 
 
-    public JaxRsServerAutoConfiguration(CxfProperties cxfProperties, JaxRsProperties jaxRsProperties, @Autowired(required = false)List<MapperConfigurer> mapperConfigurers) {
+    public JaxRsServerAutoConfiguration(CxfProperties cxfProperties, JaxRsProperties jaxRsProperties) {
         this.cxfProperties = cxfProperties;
         this.jaxRsProperties = jaxRsProperties;
-        this.mapperConfigurers = mapperConfigurers;
     }
 
     @Bean("swagger2Feature")
@@ -66,47 +64,6 @@ public class JaxRsServerAutoConfiguration {
 
         result.setResourcePackage(jaxRsProperties.getSwagger().getResourcePackage());
         return result;
-    }
-
-    @Bean("cxfObjectMapper")
-    ObjectMapper cxfObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        mapper.disable(SerializationFeature.WRITE_NULL_MAP_VALUES);
-        mapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        mapper.registerModule(new SpringDataModule());
-        mapper.registerModule(new JavaTimeModule());
-        mapper.setDateFormat(new ISO8601DateFormat());
-        if(mapperConfigurers != null) {
-            mapperConfigurers.forEach(preparer -> preparer.configure(mapper));
-        }
-        return mapper;
-    }
-
-    @Bean
-    JacksonJsonProvider jsonProvider(@Qualifier("cxfObjectMapper") ObjectMapper cxfObjectMapper) {
-        return new JacksonJsonProvider(cxfObjectMapper, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
-    }
-
-    @Bean
-    TypedParamConverter<Date> dateParameterConverter() {
-        return new DateISOParameterConverter();
-    }
-
-    @Bean
-    TypedParamConverter<Sort.Order> sortParameterConverter() {
-        return new SortParameterConverter();
-    }
-
-    @Bean
-    TypedParamConverter<ZonedDateTime> zonedDateTimeTypedParamConverter() {
-        return new ZonedDateTimeParamConverter();
-    }
-
-    @Bean
-    TypedParametersProvider typedParametersProvider(Set<TypedParamConverter<?>> converters) {
-        return new TypedParametersProvider(converters);
     }
 
     @Bean
@@ -149,10 +106,4 @@ public class JaxRsServerAutoConfiguration {
     MessageExceptionMapper messageExceptionMapper(Messages messages) {
         return new MessageExceptionMapper(messages);
     }
-
-    @Bean
-    RestClientExceptionMapper restClientExceptionMapper() {
-        return new RestClientExceptionMapper();
-    }
-
 }
