@@ -1,3 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+net.n2oapp.platform.jaxrs.autoconfigure.JaxRsCommonAutoConfiguration,\
 net.n2oapp.platform.jaxrs.autoconfigure.JaxRsServerAutoConfiguration,\
 net.n2oapp.platform.jaxrs.autoconfigure.JaxRsClientAutoConfiguration

@@ -1,7 +1,7 @@
 package net.n2oapp.platform.jaxrs;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-import net.n2oapp.platform.jaxrs.example.api.SomeModel;
+import net.n2oapp.platform.jaxrs.api.SomeModel;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,15 +12,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
-import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.*;
 
 @SpringBootApplication
 @RunWith(SpringRunner.class)
@@ -77,7 +77,7 @@ public class JaxRsServerTest {
     @Test
     public void sort() {
         Map<?, ?> page = client().path("example").path("search")
-                .query("sort", "name,asc", "id,desc")
+                .query("sort", "name: asc", "id: desc")
                 .get(Map.class);
         assertThat(page.get("sort"), notNullValue());
         List<Map<String, Object>> sort = (List<Map<String, Object>>) page.get("sort");
@@ -105,7 +105,7 @@ public class JaxRsServerTest {
     @Test
     public void sortResult() {
         Map<?, ?> page = client().path("example").path("search")
-                .query("sort", "name,asc").get(Map.class);
+                .query("sort", "name: asc").get(Map.class);
         assertThat(page.size(), equalTo(3));
         assertThat(page.get("sort"), instanceOf(List.class));
         List<Map<String, Object>> sort = (List<Map<String, Object>>) page.get("sort");
@@ -149,11 +149,11 @@ public class JaxRsServerTest {
     public void filters() {
         Map<?, ?> page = client().path("example").path("search")
                 .query("name", "John")
-                .query("date", "2018-03-01T08:00:00Z")
+                .query("date", "2018-03-01T08:00:00.000+0000")
                 .get(Map.class);
         List<Map<String, Object>> content = (List<Map<String, Object>>) page.get("content");
         assertThat(content.get(0).get("name"), equalTo("John"));
-        assertThat(content.get(0).get("date"), equalTo("2018-03-01T08:00:00Z"));
+        assertThat(content.get(0).get("date"), equalTo("2018-03-01T08:00:00.000+0000"));
     }
 
     /**

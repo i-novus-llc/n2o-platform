@@ -1,4 +1,4 @@
-package net.n2oapp.platform.jaxrs.example.api;
+package net.n2oapp.platform.jaxrs.api;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -10,6 +10,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = StringModel.class, name = "stringModel")
 })
-public abstract class ValueMixin {
+public interface ValueMixin {
 
 }

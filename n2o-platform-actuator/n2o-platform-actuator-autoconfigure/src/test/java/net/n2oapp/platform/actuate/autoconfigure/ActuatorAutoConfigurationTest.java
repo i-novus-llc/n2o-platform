@@ -3,6 +3,7 @@ package net.n2oapp.platform.actuate.autoconfigure;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -22,7 +23,7 @@ public class ActuatorAutoConfigurationTest {
     @Test
     public void testActuator() {
         ActuatorHealthResponse response = restTemplate.getForObject(ActuatorAutoConfiguration.ACTUATOR_CONTEXT_PATH + "/health", ActuatorHealthResponse.class);
-        assert response.getStatus().equals("UP");
+        assert response.getStatus().equals(Status.UP.getCode());
     }
 
     private static class ActuatorHealthResponse {
