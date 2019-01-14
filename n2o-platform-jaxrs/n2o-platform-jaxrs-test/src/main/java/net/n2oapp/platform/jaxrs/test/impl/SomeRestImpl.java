@@ -9,7 +9,6 @@ import org.springframework.stereotype.Controller;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -66,10 +65,10 @@ public class SomeRestImpl implements SomeRest {
 
     @Override
     public void throwErrors() {
-        List<Message> messages  = new ArrayList<>(3);
+        List<Message> messages = new ArrayList<>(3);
         messages.add(new Message("user.error1", "раз"));
         messages.add(new Message("user.error1", "два"));
-        messages.add( new Message("user.error2"));
+        messages.add(new Message("user.error2"));
         throw new UserException(messages);
     }
 
