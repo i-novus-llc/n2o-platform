@@ -98,11 +98,11 @@
             <artifactId>jaxws-api</artifactId>
         </dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>net.n2oapp.platform</groupId>-->
-            <!--<artifactId>n2o-platform-jaxrs-autoconfigure</artifactId>-->
-            <!--<optional>true</optional>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>net.n2oapp.platform</groupId>
+            <artifactId>n2o-platform-jaxrs-autoconfigure</artifactId>
+            <optional>true</optional>
+        </dependency>
 
         <!-- TEST -->
         <dependency>
