@@ -2,8 +2,8 @@ package net.n2oapp.platform.jaxrs;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import net.n2oapp.platform.i18n.UserException;
-import net.n2oapp.platform.jaxrs.test.api.*;
-import net.n2oapp.platform.jaxrs.test.impl.SomeRestImpl;
+import net.n2oapp.platform.jaxrs.api.*;
+import net.n2oapp.platform.jaxrs.impl.SomeRestImpl;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 

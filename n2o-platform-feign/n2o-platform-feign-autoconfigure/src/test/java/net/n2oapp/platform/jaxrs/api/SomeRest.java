@@ -1,4 +1,4 @@
-package net.n2oapp.platform.jaxrs.test.api;
+package net.n2oapp.platform.jaxrs.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

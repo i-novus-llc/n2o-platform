@@ -17,6 +17,5 @@
         <module>n2o-platform-jaxrs-autoconfigure</module>
         <module>n2o-platform-starter-jaxrs-server</module>
         <module>n2o-platform-starter-jaxrs-client</module>
-        <module>n2o-platform-jaxrs-test</module>
     </modules>
 </project>

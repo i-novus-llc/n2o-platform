@@ -1,8 +1,8 @@
-package net.n2oapp.platform.jaxrs.test.impl;
+package net.n2oapp.platform.jaxrs.impl;
 
 import net.n2oapp.platform.i18n.Message;
 import net.n2oapp.platform.i18n.UserException;
-import net.n2oapp.platform.jaxrs.test.api.*;
+import net.n2oapp.platform.jaxrs.api.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Controller;

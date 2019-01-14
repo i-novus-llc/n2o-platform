@@ -1,4 +1,4 @@
-package net.n2oapp.platform.jaxrs.test.api;
+package net.n2oapp.platform.jaxrs.api;
 
 import lombok.Getter;
 import lombok.Setter;

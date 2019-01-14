@@ -115,12 +115,6 @@
             <artifactId>lombok</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>net.n2oapp.platform</groupId>
-            <artifactId>n2o-platform-jaxrs-test</artifactId>
-            <scope>test</scope>
-        </dependency>
         <!-- /TEST -->
 
     </dependencies>
