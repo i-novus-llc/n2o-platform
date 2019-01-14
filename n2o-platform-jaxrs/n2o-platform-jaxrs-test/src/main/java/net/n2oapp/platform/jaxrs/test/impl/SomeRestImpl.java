@@ -61,7 +61,7 @@ public class SomeRestImpl implements SomeRest {
 
     @Override
     public void delete(Long id) {
-
+        // заглушка
     }
 
     @Override
