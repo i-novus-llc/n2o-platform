@@ -1,7 +1,7 @@
 package net.n2oapp.platform.jaxrs;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-import net.n2oapp.platform.jaxrs.example.api.SomeModel;
+import net.n2oapp.platform.jaxrs.test.api.SomeModel;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;

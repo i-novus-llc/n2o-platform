@@ -1,16 +1,21 @@
-package net.n2oapp.platform.jaxrs;
+package net.n2oapp.platform;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import net.n2oapp.platform.feign.SampleClient;
 import net.n2oapp.platform.i18n.UserException;
+import net.n2oapp.platform.jaxrs.MapperConfigurer;
+import net.n2oapp.platform.jaxrs.RestException;
+import net.n2oapp.platform.jaxrs.RestMessage;
+import net.n2oapp.platform.jaxrs.RestPage;
 import net.n2oapp.platform.jaxrs.test.api.*;
 import net.n2oapp.platform.jaxrs.test.impl.SomeRestImpl;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
@@ -29,20 +34,19 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @SpringBootApplication
+@EnableFeignClients
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = JaxRsClientTest.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-        properties = {"server.port=9876"})
-public class JaxRsClientTest {
-
+@SpringBootTest(classes = FeignClientTest.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
+        properties = {"server.port=8765"})
+public class FeignClientTest {
 
     @Autowired
-    @Qualifier("someRestJaxRsProxyClient")//в контексте теста есть 2 бина SomeRest: SomeRestImpl и прокси клиент
-    private SomeRest client;
+    private SampleClient client;
 
     /**
      * Проверка, что REST прокси клиент обрабатывает Pageable параметры и параметры фильтрации.
@@ -153,7 +157,7 @@ public class JaxRsClientTest {
      */
     @Test
     public void pageOfAbstractModel() throws Exception {
-       assertThat(client.searchModel(new SomeCriteria()).getContent().get(0), instanceOf(StringModel.class));
+        assertThat(client.searchModel(new SomeCriteria()).getContent().get(0), instanceOf(StringModel.class));
 
     }
 
@@ -186,5 +190,4 @@ public class JaxRsClientTest {
         }
 
     }
-
 }

@@ -31,6 +31,7 @@
         <module>n2o-platform-test</module>
         <module>n2o-platform-actuator</module>
         <module>n2o-platform-ms</module>
+        <module>n2o-platform-feign</module>
     </modules>
 
 </project>
