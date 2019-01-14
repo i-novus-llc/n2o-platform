@@ -13,11 +13,11 @@ import java.util.Iterator;
 /**
  * Преобразование ответа REST сервиса в исключение {@link RestException}
  */
-public class RestClientExceptionMapper implements ErrorDecoder {
+public class FeignErrorDecoder implements ErrorDecoder {
 
     private final ObjectMapper objectMapper;
 
-    public RestClientExceptionMapper(ObjectMapper mapper) {
+    public FeignErrorDecoder(ObjectMapper mapper) {
         this.objectMapper = mapper;
     }
 

@@ -1,9 +1,6 @@
 package net.n2oapp.platform.feign.autoconfigure;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.qualys.feign.jaxrs.JAXRS2Profile;
 import feign.Contract;
 import feign.Feign;
@@ -14,10 +11,8 @@ import feign.codec.ErrorDecoder;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.jaxrs.JAXRSContract;
-import net.n2oapp.platform.jaxrs.DateParameterConverter;
 import net.n2oapp.platform.jaxrs.MapperConfigurer;
 import net.n2oapp.platform.jaxrs.RestObjectMapper;
-import net.n2oapp.platform.jaxrs.SpringDataModule;
 import net.n2oapp.platform.jaxrs.autoconfigure.JaxRsServerAutoConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -30,7 +25,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 @Configuration
@@ -66,7 +60,7 @@ public class FeignClientAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public ErrorDecoder feignErrorDecoder(@Qualifier("cxfObjectMapper") ObjectMapper cxfObjectMapper) {
-        return new RestClientExceptionMapper(cxfObjectMapper);
+        return new FeignErrorDecoder(cxfObjectMapper);
     }
 
     @Bean
