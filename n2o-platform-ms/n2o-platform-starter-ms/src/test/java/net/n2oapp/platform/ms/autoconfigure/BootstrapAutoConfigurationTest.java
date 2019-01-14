@@ -1,4 +1,4 @@
-package net.n2oapp.platform.actuate.autoconfigure;
+package net.n2oapp.platform.ms.autoconfigure;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,19 +10,19 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author RMakhmutov
- * @since 06.09.2018
+ * @since 14.01.2019
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes=ActuatorAutoConfigurationTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes=BootstrapAutoConfigurationTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EnableAutoConfiguration
-public class ActuatorAutoConfigurationTest {
+public class BootstrapAutoConfigurationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
     @Test
-    public void testActuator() {
-        ActuatorHealthResponse response = restTemplate.getForObject(ActuatorAutoConfiguration.ACTUATOR_CONTEXT_PATH + "/health", ActuatorHealthResponse.class);
-        assert response.getStatus().equals("UP");
+    public void testStartupApplication() {
+        ActuatorHealthResponse response = restTemplate.getForObject("/monitoring/health", ActuatorHealthResponse.class);
+        assert response.getStatus().equals("UP") : "Application startup failed";
     }
 
     private static class ActuatorHealthResponse {
