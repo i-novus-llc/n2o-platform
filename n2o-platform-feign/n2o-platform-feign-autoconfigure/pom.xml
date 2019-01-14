@@ -53,9 +53,18 @@
             <exclusions>
                 <exclusion>
                     <groupId>com.netflix.feign</groupId>
+                    <artifactId>feign-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.netflix.feign</groupId>
                     <artifactId>feign-jaxrs</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-ribbon</artifactId>
         </dependency>
 
         <dependency>
