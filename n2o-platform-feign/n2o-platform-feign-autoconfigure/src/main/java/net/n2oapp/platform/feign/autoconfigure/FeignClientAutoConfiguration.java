@@ -16,6 +16,7 @@ import feign.jackson.JacksonEncoder;
 import feign.jaxrs.JAXRSContract;
 import net.n2oapp.platform.jaxrs.DateParameterConverter;
 import net.n2oapp.platform.jaxrs.MapperConfigurer;
+import net.n2oapp.platform.jaxrs.RestObjectMapper;
 import net.n2oapp.platform.jaxrs.SpringDataModule;
 import net.n2oapp.platform.jaxrs.autoconfigure.JaxRsServerAutoConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,18 +48,7 @@ public class FeignClientAutoConfiguration {
     @ConditionalOnMissingBean
     @Bean("cxfObjectMapper")// По контракту мы должны использовать серверный маппер
     public ObjectMapper cxfObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        mapper.disable(SerializationFeature.WRITE_NULL_MAP_VALUES);
-        mapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        mapper.registerModule(new SpringDataModule());
-        mapper.registerModule(new JavaTimeModule());
-        mapper.setDateFormat(new SimpleDateFormat(DateParameterConverter.DATE_FORMAT_PATTERN));
-        if (mapperConfigurers != null) {
-            mapperConfigurers.forEach(preparer -> preparer.configure(mapper));
-        }
-        return mapper;
+        return new RestObjectMapper(mapperConfigurers);
     }
 
     @Bean

@@ -36,18 +36,7 @@ public class JaxRsCommonAutoConfiguration {
 
     @Bean("cxfObjectMapper")
     ObjectMapper cxfObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        mapper.disable(SerializationFeature.WRITE_NULL_MAP_VALUES);
-        mapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        mapper.registerModule(new SpringDataModule());
-        mapper.registerModule(new JavaTimeModule());
-        mapper.setDateFormat(new ISO8601DateFormat());
-        if(mapperConfigurers != null) {
-            mapperConfigurers.forEach(preparer -> preparer.configure(mapper));
-        }
-        return mapper;
+        return new RestObjectMapper(mapperConfigurers);
     }
 
     @Bean
