@@ -113,6 +113,11 @@
             <artifactId>n2o-platform-starter-jaxrs-server</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
         <!-- /TEST -->
 
     </dependencies>
