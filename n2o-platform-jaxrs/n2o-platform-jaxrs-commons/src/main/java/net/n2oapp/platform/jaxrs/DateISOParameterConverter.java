@@ -4,12 +4,15 @@ import com.fasterxml.jackson.databind.util.ISO8601Utils;
 
 import java.text.ParseException;
 import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
  * Конвертация {@link java.util.Date} в формате ISO8601
  */
 public class DateISOParameterConverter implements TypedParamConverter<Date> {
+
+    private static final String DATE_FORMAT_PATTERN = "EEE MMM dd HH:mm:ss zzz yyyy";
 
     @Override
     public Class<Date> getType() {
@@ -21,7 +24,12 @@ public class DateISOParameterConverter implements TypedParamConverter<Date> {
         try {
             return ISO8601Utils.parse(value, new ParsePosition(0));
         } catch (ParseException e) {
-            throw new IllegalArgumentException("Date [" + value + "] doesn't have ISO format.");
+            // in the case when requests come from feign clients
+            try {
+                return new SimpleDateFormat(DATE_FORMAT_PATTERN).parse(value);
+            } catch (ParseException e1) {
+                throw new IllegalArgumentException("Date [" + value + "] doesn't have ISO format.");
+            }
         }
     }
 

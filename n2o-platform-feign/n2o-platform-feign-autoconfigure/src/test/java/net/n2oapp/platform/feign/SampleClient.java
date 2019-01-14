@@ -1,9 +1,9 @@
 package net.n2oapp.platform.feign;
 
-import net.n2oapp.platform.jaxrs.test.api.AbstractModel;
-import net.n2oapp.platform.jaxrs.test.api.SomeCriteria;
-import net.n2oapp.platform.jaxrs.test.api.SomeModel;
-import net.n2oapp.platform.jaxrs.test.api.SomeRest;
+import net.n2oapp.platform.jaxrs.api.AbstractModel;
+import net.n2oapp.platform.jaxrs.api.SomeCriteria;
+import net.n2oapp.platform.jaxrs.api.SomeModel;
+import net.n2oapp.platform.jaxrs.api.SomeRest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
 
@@ -14,7 +14,7 @@ import javax.ws.rs.core.MediaType;
 /**
  * Приходится дублировать интерфейс {@link SomeRest},
  * т.к. бин, созданный по тому же интерфейсу конфликтует
- * с серверным {@link net.n2oapp.platform.jaxrs.test.impl.SomeRestImpl}
+ * с серверным {@link net.n2oapp.platform.jaxrs.impl.SomeRestImpl}
  */
 @Path("/example")
 @Consumes(MediaType.APPLICATION_JSON)

@@ -149,11 +149,11 @@ public class JaxRsServerTest {
     public void filters() {
         Map<?, ?> page = client().path("example").path("search")
                 .query("name", "John")
-                .query("date", "Thu Mar 01 08:00:00 MSK 2018")
+                .query("date", "2018-03-01T08:00:00Z")
                 .get(Map.class);
         List<Map<String, Object>> content = (List<Map<String, Object>>) page.get("content");
         assertThat(content.get(0).get("name"), equalTo("John"));
-        assertThat(content.get(0).get("date"), equalTo("Thu Mar 01 08:00:00 MSK 2018"));
+        assertThat(content.get(0).get("date"), equalTo("2018-03-01T08:00:00Z"));
     }
 
     /**
@@ -163,7 +163,7 @@ public class JaxRsServerTest {
     public void validations() {
         Map<String, Object> model = new HashMap<>();
         model.put("name", "");//Имя должно быть задано
-        model.put("date", "Tue Jan 01 12:00:00 MSK 2030");//Дата не должна быть в будущем
+        model.put("date", "2030-01-01T12:00:00Z");//Дата не должна быть в будущем
         Response response = client().path("example").post(model);
         assertThat(response.getStatusInfo().getFamily(), equalTo(Response.Status.Family.CLIENT_ERROR));
         Map<?, ?> message = response.readEntity(Map.class);
