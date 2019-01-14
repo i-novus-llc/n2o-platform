@@ -77,7 +77,7 @@ public class JaxRsServerTest {
     @Test
     public void sort() {
         Map<?, ?> page = client().path("example").path("search")
-                .query("sort", "name,asc", "id,desc")
+                .query("sort", "name: asc", "id: desc")
                 .get(Map.class);
         assertThat(page.get("sort"), notNullValue());
         List<Map<String, Object>> sort = (List<Map<String, Object>>) page.get("sort");
@@ -105,7 +105,7 @@ public class JaxRsServerTest {
     @Test
     public void sortResult() {
         Map<?, ?> page = client().path("example").path("search")
-                .query("sort", "name,asc").get(Map.class);
+                .query("sort", "name: asc").get(Map.class);
         assertThat(page.size(), equalTo(3));
         assertThat(page.get("sort"), instanceOf(List.class));
         List<Map<String, Object>> sort = (List<Map<String, Object>>) page.get("sort");
@@ -149,11 +149,11 @@ public class JaxRsServerTest {
     public void filters() {
         Map<?, ?> page = client().path("example").path("search")
                 .query("name", "John")
-                .query("date", "2018-03-01T08:00:00Z")
+                .query("date", "Thu Mar 01 08:00:00 MSK 2018")
                 .get(Map.class);
         List<Map<String, Object>> content = (List<Map<String, Object>>) page.get("content");
         assertThat(content.get(0).get("name"), equalTo("John"));
-        assertThat(content.get(0).get("date"), equalTo("2018-03-01T08:00:00Z"));
+        assertThat(content.get(0).get("date"), equalTo("Thu Mar 01 08:00:00 MSK 2018"));
     }
 
     /**
@@ -163,7 +163,7 @@ public class JaxRsServerTest {
     public void validations() {
         Map<String, Object> model = new HashMap<>();
         model.put("name", "");//Имя должно быть задано
-        model.put("date", "2030-01-01T12:00:00Z");//Дата не должна быть в будущем
+        model.put("date", "Tue Jan 01 12:00:00 MSK 2030");//Дата не должна быть в будущем
         Response response = client().path("example").post(model);
         assertThat(response.getStatusInfo().getFamily(), equalTo(Response.Status.Family.CLIENT_ERROR));
         Map<?, ?> message = response.readEntity(Map.class);
