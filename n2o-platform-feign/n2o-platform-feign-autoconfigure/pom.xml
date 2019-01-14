@@ -98,11 +98,11 @@
             <artifactId>jaxws-api</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>net.n2oapp.platform</groupId>
-            <artifactId>n2o-platform-jaxrs-autoconfigure</artifactId>
-            <optional>true</optional>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>net.n2oapp.platform</groupId>-->
+            <!--<artifactId>n2o-platform-jaxrs-autoconfigure</artifactId>-->
+            <!--<optional>true</optional>-->
+        <!--</dependency>-->
 
         <!-- TEST -->
         <dependency>
@@ -126,6 +126,13 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>net.n2oapp.platform</groupId>
+            <artifactId>n2o-platform-jaxrs-autoconfigure</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
         <!-- /TEST -->
 
