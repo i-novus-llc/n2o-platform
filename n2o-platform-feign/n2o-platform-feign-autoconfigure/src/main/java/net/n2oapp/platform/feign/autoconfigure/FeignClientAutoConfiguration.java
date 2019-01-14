@@ -98,10 +98,4 @@ public class FeignClientAutoConfiguration {
         return JAXRS2Profile.create()
                 .retryer(retryer);
     }
-
-//    @ConditionalOnMissingBean
-//    @Bean("feignRestClientExceptionMapper")
-//    RestClientExceptionMapper feignRestClientExceptionMapper(@Qualifier("cxfObjectMapper") ObjectMapper cxfObjectMapper) {
-//        return new RestClientExceptionMapper(cxfObjectMapper);
-//    }
 }
