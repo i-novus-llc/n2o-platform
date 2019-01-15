@@ -1,13 +1,23 @@
 image:https://git.i-novus.ru/platform/n2o/badges/master/pipeline.svg[link="https://git.i-novus.ru/platform/n2o/commits/master",title="pipeline status"]
 image:https://sonar.i-novus.ru/api/project_badges/measure?project=net.n2oapp.platform%3An2o-platform&metric=coverage[link="https://sonar.i-novus.ru/component_measures?id=net.n2oapp.platform%3An2o-platform&metric=Coverage",title="coverage status"]
 
-Платформа для создания микросервисов на основе Spring Boot, Spring Cloud, Spring Data, CXF.
+Платформа для создания микросервисов и веб-приложений на основе Spring Boot, Spring Cloud, Spring Data, CXF.
+
+= Состав
+* link:/n2o-platform-actuator/README.adoc[actuator] - стартер мониторинга, подключает преднастроенный spring boot actuator
+* bom - общий dependency management приложений на платформе, основан на spring boot
+* link:/n2o-platform-feign/README.adoc[feign] - стартер feign client, преднастроенная бибилиотека для создания REST-клиентов в микросервисной среде
+* link:/n2o-platform-i18n/README.adoc[i18n] - общие настройки интернационализации приложений на платформе
+* link:/n2o-platform-initializr/README.adoc[initializr] - spring initializr для генерации исходного кода приложения на платформе
+* link:/n2o-platform-jaxrs/README.adoc[jaxrs] - стартеры для создания REST клиетнов и REST сервисов, отвечающих требованиям соглашений N2O Framework
+* link:/n2o-platform-ms/README.adoc[ms] - стартер для создания микросервисов на основе платформы
+* parent - родительнский pom для создания приложений на основе платформы
+* link:/n2o-platform-test/README.adoc[test] - стартер для создания тестов
 
 = Требования
 Данная версия платформы протестирована с использованием Open JDK 11
 
 = Подключение
-
 Устанавливаем родителький maven артефакт:
 [source,xml]
 ----
@@ -44,9 +54,3 @@ image:https://sonar.i-novus.ru/api/project_badges/measure?project=net.n2oapp.pla
   </dependencies>
 </dependencyManagement>
 ----
-
-Смотрите так же:
-
-* link:/n2o-platform-i18n/README.adoc[Интернационализация]
-* link:/n2o-platform-jaxrs/README.adoc[Сервер и клиент JaxRS]
-* link:/n2o-platform-initializr/README.adoc[Spring Boot Initializr]
