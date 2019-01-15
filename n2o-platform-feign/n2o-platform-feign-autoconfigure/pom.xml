@@ -53,9 +53,18 @@
             <exclusions>
                 <exclusion>
                     <groupId>com.netflix.feign</groupId>
+                    <artifactId>feign-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.netflix.feign</groupId>
                     <artifactId>feign-jaxrs</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-ribbon</artifactId>
         </dependency>
 
         <dependency>
@@ -117,6 +126,13 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>net.n2oapp.platform</groupId>
+            <artifactId>n2o-platform-jaxrs-autoconfigure</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
         <!-- /TEST -->
 
