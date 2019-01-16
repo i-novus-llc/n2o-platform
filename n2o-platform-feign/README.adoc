@@ -1,1 +1,80 @@
-Стартер для feign-client
+= Документация
+:toc:
+:toclevels: 3
+:toc-title: Содержание
+
+= Возможности/Цели
+
+* Создавать декларативные HTTP клиенты `feign` через JAX-RS аннотации.
+* Автоконфигурация `Spring Boot`.
+* Совместимость с REST сервисами, написанными с использованием `n2o-platform-starter-jaxrs-server`.
+* Полная поддержка возможностей `n2o-platform-starter-jaxrs-client`.
+* Клиентская балансировка с использованием `Netflix Ribbon`.
+
+= Инструкции
+
+=== Подключение
+
+Добавьте зависимость:
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-starter-feign-client</artifactId>
+</dependency>
+----
+
+Также вам понадобится зависимость от `api`-модуля, где лежат ваши интерфейсы сервисов с аннотациями jaxrs.
+
+=== Создание клентов
+
+Чтобы создавать клиенты с помощью `@FeignClient`, нужно добавить аннотацию `@EnableFeignClients` в конфигурацию Spring:
+[source,java]
+----
+import org.springframework.cloud.openfeign.EnableFeignClients;
+...
+@Configuration
+@EnableFeignClients
+public class ExampleConfiguration {
+  ...
+}
+----
+
+Чтобы создать клиента, нужно повесить аннотацию `@FeignClient` на интерфейс с аннотациями jaxrs.
+
+[source,java]
+----
+@FeignClient(name = "example")
+public interface SampleClient extends SomeRest {
+}
+----
+
+=== Использование
+
+Используйте REST прокси клиенты как обычные Spring бины:
+[source,java]
+----
+@Service
+public class ConsumerServiceImpl {
+  @Autowired
+  private Samplelient client;
+
+  ...
+}
+----
+Каждый вызов метода прокси клиента будет делать http запрос к сервису.
+
+=== Обработка исключений
+
+При использовании REST прокси клиентов, исключения возникшие на сервере,
+автоматически выбрасываются и на клиенте. Класс исключений: `RestException`:
+[source,java]
+----
+try {
+   client.create(model);
+ } catch (RestException e) {
+   e.getMessage();//Локализованное сообщение
+   e.getErrors();//Ошибки JSR303 валидаций
+ }
+----
+При этом стектрейс исключения `RestException` будет содержать в себе стектрейс от сервера.
