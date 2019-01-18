@@ -13,13 +13,18 @@ public class SortParameterConverter implements TypedParamConverter<Sort.Order> {
 
     @Override
     public Sort.Order fromString(String value) {
-        String fst = value.split(",")[0];
-        String[] cNd = fst.split(": ");
-        return new Sort.Order(Sort.Direction.fromString(cNd[1]), cNd[0]);
+        if (value.contains(":")) {
+            String fst = value.split(",")[0];
+            String[] cNd = fst.split(": ");
+            return new Sort.Order(Sort.Direction.fromString(cNd[1]), cNd[0]);
+        } else {
+            String[] cNd = value.split(",");
+            return new Sort.Order(Sort.Direction.fromString(cNd[1]), cNd[0]);
+        }
     }
 
     @Override
     public String toString(Sort.Order value) {
-        return value.getProperty() + ": " + value.getDirection().name().toLowerCase();
+        return value.getProperty() + "," + value.getDirection().name().toLowerCase();
     }
 }
