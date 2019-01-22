@@ -31,6 +31,11 @@ public class DefineConnectionTimeoutTest {
     @Qualifier("someRestJaxRsProxyClient")
     private SomeRest client;
 
+    /*
+    * При обращении к серверу по невалидному адресу по истечении указанного таймаута ожидается ошибка
+    * (превышен таймаут ожидания соединения).
+    * Погрешность равна 1 секунде
+    * */
     @Test
     public void testConnectionTimeoutFail() {
         long start = System.currentTimeMillis();

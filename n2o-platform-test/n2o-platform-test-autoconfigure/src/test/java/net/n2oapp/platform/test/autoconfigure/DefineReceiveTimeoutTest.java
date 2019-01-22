@@ -33,11 +33,19 @@ public class DefineReceiveTimeoutTest {
     @Qualifier("someRestJaxRsProxyClient")
     private SomeRest client;
 
+    /*
+     * Проверка, что нет ошибки при выполнении запроса быстрее, чем указано в таймауте
+     * */
     @Test
     public void testReceiveTimeoutSuccess() throws InterruptedException {
         assertEquals("timeout success", client.timeoutSuccess());
     }
 
+    /*
+     * При выполнении запроса дольше указанного таймаута ожидается ошибка
+     * (превышен таймаут ожидания ответа).
+     * Погрешность равна 1 секунде
+     * */
     @Test
     public void testReceiveTimeoutFail() {
         long start = System.currentTimeMillis();
