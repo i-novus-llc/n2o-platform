@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * Конвертация {@link java.util.Date} в формате ISO8601
@@ -26,7 +27,7 @@ public class DateISOParameterConverter implements TypedParamConverter<Date> {
         } catch (ParseException e) {
             // in the case when requests come from feign clients
             try {
-                return new SimpleDateFormat(DATE_FORMAT_PATTERN).parse(value);
+                return new SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.ENGLISH).parse(value);
             } catch (ParseException e1) {
                 throw new IllegalArgumentException("Date [" + value + "] doesn't have ISO format.");
             }

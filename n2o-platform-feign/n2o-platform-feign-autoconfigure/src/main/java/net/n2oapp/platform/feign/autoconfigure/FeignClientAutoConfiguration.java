@@ -46,38 +46,32 @@ public class FeignClientAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean
     public Decoder feignDecoder(@Qualifier("cxfObjectMapper") ObjectMapper cxfObjectMapper) {
         return new JacksonDecoder(cxfObjectMapper);
     }
 
     @Bean
-    @ConditionalOnMissingBean
     public Encoder feignEncoder(@Qualifier("cxfObjectMapper") ObjectMapper cxfObjectMapper) {
         return new JacksonEncoder(cxfObjectMapper);
     }
 
     @Bean
-    @ConditionalOnMissingBean
     public ErrorDecoder feignErrorDecoder(@Qualifier("cxfObjectMapper") ObjectMapper cxfObjectMapper) {
         return new FeignErrorDecoder(cxfObjectMapper);
     }
 
     @Bean
-    @ConditionalOnMissingBean
     public Contract feignContract() {
         return new JAXRSContract();
     }
 
     @Bean
-    @ConditionalOnMissingBean
     public Retryer feignRetryer() {
         return Retryer.NEVER_RETRY;
     }
 
     @Bean
     @Scope("prototype")
-    @ConditionalOnMissingBean
     public Feign.Builder feignBuilder(Retryer retryer, feign.Client client) {
         return JAXRS2Profile.create().client(client).retryer(retryer);
     }
