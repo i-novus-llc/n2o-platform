@@ -11,12 +11,14 @@ public class SomeRestImpl implements SomeRest {
         return "echo";
     }
 
+    @SuppressWarnings("all")
     @Override
     public String timeoutSuccess() throws InterruptedException {
         Thread.sleep(500);
         return "timeout success";
     }
 
+    @SuppressWarnings("all")
     @Override
     public String timeoutFailure() throws InterruptedException {
         Thread.sleep(1500);
