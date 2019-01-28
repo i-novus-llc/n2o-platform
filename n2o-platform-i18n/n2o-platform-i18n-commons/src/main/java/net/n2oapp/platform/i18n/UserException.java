@@ -11,7 +11,10 @@ import java.util.stream.Collectors;
  */
 public class UserException extends RuntimeException {
     private static final long serialVersionUID = 2552353701499979545L;
-    @Deprecated
+    /**
+     * @deprecated Общие сообщения уже есть на клиенте при возникновении любой ошибки. Для этого выбрасывать это исключение не нужно.
+     */
+    @Deprecated(forRemoval = true, since = "2.2")
     private static final Message UNEXPECTED_ERROR = new Message("exception.unexpectedError");
 
     private transient Object[] args;
@@ -50,18 +53,20 @@ public class UserException extends RuntimeException {
      * @deprecated Это исключение предназначено для передачи сообщений пользователю. Например, для валидаций.
      * Непредвиденные ошибки не должны бросать это исключение.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "2.2")
     public UserException() {
-        this(UNEXPECTED_ERROR);
+        super();
+        this.messages = null;
     }
 
     /**
      * @deprecated Это исключение предназначено для передачи сообщений пользователю. Например, для валидаций.
      * Непредвиденные ошибки не должны бросать это исключение.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "2.2")
     public UserException(Throwable cause) {
-        this(UNEXPECTED_ERROR, cause);
+        super(cause);
+        this.messages = null;
     }
 
     public Object[] getArgs() {
@@ -77,7 +82,7 @@ public class UserException extends RuntimeException {
      * @param argument Параметр
      * @deprecated Исключения должны быть немодифицируемы
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "2.2")
     public UserException set(Object argument) {
         ArrayList<Object> list = new ArrayList<>(args != null ? Arrays.asList(args) : Collections.emptyList());
         list.add(argument);
