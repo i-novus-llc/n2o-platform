@@ -54,16 +54,6 @@ public class I18nTest {
             assertThat(messages.getMessage(e), is("Тест"));
         }
         try {
-            throw new UserException("test2").set("раз").set(2);
-        } catch (Exception e) {
-            assertThat(messages.getMessage(e), is("Тест раз и 2"));
-        }
-        try {
-            throw new UserException();//unexpected
-        } catch (Exception e) {
-            assertThat(messages.getMessage(e), is("Внутренняя ошибка приложения"));
-        }
-        try {
             throw new IllegalStateException("test1");
         } catch (Exception e) {
             assertThat(messages.getMessage(e), is("Тест"));
