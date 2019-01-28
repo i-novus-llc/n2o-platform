@@ -4,6 +4,7 @@ import net.n2oapp.platform.i18n.Message;
 import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.i18n.Messages;
 
+import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 import java.util.stream.Collectors;
 
@@ -29,5 +30,10 @@ public class MessageExceptionMapper implements RestExceptionMapper<UserException
 
     private RestMessage.Error toError(Message message) {
         return new RestMessage.Error(messages.getMessage(message.getCode(), message.getArgs()));
+    }
+
+    @Override
+    public Response.Status getStatus() {
+        return Response.Status.BAD_REQUEST;
     }
 }

@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
  */
 public class UserException extends RuntimeException {
     private static final long serialVersionUID = 2552353701499979545L;
+    @Deprecated
     private static final Message UNEXPECTED_ERROR = new Message("exception.unexpectedError");
 
     private transient Object[] args;
@@ -45,10 +46,20 @@ public class UserException extends RuntimeException {
         this.messages = null;
     }
 
+    /**
+     * @deprecated Это исключение предназначено для передачи сообщений пользователю. Например, для валидаций.
+     * Непредвиденные ошибки не должны бросать это исключение.
+     */
+    @Deprecated
     public UserException() {
         this(UNEXPECTED_ERROR);
     }
 
+    /**
+     * @deprecated Это исключение предназначено для передачи сообщений пользователю. Например, для валидаций.
+     * Непредвиденные ошибки не должны бросать это исключение.
+     */
+    @Deprecated
     public UserException(Throwable cause) {
         this(UNEXPECTED_ERROR, cause);
     }
@@ -64,7 +75,9 @@ public class UserException extends RuntimeException {
     /**
      * Добавить параметр сообщения
      * @param argument Параметр
+     * @deprecated Исключения должны быть немодифицируемы
      */
+    @Deprecated
     public UserException set(Object argument) {
         ArrayList<Object> list = new ArrayList<>(args != null ? Arrays.asList(args) : Collections.emptyList());
         list.add(argument);
