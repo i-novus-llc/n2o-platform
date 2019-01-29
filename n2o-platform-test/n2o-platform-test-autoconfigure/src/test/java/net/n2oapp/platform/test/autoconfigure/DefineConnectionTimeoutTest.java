@@ -45,7 +45,6 @@ public class DefineConnectionTimeoutTest {
         } catch (Exception e) {
             long end = System.currentTimeMillis();
             assertTrue(e.getCause() instanceof SocketTimeoutException);
-            assertTrue(e.getMessage().contains("connect timed out"));
             assertTrue("timeout must be approximately 1 sec", end - start >= 1000);
             assertTrue("margin of error less than 1 sec", end - start < 2000);
         }
