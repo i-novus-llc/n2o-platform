@@ -11,21 +11,32 @@ import java.util.stream.Collectors;
 public class RestException extends RuntimeException {
     private static final long serialVersionUID = 111344339012373978L;
     private static final Pattern STACKTRACE_ELEMENT_PATTERN = Pattern.compile(".+\\(.+:[0-9]+\\)");
+    private final int responseStatus;
+    private final RestMessage restMessage;
 
-    private RestMessage restMessage;
-
-    public RestException(RestMessage restMessage) {
+    public RestException(RestMessage restMessage, int responseStatus) {
         super(restMessage.getMessage());
         this.restMessage = restMessage;
+        this.responseStatus = responseStatus;
     }
 
-    public RestException(RestMessage restMessage, Throwable cause) {
+    public RestException(RestMessage restMessage, int responseStatus, Throwable cause) {
         super(restMessage.getMessage(), cause);
         this.restMessage = restMessage;
+        this.responseStatus = responseStatus;
     }
 
     public List<RestMessage.Error> getErrors() {
         return restMessage.getErrors();
+    }
+
+    public int getResponseStatus() {
+        return responseStatus;
+    }
+
+    public StackTraceElement[] getRemoteStackTrace() {
+        return Arrays.stream(restMessage.getStackTrace()).map(this::parseFrame)
+                .filter(Objects::nonNull).toArray(StackTraceElement[]::new);
     }
 
     @Override

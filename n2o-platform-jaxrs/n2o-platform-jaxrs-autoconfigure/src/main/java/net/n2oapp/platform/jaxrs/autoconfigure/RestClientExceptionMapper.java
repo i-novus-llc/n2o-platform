@@ -16,7 +16,7 @@ public class RestClientExceptionMapper implements ResponseExceptionMapper {
     public Throwable fromResponse(Response response) {
         if (RestException.class.getName().equals(response.getHeaderString("exception-class"))) {
             RestMessage message = response.readEntity(RestMessage.class);
-            return new RestException(message);
+            return new RestException(message, response.getStatus());
         } else {
             return null;
         }
