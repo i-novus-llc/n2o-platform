@@ -30,6 +30,8 @@ public class JaxRsProxyClientRegistrar implements ImportBeanDefinitionRegistrar,
     private String accept;
     private String contentType;
     private Boolean threadSafe;
+    private String connectionTimeout;
+    private String receiveTimeout;
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
@@ -83,6 +85,8 @@ public class JaxRsProxyClientRegistrar implements ImportBeanDefinitionRegistrar,
                 .addPropertyValue("accept", accept)
                 .addPropertyValue("threadSafe", threadSafe)
                 .addPropertyValue("contentType", contentType)
+                .addPropertyValue("connectionTimeout", connectionTimeout)
+                .addPropertyValue("receiveTimeout", receiveTimeout)
                 .getBeanDefinition();
 
         String beanName = generateProxyBeanName(restClass);
@@ -102,5 +106,7 @@ public class JaxRsProxyClientRegistrar implements ImportBeanDefinitionRegistrar,
         this.accept = environment.getProperty("cxf.jaxrs.client.accept", "");
         this.contentType = environment.getProperty("cxf.jaxrs.client.content-type", "");
         this.threadSafe = environment.getProperty("cxf.jaxrs.client.thread-safe", Boolean.class, false);
+        this.connectionTimeout = environment.getProperty("cxf.jaxrs.client.connection.timeout");
+        this.receiveTimeout = environment.getProperty("cxf.jaxrs.client.receive.timeout");
     }
 }

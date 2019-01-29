@@ -13,8 +13,17 @@ import javax.ws.rs.core.MediaType;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public interface SomeRest {
+
     @GET
     @Path("/echo")
     String echo();
+
+    @GET
+    @Path("/timeoutSuccess")
+    String timeoutSuccess() throws InterruptedException;
+
+    @GET
+    @Path("/timeoutFailure")
+    String timeoutFailure() throws InterruptedException;
 
 }
