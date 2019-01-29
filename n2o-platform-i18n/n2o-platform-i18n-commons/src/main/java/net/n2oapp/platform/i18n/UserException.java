@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
  */
 public class UserException extends RuntimeException {
     private static final long serialVersionUID = 2552353701499979545L;
-    private transient Object[] args;
+    private final transient Object[] args;
     private final transient List<Message> messages;
 
     public UserException(Message message) {
@@ -21,6 +21,7 @@ public class UserException extends RuntimeException {
     public UserException(List<Message> messages) {
         super(messages.stream().map(Message::getCode).collect(Collectors.joining(",\n")));
         this.messages = Collections.unmodifiableList(messages);
+        this.args = null;
     }
 
 
@@ -33,11 +34,13 @@ public class UserException extends RuntimeException {
     public UserException(String code) {
         super(code);
         this.messages = null;
+        this.args = null;
     }
 
     public UserException(String code, Throwable cause) {
         super(code, cause);
         this.messages = null;
+        this.args = null;
     }
 
     public Object[] getArgs() {
