@@ -1,7 +1,5 @@
 package net.n2oapp.platform.i18n;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,10 +9,7 @@ import java.util.stream.Collectors;
  */
 public class UserException extends RuntimeException {
     private static final long serialVersionUID = 2552353701499979545L;
-    private static final Message UNEXPECTED_ERROR = new Message("exception.unexpectedError");
-
-    private transient Object[] args;
-
+    private final transient Object[] args;
     private final transient List<Message> messages;
 
     public UserException(Message message) {
@@ -25,7 +20,8 @@ public class UserException extends RuntimeException {
 
     public UserException(List<Message> messages) {
         super(messages.stream().map(Message::getCode).collect(Collectors.joining(",\n")));
-        this.messages = messages;
+        this.messages = Collections.unmodifiableList(messages);
+        this.args = null;
     }
 
 
@@ -38,19 +34,13 @@ public class UserException extends RuntimeException {
     public UserException(String code) {
         super(code);
         this.messages = null;
+        this.args = null;
     }
 
     public UserException(String code, Throwable cause) {
         super(code, cause);
         this.messages = null;
-    }
-
-    public UserException() {
-        this(UNEXPECTED_ERROR);
-    }
-
-    public UserException(Throwable cause) {
-        this(UNEXPECTED_ERROR, cause);
+        this.args = null;
     }
 
     public Object[] getArgs() {
@@ -59,17 +49,6 @@ public class UserException extends RuntimeException {
 
     public String getCode() {
         return getMessage();
-    }
-
-    /**
-     * Добавить параметр сообщения
-     * @param argument Параметр
-     */
-    public UserException set(Object argument) {
-        ArrayList<Object> list = new ArrayList<>(args != null ? Arrays.asList(args) : Collections.emptyList());
-        list.add(argument);
-        this.args = list.toArray();
-        return this;
     }
 
     public List<Message> getMessages() {

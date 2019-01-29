@@ -55,7 +55,7 @@ public class SomeRestImpl implements SomeRest {
         if (model.getId() == null)
             throw new IllegalArgumentException("Field [id] mustn't be null");
         if (model.getId() < 0)
-            throw new UserException("example.idPositive").set(model.getId());
+            throw new UserException(new Message("example.idPositive").set(model.getId()));
     }
 
     @Override
