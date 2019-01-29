@@ -51,7 +51,6 @@ cxf.jaxrs.client.connection.timeout=30000
 #Таймаут (мс) ожидания клиентом ответа сервера. 0 - бесконечность, по умолчанию 60000мс.
 cxf.jaxrs.client.receive.timeout=60000
 ----
-Вызываются методы org.apache.cxf.transports.http.configuration.HTTPClientPolicy.setConnectionTimeout и org.apache.cxf.transports.http.configuration.HTTPClientPolicy.setReceiveTimeout соответственно.
 
 === Интерфейс и реализация
 

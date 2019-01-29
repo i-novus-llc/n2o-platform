@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
                 "cxf.jaxrs.component-scan=true",
                 "cxf.jaxrs.client.classes-scan=true",
                 "cxf.jaxrs.client.classes-scan-packages=net.n2oapp.platform.test.autoconfigure.rest.api",
-                "cxf.jaxrs.client.address=http://100.100.100.100:${server.port}/test/api",
+                "cxf.jaxrs.client.address=http://10.10.10.10:1010/test/api",
                 "cxf.jaxrs.client.connection.timeout=1000",
         },
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
