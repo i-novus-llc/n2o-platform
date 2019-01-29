@@ -29,7 +29,7 @@ public class FeignErrorDecoder implements ErrorDecoder {
             if (iterator.hasNext() && RestException.class.getName().equalsIgnoreCase(iterator.next())) {
                 try {
                     RestMessage message = objectMapper.readValue(response.body().asInputStream(), RestMessage.class);
-                    return new RestException(message);
+                    return new RestException(message, response.status());
                 } catch (IOException e) {
                     throw new IllegalStateException("Cannot decode message body", e);
                 }
