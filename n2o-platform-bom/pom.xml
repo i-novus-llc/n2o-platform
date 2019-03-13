@@ -10,7 +10,7 @@
     <parent>
         <groupId>net.n2oapp.parent</groupId>
         <artifactId>parent</artifactId>
-        <version>5.0</version>
+        <version>5.1</version>
         <relativePath />
     </parent>
 
@@ -22,7 +22,7 @@
         <jaxrs-api.version>2.1.1</jaxrs-api.version>
         <modelmapper.version>2.3.2</modelmapper.version>
         <commons.version>2.6</commons.version>
-        <spring.cloud.version>Finchley.RELEASE</spring.cloud.version>
+        <spring.cloud.version>Greenwich.RELEASE</spring.cloud.version>
         <activation.version>1.1.1</activation.version>
         <feign-jaxrs.version>1.0</feign-jaxrs.version>
     </properties>
@@ -288,6 +288,13 @@
                 <artifactId>activation</artifactId>
                 <version>${activation.version}</version>
                 <scope>runtime</scope>
+            </dependency>
+
+            <!-- Liquibase patched for working classpath*: -->
+            <dependency>
+                <groupId>org.liquibase</groupId>
+                <artifactId>liquibase-core</artifactId>
+                <version>3.6.2.inovus</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
