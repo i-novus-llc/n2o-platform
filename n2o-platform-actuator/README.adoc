@@ -10,5 +10,15 @@
 
 = Подключение
 
-Актуатор подключен по умолчанию в n2o-platform-parent.
+Актуатор подключается при подключении стартера link:/n2o-platform-ms/README.adoc[n2o-platform-starter-ms].
+
+Также можно подключить его напрямую:
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-starter-actuator</artifactId>
+</dependency>
+----
+
 Задать доступные endpoint'ы можно стандартной настройкой: `management.endpoints.web.exposure.include=endpointName`
