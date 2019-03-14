@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+
+
+    <changeSet id="201605271738_create_func_get_primary_keys_2" author="aisaev" dbms="postgresql">
+        <sql splitStatements="false">
+     <![CDATA[
+    CREATE OR REPLACE FUNCTION audit.get_primary_keys(table_name text) RETURNS TABLE(column_name text, type text)
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE
+    BEGIN
+    return query
+    SELECT  pg_attribute.attname :: TEXT   AS column_name,
+    format_type(pg_attribute.atttypid, pg_attribute.atttypmod) AS type
+    FROM pg_index, pg_class, pg_attribute, pg_namespace
+    WHERE
+    pg_class.oid = $1 :: REGCLASS AND
+    indrelid = pg_class.oid AND
+    pg_class.relnamespace = pg_namespace.oid AND
+    pg_attribute.attrelid = pg_class.oid AND
+    pg_attribute.attnum = ANY (pg_index.indkey)
+    AND indisprimary;
+    END;
+    $$; ]]>
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

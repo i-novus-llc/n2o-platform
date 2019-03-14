@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet id="201703241437_audit_trigger_fun_bfx_1.1" author="rgogolev" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <or>
+                <sqlCheck expectedResult="t">
+                    select 2 >((select count(1)  FROM information_schema.tables where  table_name = 'databasechangelog' and table_schema =  'liquibase') + (select count(1)  FROM information_schema.tables where  table_name = 'databasechangelog' and table_schema =  'liquibaselsd'));
+                </sqlCheck>
+                <sqlCheck expectedResult="0">
+                    select (select count(1) from liquibaselsd.databasechangelog where id = '201703241437_audit_trigger_fun_bfx_1.1') + (select count(1) from liquibase.databasechangelog where id = '201703241437_audit_trigger_fun_bfx_1.1')
+                </sqlCheck>
+            </or>
+        </preConditions>
+        <sqlFile path="db/sql/update_audit_trigger_fun.sql" splitStatements="false"/>
+    </changeSet>
+
+</databaseChangeLog>

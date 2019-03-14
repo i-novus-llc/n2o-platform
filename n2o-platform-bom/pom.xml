@@ -62,6 +62,16 @@
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-starter-audit</artifactId>
+                <version>2.2-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-audit-autoconfigure</artifactId>
+                <version>2.2-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-ms</artifactId>
                 <version>2.2-SNAPSHOT</version>
             </dependency>

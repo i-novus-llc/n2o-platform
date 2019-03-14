@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet id="201610171705_exclude_denorm_columns_1.0" author="tnurdinov" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                select  count(1) from  public.aud_excluded_tables where table_name = 'public.aud_excluded_columns';
+            </sqlCheck>
+        </preConditions>
+        <sql splitStatements="false">
+            INSERT INTO public.aud_excluded_tables(id, table_name) values(nextval('aud_excluded_tables_seq'), 'public.aud_excluded_columns')
+        </sql>
+    </changeSet>
+
+    <changeSet id="201610171705_exclude_denorm_columns_2.0.1" author="tnurdinov" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="aud_excluded_columns" schemaName="public"/>
+            </not>
+        </preConditions>
+        <sql splitStatements="false">
+            CREATE TABLE public.aud_excluded_columns (
+                column_name varchar,
+                table_name varchar,
+                CONSTRAINT aud_excluded_columns_pk PRIMARY KEY(column_name, table_name)
+            );
+        </sql>
+    </changeSet>
+
+    <changeSet id="201610171705_exclude_denorm_columns_3.0.1" author="tnurdinov" dbms="postgresql">
+        <sql>
+            insert into public.aud_excluded_columns(column_name, table_name)
+                select 'open_date', 'public.mc_case' from aud_excluded_columns
+                where not exists(select 1 from aud_excluded_columns where column_name = 'open_date' and table_name = 'public.mc_case')  limit 1;
+            insert into public.aud_excluded_columns(column_name, table_name)
+                select 'closing_step_id', 'public.mc_case' from aud_excluded_columns
+                where not exists(select 1 from aud_excluded_columns where column_name = 'closing_step_id' and table_name = 'public.mc_case')  limit 1;
+            insert into public.aud_excluded_columns(column_name, table_name)
+                select 'close_date', 'public.mc_case' from aud_excluded_columns
+                where not exists(select 1 from aud_excluded_columns where column_name = 'close_date' and table_name = 'public.mc_case')  limit 1;
+
+
+            insert into public.aud_excluded_columns(column_name, table_name)
+                select '_clinic_id', 'public.mc_step' from aud_excluded_columns
+                where not exists(select 1 from aud_excluded_columns where column_name = '_clinic_id' and table_name = 'public.mc_step')  limit 1;
+            insert into public.aud_excluded_columns(column_name, table_name)
+                 select '_patient_id', 'public.mc_step' from aud_excluded_columns
+                 where not exists(select 1 from aud_excluded_columns where column_name = '_patient_id' and table_name = 'public.mc_step')  limit 1;
+            insert into public.aud_excluded_columns(column_name, table_name)
+                 select '_is_last', 'public.mc_step' from aud_excluded_columns
+                 where not exists(select 1 from aud_excluded_columns where column_name = '_is_last' and table_name = 'public.mc_step')  limit 1;
+            insert into public.aud_excluded_columns(column_name, table_name)
+                select '_department_id', 'public.mc_step' from aud_excluded_columns
+                where not exists(select 1 from aud_excluded_columns where column_name = '_department_id' and table_name = 'public.mc_step')  limit 1;
+            insert into public.aud_excluded_columns(column_name, table_name)
+                select '_responsible_id', 'public.mc_step' from aud_excluded_columns
+                where not exists(select 1 from aud_excluded_columns where column_name = '_responsible_id' and table_name = 'public.mc_step')  limit 1;
+
+            insert into public.aud_excluded_columns(column_name, table_name)
+                select '_is_system', 'public.sr_res_group_relationship' from aud_excluded_columns
+                where not exists(select 1 from aud_excluded_columns where column_name = '_is_system' and table_name = 'public.sr_res_group_relationship')  limit 1;
+
+
+            insert into public.aud_excluded_columns(column_name, table_name)
+                select '_responsible_id', 'public.sr_srv_rendered' from aud_excluded_columns
+                where not exists(select 1 from aud_excluded_columns where column_name = '_responsible_id' and table_name = 'public.sr_srv_rendered') limit 1;
+            insert into public.aud_excluded_columns(column_name, table_name)
+                select '_department_id', 'public.sr_srv_rendered' from aud_excluded_columns
+                where not exists(select 1 from aud_excluded_columns where column_name = '_department_id' and table_name = 'public.sr_srv_rendered') limit 1;
+            insert into public.aud_excluded_columns(column_name, table_name)
+                select '_created_by_dep_id', 'public.sr_srv_rendered' from aud_excluded_columns
+                where not exists(select 1 from aud_excluded_columns where column_name = '_created_by_dep_id' and table_name = 'public.sr_srv_rendered') limit 1;
+
+        </sql>
+    </changeSet>
+
+    <changeSet id="201610171705_exclude_denorm_columns_4.0.3" author="tnurdinov" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <or>
+                <sqlCheck expectedResult="t">
+                    select 2 >((select count(1)  FROM information_schema.tables where  table_name = 'databasechangelog' and table_schema =  'liquibase') + (select count(1)  FROM information_schema.tables where  table_name = 'databasechangelog' and table_schema =  'liquibaselsd'));
+                </sqlCheck>
+                <sqlCheck expectedResult="0">
+                    select (select count(1) from liquibaselsd.databasechangelog where id = '201610171705_exclude_denorm_columns_4.0.3') + (select count(1) from liquibase.databasechangelog where id = '201610171705_exclude_denorm_columns_4.0.3')
+                </sqlCheck>
+            </or>
+        </preConditions>
+        <sqlFile path="db/sql/exclude_denorm_columns.sql" splitStatements="false"/>
+    </changeSet>
+
+    <changeSet id="201610171705_exclude_denorm_columns_5.0.1" author="tnurdinov" dbms="postgresql">
+        <sql>
+            insert into public.aud_excluded_columns(column_name, table_name)
+                select 'open_time', 'public.mc_case' from aud_excluded_columns
+                where not exists(select 1 from aud_excluded_columns where column_name = 'open_time' and table_name = 'public.mc_case') limit 1;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

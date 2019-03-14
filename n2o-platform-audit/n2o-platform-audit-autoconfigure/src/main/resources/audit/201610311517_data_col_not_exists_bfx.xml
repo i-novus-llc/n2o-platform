@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet id="201610311517_data_col_not_exists_bfx_1.0" author="aisaev" dbms="postgresql">
+        <sql splitStatements="false">
+            <![CDATA[
+                 CREATE OR REPLACE FUNCTION audit.add_table(table_name TEXT)
+                  RETURNS VOID AS
+                  $BODY$
+                  DECLARE
+                    ddl               TEXT;
+                    parent_table_name TEXT;
+                    audit_table_name  TEXT;
+                    audit_table_name_without_scheme  TEXT;
+                  BEGIN
+                    SELECT audit.gen_audit_table_ddl(table_name)
+                    INTO ddl;
+
+                    IF (
+                      (SELECT EXISTS(SELECT 1
+                                     FROM information_schema.schemata
+                                     WHERE schema_name = 'pglogical'))
+
+                    )
+                    THEN
+                      IF (SELECT EXISTS(SELECT 1
+                                        FROM pglogical.replication_set
+                                        WHERE set_name = 'audit_set'))
+                      THEN
+                        IF ((SELECT position('.' IN table_name)) <> 0)
+                        THEN
+                          audit_table_name_without_scheme := regexp_replace(replace(table_name, '"', ''), '\.', '$');
+                          parent_table_name := 'audit."' || audit_table_name_without_scheme || '"';
+                        ELSE
+                          audit_table_name_without_scheme := 'public$' || replace(table_name, '"', '');
+                          parent_table_name := 'audit."' || audit_table_name_without_scheme || '"';
+                        END IF;
+                        IF NOT EXISTS (SELECT 0 FROM pg_class where relname = audit_table_name_without_scheme ||'_aud_rec_seq' )
+                        THEN
+                          EXECUTE 'CREATE SEQUENCE '||audit_table_name_without_scheme||'_aud_rec_seq ;';
+                        END IF;
+                        audit_table_name := replace(replace(replace(audit.get_audit_table_name(table_name), '$"', '$'), '""', '"'), '"_y', '_y');
+                        EXECUTE ddl;
+                        PERFORM dblink_connect(audit.get_replica_conn());
+                        PERFORM dblink_exec(ddl);
+                        PERFORM * from dblink(format('SELECT audit.do_inherit(''%s'', ''%s''); select 1;', parent_table_name, audit_table_name)) as x(x text);
+                        PERFORM dblink_disconnect();
+                      ELSE
+                        EXECUTE ddl;
+                      END IF;
+                    ELSE
+                      EXECUTE ddl;
+                    END IF;
+                  END;
+                  $BODY$
+                LANGUAGE plpgsql;
+            ]]>
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

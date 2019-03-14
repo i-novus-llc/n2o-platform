@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet id="201511161140_excluded_tables_bfx_1.0" author="tnurdinov" dbms="postgresql">
+        <sql>
+            delete from aud_excluded_tables where table_name = 'public.ehr_protocol_query';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
