@@ -26,10 +26,10 @@
             </exclusions>
         </dependency>
 
-        <dependency>
-            <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-core</artifactId>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>io.github.openfeign</groupId>-->
+            <!--<artifactId>feign-core</artifactId>-->
+        <!--</dependency>-->
 
         <dependency>
             <groupId>io.github.openfeign</groupId>
@@ -62,9 +62,13 @@
             </exclusions>
         </dependency>
 
+        <!--<dependency>-->
+            <!--<groupId>io.github.openfeign</groupId>-->
+            <!--<artifactId>feign-ribbon</artifactId>-->
+        <!--</dependency>-->
         <dependency>
-            <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-ribbon</artifactId>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
         </dependency>
 
         <dependency>

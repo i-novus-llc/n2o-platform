@@ -1,6 +1,8 @@
 package net.n2oapp.platform.feign.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.qualys.feign.jaxrs.JAXRS2Profile;
 import feign.Contract;
 import feign.Feign;
@@ -13,6 +15,8 @@ import feign.jackson.JacksonEncoder;
 import feign.jaxrs.JAXRSContract;
 import net.n2oapp.platform.jaxrs.MapperConfigurer;
 import net.n2oapp.platform.jaxrs.RestObjectMapper;
+import net.n2oapp.platform.jaxrs.autoconfigure.JaxRsClientAutoConfiguration;
+import net.n2oapp.platform.jaxrs.autoconfigure.JaxRsCommonAutoConfiguration;
 import net.n2oapp.platform.jaxrs.autoconfigure.JaxRsServerAutoConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,14 +27,16 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.cloud.openfeign.ribbon.FeignRibbonClientAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 
+import javax.annotation.Priority;
 import java.util.List;
 
 @Configuration
 @ConditionalOnClass(Feign.class)
 @AutoConfigureBefore(FeignRibbonClientAutoConfiguration.class)
-@AutoConfigureAfter(JaxRsServerAutoConfiguration.class)
+@AutoConfigureAfter(JaxRsCommonAutoConfiguration.class)
 public class FeignClientAutoConfiguration {
 
     private List<MapperConfigurer> mapperConfigurers;

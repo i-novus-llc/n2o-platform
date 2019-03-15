@@ -1,7 +1,7 @@
 package net.n2oapp.platform;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import net.n2oapp.platform.feign.SampleClient;
+import net.n2oapp.platform.feign.SomeFeignClient;
 import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.MapperConfigurer;
 import net.n2oapp.platform.jaxrs.RestException;
@@ -42,11 +42,11 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 @EnableFeignClients
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = FeignClientTest.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-        properties = {"server.port=8765"})
+        properties = {"server.port=8765", "cxf.jaxrs.component-scan-packages=com.fasterxml.jackson.jaxrs.json,net.n2oapp.platform.jaxrs,net.n2oapp.platform.jaxrs.impl,net.n2oapp.platform.jaxrs.api,net.n2oapp.platform.jaxrs.autoconfigure"})
 public class FeignClientTest {
 
     @Autowired
-    private SampleClient client;
+    private SomeFeignClient client;
 
     /**
      * Проверка, что REST прокси клиент обрабатывает Pageable параметры и параметры фильтрации.
