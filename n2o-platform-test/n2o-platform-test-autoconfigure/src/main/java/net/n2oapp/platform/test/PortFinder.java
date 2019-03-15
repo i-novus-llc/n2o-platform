@@ -49,7 +49,7 @@ public class PortFinder {
             ds.setReuseAddress(true);
             return true;
         } catch (IOException e) {
-            logger.error("cannot search port", e );
+            logger.error("Сan not use port: {}", port, e );
         }
 
         return false;
