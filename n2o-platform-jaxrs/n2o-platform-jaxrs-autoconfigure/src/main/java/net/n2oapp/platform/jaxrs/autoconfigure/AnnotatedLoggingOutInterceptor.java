@@ -1,6 +1,6 @@
 package net.n2oapp.platform.jaxrs.autoconfigure;
 
-import org.apache.cxf.interceptor.LoggingOutInterceptor;
+import org.apache.cxf.ext.logging.LoggingOutInterceptor;
 
 /**
  * {@inheritDoc}

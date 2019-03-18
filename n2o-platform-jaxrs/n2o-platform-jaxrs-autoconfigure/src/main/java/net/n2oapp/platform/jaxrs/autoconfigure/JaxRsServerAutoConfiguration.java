@@ -2,8 +2,8 @@ package net.n2oapp.platform.jaxrs.autoconfigure;
 
 import net.n2oapp.platform.i18n.Messages;
 import net.n2oapp.platform.jaxrs.*;
-import org.apache.cxf.interceptor.LoggingInInterceptor;
-import org.apache.cxf.interceptor.LoggingOutInterceptor;
+import org.apache.cxf.ext.logging.LoggingInInterceptor;
+import org.apache.cxf.ext.logging.LoggingOutInterceptor;
 import org.apache.cxf.jaxrs.swagger.Swagger2Feature;
 import org.apache.cxf.jaxrs.validation.JAXRSBeanValidationInInterceptor;
 import org.apache.cxf.spring.boot.autoconfigure.CxfProperties;
