@@ -16,10 +16,10 @@ import javax.ws.rs.core.MediaType;
  * т.к. бин, созданный по тому же интерфейсу конфликтует
  * с серверным {@link net.n2oapp.platform.jaxrs.impl.SomeRestImpl}
  */
-@Path("/example")
-@Consumes(MediaType.APPLICATION_JSON)
+//@Path("/example")
+//@Consumes(MediaType.APPLICATION_JSON)
 //@Produces(MediaType.APPLICATION_JSON)
-@FeignClient(name = "${feign.name}", url = "${feign.url}")
+//@FeignClient(name = "${feign.name}", url = "${feign.url}")
 public interface SampleClient {
     @GET
     @Path("/search")
