@@ -42,7 +42,12 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 @EnableFeignClients
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = FeignClientTest.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-        properties = {"server.port=8765", "cxf.jaxrs.component-scan-packages=com.fasterxml.jackson.jaxrs.json,net.n2oapp.platform.jaxrs,net.n2oapp.platform.jaxrs.impl,net.n2oapp.platform.jaxrs.api,net.n2oapp.platform.jaxrs.autoconfigure"})
+        properties = {"server.port=8765", "cxf.jaxrs.component-scan-packages=com.fasterxml.jackson.jaxrs.json," +
+                "net.n2oapp.platform.jaxrs," +
+                "net.n2oapp.platform.jaxrs.impl," +
+                "net.n2oapp.platform.jaxrs.api," +
+                "net.n2oapp.platform.jaxrs.autoconfigure," +
+                "org.apache.cxf.jaxrs.validation"})
 public class FeignClientTest {
 
     @Autowired
@@ -102,7 +107,7 @@ public class FeignClientTest {
         model.setDate(df.parse("01.01.2050 01:00"));
         try {
             client.create(model);
-            fail();
+            fail("Validation didn't work");
         } catch (Exception e) {
             assertThat(e, instanceOf(RestException.class));
             RestException restException = (RestException)e;
