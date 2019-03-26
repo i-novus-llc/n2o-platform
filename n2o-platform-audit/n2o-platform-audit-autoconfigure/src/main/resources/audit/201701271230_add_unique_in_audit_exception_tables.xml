@@ -3,26 +3,6 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-    <changeSet id="201701271230_add_unique_in_audit_exception_tables_0.1" author="tnurdinov" dbms="postgresql">
-        <sql splitStatements="false">
-            DELETE FROM aud_excluded_tables where split_part(table_name, '.',2) = ''
-        </sql>
-    </changeSet>
-
-    <changeSet id="201701271230_add_unique_in_audit_exception_tables_1.0" author="rgogolev" dbms="postgresql">
-        <sql splitStatements="false">
-            DELETE FROM aud_excluded_schemas aes USING aud_excluded_schemas aes1
-            WHERE aes.schema_name = aes1.schema_name AND aes.id > aes1.id
-        </sql>
-    </changeSet>
-
-    <changeSet id="201701271235_add_unique_in_audit_exception_tables_1.0" author="rgogolev" dbms="postgresql">
-        <sql splitStatements="false">
-            DELETE FROM aud_excluded_tables aet USING aud_excluded_tables aet1
-            WHERE aet.table_name = aet1.table_name AND aet.id > aet1.id
-        </sql>
-    </changeSet>
-
     <changeSet id="201701271240_add_unique_in_audit_exception_tables_1.0" author="rgogolev" dbms="postgresql">
         <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">select count(*) from pg_constraint where conname='aud_excluded_schemas_schema_name_uq' and contype='u';</sqlCheck>
@@ -38,12 +18,6 @@
         </preConditions>
         <sql splitStatements="false">
             ALTER TABLE aud_excluded_tables ADD CONSTRAINT aud_excluded_tables_table_name_uq UNIQUE (table_name);
-        </sql>
-    </changeSet>
-
-    <changeSet id="201701271250_add_unique_in_audit_exception_tables_1.0" author="rgogolev" dbms="postgresql">
-        <sql splitStatements="false">
-            update aud_excluded_columns aec set table_name = 'public.' || aec.table_name where split_part(aec.table_name, '.',2) = '';
         </sql>
     </changeSet>
 
