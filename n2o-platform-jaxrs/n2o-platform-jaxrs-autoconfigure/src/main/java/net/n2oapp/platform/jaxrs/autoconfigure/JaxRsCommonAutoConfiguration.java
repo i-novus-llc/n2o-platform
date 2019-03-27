@@ -47,7 +47,7 @@ public class JaxRsCommonAutoConfiguration {
     }
 
     @Bean
-    TypedParamConverter<LocalDateTime> localDateTimeParameterConverter2() {
+    TypedParamConverter<LocalDateTime> localDateTimeParameterConverter() {
         return new LocalDateTimeISOParameterConverter();
     }
 
