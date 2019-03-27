@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet id="201701271240_add_unique_in_audit_exception_tables_1.0" author="rgogolev" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">select count(*) from pg_constraint where conname='aud_excluded_schemas_schema_name_uq' and contype='u';</sqlCheck>
+        </preConditions>
+        <sql splitStatements="false">
+            ALTER TABLE aud_excluded_schemas ADD CONSTRAINT aud_excluded_schemas_schema_name_uq UNIQUE (schema_name);
+        </sql>
+    </changeSet>
+
+    <changeSet id="201701271245_add_unique_in_audit_exception_tables_1.0" author="rgogolev" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">select count(*) from pg_constraint where conname='aud_excluded_tables_table_name_uq' and contype='u';</sqlCheck>
+        </preConditions>
+        <sql splitStatements="false">
+            ALTER TABLE aud_excluded_tables ADD CONSTRAINT aud_excluded_tables_table_name_uq UNIQUE (table_name);
+        </sql>
+    </changeSet>
+
+    <changeSet id="201701271300_add_unique_in_audit_exception_tables_1.0" author="rgogolev" dbms="postgresql">
+    <preConditions onFail="MARK_RAN">
+        <sqlCheck expectedResult="0">select count(*) from pg_constraint where conname='aud_excluded_tables_check_schema' and contype='c';</sqlCheck>
+    </preConditions>
+        <sql splitStatements="false">
+            ALTER TABLE aud_excluded_tables ADD constraint aud_excluded_tables_check_schema check (split_part(table_name, '.',2) != '');
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet id="201608290927_type_check_con_bfx_1.0" author="tnurdinov" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="create_current_part">
+                select  set_config('app.source', 'create_current_part', true)||audit.get_part_postfix();
+            </sqlCheck>
+        </preConditions>
+        <sql splitStatements="false">
+            <![CDATA[
+                CREATE OR REPLACE FUNCTION audit.get_part_postfix()
+                  RETURNS TEXT AS
+                  $BODY$
+                  DECLARE
+                    current_dt TIMESTAMP;
+                  BEGIN
+                    /*
+                    ------- replicate mode ---------
+                    current_dt := now();
+                    IF ('create_next_part' = (SELECT current_setting('app.source'))) THEN
+                      RETURN '_y' || date_part( 'year', current_dt + interval '1 month' )::text || '_m' || date_part( 'month', current_dt + interval '1 month')::text;
+                    ELSEIF ('drop_previous_part' = (SELECT current_setting('app.source'))) THEN
+                      RETURN '_y' || date_part( 'year', current_dt - interval '1 month' )::text || '_m' || date_part( 'month', current_dt - interval '1 month')::text;
+                    ELSE
+                      RETURN '_y' || date_part( 'year', current_dt )::text || '_m' || date_part( 'month', current_dt )::text;
+                    END IF;
+                     ------- end ---------
+                    */
+
+                    -------- simple mode -------
+                     IF ('create_current_part' = (SELECT current_setting('app.source'))) THEN
+                        current_dt := now();
+                        RETURN '_y' || date_part( 'year', current_dt )::text || '_m' || date_part( 'month', current_dt )::text;
+                     ELSE
+                        RETURN '';
+                     END IF;
+                     ------- end ---------
+                  END;
+                  $BODY$
+                LANGUAGE plpgsql;
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="201608290927_type_check_con_bfx_2.0" author="tnurdinov" dbms="postgresql">
+        <sql splitStatements="false">
+            <![CDATA[
+                DO $$DECLARE r text;
+                BEGIN
+                    FOR r IN select DISTINCT conname from pg_constraint where connamespace::regnamespace = 'audit'::regnamespace and  (conname not like '%_type_check'  and conname not like '%_pk')
+
+                    LOOP
+                        EXECUTE 'ALTER TABLE audit.' || r || ' DROP CONSTRAINT ' || r || ';
+                        ALTER TABLE audit.' || r || ' ADD CONSTRAINT ' || r || '_type_check CHECK (type = ANY (ARRAY[''I''::text, ''D''::text, ''U''::text, ''T''::text]))';
+                    END LOOP;
+                END$$;
+            ]]>
+        </sql>
+    </changeSet>
+
+    </databaseChangeLog>

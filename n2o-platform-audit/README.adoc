@@ -1,0 +1,17 @@
+= Документация
+
+
+= Возможности
+Эта библиотека подключает аудит на уровне БД.
+
+= Подключение
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-starter-audit</artifactId>
+</dependency>
+----
+
+
+
+
