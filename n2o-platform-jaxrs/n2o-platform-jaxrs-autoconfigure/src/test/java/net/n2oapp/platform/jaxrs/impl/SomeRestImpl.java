@@ -82,6 +82,7 @@ public class SomeRestImpl implements SomeRest {
         SomeModel model = new SomeModel(id);
         model.setDate(criteria.getDateBegin());
         model.setName(criteria.getLikeName());
+        model.setDateEnd(criteria.getDateEnd());
         return model;
     }
 }

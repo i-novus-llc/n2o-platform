@@ -6,6 +6,7 @@ import net.n2oapp.platform.jaxrs.RestCriteria;
 import org.springframework.data.domain.Sort;
 
 import javax.ws.rs.QueryParam;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter @Setter
@@ -14,6 +15,8 @@ public class SomeCriteria extends RestCriteria {
     private String likeName;
     @QueryParam("date")
     private Date dateBegin;
+    @QueryParam("dateEnd")
+    private LocalDateTime dateEnd;
 
     public SomeCriteria() {
     }

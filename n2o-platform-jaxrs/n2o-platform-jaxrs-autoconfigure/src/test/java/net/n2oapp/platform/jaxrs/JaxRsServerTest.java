@@ -150,10 +150,12 @@ public class JaxRsServerTest {
         Map<?, ?> page = client().path("example").path("search")
                 .query("name", "John")
                 .query("date", "2018-03-01T08:00:00.000+0000")
+                .query("dateEnd", "2018-03-31T08:00:00")
                 .get(Map.class);
         List<Map<String, Object>> content = (List<Map<String, Object>>) page.get("content");
         assertThat(content.get(0).get("name"), equalTo("John"));
         assertThat(content.get(0).get("date"), equalTo("2018-03-01T08:00:00.000+0000"));
+        assertThat(content.get(0).get("dateEnd"), equalTo("2018-03-31T08:00:00"));
     }
 
     /**

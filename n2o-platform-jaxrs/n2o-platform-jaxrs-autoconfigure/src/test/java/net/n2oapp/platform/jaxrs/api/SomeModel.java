@@ -6,6 +6,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Past;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -17,6 +18,7 @@ public class SomeModel {
     private Long id;
     private @NotBlank String name;
     private @Past Date date;
+    private @Past LocalDateTime dateEnd;
 
     public SomeModel() { }
 
