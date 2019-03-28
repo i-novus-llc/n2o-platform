@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Sort;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
@@ -43,6 +44,11 @@ public class JaxRsCommonAutoConfiguration {
     @Bean
     TypedParamConverter<Date> dateParameterConverter() {
         return new DateISOParameterConverter();
+    }
+
+    @Bean
+    TypedParamConverter<LocalDateTime> localDateTimeParameterConverter() {
+        return new LocalDateTimeISOParameterConverter();
     }
 
     @Bean
