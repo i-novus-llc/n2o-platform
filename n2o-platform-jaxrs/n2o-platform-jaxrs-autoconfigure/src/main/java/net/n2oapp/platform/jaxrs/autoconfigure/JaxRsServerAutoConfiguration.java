@@ -53,18 +53,26 @@ public class JaxRsServerAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix="jaxrs", name="log-in", matchIfMissing = true)
+    @ConditionalOnProperty(prefix="jaxrs", name={"log-in", "logging-in.enabled"}, matchIfMissing = true)
     LoggingInInterceptor loggingInInterceptor() {
         AnnotatedLoggingInInterceptor loggingInInterceptor = new AnnotatedLoggingInInterceptor();
-        loggingInInterceptor.setLimit(-1);             // no limit
+        loggingInInterceptor.setLimit(jaxRsProperties.getLoggingIn().getLimit());
+        loggingInInterceptor.setInMemThreshold(jaxRsProperties.getLoggingIn().getInMemThreshold());
+        loggingInInterceptor.setLogBinary(jaxRsProperties.getLoggingIn().isLogBinary());
+        loggingInInterceptor.setLogMultipart(jaxRsProperties.getLoggingIn().isLogMultipart());
+        loggingInInterceptor.setPrettyLogging(jaxRsProperties.getLoggingIn().isPrettyLogging());
         return loggingInInterceptor;
     }
 
     @Bean
-    @ConditionalOnProperty(prefix="jaxrs", name="log-out", matchIfMissing = true)
+    @ConditionalOnProperty(prefix="jaxrs", name={"log-out", "logging-out.enabled"}, matchIfMissing = true)
     LoggingOutInterceptor loggingOutInterceptor() {
         LoggingOutInterceptor loggingOutInterceptor = new AnnotatedLoggingOutInterceptor();
-        loggingOutInterceptor.setLimit(-1);             // no limit
+        loggingOutInterceptor.setLimit(jaxRsProperties.getLoggingOut().getLimit());
+        loggingOutInterceptor.setInMemThreshold(jaxRsProperties.getLoggingOut().getInMemThreshold());
+        loggingOutInterceptor.setLogBinary(jaxRsProperties.getLoggingOut().isLogBinary());
+        loggingOutInterceptor.setLogMultipart(jaxRsProperties.getLoggingOut().isLogMultipart());
+        loggingOutInterceptor.setPrettyLogging(jaxRsProperties.getLoggingOut().isPrettyLogging());
         return loggingOutInterceptor;
     }
 

@@ -10,11 +10,81 @@ public class JaxRsProperties {
     /**
      * Логирование всех запросов
      */
+    private Logging loggingIn = new Logging();
+    /**
+     *  @deprecated используйте loggingIn
+     */
+    @Deprecated (forRemoval = true)
     private boolean logIn = true;
     /**
      * Логирование всех ответов
      */
+    private Logging loggingOut = new Logging();
+    /**
+     *  @deprecated используйте loggingOut
+     */
+    @Deprecated (forRemoval = true)
     private boolean logOut = true;
+
+    public static class Logging {
+        private boolean enabled = true;
+        //The size limit at which messages are truncated in the log. The default is unlimited.
+        private int limit = -1;
+        //Size limit when messages are written to disk. The default is 100kb.
+        private long inMemThreshold = 100L * 1024;
+        private boolean prettyLogging;
+        private boolean logBinary;
+        private boolean logMultipart = true;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public int getLimit() {
+            return limit;
+        }
+
+        public void setLimit(int limit) {
+            this.limit = limit;
+        }
+
+        public long getInMemThreshold() {
+            return inMemThreshold;
+        }
+
+        public void setInMemThreshold(long inMemThreshold) {
+            this.inMemThreshold = inMemThreshold;
+        }
+
+        public boolean isPrettyLogging() {
+            return prettyLogging;
+        }
+
+        public void setPrettyLogging(boolean prettyLogging) {
+            this.prettyLogging = prettyLogging;
+        }
+
+        public boolean isLogBinary() {
+            return logBinary;
+        }
+
+        public void setLogBinary(boolean logBinary) {
+            this.logBinary = logBinary;
+        }
+
+        public boolean isLogMultipart() {
+            return logMultipart;
+        }
+
+        public void setLogMultipart(boolean logMultipart) {
+            this.logMultipart = logMultipart;
+        }
+    }
+
     /**
      * Включение валидаций JSR303
      */
@@ -77,20 +147,44 @@ public class JaxRsProperties {
         return swagger;
     }
 
+    /**
+     *  @deprecated используйте loggingIn
+     */
+    @Deprecated (forRemoval = true)
     public boolean isLogIn() {
         return logIn;
     }
 
+    /**
+     *  @deprecated используйте loggingIn
+     */
+    @Deprecated (forRemoval = true)
     public void setLogIn(boolean logIn) {
         this.logIn = logIn;
     }
 
+    /**
+     *  @deprecated используйте loggingOut
+     */
+    @Deprecated (forRemoval = true)
     public boolean isLogOut() {
         return logOut;
     }
 
+    /**
+     *  @deprecated используйте loggingOut
+     */
+    @Deprecated (forRemoval = true)
     public void setLogOut(boolean logOut) {
         this.logOut = logOut;
+    }
+
+    public Logging getLoggingIn() {
+        return loggingIn;
+    }
+
+    public Logging getLoggingOut() {
+        return loggingOut;
     }
 
     public boolean isJsr303() {
