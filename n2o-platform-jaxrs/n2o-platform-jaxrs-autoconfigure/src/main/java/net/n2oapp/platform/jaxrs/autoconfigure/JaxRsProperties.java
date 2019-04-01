@@ -147,18 +147,34 @@ public class JaxRsProperties {
         return swagger;
     }
 
+    /**
+     *  @deprecated используйте loggingIn
+     */
+    @Deprecated (forRemoval = true)
     public boolean isLogIn() {
         return logIn;
     }
 
+    /**
+     *  @deprecated используйте loggingIn
+     */
+    @Deprecated (forRemoval = true)
     public void setLogIn(boolean logIn) {
         this.logIn = logIn;
     }
 
+    /**
+     *  @deprecated используйте loggingOut
+     */
+    @Deprecated (forRemoval = true)
     public boolean isLogOut() {
         return logOut;
     }
 
+    /**
+     *  @deprecated используйте loggingOut
+     */
+    @Deprecated (forRemoval = true)
     public void setLogOut(boolean logOut) {
         this.logOut = logOut;
     }
