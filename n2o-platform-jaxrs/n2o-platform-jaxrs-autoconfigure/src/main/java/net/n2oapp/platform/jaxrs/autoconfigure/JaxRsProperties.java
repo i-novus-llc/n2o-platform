@@ -14,7 +14,7 @@ public class JaxRsProperties {
     /**
      *  @deprecated используйте loggingIn
      */
-    @Deprecated
+    @Deprecated (forRemoval = true)
     private boolean logIn = true;
     /**
      * Логирование всех ответов
@@ -23,7 +23,7 @@ public class JaxRsProperties {
     /**
      *  @deprecated используйте loggingOut
      */
-    @Deprecated
+    @Deprecated (forRemoval = true)
     private boolean logOut = true;
 
     public static class Logging {
