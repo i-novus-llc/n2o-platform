@@ -22,7 +22,9 @@ public class JaxRsProperties {
 
     public static class Logging {
         private boolean enabled = true;
-        private int limit = 1024 * 1024;
+        //The size limit at which messages are truncated in the log. The default is unlimited.
+        private int limit = -1;
+        //Size limit when messages are written to disk. The default is 100kb.
         private long inMemThreshold = 100 * 1024;
         private boolean prettyLogging;
         private boolean logBinary;
