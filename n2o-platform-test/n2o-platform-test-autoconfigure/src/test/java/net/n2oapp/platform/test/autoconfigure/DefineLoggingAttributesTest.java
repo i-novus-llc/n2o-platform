@@ -35,7 +35,6 @@ import static org.junit.Assert.assertEquals;
 public class DefineLoggingAttributesTest {
 
     @Autowired
-    @SpyBean
     private LoggingInInterceptor loggingInInterceptor;
 
     @Test
