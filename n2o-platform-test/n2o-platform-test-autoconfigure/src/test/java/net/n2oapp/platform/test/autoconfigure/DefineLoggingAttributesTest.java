@@ -1,14 +1,19 @@
 package net.n2oapp.platform.test.autoconfigure;
 
+import org.apache.cxf.ext.logging.AbstractLoggingInterceptor;
 import org.apache.cxf.ext.logging.LoggingInInterceptor;
-import org.junit.Assert;
+import org.apache.cxf.ext.logging.event.LogEventSender;
+import org.apache.cxf.ext.logging.event.PrettyLoggingFilter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.lang.reflect.Field;
+
+import static org.junit.Assert.assertEquals;
 
 
 /**
@@ -18,26 +23,56 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class,
         properties = {
-                "cxf.servlet.init.service-list-path=/info",
-                "cxf.path=/test/api",
-                "cxf.jaxrs.component-scan=true",
-                "cxf.jaxrs.client.classes-scan=true",
-                "cxf.jaxrs.client.classes-scan-packages=net.n2oapp.platform.test.autoconfigure.rest.api",
-                "cxf.jaxrs.client.address=http://10.10.10.10:1010/test/api",
                 "jaxrs.logging-in.enabled=true",
                 "jaxrs.logging-in.limit=1024",
                 "jaxrs.logging-in.in-mem-threshold=102400",
+                "jaxrs.logging-in.log-binary=true",
+                "jaxrs.logging-in.log-multipart=true",
+                "jaxrs.logging-in.pretty-logging=true",
         },
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@DefinePort
 public class DefineLoggingAttributesTest {
 
-        @Autowired
-        @SpyBean
-        private LoggingInInterceptor loggingInInterceptor;
+    @Autowired
+    @SpyBean
+    private LoggingInInterceptor loggingInInterceptor;
 
-        @Test
-        public void testLoggingAttributes(){
-                Assert.assertEquals(1024, loggingInInterceptor.getLimit());
-                Assert.assertEquals(100*1024, loggingInInterceptor.getInMemThreshold());
+    @Test
+    public void testLimit() {
+        assertEquals(1024, loggingInInterceptor.getLimit());
+    }
+
+    @Test
+    public void testInMemThreshold() {
+        assertEquals(100 * 1024, loggingInInterceptor.getInMemThreshold());
+    }
+
+    @Test
+    public void testLogBinary() throws NoSuchFieldException, IllegalAccessException {
+        Field privateLogBinaryField = AbstractLoggingInterceptor.class.getDeclaredField("logBinary");
+        privateLogBinaryField.setAccessible(true);
+        assertEquals(true, privateLogBinaryField.get(loggingInInterceptor));
+    }
+
+    @Test
+    public void testLogMultipart() throws NoSuchFieldException, IllegalAccessException {
+        Field privateLogMultipartField = AbstractLoggingInterceptor.class.getDeclaredField("logMultipart");
+        privateLogMultipartField.setAccessible(true);
+        assertEquals(true, privateLogMultipartField.get(loggingInInterceptor));
+    }
+
+    @Test
+    public void testPrettyLogging() throws NoSuchFieldException, IllegalAccessException {
+        Field privateSenderField = AbstractLoggingInterceptor.class.getDeclaredField("sender");
+        privateSenderField.setAccessible(true);
+        LogEventSender sender = (LogEventSender) privateSenderField.get(loggingInInterceptor);
+
+        if (sender instanceof PrettyLoggingFilter) {
+            Field privatePrettyField = PrettyLoggingFilter.class.getDeclaredField("prettyLogging");
+            privatePrettyField.setAccessible(true);
+            assertEquals(true, privatePrettyField.get(sender));
         }
+    }
 }
+
