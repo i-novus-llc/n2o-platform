@@ -15,7 +15,6 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author lgalimova
  * @since 02.04.2019
  */
-@ActiveProfiles("Logging-test")
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class,
         properties = {
