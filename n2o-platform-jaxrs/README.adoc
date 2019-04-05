@@ -8,7 +8,7 @@
 Эта библиотека обеспечивает интеграцию JaxRS провайдера `CXF` и моделей `Spring Data Common` через автоконфигурацию `Spring Boot`.
 
 * Автоматическое разворачивание REST сервисов (`@Path`)
-* Автоматическое подключение REST прокси клиентов
+* *_@deprecated (use feign)_* Автоматическое подключение REST прокси клиентов
 * Интеграция со Swagger (`@Api*`)
 * Прозрачная работа с моделями Spring Data: `Page`, `Pageable`, `Sort`
 * Обработка и возврат локализованных сообщений об ошибках клиенту в виде json
@@ -242,7 +242,7 @@ jaxrs.swagger.resource-package=net.n2oapp.microservice.example
 
 image::images\README-f585f.png[]
 
-== Прокси клиент
+== Прокси клиент *_@deprecated (use feign)_*
 
 === Подключение
 
