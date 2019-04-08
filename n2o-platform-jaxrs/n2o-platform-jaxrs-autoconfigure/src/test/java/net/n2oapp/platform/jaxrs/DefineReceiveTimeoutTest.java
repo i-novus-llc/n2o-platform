@@ -15,11 +15,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-@SpringBootApplication
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = DefineReceiveTimeoutTest.class,
+@SpringBootTest(classes = Application.class,
         properties = {
-                "server.port=9876",
+                "server.port=9877",
                 "cxf.servlet.init.service-list-path=/info",
                 "cxf.path=/test/api",
                 "cxf.jaxrs.component-scan=true",

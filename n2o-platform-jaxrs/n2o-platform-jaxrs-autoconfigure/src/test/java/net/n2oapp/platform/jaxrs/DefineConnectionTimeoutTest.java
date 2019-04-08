@@ -12,11 +12,10 @@ import java.net.SocketTimeoutException;
 
 import static org.junit.Assert.*;
 
-@SpringBootApplication
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = DefineConnectionTimeoutTest.class,
+@SpringBootTest(classes = Application.class,
         properties = {
-                "server.port=9876",
+                "server.port=9878",
                 "cxf.servlet.init.service-list-path=/info",
                 "cxf.path=/test/api",
                 "cxf.jaxrs.component-scan=true",

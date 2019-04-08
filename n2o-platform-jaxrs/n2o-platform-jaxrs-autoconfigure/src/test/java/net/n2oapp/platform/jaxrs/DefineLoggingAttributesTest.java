@@ -20,11 +20,9 @@ import static org.junit.Assert.assertEquals;
  * @author lgalimova
  * @since 02.04.2019
  */
-@SpringBootApplication
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = DefineLoggingAttributesTest.class,
+@SpringBootTest(classes = Application.class,
         properties = {
-                "server.port=9876",
                 "jaxrs.logging-in.enabled=true",
                 "jaxrs.logging-in.limit=" + DefineLoggingAttributesTest.LIMIT,
                 "jaxrs.logging-in.in-mem-threshold=" + DefineLoggingAttributesTest.IN_MEM_THRESHOLD,
@@ -32,7 +30,7 @@ import static org.junit.Assert.assertEquals;
                 "jaxrs.logging-in.log-multipart=" + DefineLoggingAttributesTest.LOG_MULTIPART,
                 "jaxrs.logging-in.pretty-logging=" + DefineLoggingAttributesTest.PRETTY_LOGGING
         },
-        webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class DefineLoggingAttributesTest {
 
     static final int LIMIT = 1024;
