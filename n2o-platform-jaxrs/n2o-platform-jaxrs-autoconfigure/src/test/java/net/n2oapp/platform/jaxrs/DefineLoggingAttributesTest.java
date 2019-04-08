@@ -1,4 +1,4 @@
-package net.n2oapp.platform.test.autoconfigure;
+package net.n2oapp.platform.jaxrs;
 
 import org.apache.cxf.ext.logging.AbstractLoggingInterceptor;
 import org.apache.cxf.ext.logging.LoggingInInterceptor;
@@ -7,6 +7,7 @@ import org.apache.cxf.ext.logging.event.PrettyLoggingFilter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -19,9 +20,11 @@ import static org.junit.Assert.assertEquals;
  * @author lgalimova
  * @since 02.04.2019
  */
+@SpringBootApplication
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = Application.class,
+@SpringBootTest(classes = DefineLoggingAttributesTest.class,
         properties = {
+                "server.port=9876",
                 "jaxrs.logging-in.enabled=true",
                 "jaxrs.logging-in.limit=" + DefineLoggingAttributesTest.LIMIT,
                 "jaxrs.logging-in.in-mem-threshold=" + DefineLoggingAttributesTest.IN_MEM_THRESHOLD,
@@ -30,7 +33,6 @@ import static org.junit.Assert.assertEquals;
                 "jaxrs.logging-in.pretty-logging=" + DefineLoggingAttributesTest.PRETTY_LOGGING
         },
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-@DefinePort
 public class DefineLoggingAttributesTest {
 
     static final int LIMIT = 1024;
