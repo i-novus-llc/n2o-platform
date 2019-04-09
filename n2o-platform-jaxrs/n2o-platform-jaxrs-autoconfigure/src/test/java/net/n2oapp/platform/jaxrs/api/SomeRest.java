@@ -79,4 +79,12 @@ public interface SomeRest {
     @ApiOperation("Список ошибок")
     void throwErrors();
 
+    @GET
+    @Path("/timeoutSuccess")
+    String timeoutSuccess() throws InterruptedException;
+
+    @GET
+    @Path("/timeoutFailure")
+    String timeoutFailure() throws InterruptedException;
+
 }
