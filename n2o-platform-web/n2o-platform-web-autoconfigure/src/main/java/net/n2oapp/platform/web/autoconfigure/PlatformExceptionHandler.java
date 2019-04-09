@@ -1,6 +1,5 @@
 package net.n2oapp.platform.web.autoconfigure;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.n2oapp.criteria.dataset.DataSet;
 import net.n2oapp.framework.api.criteria.N2oPreparedCriteria;
@@ -17,14 +16,13 @@ import net.n2oapp.platform.jaxrs.RestMessage;
 import org.springframework.web.client.HttpStatusCodeException;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Получение пользовательских сообщений и стектрейса ошибок от REST сервисов
  */
 public class PlatformExceptionHandler extends N2oOperationExceptionHandler implements QueryExceptionHandler {
     private Messages messages;
+    private ObjectMapper objectMapper = new ObjectMapper();;
 
     @Override
     public N2oException handle(CompiledObject.Operation operation, DataSet dataSet, Exception e) {
@@ -44,6 +42,10 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
 
     void setMessages(Messages messages) {
         this.messages = messages;
+    }
+
+    void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
     }
 
     private N2oException handle(Exception e) {
@@ -83,35 +85,25 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
     private N2oException handleRestClientException(Exception e) {
         HttpStatusCodeException restClientException = unwrapEx(e, HttpStatusCodeException.class);
         if (restClientException != null) {
-            String body = restClientException.getResponseBodyAsString();
-            JsonNode node;
+            RestMessage message;
             try {
-                node = new ObjectMapper().readTree(body);
+                message = objectMapper.readValue(restClientException.getResponseBodyAsByteArray(), RestMessage.class);
             } catch (IOException e1) {
                 N2oException n2oException = new N2oException(e);
                 n2oException.addSuppressed(e1);
                 return n2oException;
             }
-            String message = node != null && node.get("message") != null ? node.get("message").asText() : null;
             if (restClientException.getStatusCode().is4xxClientError() && message != null) {
-                return new N2oUserException(message);
+                return new N2oUserException(message.getMessage());
             } else if (restClientException.getStatusCode().is5xxServerError() && message != null) {
-                RestMessage restMessage = new RestMessage(message);
-                if (node.get("stackTrace") != null) {
-                    List<String> stackTrace = new ArrayList<>();
-                    for (JsonNode jsonNode : node.get("stackTrace")) {
-                        stackTrace.add(jsonNode.asText());
-                    }
-                    restMessage.setStackTrace(stackTrace.toArray(new String[0]));
-                }
-                return new N2oException(new RestException(restMessage, restClientException.getRawStatusCode(), e));
+                return new N2oException(new RestException(message, restClientException.getRawStatusCode(), e));
             }
         }
         return null;
     }
 
     private <T extends Exception> T unwrapEx(Throwable e, Class<T> exClass) {
-        if (e.getClass().equals(exClass)) {
+        if (exClass.isAssignableFrom(e.getClass())) {
             //noinspection unchecked
             return (T) e;
         } else if (e.getCause() != null) {
