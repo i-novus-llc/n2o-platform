@@ -1,11 +1,11 @@
 package net.n2oapp.platform.jaxrs;
 
 import net.n2oapp.platform.jaxrs.api.SomeRest;
-import net.n2oapp.platform.test.autoconfigure.DefinePort;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import java.net.SocketTimeoutException;
@@ -15,6 +15,7 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class,
         properties = {
+                "server.port=9878",
                 "cxf.servlet.init.service-list-path=/info",
                 "cxf.path=/test/api",
                 "cxf.jaxrs.component-scan=true",
@@ -24,7 +25,6 @@ import static org.junit.Assert.*;
                 "cxf.jaxrs.client.connection.timeout=1000",
         },
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-@DefinePort
 public class DefineConnectionTimeoutTest {
 
     @Autowired
