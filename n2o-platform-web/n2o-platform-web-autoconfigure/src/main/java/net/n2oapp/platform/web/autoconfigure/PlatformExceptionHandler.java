@@ -22,7 +22,7 @@ import java.io.IOException;
  */
 public class PlatformExceptionHandler extends N2oOperationExceptionHandler implements QueryExceptionHandler {
     private Messages messages;
-    private ObjectMapper objectMapper = new ObjectMapper();;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public N2oException handle(CompiledObject.Operation operation, DataSet dataSet, Exception e) {
