@@ -15,9 +15,9 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @since 14.01.2019
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes=BootstrapAutoConfigurationTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes= CloudBootstrapAutoConfigurationTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EnableAutoConfiguration
-public class BootstrapAutoConfigurationTest {
+public class CloudBootstrapAutoConfigurationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 

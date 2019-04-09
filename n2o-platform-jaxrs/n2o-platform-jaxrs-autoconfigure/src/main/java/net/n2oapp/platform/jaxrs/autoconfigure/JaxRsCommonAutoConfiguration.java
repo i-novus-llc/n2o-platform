@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
@@ -24,6 +25,7 @@ import java.util.Set;
  */
 @Configuration
 @AutoConfigureBefore({CxfAutoConfiguration.class, JaxRsServerAutoConfiguration.class, JaxRsClientAutoConfiguration.class})
+@PropertySource("classpath:/META-INF/net/n2oapp/platform/jaxrs/default.properties")
 public class JaxRsCommonAutoConfiguration {
     private List<MapperConfigurer> mapperConfigurers;
 

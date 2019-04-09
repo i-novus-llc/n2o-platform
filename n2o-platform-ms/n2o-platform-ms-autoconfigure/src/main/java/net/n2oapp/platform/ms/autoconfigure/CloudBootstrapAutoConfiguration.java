@@ -8,6 +8,6 @@ import org.springframework.context.annotation.PropertySource;
  * @since 11.01.2019
  */
 @Configuration
-@PropertySource("classpath:base-bootstrap.properties")
-public class BootstrapAutoConfiguration {
+@PropertySource("classpath:cloud.n2o.default.bootstrap.properties")
+public class CloudBootstrapAutoConfiguration {
 }
