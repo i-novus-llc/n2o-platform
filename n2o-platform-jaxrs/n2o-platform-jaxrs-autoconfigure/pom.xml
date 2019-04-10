@@ -121,6 +121,12 @@
             <artifactId>lombok</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-integration-tracing-brave</artifactId>
+            <optional>true</optional>
+        </dependency>
         <!-- /TEST -->
 
     </dependencies>
