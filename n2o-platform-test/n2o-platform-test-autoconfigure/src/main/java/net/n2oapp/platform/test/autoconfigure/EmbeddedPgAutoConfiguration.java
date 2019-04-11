@@ -155,17 +155,16 @@ public class EmbeddedPgAutoConfiguration {
 
     private static class EmbeddedDataSourceFactory {
 
-        public DataSource getEmbeddedDatabase() {
-            int port = PortFinder.getPort();
+        DataSource getEmbeddedDatabase() {
+            int port = PortFinder.getPort("embedded-postgres");
             String dbName = "db_" + port;
 
-            EmbeddedPostgres pg = null;
+            EmbeddedPostgres pg;
             try {
-
                 pg = EmbeddedPostgres.builder().setPgBinaryResolver(new PatchedPgBinaryResolver()).setCleanDataDirectory(true).setPort(port).start();
             } catch (IOException e) {
                 logger.error("cannot build EmbeddedPostgres", e);
-                throw new BeanCreationException("cannot create datasource", e);
+                throw new BeanCreationException("cannot create dataSource", e);
             }
             DataSource dataSource = pg.getPostgresDatabase();
             try (Connection connection = dataSource.getConnection();
@@ -184,7 +183,7 @@ public class EmbeddedPgAutoConfiguration {
                                  "FOR word, hword, hword_part\n" +
                                  "WITH ispell_ru, russian_stem; " +
                                  "DROP DATABASE IF EXISTS " + dbName + "; CREATE DATABASE " + dbName + ";"
-                 );) {
+                 )) {
                 preparedStatement.executeUpdate();
                 DataSource ds = pg.getDatabase("postgres", dbName);
                 try (

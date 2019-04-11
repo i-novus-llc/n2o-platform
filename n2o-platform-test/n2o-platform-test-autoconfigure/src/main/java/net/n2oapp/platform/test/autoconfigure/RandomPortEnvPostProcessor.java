@@ -21,7 +21,7 @@ public class RandomPortEnvPostProcessor implements EnvironmentPostProcessor {
         Class clazz = springApplication.getMainApplicationClass();
         Map<String, Object> map = new HashMap<>();
         if (clazz.getAnnotation(DefinePort.class) != null) {
-            map.put("server.port", PortFinder.getPort());
+            map.put("server.port", PortFinder.getPort("spring-boot"));
         }
         if(clazz.getAnnotation(EnableEmbeddedPg.class) != null) {
             map.put("test.embedded-pg", true);
