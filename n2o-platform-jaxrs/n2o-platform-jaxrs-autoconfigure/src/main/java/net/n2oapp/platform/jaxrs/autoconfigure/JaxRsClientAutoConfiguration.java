@@ -13,8 +13,6 @@ import org.springframework.context.annotation.Import;
 
 @Configuration
 @ConditionalOnClass(Client.class)
-@ConditionalOnProperty(prefix = "cxf.jaxrs.client", name = "classes-scan", havingValue = "true")
-@Import(JaxRsProxyClientRegistrar.class)
 @AutoConfigureBefore(CxfAutoConfiguration.class)
 public class JaxRsClientAutoConfiguration {
     @Bean
@@ -27,4 +25,9 @@ public class JaxRsClientAutoConfiguration {
     BraveClientProvider braveClientProvider(Tracing brave) {
         return new BraveClientProvider(brave);
     }
+
+    @Configuration
+    @ConditionalOnProperty(prefix = "cxf.jaxrs.client", name = "classes-scan", havingValue = "true")
+    @Import(JaxRsProxyClientRegistrar.class)
+    static class JaxRsProxyClientScanAutoConfiguration {}
 }
