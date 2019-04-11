@@ -33,8 +33,8 @@ public class PortFinder {
         int attemptsCount = 1;
         while (usedList.contains(startPort) || !available(startPort)) {
             if (attemptsCount > ATTEMPTS_LIMIT)
-                throw new RuntimeException("Attempts limit exceeded");
-            startPort++;// = getRandomPort();
+                throw new IllegalStateException("Attempts limit exceeded");
+            startPort = getRandomPort();
             attemptsCount++;
         }
         usedList.add(startPort);
@@ -58,7 +58,7 @@ public class PortFinder {
             ds.setReuseAddress(true);
             return true;
         } catch (IOException e) {
-            logger.info("Сan not use port: {}, error: {}", port, e.getMessage());
+            logger.info("Сan not use port: {}", port, e);
         }
 
         return false;
