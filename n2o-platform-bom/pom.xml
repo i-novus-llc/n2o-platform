@@ -15,7 +15,7 @@
     </parent>
 
     <properties>
-        <n2o.version>6.1.21</n2o.version>
+        <n2o.version>7.2.0</n2o.version>
         <cxf.version>3.3.1</cxf.version>
         <swagger.version>3.20.1</swagger.version>
         <swagger-annotations.version>1.5.21</swagger-annotations.version>
@@ -117,8 +117,23 @@
                 <artifactId>n2o-platform-feign-autoconfigure</artifactId>
                 <version>2.6-SNAPSHOT</version>
             </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-web-autoconfigure</artifactId>
+                <version>2.6-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-starter-web</artifactId>
+                <version>2.6-SNAPSHOT</version>
+            </dependency>
 
             <!--N2O Framework-->
+            <dependency>
+                <groupId>net.n2oapp.framework</groupId>
+                <artifactId>n2o-spring-boot-starter</artifactId>
+                <version>${n2o.version}</version>
+            </dependency>
             <dependency>
                 <groupId>net.n2oapp.framework</groupId>
                 <artifactId>n2o-api</artifactId>
@@ -136,34 +151,8 @@
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.framework</groupId>
-                <artifactId>n2o-engine-rest</artifactId>
-                <version>${n2o.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.n2oapp.framework</groupId>
-                <artifactId>n2o-header</artifactId>
-                <version>${n2o.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.n2oapp.framework</groupId>
                 <artifactId>n2o-access</artifactId>
                 <version>${n2o.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.n2oapp.framework</groupId>
-                <artifactId>n2o-context</artifactId>
-                <version>${n2o.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.n2oapp.framework</groupId>
-                <artifactId>n2o-processing</artifactId>
-                <version>${n2o.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.n2oapp.framework</groupId>
-                <artifactId>n2o-ui</artifactId>
-                <version>${n2o.version}</version>
-                <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.framework</groupId>

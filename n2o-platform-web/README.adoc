@@ -1,0 +1,35 @@
+= Документация
+:toc:
+:toclevels: 3
+:toc-title: Содержание
+
+= Возможности
+
+* Создание сервера N2O Frontend Web Framework (без статики)
+* Проброс сообщений пользователя от Backend на Frontend, если на бекенде бросили UserException
+* На UI будет отображаться стектрейс бекенда, если на бекенде во время выполнения запроса произошла непредвиденная ошибка
+
+= Подключение
+
+Добавьте зависимость:
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-starter-web</artifactId>
+</dependency>
+----
+
+Также вам понадобится зависимость от модуля статики.
+
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.framework</groupId>
+  <artifactId>n2o-web</artifactId>
+</dependency>
+----
+
+= Использование
+
+После подключения сервера и статики в папке META-INF/conf можно создавать страницы на N2O Framework.

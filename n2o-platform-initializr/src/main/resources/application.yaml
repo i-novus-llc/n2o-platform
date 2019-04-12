@@ -40,7 +40,7 @@ initializr:
   dependencies:
     - name: N2O
       content:
-        - name: N2O Framework
+        - name: N2O Frontend
           id: n2o-framework
           groupId: net.n2oapp.framework
           artifactId: n2o-spring-boot-starter
@@ -48,6 +48,7 @@ initializr:
           bom: n2o-platform-bom
           aliases:
             - n2o
+            - frontend
         - name: JaxRs Server
           id: n2o-jaxrs-server
           groupId: net.n2oapp.platform
