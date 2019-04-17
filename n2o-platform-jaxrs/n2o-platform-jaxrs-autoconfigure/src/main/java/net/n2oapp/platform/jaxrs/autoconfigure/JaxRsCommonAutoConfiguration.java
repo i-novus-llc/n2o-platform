@@ -67,9 +67,4 @@ public class JaxRsCommonAutoConfiguration {
     TypedParametersProvider typedParametersProvider(Set<TypedParamConverter<?>> converters) {
         return new TypedParametersProvider(converters);
     }
-
-    @Bean
-    RestClientExceptionMapper restClientExceptionMapper() {
-        return new RestClientExceptionMapper();
-    }
 }

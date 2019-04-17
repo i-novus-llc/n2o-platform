@@ -15,6 +15,10 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnClass(Client.class)
 @AutoConfigureBefore(CxfAutoConfiguration.class)
 public class JaxRsClientAutoConfiguration {
+    @Bean
+    RestClientExceptionMapper restClientExceptionMapper() {
+        return new RestClientExceptionMapper();
+    }
 
     @Bean
     @ConditionalOnProperty(value = {"spring.sleuth.enabled"})
