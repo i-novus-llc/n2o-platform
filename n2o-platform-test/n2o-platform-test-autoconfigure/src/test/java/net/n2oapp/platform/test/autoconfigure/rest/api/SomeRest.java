@@ -17,13 +17,4 @@ public interface SomeRest {
     @GET
     @Path("/echo")
     String echo();
-
-    @GET
-    @Path("/timeoutSuccess")
-    String timeoutSuccess() throws InterruptedException;
-
-    @GET
-    @Path("/timeoutFailure")
-    String timeoutFailure() throws InterruptedException;
-
 }

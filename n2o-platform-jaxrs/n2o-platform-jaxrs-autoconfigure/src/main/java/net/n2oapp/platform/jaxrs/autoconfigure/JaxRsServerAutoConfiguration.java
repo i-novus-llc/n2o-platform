@@ -1,5 +1,6 @@
 package net.n2oapp.platform.jaxrs.autoconfigure;
 
+import brave.Tracing;
 import net.n2oapp.platform.i18n.Messages;
 import net.n2oapp.platform.jaxrs.*;
 import org.apache.cxf.ext.logging.LoggingInInterceptor;
@@ -7,6 +8,7 @@ import org.apache.cxf.ext.logging.LoggingOutInterceptor;
 import org.apache.cxf.jaxrs.swagger.Swagger2Feature;
 import org.apache.cxf.jaxrs.validation.JAXRSBeanValidationInInterceptor;
 import org.apache.cxf.spring.boot.autoconfigure.CxfProperties;
+import org.apache.cxf.tracing.brave.jaxrs.BraveFeature;
 import org.apache.cxf.validation.BeanValidationInInterceptor;
 import org.apache.cxf.validation.BeanValidationProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -99,5 +101,11 @@ public class JaxRsServerAutoConfiguration {
     @ConditionalOnClass(Messages.class)
     MessageExceptionMapper messageExceptionMapper(Messages messages) {
         return new MessageExceptionMapper(messages);
+    }
+
+    @Bean
+    @ConditionalOnProperty(value = {"spring.sleuth.enabled"})
+    BraveFeature braveFeature(Tracing brave) {
+        return new BraveFeature(brave);
     }
 }

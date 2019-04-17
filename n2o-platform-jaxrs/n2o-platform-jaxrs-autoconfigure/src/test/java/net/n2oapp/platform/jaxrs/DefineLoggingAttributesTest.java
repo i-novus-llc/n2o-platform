@@ -1,4 +1,4 @@
-package net.n2oapp.platform.test.autoconfigure;
+package net.n2oapp.platform.jaxrs;
 
 import org.apache.cxf.ext.logging.AbstractLoggingInterceptor;
 import org.apache.cxf.ext.logging.LoggingInInterceptor;
@@ -29,8 +29,7 @@ import static org.junit.Assert.assertEquals;
                 "jaxrs.logging-in.log-multipart=" + DefineLoggingAttributesTest.LOG_MULTIPART,
                 "jaxrs.logging-in.pretty-logging=" + DefineLoggingAttributesTest.PRETTY_LOGGING
         },
-        webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-@DefinePort
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class DefineLoggingAttributesTest {
 
     static final int LIMIT = 1024;
