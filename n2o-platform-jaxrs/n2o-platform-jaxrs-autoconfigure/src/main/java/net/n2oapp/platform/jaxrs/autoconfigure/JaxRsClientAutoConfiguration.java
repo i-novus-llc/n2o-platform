@@ -15,8 +15,5 @@ import org.springframework.context.annotation.Import;
 @Import(JaxRsProxyClientRegistrar.class)
 @AutoConfigureBefore(CxfAutoConfiguration.class)
 public class JaxRsClientAutoConfiguration {
-    @Bean
-    RestClientExceptionMapper restClientExceptionMapper() {
-        return new RestClientExceptionMapper();
-    }
+
 }
