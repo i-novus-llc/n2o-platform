@@ -96,7 +96,7 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
             if (restClientException.getStatusCode().is4xxClientError() && message != null) {
                 return new N2oUserException(message.getMessage());
             } else if (restClientException.getStatusCode().is5xxServerError() && message != null) {
-                return new N2oException(new RestException(message, restClientException.getRawStatusCode(), e));
+                return new N2oException(new RestException(message, restClientException.getRawStatusCode()));
             }
         }
         return null;

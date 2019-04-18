@@ -3,10 +3,7 @@ package net.n2oapp.platform;
 import com.fasterxml.jackson.core.type.TypeReference;
 import net.n2oapp.platform.feign.SomeFeignClient;
 import net.n2oapp.platform.i18n.UserException;
-import net.n2oapp.platform.jaxrs.MapperConfigurer;
-import net.n2oapp.platform.jaxrs.RestException;
-import net.n2oapp.platform.jaxrs.RestMessage;
-import net.n2oapp.platform.jaxrs.RestPage;
+import net.n2oapp.platform.jaxrs.*;
 import net.n2oapp.platform.jaxrs.api.*;
 import net.n2oapp.platform.jaxrs.impl.SomeRestImpl;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -129,18 +126,15 @@ public class FeignClientTest {
         } catch (Exception e) {
             assertThat(e, instanceOf(RestException.class));
             RestException restException = (RestException) e;
-            assertThat(restException.getMessage(), notNullValue());
-            assertThat(restException.getStackTrace(), notNullValue());
-            Optional<StackTraceElement> causeLine = Stream.of(restException.getStackTrace()).filter(ste ->
+            assertThat(restException.getMessage(), is("Field [id] mustn't be null"));
+            assertThat(restException.getCause(), instanceOf(RemoteException.class));
+            assertThat(restException.getCause().getMessage(), is("java.lang.IllegalArgumentException: Field [id] mustn't be null"));
+            Optional<StackTraceElement> causeLine = Stream.of(restException.getCause().getStackTrace()).filter(ste ->
                     ste.getMethodName().equals("update")
                             && ste.getClassName().equals(SomeRestImpl.class.getName())
                             && ste.getFileName().equals(SomeRestImpl.class.getSimpleName() + ".java")
                             && ste.getLineNumber() > 0).findAny();
             assertThat(causeLine.isPresent(), is(true));
-
-            Optional<String> causeMessage = Stream.of(ExceptionUtils.getStackFrames(e)).filter(sf ->
-                    sf.contains("java.lang.IllegalArgumentException: Field [id] mustn't be null")).findAny();
-            assertThat(causeMessage.isPresent(), is(true));
         }
     }
 
