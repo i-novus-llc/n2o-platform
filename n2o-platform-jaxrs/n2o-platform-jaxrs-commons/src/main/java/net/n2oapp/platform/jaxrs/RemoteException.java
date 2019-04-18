@@ -20,12 +20,12 @@ public class RemoteException extends RuntimeException {
     private static StackTraceElement parseFrame(String stackTraceFrame) {
         String frame = stackTraceFrame.replace("\tat ", "").trim();
         if (STACKTRACE_ELEMENT_PATTERN.matcher(frame).matches()) {
-            String classAndMethod = frame.substring(0, frame.indexOf("("));
-            String fileAndLine = frame.substring(frame.indexOf("(") + 1, frame.length() - 1);
-            String className = classAndMethod.substring(0, classAndMethod.lastIndexOf("."));
-            String methodName = classAndMethod.substring(classAndMethod.lastIndexOf(".") + 1);
-            String fileName = fileAndLine.substring(0, fileAndLine.indexOf(":"));
-            int lineNumber = Integer.valueOf(fileAndLine.substring(fileAndLine.indexOf(":") + 1));
+            String classAndMethod = frame.substring(0, frame.indexOf('('));
+            String fileAndLine = frame.substring(frame.indexOf('(') + 1, frame.length() - 1);
+            String className = classAndMethod.substring(0, classAndMethod.lastIndexOf('.'));
+            String methodName = classAndMethod.substring(classAndMethod.lastIndexOf('.') + 1);
+            String fileName = fileAndLine.substring(0, fileAndLine.indexOf(':'));
+            int lineNumber = Integer.parseInt(fileAndLine.substring(fileAndLine.indexOf(':') + 1));
             return new StackTraceElement(className, methodName, fileName, lineNumber);
         } else {
             return null;
