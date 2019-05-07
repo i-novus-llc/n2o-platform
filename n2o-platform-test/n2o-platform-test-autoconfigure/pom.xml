@@ -26,9 +26,9 @@
         </dependency>
 
         <dependency>
-            <groupId>ru.i-novus.util</groupId>
-            <artifactId>pg-embeded</artifactId>
-            <version>0.12.0</version>
+            <groupId>ru.i-novus.components</groupId>
+            <artifactId>otj-pg-embedded-rus</artifactId>
+            <version>0.13.2-alpha.1</version>
         </dependency>
 
         <dependency>

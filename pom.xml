@@ -21,6 +21,18 @@
         <tag>HEAD</tag>
     </scm>
 
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <organization>
+        <name>I-Novus LLC</name>
+        <url>https://i-novus.ru/</url>
+    </organization>
+
     <modules>
         <module>n2o-platform-bom</module>
         <module>n2o-platform-parent</module>

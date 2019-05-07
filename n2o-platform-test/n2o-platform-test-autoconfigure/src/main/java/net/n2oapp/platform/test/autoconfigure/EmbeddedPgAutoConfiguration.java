@@ -27,7 +27,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-import ru.inovus.util.pg.embeded.PatchedPgBinaryResolver;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -161,7 +160,7 @@ public class EmbeddedPgAutoConfiguration {
 
             EmbeddedPostgres pg;
             try {
-                pg = EmbeddedPostgres.builder().setPgBinaryResolver(new PatchedPgBinaryResolver()).setCleanDataDirectory(true).setPort(port).start();
+                pg = EmbeddedPostgres.builder().setCleanDataDirectory(true).setPort(port).start();
             } catch (IOException e) {
                 logger.error("cannot build EmbeddedPostgres", e);
                 throw new BeanCreationException("cannot create dataSource", e);
