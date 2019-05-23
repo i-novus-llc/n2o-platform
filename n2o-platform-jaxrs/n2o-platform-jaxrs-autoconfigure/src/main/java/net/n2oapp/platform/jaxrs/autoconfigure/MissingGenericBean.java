@@ -14,6 +14,9 @@ import org.springframework.util.StringUtils;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 
+/**
+ * логика совпадает с @ConditionalOnMissingBean, но с учетом дженериков
+ */
 public class MissingGenericBean extends SpringBootCondition {
 
     @Override
