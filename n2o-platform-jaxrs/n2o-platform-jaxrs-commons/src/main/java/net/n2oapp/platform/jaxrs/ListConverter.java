@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import net.n2oapp.platform.jaxrs.TypedParamConverter;
 
 import java.io.IOException;
 import java.math.BigDecimal;

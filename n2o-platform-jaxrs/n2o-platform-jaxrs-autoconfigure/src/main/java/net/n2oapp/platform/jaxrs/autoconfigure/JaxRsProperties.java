@@ -12,19 +12,9 @@ public class JaxRsProperties {
      */
     private Logging loggingIn = new Logging();
     /**
-     *  @deprecated используйте loggingIn
-     */
-    @Deprecated (forRemoval = true)
-    private boolean logIn = true;
-    /**
      * Логирование всех ответов
      */
     private Logging loggingOut = new Logging();
-    /**
-     *  @deprecated используйте loggingOut
-     */
-    @Deprecated (forRemoval = true)
-    private boolean logOut = true;
 
     public static class Logging {
         private boolean enabled = true;
@@ -145,38 +135,6 @@ public class JaxRsProperties {
 
     public Swagger getSwagger() {
         return swagger;
-    }
-
-    /**
-     *  @deprecated используйте loggingIn
-     */
-    @Deprecated (forRemoval = true)
-    public boolean isLogIn() {
-        return logIn;
-    }
-
-    /**
-     *  @deprecated используйте loggingIn
-     */
-    @Deprecated (forRemoval = true)
-    public void setLogIn(boolean logIn) {
-        this.logIn = logIn;
-    }
-
-    /**
-     *  @deprecated используйте loggingOut
-     */
-    @Deprecated (forRemoval = true)
-    public boolean isLogOut() {
-        return logOut;
-    }
-
-    /**
-     *  @deprecated используйте loggingOut
-     */
-    @Deprecated (forRemoval = true)
-    public void setLogOut(boolean logOut) {
-        this.logOut = logOut;
     }
 
     public Logging getLoggingIn() {

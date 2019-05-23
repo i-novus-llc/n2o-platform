@@ -3,7 +3,6 @@ package net.n2oapp.platform.jaxrs;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.n2oapp.platform.jaxrs.TypedParamConverter;
 
 import java.io.IOException;
 import java.util.HashMap;
