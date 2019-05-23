@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.domain.Sort;
@@ -44,22 +45,25 @@ public class JaxRsCommonAutoConfiguration {
     }
 
     @Bean
-    TypedParamConverter<Date> dateParameterConverter() {
+    @Conditional(MissingGenericBean.class)
+    public TypedParamConverter<Date> dateParameterConverter() {
         return new DateISOParameterConverter();
     }
 
     @Bean
-    TypedParamConverter<LocalDateTime> localDateTimeParameterConverter() {
+    @Conditional(MissingGenericBean.class)
+    public TypedParamConverter<LocalDateTime> localDateTimeParameterConverter() {
         return new LocalDateTimeISOParameterConverter();
     }
 
     @Bean
-    TypedParamConverter<Sort.Order> sortParameterConverter() {
+    public TypedParamConverter<Sort.Order> sortParameterConverter() {
         return new SortParameterConverter();
     }
 
     @Bean
-    TypedParamConverter<ZonedDateTime> zonedDateTimeTypedParamConverter() {
+    @Conditional(MissingGenericBean.class)
+    public TypedParamConverter<ZonedDateTime> zonedDateTimeTypedParamConverter() {
         return new ZonedDateTimeParamConverter();
     }
 

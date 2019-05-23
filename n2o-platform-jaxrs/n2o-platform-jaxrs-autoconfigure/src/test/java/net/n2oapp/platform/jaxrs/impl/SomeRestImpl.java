@@ -7,9 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Controller;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -84,6 +83,16 @@ public class SomeRestImpl implements SomeRest {
     public String timeoutFailure() throws InterruptedException {
         Thread.sleep(1500);
         return "timeout failure";
+    }
+
+    @Override
+    public List<LocalDateTime> searchBySetOfTypedList(Set<List<LocalDateTime>> setOfList) {
+        return setOfList.stream().findFirst().get();
+    }
+
+    @Override
+    public Map<String, String> searchBySetOfTypedMap(Map<String, String> map) {
+        return map;
     }
 
     private List<SomeModel> findAll(SomeCriteria criteria) {
