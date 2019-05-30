@@ -305,7 +305,7 @@
             <dependency>
                 <groupId>org.liquibase</groupId>
                 <artifactId>liquibase-core</artifactId>
-                <version>3.6.2.inovus</version>
+                <version>3.6.2.1.inovus</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
