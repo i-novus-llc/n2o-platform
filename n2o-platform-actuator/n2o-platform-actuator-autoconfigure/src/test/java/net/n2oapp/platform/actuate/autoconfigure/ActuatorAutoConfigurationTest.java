@@ -7,6 +7,7 @@ import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.env.Environment;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
@@ -20,9 +21,12 @@ public class ActuatorAutoConfigurationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
+    @Autowired
+    Environment env;
+
     @Test
     public void testActuator() {
-        ActuatorHealthResponse response = restTemplate.getForObject(ActuatorAutoConfiguration.ACTUATOR_CONTEXT_PATH + "/health", ActuatorHealthResponse.class);
+        ActuatorHealthResponse response = restTemplate.getForObject(env.getProperty("management.endpoints.web.base-path") + "/health", ActuatorHealthResponse.class);
         assert response.getStatus().equals(Status.UP.getCode());
     }
 

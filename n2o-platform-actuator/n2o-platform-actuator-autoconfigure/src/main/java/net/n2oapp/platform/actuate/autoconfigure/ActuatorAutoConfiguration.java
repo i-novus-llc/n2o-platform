@@ -1,6 +1,7 @@
 package net.n2oapp.platform.actuate.autoconfigure;
 
 import net.n2oapp.platform.actuate.health.KafkaHealthIndicator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.health.CompositeHealthIndicatorConfiguration;
 import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.actuate.autoconfigure.web.servlet.ServletManagementContextAutoConfiguration;
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -30,14 +32,16 @@ import java.util.Map;
 @PropertySource("classpath:/META-INF/net/n2oapp/platform/actuate/monitoring.properties")
 @AutoConfigureBefore(ServletManagementContextAutoConfiguration.class)
 public class ActuatorAutoConfiguration {
-    public static final String ACTUATOR_CONTEXT_PATH = "/monitoring";
 
     @Configuration
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @ConditionalOnClass(WebSecurityConfigurerAdapter.class)
     public static class MonitoringSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
+        @Autowired
+        Environment env;
+
         protected void configure(HttpSecurity http) throws Exception {
-            http.antMatcher(ACTUATOR_CONTEXT_PATH + "/**").authorizeRequests().anyRequest().permitAll();
+            http.antMatcher(env.getProperty("management.endpoints.web.base-path") + "/**").authorizeRequests().anyRequest().permitAll();
         }
     }
 
