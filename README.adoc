@@ -1,7 +1,6 @@
-image:https://git.i-novus.ru/platform/n2o/badges/master/pipeline.svg[link="https://git.i-novus.ru/platform/n2o/commits/master",title="pipeline status"]
-image:https://sonar.i-novus.ru/api/project_badges/measure?project=net.n2oapp.platform%3An2o-platform&metric=coverage[link="https://sonar.i-novus.ru/component_measures?id=net.n2oapp.platform%3An2o-platform&metric=Coverage",title="coverage status"]
-
 Платформа для создания микросервисов и веб-приложений на основе Spring Boot, Spring Cloud, Spring Data, CXF.
+
+image:https://img.shields.io/hexpm/l/plug.svg?style=flat[link="http://www.apache.org/licenses/LICENSE-2.0",title="License: Apache License 2"]
 
 = Состав
 * link:/n2o-platform-actuator/README.adoc[actuator] - стартер мониторинга, подключает преднастроенный spring boot actuator
