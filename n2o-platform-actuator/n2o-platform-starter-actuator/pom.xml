@@ -18,6 +18,10 @@
             <groupId>net.n2oapp.platform</groupId>
             <artifactId>n2o-platform-actuator-autoconfigure</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
     </dependencies>
 
 </project>
