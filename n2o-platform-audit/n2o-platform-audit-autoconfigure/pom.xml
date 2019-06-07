@@ -23,7 +23,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.liquibase</groupId>
+            <groupId>ru.i-novus.components</groupId>
             <artifactId>liquibase-core</artifactId>
         </dependency>
 
