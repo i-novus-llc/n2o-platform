@@ -5,17 +5,39 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Конвертер для Map
+ */
 public class MapConverter implements TypedParamConverter<Map> {
 
     private JavaType type;
     private ObjectMapper mapper;
 
-    public MapConverter(Class valueClass) {
-        this.mapper = new ObjectMapper();
-        this.type = mapper.getTypeFactory().constructMapType(HashMap.class, String.class, valueClass);
+    public MapConverter(Type genericType) {
+       this(genericType, null);
+    }
+
+    public MapConverter(Type genericType, ObjectMapper mapper) {
+        Class valueClass = null;
+
+        if (genericType instanceof ParameterizedType &&
+                ((ParameterizedType) genericType).getActualTypeArguments().length >= 2 &&
+                ((ParameterizedType) genericType).getActualTypeArguments()[1] instanceof Class)
+            valueClass = (Class)((ParameterizedType) genericType).getActualTypeArguments()[1];
+        else
+            valueClass = Object.class;
+
+        if (mapper != null) {
+            this.mapper = mapper;
+        } else {
+            this.mapper = new ObjectMapper();
+        }
+        this.type = this.mapper.getTypeFactory().constructMapType(HashMap.class, String.class, valueClass);
     }
 
     @Override

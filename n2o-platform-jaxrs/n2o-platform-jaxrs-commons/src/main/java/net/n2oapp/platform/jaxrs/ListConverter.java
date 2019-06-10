@@ -12,23 +12,44 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Конвертер для List
+ */
 public class ListConverter implements TypedParamConverter<List> {
 
     private JavaType type;
     private ObjectMapper mapper;
 
-    public ListConverter(Class valueClass) {
-        this.mapper = new ObjectMapper();
+    public ListConverter(Type genericType) {
+        this(genericType, null);
+    }
+
+    public ListConverter(Type genericType, ObjectMapper mapper) {
+        Class valueClass = null;
+        if (genericType instanceof ParameterizedType &&
+                ((ParameterizedType) genericType).getActualTypeArguments().length > 0 &&
+                ((ParameterizedType) genericType).getActualTypeArguments()[0] instanceof Class)
+            valueClass = (Class) ((ParameterizedType) genericType).getActualTypeArguments()[0];
+        else
+            valueClass = Object.class;
+
+        if(mapper != null) {
+            this.mapper = mapper;
+        } else {
+            this.mapper = new ObjectMapper();
+        }
         JavaTimeModule jtm = new JavaTimeModule();
-        mapper.registerModule(jtm);
+        this.mapper.registerModule(jtm);
         SimpleModule simpleModule = new SimpleModule();
         simpleModule.addSerializer(BigDecimal.class, new BigDecimalPlainSerializer());
-        mapper.registerModule(simpleModule);
-        this.type = mapper.getTypeFactory().constructCollectionType(ArrayList.class, valueClass);
+        this.mapper.registerModule(simpleModule);
+        this.type = this.mapper.getTypeFactory().constructCollectionType(ArrayList.class, valueClass);
     }
 
     @Override

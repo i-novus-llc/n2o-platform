@@ -25,23 +25,11 @@ public class TypedParametersProvider implements ParamConverterProvider {
     @Override
     public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] annotations) {
         if (Map.class.isAssignableFrom(rawType)){
-            MapConverter mapConverter;
-            if (genericType instanceof ParameterizedType &&
-                    ((ParameterizedType) genericType).getActualTypeArguments().length >= 2 &&
-                    ((ParameterizedType) genericType).getActualTypeArguments()[1] instanceof Class)
-                mapConverter = new MapConverter((Class) ((ParameterizedType) genericType).getActualTypeArguments()[1]);
-            else mapConverter = new MapConverter(Object.class);
             //noinspection unchecked
-            return (ParamConverter<T>) mapConverter;
+            return (ParamConverter<T>) new MapConverter(genericType);
         } else if (List.class.isAssignableFrom(rawType)) {
-            ListConverter listConverter;
-            if (genericType instanceof ParameterizedType &&
-                    ((ParameterizedType) genericType).getActualTypeArguments().length > 0 &&
-                    ((ParameterizedType) genericType).getActualTypeArguments()[0] instanceof Class)
-                listConverter = new ListConverter((Class) ((ParameterizedType) genericType).getActualTypeArguments()[0]);
-            else listConverter = new ListConverter(Object.class);
             //noinspection unchecked
-            return (ParamConverter<T>) listConverter;
+            return (ParamConverter<T>) new ListConverter(genericType);
         }
         //noinspection unchecked
         return (ParamConverter<T>) converters.stream().filter(c -> c.getType().equals(rawType)).findAny().orElse(null);

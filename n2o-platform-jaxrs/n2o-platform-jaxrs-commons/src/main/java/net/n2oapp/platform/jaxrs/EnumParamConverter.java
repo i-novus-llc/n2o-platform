@@ -2,6 +2,10 @@ package net.n2oapp.platform.jaxrs;
 
 import java.util.Arrays;
 
+/**
+ * Типизрованный конвертер для Enum'ов
+ * @param <T>
+ */
 public class EnumParamConverter<T extends Enum> implements TypedParamConverter<T> {
 
     private Class<T> type;
