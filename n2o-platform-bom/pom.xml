@@ -250,7 +250,7 @@
 
             <!-- Feign -->
             <dependency>
-                <groupId>com.qualys.feign</groupId>
+                <groupId>ru.i-novus.components</groupId>
                 <artifactId>feign-jaxrs</artifactId>
                 <version>${feign-jaxrs.version}</version>
             </dependency>
