@@ -1,6 +1,7 @@
 package net.n2oapp.platform.actuate.autoconfigure;
 
 import net.n2oapp.platform.actuate.health.KafkaHealthIndicator;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.*;
@@ -53,6 +54,7 @@ public class KafkaHealthIndicatorTest {
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 1000); /// timeout reduced for testing speed up
+        config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return new KafkaTemplate(new DefaultKafkaProducerFactory(config));
     }
 }
