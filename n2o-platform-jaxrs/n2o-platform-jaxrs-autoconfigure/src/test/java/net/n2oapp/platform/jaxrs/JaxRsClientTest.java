@@ -5,6 +5,7 @@ import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.api.*;
 import net.n2oapp.platform.jaxrs.impl.SomeRestImpl;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +22,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Optional;
-import java.util.TimeZone;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -170,6 +170,28 @@ public class JaxRsClientTest {
             assertThat(errorTextList, anyOf(hasItems("Ошибка пользователя раз", "Ошибка пользователя два", "Другая ошибка пользователя"), hasItems("user.error1", "user.error1", "user.error2")));
         }
     }
+
+    /**
+     * Проверка Set<List> как @QueryParam, тестируется работа ListConverter
+     */
+    @Test
+    public void testSearchByList() {
+        List<LocalDateTime> expectedList = Arrays.asList(LocalDateTime.now(), LocalDateTime.now().minusDays(2));
+        List<LocalDateTime> actual = client.searchBySetOfTypedList(Set.of(expectedList));
+        Assert.assertEquals(expectedList, actual);
+    }
+
+    /**
+     * Проверка Set<Map> как @QueryParam, тестируется работа MapConverter
+     */
+    @Test
+    public void testSearchByMap() {
+        Map<String, String> expectedMap = Map.of("key1", "value1", "key2", "value2");
+        Map<String, String> actual = client.searchBySetOfTypedMap(expectedMap);
+        Assert.assertEquals(expectedMap, actual);
+    }
+
+
 
     @Configuration
     public static class JaxRsClientTestConfig {

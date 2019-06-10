@@ -9,7 +9,10 @@ import org.springframework.data.domain.Page;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * REST сервис для демонстрации возможностей библиотеки
@@ -86,5 +89,17 @@ public interface SomeRest {
     @GET
     @Path("/timeoutFailure")
     String timeoutFailure() throws InterruptedException;
+
+    @GET
+    @Path("/searchBySetOfTypedList")
+    @ApiOperation("Поиск по списку")
+    @ApiResponse(code = 200, message = "Список")
+    List<LocalDateTime> searchBySetOfTypedList(@QueryParam("setOfList") Set<List<LocalDateTime>> setOfList);
+
+    @GET
+    @Path("/searchBySetOfMap")
+    @ApiOperation("Поиск по карте")
+    @ApiResponse(code = 200, message = "Карта")
+    Map<String,String> searchBySetOfTypedMap(@QueryParam("map") Map<String, String> setOfMap);
 
 }

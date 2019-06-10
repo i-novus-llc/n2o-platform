@@ -6,9 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
-import java.util.List;
 import java.util.Random;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class PortFinder {
 
@@ -18,26 +16,24 @@ public class PortFinder {
     private static final int MAX_PORT_NUMBER = 65535;
     private static final int ATTEMPTS_LIMIT = 10;
 
-    private static List<Integer> usedList = new CopyOnWriteArrayList<>();
-
     private PortFinder() {
     }
 
     public static int getPort(String applicationName) {
-        int unusedPort = getUnusedPort(getRandomPort());
+        int unusedPort = getUnusedPort();
         logger.info("Find unused port {} for application {}", unusedPort, applicationName);
         return unusedPort;
     }
 
-    private static int getUnusedPort(int startPort) {
+    private static int getUnusedPort() {
+        int startPort = getRandomPort();
         int attemptsCount = 1;
-        while (usedList.contains(startPort) || !available(startPort)) {
+        while (!available(startPort)) {
             if (attemptsCount > ATTEMPTS_LIMIT)
                 throw new IllegalStateException("Attempts limit exceeded");
             startPort = getRandomPort();
             attemptsCount++;
         }
-        usedList.add(startPort);
         return startPort;
     }
 
