@@ -15,7 +15,6 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class,
         properties = {
-                "server.port=9878",
                 "cxf.servlet.init.service-list-path=/info",
                 "cxf.path=/test/api",
                 "cxf.jaxrs.component-scan=true",
@@ -24,7 +23,7 @@ import static org.junit.Assert.*;
                 "cxf.jaxrs.client.address=http://10.10.10.10:1010/test/api",
                 "cxf.jaxrs.client.connection.timeout=1000",
         },
-        webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class DefineConnectionTimeoutTest {
 
     @Autowired

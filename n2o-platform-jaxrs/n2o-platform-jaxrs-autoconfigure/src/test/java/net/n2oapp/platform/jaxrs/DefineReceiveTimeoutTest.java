@@ -1,6 +1,8 @@
 package net.n2oapp.platform.jaxrs;
 
 import net.n2oapp.platform.jaxrs.api.SomeRest;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.SocketUtils;
 
 import java.net.SocketTimeoutException;
 
@@ -18,7 +21,6 @@ import static org.junit.Assert.fail;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class,
         properties = {
-                "server.port=9877",
                 "cxf.servlet.init.service-list-path=/info",
                 "cxf.path=/test/api",
                 "cxf.jaxrs.component-scan=true",
@@ -29,6 +31,16 @@ import static org.junit.Assert.fail;
         },
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class DefineReceiveTimeoutTest {
+
+    @BeforeClass
+    public static void init() {
+        System.setProperty("server.port", String.valueOf(SocketUtils.findAvailableTcpPort()));
+    }
+
+    @AfterClass
+    public static void destroy() {
+        System.clearProperty("server.port");
+    }
 
     @Autowired
     @Qualifier("someRestJaxRsProxyClient")
