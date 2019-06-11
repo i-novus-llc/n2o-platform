@@ -34,7 +34,7 @@ public class DefineReceiveTimeoutTest {
 
     @BeforeClass
     public static void init() {
-        System.setProperty("server.port", ""+SocketUtils.findAvailableTcpPort());
+        System.setProperty("server.port", String.valueOf(SocketUtils.findAvailableTcpPort()));
     }
 
     @AfterClass
