@@ -21,7 +21,7 @@
         <jaxrs-api.version>2.1.1</jaxrs-api.version>
         <modelmapper.version>2.3.2</modelmapper.version>
         <commons.version>2.6</commons.version>
-        <spring.cloud.version>Greenwich.RELEASE</spring.cloud.version>
+        <spring.cloud.version>Greenwich.SR1</spring.cloud.version>
         <activation.version>1.1.1</activation.version>
         <feign-jaxrs.version>1.0</feign-jaxrs.version>
     </properties>
