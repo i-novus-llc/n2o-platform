@@ -22,9 +22,6 @@ initializr:
     - name: Jar
       id: jar
       default: true
-    - name: War
-      id: war
-      default: false
   types:
     - name: Maven Project
       id: maven-project
@@ -43,12 +40,13 @@ initializr:
         - name: N2O Frontend
           id: n2o-framework
           groupId: net.n2oapp.framework
-          artifactId: n2o-spring-boot-starter
+          artifactId: n2o-platform-starter-web
           description: Frontend framework for WEB
           bom: n2o-platform-bom
           aliases:
             - n2o
             - frontend
+            - web
         - name: JaxRs Server
           id: n2o-jaxrs-server
           groupId: net.n2oapp.platform
@@ -58,13 +56,31 @@ initializr:
           aliases:
             - jaxrs server
         - name: JaxRs Client
-          id: n2o-jaxrs-Client
+          id: n2o-jaxrs-client
           groupId: net.n2oapp.platform
           artifactId: n2o-platform-starter-jaxrs-client
           description: Rest proxy client provider powered by CXF
           bom: n2o-platform-bom
           aliases:
             - jaxrs client
+        - name: Feign Client
+          id: n2o-feign-client
+          groupId: net.n2oapp.platform
+          artifactId: n2o-platform-starter-feign-client
+          description: Rest proxy client provider powered by Feign
+          bom: n2o-platform-bom
+          aliases:
+            - feign
+            - client
+        - name: JWT
+          id: n2o-jwt
+          groupId: net.n2oapp.platform
+          artifactId: n2o-platform-starter-jwt
+          description: Stateless auth by JWT
+          bom: n2o-platform-bom
+          aliases:
+            - jwt
+            - security
   env:
     repositories:
       i-novus-releases:

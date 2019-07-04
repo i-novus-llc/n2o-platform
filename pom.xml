@@ -42,14 +42,15 @@
         <module>n2o-platform-bom</module>
         <module>n2o-platform-parent</module>
         <module>n2o-platform-i18n</module>
-        <module>n2o-platform-jaxrs</module>
-        <module>n2o-platform-initializr</module>
-        <module>n2o-platform-test</module>
         <module>n2o-platform-actuator</module>
         <module>n2o-platform-audit</module>
-        <module>n2o-platform-ms</module>
+        <module>n2o-platform-security</module>
+        <module>n2o-platform-jaxrs</module>
         <module>n2o-platform-feign</module>
+        <module>n2o-platform-ms</module>
         <module>n2o-platform-web</module>
+        <module>n2o-platform-test</module>
+        <module>n2o-platform-initializr</module>
     </modules>
 </project>
 
