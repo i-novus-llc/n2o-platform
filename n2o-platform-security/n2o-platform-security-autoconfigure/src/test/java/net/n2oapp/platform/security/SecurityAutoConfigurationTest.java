@@ -4,14 +4,14 @@ import net.n2oapp.platform.security.autoconfigure.SecurityAutoConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.UnsatisfiedDependencyException;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -42,13 +42,10 @@ public class SecurityAutoConfigurationTest {
      */
     @Test
     public void testException() {
-        try {
-            this.contextRunner
-                    .run((context) -> {
-                        Assert.fail();
-                    });
-        } catch (BeanCreationException e) {
-            assertThat(e.getBeanName(), is("tokenStore"));
-        }
+        this.contextRunner
+                .run((context) -> {
+                    assertThat(context.getStartupFailure(), instanceOf(UnsatisfiedDependencyException.class));
+                    assertThat(((UnsatisfiedDependencyException)context.getStartupFailure()).getBeanName(), is("tokenServices"));
+                });
     }
 }

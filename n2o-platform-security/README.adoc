@@ -3,11 +3,15 @@
 :toclevels: 3
 :toc-title: Содержание
 
+= Описание
+Стартер предназначен для jwt аутентификации запросов от клиентов к микросервисам,
+а так же для проксирования токенов от микросервиса к микросервису.
+
 = Возможности
 
-* Автоматическое подключение stateless аутентификации по jwt к работающему на jaxrs server starter микросервису
-без обращения к sso серверу
+* Автоматическое подключение stateless аутентификации по jwt к микросервису
 * Получение пользователя обычным для spring security способом (SecurityContextHolder и т.п.)
+* Прозрачная отправка jwt через RestTemplate
 * Прозрачная отправлка jwt через feign client при подключении n2o-platform-starter-feign-client
 * Прозрачная отправка jwt по REST при подключении n2o-platform-starter-web
 
@@ -22,6 +26,15 @@
 </dependency>
 ----
 
+Добавьте аннотацию `@EnableResourceServer` в конфигурацию микросервиса.
+
 = Использование
 
-
+Чтобы отправить запрос с аутентификацией через `RestTemplate` используйте бин `OAuth2RestOperations`:
+[source,java]
+----
+@Autowired
+private OAuth2RestOperations restOperations;
+...
+restOperations.getForObject(url, MyEntity.class);//Запросы с проксированием текущего токена
+----

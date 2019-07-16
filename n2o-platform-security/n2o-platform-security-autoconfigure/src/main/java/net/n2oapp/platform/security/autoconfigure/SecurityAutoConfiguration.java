@@ -4,6 +4,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -139,7 +140,9 @@ public class SecurityAutoConfiguration {
 
         @Override
         public void configure(HttpSecurity http) throws Exception {
-            http.authorizeRequests().anyRequest().authenticated().and().httpBasic().disable();
+            http.authorizeRequests().anyRequest().authenticated()
+                    .and().httpBasic().disable()
+                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         }
     }
 }
