@@ -19,11 +19,11 @@ public class N2oPlatformAuthenticationConverter implements UserAuthenticationCon
     private UserDetailsService userDetailsService;
     private String usernameKey = "username";
     private String authoritiesKey = "roles";
-    private Collection<? extends GrantedAuthority> defaultAuthorities = AuthorityUtils.createAuthorityList("ROLE_USER");
+    private Collection<GrantedAuthority> defaultAuthorities = AuthorityUtils.createAuthorityList("ROLE_USER");
 
     @Override
     public Map<String, ?> convertUserAuthentication(Authentication authentication) {
-        Map<String, Object> response = new LinkedHashMap<String, Object>();
+        Map<String, Object> response = new LinkedHashMap<>();
         response.put(USERNAME, authentication.getName());
         if (authentication.getAuthorities() != null && !authentication.getAuthorities().isEmpty()) {
             response.put(AUTHORITIES, AuthorityUtils.authorityListToSet(authentication.getAuthorities()));
@@ -58,11 +58,11 @@ public class N2oPlatformAuthenticationConverter implements UserAuthenticationCon
         this.authoritiesKey = authoritiesKey;
     }
 
-    public void setDefaultAuthorities(Collection<? extends GrantedAuthority> defaultAuthorities) {
+    public void setDefaultAuthorities(Collection<GrantedAuthority> defaultAuthorities) {
         this.defaultAuthorities = defaultAuthorities;
     }
 
-    protected Collection<? extends GrantedAuthority> getAuthorities(Map<String, ?> map) {
+    protected Collection<GrantedAuthority> getAuthorities(Map<String, ?> map) {
         Object authorities = map.get(authoritiesKey);
 
         if (authorities == null) {

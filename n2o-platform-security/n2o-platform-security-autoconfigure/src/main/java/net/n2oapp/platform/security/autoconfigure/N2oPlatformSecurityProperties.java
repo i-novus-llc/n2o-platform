@@ -26,6 +26,10 @@ public class N2oPlatformSecurityProperties {
      * Секретный код клиента
      */
     private String clientSecret;
+    /**
+     * Адрес сервера аутентификации
+     */
+    private String accessTokenUri;
 
     public String getKeySetUri() {
         return keySetUri;
@@ -67,5 +71,13 @@ public class N2oPlatformSecurityProperties {
 
     public void setClientSecret(String clientSecret) {
         this.clientSecret = clientSecret;
+    }
+
+    public String getAccessTokenUri() {
+        return accessTokenUri;
+    }
+
+    public void setAccessTokenUri(String accessTokenUri) {
+        this.accessTokenUri = accessTokenUri;
     }
 }

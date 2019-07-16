@@ -71,7 +71,7 @@ public class SecurityAutoConfiguration {
         ClientCredentialsResourceDetails clientCredentials = new ClientCredentialsResourceDetails();
         clientCredentials.setClientId(securityProperties.getClientId());
         clientCredentials.setClientSecret(securityProperties.getClientSecret());
-        clientCredentials.setAccessTokenUri("http://172.16.1.130:8888/auth/realms/MPS/protocol/openid-connect/token");
+        clientCredentials.setAccessTokenUri(securityProperties.getAccessTokenUri());
         return clientCredentials;
     }
 
@@ -86,7 +86,7 @@ public class SecurityAutoConfiguration {
         if (Boolean.FALSE.equals(securityProperties.isCheckTokenExpired())) {
             defaultTokenServices = new DefaultTokenServices() {
                 @Override
-                public OAuth2Authentication loadAuthentication(String accessTokenValue) throws AuthenticationException, InvalidTokenException {
+                public OAuth2Authentication loadAuthentication(String accessTokenValue) {
                     OAuth2AccessToken accessToken = tokenStore.readAccessToken(accessTokenValue);
                     if (accessToken == null) {
                         throw new InvalidTokenException("Invalid access token: " + accessTokenValue);
