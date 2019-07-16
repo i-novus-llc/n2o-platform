@@ -24,9 +24,9 @@ public class N2oPlatformAuthenticationConverter implements UserAuthenticationCon
     @Override
     public Map<String, ?> convertUserAuthentication(Authentication authentication) {
         Map<String, Object> response = new LinkedHashMap<>();
-        response.put(USERNAME, authentication.getName());
+        response.put(usernameKey, authentication.getName());
         if (authentication.getAuthorities() != null && !authentication.getAuthorities().isEmpty()) {
-            response.put(AUTHORITIES, AuthorityUtils.authorityListToSet(authentication.getAuthorities()));
+            response.put(authoritiesKey, AuthorityUtils.authorityListToSet(authentication.getAuthorities()));
         }
         return response;
     }
