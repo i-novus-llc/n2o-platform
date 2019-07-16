@@ -29,6 +29,38 @@
 
 Добавьте аннотацию `@EnableResourceServer` в конфигурацию микросервиса.
 
+Задайте адрес получения сертификата сервера аутентификации через настройку `n2o.platform.security.key-set-uri`:
+```
+n2o.platform.security.key-set-uri=http://localhost:8888/auth/realms/test/protocol/openid-connect/certs
+```
+Микросервис скачает сертификаты и будет валидировать токены на соответствие.
+
+В процессе валидации токена требуется, чтобы в jwt было задано значение параметра `aud` соответствующее идентификатору ресурса микросервиса.
+Идентификатор ресурса задается настройкой `n2o.platform.security.resource-id`:
+```
+n2o.platform.security.resource-id=test
+```
+
+Если необходимо выключить проверку действительности токена задайте настройку `n2o.platform.security.check-token-expired`:
+```
+n2o.platform.security.check-token-expired=false
+```
+По умолчанию включено (true).
+
+Клиент может получить новый токен, если текущий токен недействителен или отсутствует.
+Для этого необходимо задать следующие настройки:
+```
+#Адрес сервера аутентификации
+n2o.platform.security.access-token-uri=http://localhost:8888/auth/realms/test/protocol/openid-connect/token
+#Идентификатор клиента
+n2o.platform.security.client-id=test
+#Секретный код клиента
+n2o.platform.security.client-secret=qwerty
+```
+
+Если микросервис выпполняет запросы к другим авторизованным микросервисам с тем же идентификатором ресурса,
+то задавать настройку `n2o.platform.security.resource-id` не требуется, достаточно задать `n2o.platform.security.client-id`.
+
 = Использование
 
 Чтобы отправить запрос с аутентификацией через `RestTemplate` используйте бин `OAuth2RestOperations`:
