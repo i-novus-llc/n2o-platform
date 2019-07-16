@@ -1,9 +1,7 @@
 package net.n2oapp.platform.security;
 
 import net.n2oapp.platform.security.autoconfigure.SecurityAutoConfiguration;
-import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.UnsatisfiedDependencyException;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;

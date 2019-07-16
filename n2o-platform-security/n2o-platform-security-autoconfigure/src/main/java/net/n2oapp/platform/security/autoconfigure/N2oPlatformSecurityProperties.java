@@ -1,6 +1,5 @@
 package net.n2oapp.platform.security.autoconfigure;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "n2o.platform.security")
