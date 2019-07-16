@@ -19,7 +19,7 @@ public class N2oPlatformAuthenticationConverter implements UserAuthenticationCon
     private UserDetailsService userDetailsService;
     private String usernameKey = "username";
     private String authoritiesKey = "roles";
-    private Collection<? extends GrantedAuthority> defaultAuthorities = AuthorityUtils.createAuthorityList("UNKNOWN");
+    private Collection<? extends GrantedAuthority> defaultAuthorities = AuthorityUtils.createAuthorityList("ROLE_USER");
 
     @Override
     public Map<String, ?> convertUserAuthentication(Authentication authentication) {

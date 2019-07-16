@@ -18,6 +18,7 @@
 = Подключение
 
 Добавьте зависимость:
+
 [source,xml]
 ----
 <dependency>
@@ -31,10 +32,44 @@
 = Использование
 
 Чтобы отправить запрос с аутентификацией через `RestTemplate` используйте бин `OAuth2RestOperations`:
+
 [source,java]
 ----
 @Autowired
 private OAuth2RestOperations restOperations;
 ...
 restOperations.getForObject(url, MyEntity.class);//Запросы с проксированием текущего токена
+----
+
+Чтобы получить имя пользователя можно использовать объект `OAuth2Authentication` в аргументах контроллера:
+
+[source,java]
+----
+@GetMapping("/greeting")
+public String greeting(OAuth2Authentication authentication) {
+    return "Hello " + authentication.getPrincipal();
+}
+----
+
+Или использовать статический метод `SecurityContextHolder.getContext`:
+
+[source,java]
+----
+((OAuth2Authentication)SecurityContextHolder.getContext().getAuthentication()).getPrincipal()
+----
+
+Для авторизации сервисов по паттерну запроса нужно создать конфигурацию расширяя класс `N2oPlatformResourceServerConfigurerAdapter`:
+
+[source,java]
+----
+@Configuration
+@EnableResourceServer
+public class SecurityConfig extends N2oPlatformResourceServerConfigurerAdapter {
+    @Override
+    public void configure(ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry requests) throws Exception {
+        requests.mvcMatchers("/greeting").hasRole("ROLE_USER")
+            .anyRequest().authenticated();
+    }
+}
+
 ----

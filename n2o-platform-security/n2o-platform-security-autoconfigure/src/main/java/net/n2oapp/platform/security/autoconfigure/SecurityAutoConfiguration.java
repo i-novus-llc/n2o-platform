@@ -120,29 +120,8 @@ public class SecurityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ResourceServerConfigurer.class)
     public ResourceServerConfigurer n2oPlatformResourceServer() {
-        return new SecurityAutoConfiguration.ResourceSecurityConfigurer(this.securityProperties.getResourceId());
-    }
-
-    protected static class ResourceSecurityConfigurer
-            extends ResourceServerConfigurerAdapter {
-
-        private String resourceId;
-
-        public ResourceSecurityConfigurer(String resourceId) {
-            this.resourceId = resourceId;
-        }
-
-        @Override
-        public void configure(ResourceServerSecurityConfigurer resources)
-                throws Exception {
-            resources.resourceId(this.resourceId);
-        }
-
-        @Override
-        public void configure(HttpSecurity http) throws Exception {
-            http.authorizeRequests().anyRequest().authenticated()
-                    .and().httpBasic().disable()
-                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        }
+        N2oPlatformResourceServerConfigurerAdapter adapter = new N2oPlatformResourceServerConfigurerAdapter();
+        adapter.setSecurityProperties(this.securityProperties);
+        return adapter;
     }
 }
