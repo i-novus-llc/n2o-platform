@@ -103,6 +103,16 @@
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-security-autoconfigure</artifactId>
+                <version>2.10-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-starter-jwt</artifactId>
+                <version>2.10-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-ms-autoconfigure</artifactId>
                 <version>2.10-SNAPSHOT</version>
             </dependency>
