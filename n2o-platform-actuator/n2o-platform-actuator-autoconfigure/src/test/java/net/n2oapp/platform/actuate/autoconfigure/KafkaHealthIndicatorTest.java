@@ -22,13 +22,13 @@ import java.util.Map;
  * @author RMakhmutov
  * @since 06.09.2018
  */
-//@RunWith(SpringRunner.class)
-//@SpringBootTest(classes = KafkaHealthIndicatorTest.class)
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = KafkaHealthIndicatorTest.class)
 public class KafkaHealthIndicatorTest {
     @ClassRule
     public static EmbeddedKafkaRule kafkaEmbedded = new EmbeddedKafkaRule(1);
 
-//    @Test
+//    @Test todo sometimes embedded kafka fails to start, should be fixed in future releases
     public void kafkaIsUp() throws Exception {
         KafkaTemplate kafkaTemplate = initKafkaTemplate(this.kafkaEmbedded.getEmbeddedKafka().getBrokersAsString());
 
@@ -38,7 +38,7 @@ public class KafkaHealthIndicatorTest {
         assert health.getStatus() == Status.UP;
     }
 
-//    @Test
+    @Test
     public void kafkaIsDown() {
         KafkaTemplate kafkaTemplate = initKafkaTemplate("127.0.0.1:" + SocketUtils.findAvailableTcpPort());
 
