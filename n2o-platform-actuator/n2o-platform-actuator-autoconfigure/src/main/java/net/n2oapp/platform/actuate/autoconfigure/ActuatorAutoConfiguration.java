@@ -39,7 +39,7 @@ public class ActuatorAutoConfiguration {
     @Configuration
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @ConditionalOnClass(WebSecurityConfigurerAdapter.class)
-    @ConditionalOnBean(ObjectPostProcessor.class)
+    @ConditionalOnBean(WebSecurityConfigurerAdapter.class)
     @AutoConfigureAfter(SecurityAutoConfiguration.class)
     public static class MonitoringSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
         @Autowired
