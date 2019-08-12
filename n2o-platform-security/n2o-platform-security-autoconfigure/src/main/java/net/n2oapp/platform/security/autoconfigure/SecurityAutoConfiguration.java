@@ -7,7 +7,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.DefaultOAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 import org.springframework.security.oauth2.client.token.DefaultAccessTokenRequest;
 import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
@@ -35,16 +34,20 @@ public class SecurityAutoConfiguration {
 
     @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.INTERFACES)
-    public OAuth2RestTemplate oauth2RestTemplate(OAuth2ClientContext oauth2ClientContext,
-                                                 OAuth2ProtectedResourceDetails details) {
-        OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(details, oauth2ClientContext);
+    public PlatformRestTemplate oauth2RestTemplate(OAuth2ClientContext oauth2ClientContext,
+                                                   OAuth2ProtectedResourceDetails details) {
+        PlatformRestTemplate restTemplate = new PlatformRestTemplate(details, oauth2ClientContext);
         restTemplate.setRetryBadAccessTokens(false);
+        restTemplate.setCheckTokenExpired(securityProperties.isCheckTokenExpired());
         return restTemplate;
     }
 
+    /**
+     * Контекст текущего пользователя с токеном
+     */
     @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.INTERFACES)
-    public DefaultOAuth2ClientContext oauth2ClientContext() {
+    public DefaultOAuth2ClientContext oauth2ClientContext(PlatformAccessTokenConverter accessTokenConverter) {
         DefaultOAuth2ClientContext context = new DefaultOAuth2ClientContext(
                 new DefaultAccessTokenRequest());
         Authentication principal = SecurityContextHolder.getContext()
@@ -54,13 +57,34 @@ public class SecurityAutoConfiguration {
             Object details = authentication.getDetails();
             if (details instanceof OAuth2AuthenticationDetails) {
                 OAuth2AuthenticationDetails oauthsDetails = (OAuth2AuthenticationDetails) details;
-                String token = oauthsDetails.getTokenValue();
-                context.setAccessToken(new DefaultOAuth2AccessToken(token));
+                String tokenValue = oauthsDetails.getTokenValue();
+                if (Boolean.FALSE.equals(securityProperties.isCheckTokenExpired())) {
+                    //Если нет проверки срока действия токена, то создаем простой токен без срока действия
+                    context.setAccessToken(new DefaultOAuth2AccessToken(tokenValue));
+                } else {
+                    //Если есть проверка срока действия токена, то получаем настроящий токен
+                    OAuth2AccessToken accessToken = accessTokenConverter.extractAccessToken(tokenValue,
+                            accessTokenConverter.decode(tokenValue));
+                    context.setAccessToken(accessToken);
+                }
             }
         }
         return context;
     }
 
+    /**
+     * Бин простой конфертации токенов с методом decode
+     */
+    @Bean
+    public PlatformAccessTokenConverter platformAccessTokenConverter(UserAuthenticationConverter userAuthenticationConverter) {
+        PlatformAccessTokenConverter platformAccessTokenConverter = new PlatformAccessTokenConverter();
+        platformAccessTokenConverter.setUserTokenConverter(userAuthenticationConverter);
+        return platformAccessTokenConverter;
+    }
+
+    /**
+     * Информация о клиенте OAuth2 при использовании grant_type=client_credentials*
+     */
     @Bean
     public OAuth2ProtectedResourceDetails clientCredentialsResourceDetails() {
         ClientCredentialsResourceDetails clientCredentials = new ClientCredentialsResourceDetails();
@@ -70,8 +94,12 @@ public class SecurityAutoConfiguration {
         return clientCredentials;
     }
 
+    /**
+     * Бин конвертации аутентификации в информацию о токене и обратно
+     */
     @Bean
-    public N2oPlatformAuthenticationConverter n2oPlatformAuthenticationConverter() {
+    @ConditionalOnMissingBean
+    public UserAuthenticationConverter n2oPlatformAuthenticationConverter() {
         return new N2oPlatformAuthenticationConverter();
     }
 
@@ -79,6 +107,7 @@ public class SecurityAutoConfiguration {
     public ResourceServerTokenServices tokenServices(TokenStore tokenStore) {
         DefaultTokenServices defaultTokenServices;
         if (Boolean.FALSE.equals(securityProperties.isCheckTokenExpired())) {
+            //Если нет проверки срока действия токена, то только читаем токен
             defaultTokenServices = new DefaultTokenServices() {
                 @Override
                 public OAuth2Authentication loadAuthentication(String accessTokenValue) {
@@ -94,6 +123,7 @@ public class SecurityAutoConfiguration {
                 }
             };
         } else {
+            //Если есть проверка срока действия токена, то читаем и проверяем срок действия токена
             defaultTokenServices = new DefaultTokenServices();
         }
         defaultTokenServices.setTokenStore(tokenStore);
