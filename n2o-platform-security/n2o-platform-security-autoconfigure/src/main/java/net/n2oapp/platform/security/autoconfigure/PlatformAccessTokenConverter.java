@@ -1,6 +1,5 @@
 package net.n2oapp.platform.security.autoconfigure;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.jwt.Jwt;
 import org.springframework.security.jwt.JwtHelper;
 import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;

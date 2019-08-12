@@ -178,7 +178,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- todo since 2.1.1.RELEASE there is PropertySource problem: properties from autoconfigured PropertySource's doesn't work in applications (for example spring.main.allow-bean-definition-overriding=true) -->
+            <!-- Since 2.1.1.RELEASE there is PropertySource problem: properties from autoconfigured PropertySource's doesn't work in applications (for example spring.main.allow-bean-definition-overriding=true) -->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-context</artifactId>

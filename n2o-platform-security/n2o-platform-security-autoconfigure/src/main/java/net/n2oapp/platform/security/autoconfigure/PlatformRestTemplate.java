@@ -32,7 +32,7 @@ public class PlatformRestTemplate extends OAuth2RestTemplate {
      * @return Токен доступа
      */
     @Override
-    public OAuth2AccessToken getAccessToken() throws UserRedirectRequiredException {
+    public OAuth2AccessToken getAccessToken() {
         OAuth2AccessToken accessToken = getOAuth2ClientContext().getAccessToken();
         if (accessToken != null && !checkTokenExpired)
             return accessToken;
