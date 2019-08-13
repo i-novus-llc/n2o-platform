@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "n2o.platform.security")
 public class N2oPlatformSecurityProperties {
     /**
-     * URL адрес сервиса, возвращающего сертификаты SSO сервера
+     * Адрес сервиса, возвращающего сертификаты SSO сервера
      */
     private String keySetUri;
     /**

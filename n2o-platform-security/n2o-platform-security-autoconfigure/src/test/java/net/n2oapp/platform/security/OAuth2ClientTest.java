@@ -3,6 +3,7 @@ package net.n2oapp.platform.security;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import net.n2oapp.platform.security.autoconfigure.SecurityAutoConfiguration;
 import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,6 +16,8 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
@@ -34,7 +37,8 @@ import static org.hamcrest.Matchers.notNullValue;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         classes = OAuth2ClientTest.class,
         properties = {"n2o.platform.security.key-set-uri=http://localhost:8787/auth/certs",
-                "n2o.platform.security.check-token-expired=false"})
+                "n2o.platform.security.check-token-expired=false",
+                "n2o.platform.security.access-token-uri=http://localhost:8787/auth/token"})
 @EnableResourceServer
 public class OAuth2ClientTest {
 
@@ -72,7 +76,7 @@ public class OAuth2ClientTest {
     }
 
     /**
-     * Тест аутентификации (клиент -> сервер) через токен
+     * Тест запроса с токеном (клиент -> сервер)
      */
     @Test
     public void authRequest() {
@@ -87,7 +91,25 @@ public class OAuth2ClientTest {
     }
 
     /**
-     * Тест прокси аутентификации (сервер -> сервер) через токен
+     * Тест запроса без токена (клиент -> сервер)
+     */
+    @Test
+    public void noAuthRequest() {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<String> exchange = null;
+        try {
+            restTemplate.exchange("http://localhost:" + port + "/greeting", HttpMethod.GET, entity, String.class);
+            Assert.fail();
+        } catch (HttpClientErrorException e) {
+            assertThat(e.getStatusCode().value(), is(401));
+        }
+    }
+
+    /**
+     * Тест запроса с токеном с дальнейшим проксированием на новый запрос (клиент -> сервер -> сервер)
      */
     @Test
     public void authProxyRequest() {
