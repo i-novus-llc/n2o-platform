@@ -5,7 +5,7 @@
 
 = Возможности
 
-* Создание сервера N2O Frontend Web Framework (без статики)
+* Создание сервера N2O Framework (без статики)
 * Проброс сообщений пользователя от Backend на Frontend, если на бекенде бросили UserException
 * На UI будет отображаться стектрейс бекенда, если на бекенде во время выполнения запроса произошла непредвиденная ошибка
 
@@ -20,13 +20,15 @@
 </dependency>
 ----
 
-Также вам понадобится зависимость от модуля статики.
+Также вам понадобится зависимость от модуля, содержащего статические ресурсы Frontend.
+По умолчанию это n2o-web:
 
 [source,xml]
 ----
 <dependency>
   <groupId>net.n2oapp.framework</groupId>
   <artifactId>n2o-web</artifactId>
+  <version>${n2o.version}</version>
 </dependency>
 ----
 
