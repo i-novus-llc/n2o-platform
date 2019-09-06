@@ -1,5 +1,5 @@
 = Документация
-:toc:
+:toc: macro
 :toclevels: 3
 :toc-title: Содержание
 
