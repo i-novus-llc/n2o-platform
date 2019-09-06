@@ -236,6 +236,8 @@ jaxrs.swagger.enabled=true
 jaxrs.swagger.title=REST сервисы для примера
 jaxrs.swagger.version=1.0
 jaxrs.swagger.resource-package=net.n2oapp.microservice.example
+#Опционально можно указать какие протоколы (http,https,ws,wss):
+jaxrs.swagger.schemes=http,https
 ----
 
 Ссылка на документацию Swagger будет доступна по адресу `/api/info` (cxf.path + cxf.servlet.init.service-list-path).

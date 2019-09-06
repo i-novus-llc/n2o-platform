@@ -47,7 +47,7 @@ public class JaxRsServerAutoConfiguration {
         result.setDescription(jaxRsProperties.getSwagger().getDescription());
         result.setBasePath(cxfProperties.getPath());
         result.setVersion(jaxRsProperties.getSwagger().getVersion());
-        result.setSchemes(new String[]{"http", "https"});
+        result.setSchemes(jaxRsProperties.getSwagger().getSchemes());
         result.setPrettyPrint(true);
 
         result.setResourcePackage(jaxRsProperties.getSwagger().getResourcePackage());

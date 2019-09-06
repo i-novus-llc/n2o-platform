@@ -91,6 +91,7 @@ public class JaxRsProperties {
         private String description;
         private String version;
         private String resourcePackage;
+        private String[] schemes = new String[]{"http", "https"};
 
         public boolean isEnabled() {
             return enabled;
@@ -130,6 +131,14 @@ public class JaxRsProperties {
 
         public void setResourcePackage(String resourcePackage) {
             this.resourcePackage = resourcePackage;
+        }
+
+        public String[] getSchemes() {
+            return schemes;
+        }
+
+        public void setSchemes(String[] schemes) {
+            this.schemes = schemes;
         }
     }
 
