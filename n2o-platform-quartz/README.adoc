@@ -1,0 +1,25 @@
+= Возможности
+
+Билиотека основана на стартере Quartz от Spring, обеспечивает оптимальную конфигурацию по умолчанию.
+
+= Подключение
+
+Стартер можно подключить с помощью добавления зависимости.
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-starter-quartz</artifactId>
+</dependency>
+----
+
+Для автоматического наката схемы базы данных необходимо добавить `quartz-init.xml` в базовый ChangeLog приложения.
+
+[source,xml]
+----
+<databaseChangeLog>
+        . . .
+        <include file="classpath*:/quartz-db/quartz-init.xml"/>
+        . . .
+</databaseChangeLog>
+----

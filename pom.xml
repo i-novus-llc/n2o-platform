@@ -51,6 +51,7 @@
         <module>n2o-platform-web</module>
         <module>n2o-platform-test</module>
         <module>n2o-platform-initializr</module>
+        <module>n2o-platform-quartz</module>
     </modules>
 
     <profiles>

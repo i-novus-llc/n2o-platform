@@ -59,6 +59,11 @@
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-starter-quartz</artifactId>
+                <version>2.14-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-audit</artifactId>
                 <version>2.14-SNAPSHOT</version>
             </dependency>
@@ -97,6 +102,11 @@
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-actuator-autoconfigure</artifactId>
+                <version>2.14-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-quartz-autoconfigure</artifactId>
                 <version>2.14-SNAPSHOT</version>
             </dependency>
             <dependency>
