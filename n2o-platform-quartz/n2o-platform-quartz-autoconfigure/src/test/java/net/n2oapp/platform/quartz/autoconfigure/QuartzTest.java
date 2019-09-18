@@ -7,7 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
 import java.util.Map;
@@ -17,14 +18,18 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @SpringBootApplication
-@RunWith(SpringJUnit4ClassRunner.class)
-@Import(TestConfig.class)
-@SpringBootTest(classes = {QuartzConfigurationTest.class}, properties = "spring.liquibase.change-log=classpath:test-base-changelog.xml")
-public class QuartzConfigurationTest {
+@RunWith(SpringRunner.class)
+@Import(QuartzTestConfiguration.class)
+@SpringBootTest(classes = {QuartzTest.class})
+@TestPropertySource("classpath:test.properties")
+public class QuartzTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    /**
+     * Тест загрузки джоба и триггера в БД
+     */
     @Test
     public void testTableContent() {
         List<Map<String, Object>> result = jdbcTemplate.queryForList("SELECT * FROM qrtz_job_details");
@@ -36,10 +41,14 @@ public class QuartzConfigurationTest {
         assertThat(result.get(0).get("trigger_name"), is("test_trigger"));
     }
 
+    /**
+     * Тест выполнения джоба и передачи объекта через контекст
+     */
     @Test
     public void testJob() throws InterruptedException {
         int before = TestJob.i;
         TimeUnit.SECONDS.sleep(1);
-        assert TestJob.i > before;
+        assertThat(TestJob.i > before, is(true));
+        assertThat(TestJob.context, is("test_context"));
     }
 }

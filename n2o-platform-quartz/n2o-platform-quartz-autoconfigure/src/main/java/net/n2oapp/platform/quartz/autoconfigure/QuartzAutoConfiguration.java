@@ -5,6 +5,6 @@ import org.springframework.context.annotation.PropertySource;
 
 @Configuration
 @PropertySource("classpath:quartz.default.properties")
-public class QuartzConfiguration {
+public class QuartzAutoConfiguration {
 
 }

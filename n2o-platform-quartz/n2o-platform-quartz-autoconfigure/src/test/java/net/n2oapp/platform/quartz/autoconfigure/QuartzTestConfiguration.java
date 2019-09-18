@@ -1,18 +1,23 @@
 package net.n2oapp.platform.quartz.autoconfigure;
 
 import org.quartz.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
+import org.springframework.boot.autoconfigure.quartz.SchedulerFactoryBeanCustomizer;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+
+import java.util.Map;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 
 @TestConfiguration
 @AutoConfigureAfter(LiquibaseAutoConfiguration.class)
-public class TestConfig {
+public class QuartzTestConfiguration {
 
-    private static final String EVERY_SECOND = "* * * ? * *";
+    @Value("${quartz.test.cron-expression}")
+    private String cronExpression;
 
     @Bean
     public JobDetail jobDetail() {
@@ -27,7 +32,14 @@ public class TestConfig {
     public Trigger trigger(JobDetail job) {
         return TriggerBuilder.newTrigger().forJob(job)
                 .withIdentity("test_trigger")
-                .withSchedule(cronSchedule(EVERY_SECOND))
+                .withSchedule(cronSchedule(cronExpression))
                 .build();
+    }
+
+    @Bean
+    public SchedulerFactoryBeanCustomizer schedulerContextCustomizer() {
+        return (schedulerFactoryBean) -> {
+            schedulerFactoryBean.setSchedulerContextAsMap(Map.of("context", "test_context"));
+        };
     }
 }
