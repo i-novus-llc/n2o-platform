@@ -11,6 +11,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -38,7 +39,7 @@ public class QuartzConfigurationTest {
     @Test
     public void testJob() throws InterruptedException {
         int before = TestJob.i;
-        Thread.sleep(1000);
+        TimeUnit.SECONDS.sleep(1);
         assert TestJob.i > before;
     }
 }
