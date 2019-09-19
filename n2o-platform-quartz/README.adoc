@@ -26,7 +26,7 @@
 </databaseChangeLog>
 ----
 = Использование
-Для использования Quartz необходимо определить 3 основных компонента: `Job`, `JobDetail`, `Trigger` и `Scheduler`.
+Для использования Quartz необходимо определить 3 основных компонента: `Job`, `JobDetail` и `Trigger`.
 В данном примере класс `SampleJob` реализует интерфейс `Job` с его единственным методом `execute()`.
 
 [source,java]
@@ -75,8 +75,8 @@ public Trigger trigger(JobDetail job) {
 }
 ----
 
-`Scheduler` может быть создан при помощи `SchedulerFactoryBean`. В `spring-boot-starter-quartz` он создаётся по умолчанию.
-И может быть кастомизирован через `SchedulerFactoryBeanCustomizer`:
+`Scheduler` управляет объектами `Job` и `Trigger`, он сконфигурирован по умолчанию с помощью `SchedulerFactoryBean`.
+`SchedulerFactoryBean` можно кастомизировать через `SchedulerFactoryBeanCustomizer`:
 
 [source,java]
 ----
@@ -87,3 +87,14 @@ public Trigger trigger(JobDetail job) {
         };
     }
 ----
+
+Стартер позволяет переопределить настройки `Quartz` в `application.properties`
+(доступные для конфигурирования настройки link:http://www.quartz-scheduler.org/documentation/quartz-2.3.0/configuration/[здесь] ),
+для этого достаточно использовать префикс `spring.quartz.properties`, например:
+
+[source]
+----
+spring.quartz.properties.org.quartz.scheduler.instanceName=Scheduler
+----
+
+
