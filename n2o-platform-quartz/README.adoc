@@ -1,0 +1,100 @@
+= Возможности
+
+* Создание джобов и триггеров в bean-стиле.
+* Автоматический накат схемы и хранение джобов и триггеров в БД.
+* Оптимальная конфигурация по умолчанию.
+
+= Подключение
+
+Стартер можно подключить с помощью добавления зависимости.
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-starter-quartz</artifactId>
+</dependency>
+----
+
+Для автоматического наката схемы базы данных необходимо добавить `quartz-init.xml` в базовый ChangeLog приложения.
+
+[source,xml]
+----
+<databaseChangeLog>
+        . . .
+        <include file="quartz-db/changelog/quartz-init.xml"/>
+        . . .
+</databaseChangeLog>
+----
+= Использование
+Для использования Quartz необходимо определить 3 основных компонента: `Job`, `JobDetail` и `Trigger`.
+В данном примере класс `SampleJob` реализует интерфейс `Job` с его единственным методом `execute()`.
+
+[source,java]
+----
+public class SampleJob implements Job {
+
+    @Override
+    public void execute(JobExecutionContext context) throws JobExecutionException {
+        ...
+        //do sample job
+        ...
+    }
+}
+----
+
+Для хранения информации о `Job` Quartz использует класс `JobDetail`.
+Привязать `Job` к `JobDetail` можно с помощью определения бина:
+
+[source,java]
+----
+@Bean
+public JobDetail jobDetail() {
+    return JobBuilder.newJob().ofType(SampleJob.class)
+      .storeDurably()
+      .withIdentity("Qrtz_Job_Detail")
+      .build();
+}
+----
+
+`Trigger` - механизм запланированного запуска задания. Определить его можно с помощью бина.
+Стоит обратить внимание на то, что при конфигурировании бинов можно использовать настройки, заданные через `application.properties`.
+
+[source,java]
+----
+@Value("${quartz.test.cron-expression}")
+private String cronExpression;
+
+. . .
+
+@Bean
+public Trigger trigger(JobDetail job) {
+    return TriggerBuilder.newTrigger().forJob(job)
+      .withIdentity("Qrtz_Trigger")
+      .withSchedule(cronSchedule(cronExpression))
+      .build();
+}
+----
+
+`Scheduler` управляет объектами `Job` и `Trigger`, он сконфигурирован по умолчанию с помощью `SchedulerFactoryBean`.
+`SchedulerFactoryBean` можно кастомизировать через `SchedulerFactoryBeanCustomizer`:
+
+[source,java]
+----
+    @Bean
+    public SchedulerFactoryBeanCustomizer schedulerContextCustomizer() {
+        return (schedulerFactoryBean) -> {
+            schedulerFactoryBean.setSchedulerContextAsMap(Map.of("context", "context"));
+        };
+    }
+----
+
+Стартер позволяет переопределить настройки `Quartz` в `application.properties`
+(доступные для конфигурирования настройки link:http://www.quartz-scheduler.org/documentation/quartz-2.3.0/configuration/[здесь] ),
+для этого достаточно использовать префикс `spring.quartz.properties`, например:
+
+[source]
+----
+spring.quartz.properties.org.quartz.scheduler.instanceName=Scheduler
+----
+
+
