@@ -1,9 +1,12 @@
 package net.n2oapp.platform.web;
 
+import net.n2oapp.platform.web.api.TestRestService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -29,10 +32,18 @@ import static org.hamcrest.core.IsNull.notNullValue;
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
         properties = {
                 "server.port=62517",
-                "security.oauth2.client.client-id=test"
+                "security.oauth2.client.client-id=test",
+                "cxf.path=/api",
+                "cxf.jaxrs.client.classes-scan=true",
+                "cxf.jaxrs.client.classes-scan-packages=net.n2oapp.platform.web.api",
+                "cxf.jaxrs.client.address=http://localhost:${server.port}/token"
         })
 @SpringBootApplication
 public class WebTest {
+
+    private static final String jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+
+    private static final RestTemplate restTemplate = new RestTemplate();
 
     @LocalServerPort
     private int port;
@@ -40,9 +51,10 @@ public class WebTest {
     @MockBean
     private OAuth2ClientContext clientContext;
 
-    private static final String jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+    @Autowired
+    @Qualifier("testRestServiceJaxRsProxyClient")
+    private TestRestService testRestService;
 
-    private static final RestTemplate restTemplate = new RestTemplate();
 
     @Before
     public void setUp() {
@@ -64,9 +76,14 @@ public class WebTest {
         assertThat(((Map) ((List) result.get("list")).get(0)).get("auth"), is("Bearer " + jwt));
     }
 
+    @Test
+    public void testJaxRsProxyClient() {
+        Map result = testRestService.getToken();
+        assertThat(((Map) ((List) result.get("token")).get(0)).get("auth"), is("Bearer " + jwt));
+    }
+
     @TestConfiguration
     public static class WebTestConfiguration extends WebSecurityConfigurerAdapter {
-
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http.authorizeRequests().anyRequest().permitAll();

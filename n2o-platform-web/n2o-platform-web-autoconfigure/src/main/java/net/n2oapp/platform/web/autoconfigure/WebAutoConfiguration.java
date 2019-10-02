@@ -5,6 +5,7 @@ import net.n2oapp.framework.boot.N2oAutoConfiguration;
 import net.n2oapp.framework.engine.data.rest.SpringRestDataProviderEngine;
 import net.n2oapp.framework.engine.data.rest.json.RestEngineTimeModule;
 import net.n2oapp.platform.i18n.Messages;
+import org.apache.cxf.jaxrs.client.spring.JaxRsProxyClientConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +51,12 @@ public class WebAutoConfiguration {
             SpringRestDataProviderEngine springRestDataProviderEngine = new SpringRestDataProviderEngine(oauth2RestTemplate, restObjectMapper);
             springRestDataProviderEngine.setBaseRestUrl(baseRestUrl);
             return springRestDataProviderEngine;
+        }
+
+        @Bean
+        @ConditionalOnClass(JaxRsProxyClientConfiguration.class)
+        public HeaderInterceptor headerInterceptor() {
+            return new HeaderInterceptor();
         }
 
     }
