@@ -40,7 +40,6 @@ public class WebAutoConfiguration {
     public static class RestConfiguration {
 
         @Bean("oauth2RestTemplate")
-        @Scope(value = "session", proxyMode = TARGET_CLASS)
         public OAuth2RestTemplate oauth2RestTemplate(OAuth2ProtectedResourceDetails details, OAuth2ClientContext oauth2ClientContext) {
             return new OAuth2RestTemplate(details, oauth2ClientContext);
         }
