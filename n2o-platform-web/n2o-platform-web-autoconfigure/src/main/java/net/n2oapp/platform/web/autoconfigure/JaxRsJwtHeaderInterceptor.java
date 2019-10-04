@@ -18,19 +18,20 @@ import java.util.Map;
  * Добавление токена в заголовки реквестов
  */
 @Provider(value = Provider.Type.OutInterceptor)
-public class HeaderInterceptor extends AbstractPhaseInterceptor<Message> {
+public class JaxRsJwtHeaderInterceptor extends AbstractPhaseInterceptor<Message> {
 
-    @Autowired
+    @Autowired(required = false)
     private OAuth2ClientContext oauth2ClientContext;
 
-    public HeaderInterceptor() {
+    public JaxRsJwtHeaderInterceptor() {
         super(Phase.WRITE);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public void handleMessage(Message message) {
-        if (oauth2ClientContext != null) {
+        if (oauth2ClientContext != null
+                && oauth2ClientContext.getAccessToken() != null) {
             String tokenType = oauth2ClientContext.getAccessToken().getTokenType();
             if (!StringUtils.hasText(tokenType)) {
                 tokenType = OAuth2AccessToken.BEARER_TYPE;

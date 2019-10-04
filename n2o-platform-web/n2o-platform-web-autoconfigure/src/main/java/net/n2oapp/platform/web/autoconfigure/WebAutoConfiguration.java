@@ -10,14 +10,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
 
 import java.text.SimpleDateFormat;
+
+import static org.springframework.context.annotation.ScopedProxyMode.TARGET_CLASS;
 
 @Configuration
 @AutoConfigureBefore(N2oAutoConfiguration.class)
@@ -31,19 +36,19 @@ public class WebAutoConfiguration {
         return platformExceptionHandler;
     }
 
-    @ConditionalOnClass({OAuth2ProtectedResourceDetails.class, OAuth2ClientContext.class})
+    @ConditionalOnBean({OAuth2ProtectedResourceDetails.class, OAuth2ClientContext.class})
     public static class RestConfiguration {
 
-        @Value("${n2o.engine.rest.url}")
-        private String baseRestUrl;
-
         @Bean("oauth2RestTemplate")
+        @Scope(value = "session", proxyMode = TARGET_CLASS)
         public OAuth2RestTemplate oauth2RestTemplate(OAuth2ProtectedResourceDetails details, OAuth2ClientContext oauth2ClientContext) {
             return new OAuth2RestTemplate(details, oauth2ClientContext);
         }
 
         @Bean("restDataProviderEngine")
-        public SpringRestDataProviderEngine restDataProviderEngine(@Qualifier("oauth2RestTemplate") OAuth2RestTemplate oauth2RestTemplate) {
+        @ConditionalOnMissingBean(name = "restDataProviderEngine")
+        public SpringRestDataProviderEngine restDataProviderEngine(@Qualifier("oauth2RestTemplate") OAuth2RestTemplate oauth2RestTemplate,
+                                                                   @Value("${n2o.engine.rest.url}") String baseRestUrl) {
             ObjectMapper restObjectMapper = new ObjectMapper();
             restObjectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"));
             RestEngineTimeModule module = new RestEngineTimeModule(new String[]{"yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd"});
@@ -55,8 +60,8 @@ public class WebAutoConfiguration {
 
         @Bean
         @ConditionalOnClass(JaxRsProxyClientConfiguration.class)
-        public HeaderInterceptor headerInterceptor() {
-            return new HeaderInterceptor();
+        public JaxRsJwtHeaderInterceptor headerInterceptor() {
+            return new JaxRsJwtHeaderInterceptor();
         }
 
     }

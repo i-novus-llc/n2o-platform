@@ -1,6 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
 <query xmlns="http://n2oapp.net/framework/config/schema/query-4.0">
     <list result-mapping="['token']">
-        <rest>http://localhost:${server.port}/token</rest>
+        <java method="getToken" class="net.n2oapp.platform.web.JwtForwardingTest$ProxyClient">
+            <spring/>
+        </java>
     </list>
     <fields>
         <field id="auth">
