@@ -38,7 +38,9 @@ public class WebAutoConfiguration {
 
         @Bean("oauth2RestTemplate")
         public OAuth2RestTemplate oauth2RestTemplate(OAuth2ProtectedResourceDetails details, OAuth2ClientContext oauth2ClientContext) {
-            return new OAuth2RestTemplate(details, oauth2ClientContext);
+            OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(details, oauth2ClientContext);
+            restTemplate.setRetryBadAccessTokens(false);
+            return restTemplate;
         }
 
         @Bean("restDataProviderEngine")
