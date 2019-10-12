@@ -1,7 +1,14 @@
 package net.n2oapp.platform.loader.autoconfigure;
 
-import net.n2oapp.platform.loader.server.LoaderRegister;
+import net.n2oapp.platform.loader.server.ServerLoaderRunner;
 
+/**
+ * Настройщик серверной загрузки
+ */
 public interface ServerLoaderConfigurer {
-    void configure(LoaderRegister register);
+    /**
+     * Настроить серверные загрузчики
+     * @param runner Запускатель загрузчиков на сервере
+     */
+    void configure(ServerLoaderRunner runner);
 }

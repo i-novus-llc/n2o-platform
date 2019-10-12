@@ -8,6 +8,10 @@ import org.springframework.web.client.RestOperations;
 
 import java.net.URI;
 
+/**
+ * Загрузчик данных через REST API
+ * @param <T> Тип данных
+ */
 public abstract class RestClientLoader<T> implements ClientLoader {
     private RestOperations restTemplate;
     private String urlPattern = "/load/{subject}/{target}";

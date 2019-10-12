@@ -6,27 +6,30 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
+import static net.n2oapp.platform.loader.server.ServerLoaderCommand.asIterable;
+import static net.n2oapp.platform.loader.server.ServerLoaderCommand.asObject;
+
 @Configuration
 public class TestServerConfiguration {
     @Bean
     ServerLoaderConfigurer loaders() {
-        return register -> {
-            register.add(new MyLoader1(), "load1", Object.class);
-            register.addIterable(new MyLoader2(), "load2", Object.class);
+        return runner -> {
+            runner.add(asObject(new MyLoader1(), "load1", Object.class));
+            runner.add(asIterable(new MyLoader2(), "load2", Object.class));
         };
     }
 
     static class MyLoader1 implements ServerLoader<Object> {
         @Override
         public void load(Object data, String subject) {
-            //load something
+            //run something
         }
     }
 
     static class MyLoader2 implements ServerLoader<List<Object>> {
         @Override
         public void load(List<Object> data, String subject) {
-            //load something
+            //run something
         }
     }
 }

@@ -1,19 +1,22 @@
 package net.n2oapp.platform.loader.autoconfigure;
 
-import net.n2oapp.platform.loader.client.LoaderCommand;
+import net.n2oapp.platform.loader.client.ClientLoaderCommand;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Настройки клиентского загрузчика
+ */
 @ConfigurationProperties(prefix = "n2o.loader.client")
 public class ClientLoaderProperties {
     /**
      * Очередь загрузчиков
      */
     @NestedConfigurationProperty
-    private final List<LoaderCommand> commands = new ArrayList<>();
+    private final List<ClientLoaderCommand> commands = new ArrayList<>();
     /**
      * Момент запуска загрузчиков
      */
@@ -81,7 +84,7 @@ public class ClientLoaderProperties {
         this.retriesInterval = retriesInterval;
     }
 
-    public List<LoaderCommand> getCommands() {
+    public List<ClientLoaderCommand> getCommands() {
         return commands;
     }
 }

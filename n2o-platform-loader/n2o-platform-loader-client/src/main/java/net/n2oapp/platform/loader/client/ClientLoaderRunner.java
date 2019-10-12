@@ -10,26 +10,26 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class LoaderRunner {
+public class ClientLoaderRunner {
     private List<ClientLoader> loaders;
-    private List<LoaderCommand> commands = new ArrayList<>();
+    private List<ClientLoaderCommand> commands = new ArrayList<>();
     private boolean failFast = true;
 
-    public LoaderRunner(List<ClientLoader> loaders) {
+    public ClientLoaderRunner(List<ClientLoader> loaders) {
         if (loaders == null || loaders.size() == 0)
             throw new IllegalArgumentException("Loaders required");
         this.loaders = loaders;
     }
 
-    public LoaderRunner add(LoaderCommand command) {
+    public ClientLoaderRunner add(ClientLoaderCommand command) {
         commands.add(command);
         return this;
     }
 
-    public LoaderRunner add(String serverUrl, String subject, String target,
-                            Resource fileUri, Class<? extends ClientLoader> loaderClass) {
+    public ClientLoaderRunner add(String serverUrl, String subject, String target,
+                                  Resource fileUri, Class<? extends ClientLoader> loaderClass) {
         try {
-            commands.add(new LoaderCommand(
+            commands.add(new ClientLoaderCommand(
                     new URI(serverUrl),
                     subject,
                     target,
@@ -41,18 +41,18 @@ public class LoaderRunner {
         return this;
     }
 
-    public LoaderRunner add(String serverUrl, String subject, String target, String filePath) {
+    public ClientLoaderRunner add(String serverUrl, String subject, String target, String filePath) {
         return add(serverUrl, subject, target, new ClassPathResource(filePath), null);
     }
 
-    public LoaderRunner add(String serverUrl, String subject, String target,
-                            String filePath, Class<? extends ClientLoader> loaderClass) {
+    public ClientLoaderRunner add(String serverUrl, String subject, String target,
+                                  String filePath, Class<? extends ClientLoader> loaderClass) {
         return add(serverUrl, subject, target, new ClassPathResource(filePath), loaderClass);
     }
 
     public LoaderReport run() {
         LoaderReport report = new LoaderReport();
-        for (LoaderCommand command : commands) {
+        for (ClientLoaderCommand command : commands) {
             try {
                 find(command.getLoaderClass()).load(
                         command.getServer(),
@@ -94,7 +94,7 @@ public class LoaderRunner {
         return Collections.unmodifiableList(loaders);
     }
 
-    public List<LoaderCommand> getCommands() {
+    public List<ClientLoaderCommand> getCommands() {
         return Collections.unmodifiableList(commands);
     }
 }

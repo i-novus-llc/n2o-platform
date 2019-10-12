@@ -1,6 +1,7 @@
 package net.n2oapp.platform.loader.autoconfigure;
 
-import net.n2oapp.platform.loader.server.LoaderEndpoint;
+import net.n2oapp.platform.loader.server.JsonLoaderRunner;
+import net.n2oapp.platform.loader.server.ServerLoaderEndpoint;
 import net.n2oapp.platform.loader.server.LoaderRegister;
 import org.junit.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -16,15 +17,13 @@ public class ServerLoaderAutoConfigurationTest {
                     ServerLoaderAutoConfiguration.class));
 
     @Test
-    public void test() {
+    public void configurers() {
         this.contextRunner
                 .withUserConfiguration(TestServerConfiguration.class)
                 .run((context) -> {
-                    assertThat(context.getBean(LoaderEndpoint.class), notNullValue());
-                    LoaderRegister register = context.getBean(LoaderRegister.class);
-                    assertThat(register, notNullValue());
-                    assertThat(register.find("load1").getTarget(), is("load1"));
-                    assertThat(register.find("load2").getTarget(), is("load2"));
+                    JsonLoaderRunner runner = context.getBean(JsonLoaderRunner.class);
+                    assertThat(runner, notNullValue());
+                    assertThat(runner.getCommands().size(), is(2));
                 });
     }
 }

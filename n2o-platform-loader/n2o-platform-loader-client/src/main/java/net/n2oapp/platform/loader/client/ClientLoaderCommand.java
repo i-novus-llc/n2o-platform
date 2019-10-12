@@ -4,24 +4,27 @@ import org.springframework.core.io.Resource;
 
 import java.net.URI;
 
-public class LoaderCommand {
+/**
+ * Команда для запуска загрузки данных на клиенте
+ */
+public class ClientLoaderCommand {
     private URI server;
     private String subject;
     private String target;
     private Resource file;
     private Class<? extends ClientLoader> loaderClass;
 
-    public LoaderCommand() {
+    public ClientLoaderCommand() {
     }
 
-    public LoaderCommand(URI server, String subject, String target, Resource file) {
+    public ClientLoaderCommand(URI server, String subject, String target, Resource file) {
         this.server = server;
         this.subject = subject;
         this.target = target;
         this.file = file;
     }
 
-    public LoaderCommand(URI server, String subject, String target, Resource file, Class<? extends ClientLoader> loaderClass) {
+    public ClientLoaderCommand(URI server, String subject, String target, Resource file, Class<? extends ClientLoader> loaderClass) {
         this.server = server;
         this.subject = subject;
         this.target = target;

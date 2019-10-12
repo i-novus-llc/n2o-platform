@@ -7,22 +7,42 @@ import org.springframework.lang.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Серверный загрузчик данных через репозиторий Spring Data
+ *
+ * @param <M> Тип модели
+ * @param <E> Тип сущности
+ */
 public class RepositoryServerLoader<M, E> implements ServerLoader<List<M>> {
     private CrudRepository<E, ?> repository;
     private LoaderMapper<M, E> mapper;
     private ClientFilter<E> filter;
 
-    public RepositoryServerLoader(LoaderMapper<M, E> mapper,
-                                  CrudRepository<E, ?> repository) {
-        this(mapper, repository, null);
-    }
-
+    /**
+     * Конструктор серверного загрузчика данных с удаленим устаревших.
+     * Если передан фильтр по владельцу, то устаревшие данные этого владельца при загрузке будут удалены.
+     *
+     * @param mapper     Конвертер
+     * @param repository Репозиторий
+     * @param filter     Фильтр по владельцу
+     */
     public RepositoryServerLoader(LoaderMapper<M, E> mapper,
                                   CrudRepository<E, ?> repository,
                                   @Nullable ClientFilter<E> filter) {
         this.mapper = mapper;
         this.repository = repository;
         this.filter = filter;
+    }
+
+    /**
+     * Конструктор серверного загрузчика данных без удаления устаревших.
+     *
+     * @param mapper     Конвертер
+     * @param repository Репозиторий
+     */
+    public RepositoryServerLoader(LoaderMapper<M, E> mapper,
+                                  CrudRepository<E, ?> repository) {
+        this(mapper, repository, null);
     }
 
     @Override
@@ -49,11 +69,11 @@ public class RepositoryServerLoader<M, E> implements ServerLoader<List<M>> {
         if (filter == null)
             return;
         List<E> old = filter.findAllBySubject(subject);
-        List<E> deprecated = new ArrayList<>();
+        List<E> unused = new ArrayList<>();
         for (E entity : old) {
             if (!fresh.contains(entity))
-                deprecated.add(entity);
+                unused.add(entity);
         }
-        repository.deleteAll(deprecated);
+        repository.deleteAll(unused);
     }
 }

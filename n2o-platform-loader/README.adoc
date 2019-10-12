@@ -5,19 +5,17 @@
 
 = Возможности
 
-Эта библиотека позволяет загружать в микросервис небольшие справочные данные, обычно прошитые в коде клиента.
-Например, клиентское приложение имеет свои права доступа, которые необходимо загрузить в микросервис Security.
-Для этого достаточно создать файл permissions.json, добавить туда свои права доступа и задать адрес Security.
-Клиенское приложение выполнит Rest запрос на специальный сервис в Security, отправив туда свои права доступа.
-Микросервис Security создаст недостающие, обновит существующие и удалит устаревшие права доступа для этого клиента.
+Библиотека позволяет загружать небольшие справочные данные, обычно прошитые в коде клиента, в удаленный сервис при старте.
+Например, клиентское приложение имеет свои права доступа, которые необходимо загрузить в микросервис безопасности.
+Для этого достаточно создать файл permissions.json, добавить туда свои права доступа и задать адрес api сервиса безопасности.
+Клиенское приложение выполнит REST запрос на эндпоинт /load в сервисе безопасности, отправив туда свои права доступа.
+Сервис безопасности создаст недостающие, обновит существующие и удалит устаревшие права доступа для этого клиента.
 
-= Инструкции
+= Сервер
 
-== Сервер
+== Подключение
 
-=== Подключение
-
-Добавьте зависимость:
+Добавьте зависимость `n2o-platform-starter-loader-server`:
 [source,xml]
 ----
 <dependency>
@@ -25,10 +23,65 @@
   <artifactId>n2o-platform-starter-loader-server</artifactId>
 </dependency>
 ----
+Она добавит библиотеку серверных загрузчиков `n2o-platform-loader-server` и автоконфигуратор `n2o-platform-loader-autoconfigure`.
 
-== Клиент
+Создайте загрузчик данных используя интерфейс `ServerLoader`:
 
-=== Подключение
+[source,java]
+----
+@Component
+class MyServerLoader implements ServerLoader<List<MyModel>> {
+    @Override
+    public void load(List<MyModel> data, String subject) {
+        //create new and update old
+        //find unused by subject
+        //delete unused
+    }
+}
+----
+
+Или используйте `RepositoryServerLoader`:
+
+[source,java]
+----
+@Bean
+RepositoryServerLoader<MyModel, MyEntity> myServerLoader(MyRepository repository) {
+    return new RepositoryServerLoader<>(mapper, repository, finder);
+}
+----
+
+Соедините REST сервис `/load` с вашим загрузчиком:
+
+[source,java]
+----
+@Configuration
+class MyLoadersConfiguration implements ServerLoaderConfigurer {
+    @Override
+    public void configure(ServerLoaderRunner runner) {
+        runner.add(asObject(new MyServerLoader(), "myload", MyModel.class));
+        //add something else ...
+    }
+}
+----
+
+== Использование
+
+Отлаживайте ваш загрузчик через REST клиент `/load/{subject}/{target}`:
+
+----
+POST /load/me/myload
+[
+  {
+    "code": "code1",
+    "name": "name1"
+  },
+  ...
+]
+----
+
+= Клиент
+
+== Подключение
 
 Добавьте зависимость:
 [source,xml]

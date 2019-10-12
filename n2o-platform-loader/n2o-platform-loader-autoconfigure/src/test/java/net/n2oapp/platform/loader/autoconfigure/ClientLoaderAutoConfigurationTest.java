@@ -1,6 +1,6 @@
 package net.n2oapp.platform.loader.autoconfigure;
 
-import net.n2oapp.platform.loader.client.LoaderRunner;
+import net.n2oapp.platform.loader.client.ClientLoaderRunner;
 import net.n2oapp.platform.loader.client.LoaderStarter;
 import org.junit.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -24,7 +24,7 @@ public class ClientLoaderAutoConfigurationTest {
         this.contextRunner
                 .withPropertyValues("n2o.loader.client.start=UP")
                 .run((context) -> {
-                    LoaderRunner runner = context.getBean(LoaderRunner.class);
+                    ClientLoaderRunner runner = context.getBean(ClientLoaderRunner.class);
                     assertThat(runner, notNullValue());
                     LoaderStarter starter = context
                             .getBean("startAfterUp", LoaderStarter.class);
@@ -41,7 +41,7 @@ public class ClientLoaderAutoConfigurationTest {
         this.contextRunner
                 .withPropertyValues("n2o.loader.client.start=DEPLOY")
                 .run((context) -> {
-                    LoaderRunner runner = context.getBean(LoaderRunner.class);
+                    ClientLoaderRunner runner = context.getBean(ClientLoaderRunner.class);
                     assertThat(runner, notNullValue());
                     LoaderStarter starter = context
                             .getBean("startOnDeploy", LoaderStarter.class);
@@ -58,7 +58,7 @@ public class ClientLoaderAutoConfigurationTest {
         this.contextRunner
                 .withUserConfiguration(TestClientConfiguration.class)
                 .run((context) -> {
-                    LoaderRunner runner = context.getBean(LoaderRunner.class);
+                    ClientLoaderRunner runner = context.getBean(ClientLoaderRunner.class);
                     assertThat(runner.getCommands().size(), is(2));
                     assertThat(runner.getLoaders().size(), is(2));
                 });
@@ -77,7 +77,7 @@ public class ClientLoaderAutoConfigurationTest {
                         "n2o.loader.client.commands[1].target=bar",
                         "n2o.loader.client.commands[1].file=test2.json")
                 .run((context) -> {
-                    LoaderRunner runner = context.getBean(LoaderRunner.class);
+                    ClientLoaderRunner runner = context.getBean(ClientLoaderRunner.class);
                     assertThat(runner.getCommands().size(), is(2));
                 });
     }

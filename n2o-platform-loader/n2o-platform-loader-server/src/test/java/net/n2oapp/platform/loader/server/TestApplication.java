@@ -20,9 +20,9 @@ class TestApplication {
     }
 
     @Bean
-    JsonLoaderEngine jsonLoaderEngine(ObjectMapper objectMapper,
+    ServerLoaderRunner jsonLoaderEngine(ObjectMapper objectMapper,
                                       RepositoryServerLoader<TestModel, TestEntity> repositoryServerLoader) {
-        LoaderRegister register = new LoaderRegister().addIterable(repositoryServerLoader, "test", TestModel.class);
-        return new JsonLoaderEngine(register, objectMapper);
+        return new JsonLoaderRunner(objectMapper)
+                .add(ServerLoaderCommand.asIterable(repositoryServerLoader, "test", TestModel.class));
     }
 }

@@ -11,6 +11,9 @@ import java.io.InputStreamReader;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Загрузчик json данных
+ */
 public class JsonClientLoader extends RestClientLoader<String> {
 
     public JsonClientLoader(RestOperations restTemplate) {

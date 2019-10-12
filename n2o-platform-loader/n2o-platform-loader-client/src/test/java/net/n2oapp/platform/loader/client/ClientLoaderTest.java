@@ -62,7 +62,7 @@ public class ClientLoaderTest {
         //success
         stubFor(post(urlMatching("/load/sub/test1")).willReturn(aResponse().withStatus(200)));
         stubFor(post(urlMatching("/simple/sub/test2")).willReturn(aResponse().withStatus(200)));
-        LoaderRunner runner = new LoaderRunner(Arrays.asList(jsonClientLoader, simpleClientLoader));
+        ClientLoaderRunner runner = new ClientLoaderRunner(Arrays.asList(jsonClientLoader, simpleClientLoader));
         runner.add("http://localhost:8787", "sub", "test1", "test.json")
                 .add("http://localhost:8787", "sub", "test2", "test.txt", SimpleClientLoader.class);
         LoaderReport report = runner.run();

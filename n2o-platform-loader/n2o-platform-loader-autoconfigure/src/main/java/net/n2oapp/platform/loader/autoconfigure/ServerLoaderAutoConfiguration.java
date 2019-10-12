@@ -1,9 +1,9 @@
 package net.n2oapp.platform.loader.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.n2oapp.platform.loader.server.JsonLoaderEngine;
-import net.n2oapp.platform.loader.server.LoaderRegister;
+import net.n2oapp.platform.loader.server.JsonLoaderRunner;
 import net.n2oapp.platform.loader.server.ServerLoader;
+import net.n2oapp.platform.loader.server.ServerLoaderRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -18,16 +18,10 @@ public class ServerLoaderAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public LoaderRegister loaderRegister(@Autowired(required = false) List<ServerLoaderConfigurer> configurers) {
-        LoaderRegister register = new LoaderRegister();
+    public ServerLoaderRunner jsonLoaderRunner(@Autowired(required = false) List<ServerLoaderConfigurer> configurers) {
+        JsonLoaderRunner runner = new JsonLoaderRunner(new ObjectMapper());
         if (configurers != null)
-            configurers.forEach(c -> c.configure(register));
-        return register;
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public JsonLoaderEngine jsonLoaderEngine(LoaderRegister register) {
-        return new JsonLoaderEngine(register, new ObjectMapper());
+            configurers.forEach(c -> c.configure(runner));
+        return runner;
     }
 }

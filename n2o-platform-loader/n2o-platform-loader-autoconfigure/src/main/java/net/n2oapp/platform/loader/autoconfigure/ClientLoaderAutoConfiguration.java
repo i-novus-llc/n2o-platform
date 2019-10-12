@@ -30,9 +30,9 @@ public class ClientLoaderAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public LoaderRunner loaderRunner(List<ClientLoader> loaders,
-                                     @Autowired(required = false) List<ClientLoaderConfigurer> configurers) {
-        LoaderRunner runner = new LoaderRunner(loaders);
+    public ClientLoaderRunner loaderRunner(List<ClientLoader> loaders,
+                                           @Autowired(required = false) List<ClientLoaderConfigurer> configurers) {
+        ClientLoaderRunner runner = new ClientLoaderRunner(loaders);
         runner.setFailFast(properties.isFailFast());
         properties.getCommands().forEach(runner::add);
         if (configurers != null)
@@ -43,7 +43,7 @@ public class ClientLoaderAutoConfiguration {
     @Bean
     @Conditional(RunAfterStartedCondition.class)
     @ConditionalOnMissingBean
-    public LoaderStarter startAfterUp(LoaderRunner runner) {
+    public LoaderStarter startAfterUp(ClientLoaderRunner runner) {
         return new LoaderStarter(runner) {
             @Override
             @EventListener(ApplicationReadyEvent.class)
@@ -56,14 +56,14 @@ public class ClientLoaderAutoConfiguration {
     @Bean
     @Conditional(RunOnDeployCondition.class)
     @ConditionalOnMissingBean
-    public LoaderStarter startOnDeploy(LoaderRunner runner) {
+    public LoaderStarter startOnDeploy(ClientLoaderRunner runner) {
         return new LoaderStarter(runner) {
             @Override
             @PostConstruct
             public void start() {
                 LoaderReport report = runner.run();
                 if (properties.isFailFast() && !report.isSuccess())
-                    throw new IllegalStateException("Loader failed", report.getFails().get(0).getException());
+                    throw new IllegalStateException(report.getFails().get(0).getException());
             }
         };
     }

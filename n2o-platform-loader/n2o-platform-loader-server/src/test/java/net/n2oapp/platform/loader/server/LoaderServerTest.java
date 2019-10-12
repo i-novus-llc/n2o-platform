@@ -1,7 +1,6 @@
 package net.n2oapp.platform.loader.server;
 
 import net.n2oapp.platform.loader.server.repository.RepositoryServerLoader;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,13 +67,13 @@ public class LoaderServerTest {
     }
 
     /**
-     * Тест {@link LoaderEndpoint}
+     * Тест {@link ServerLoaderEndpoint}
      */
     @Test
     public void restLoader() {
         BiConsumer<List<TestModel>, String> loader = (data, subject) -> {
             RestTemplate restTemplate = new RestTemplate();
-            String url = "http://localhost:" + port + "/api/load/" + subject + "/test";
+            String url = "http://localhost:" + port + "/api/run/" + subject + "/test";
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<List<TestModel>> request = new HttpEntity<>(data, headers);
