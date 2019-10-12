@@ -10,7 +10,7 @@ class TestApplication {
 
     @Bean
     JsonClientLoader jsonClientLoader() {
-        return new JsonClientLoader(new RestTemplate(), new ObjectMapper());
+        return new JsonClientLoader(new RestTemplate());
     }
 
     @Bean

@@ -13,7 +13,14 @@
     </parent>
 
     <dependencies>
-
+        <dependency>
+            <groupId>net.n2oapp.platform</groupId>
+            <artifactId>n2o-platform-loader-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.n2oapp.platform</groupId>
+            <artifactId>n2o-platform-loader-server</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

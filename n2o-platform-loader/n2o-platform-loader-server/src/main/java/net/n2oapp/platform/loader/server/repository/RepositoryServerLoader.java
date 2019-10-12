@@ -49,9 +49,11 @@ public class RepositoryServerLoader<M, E> implements ServerLoader<List<M>> {
         if (filter == null)
             return;
         List<E> old = filter.findAllBySubject(subject);
+        List<E> deprecated = new ArrayList<>();
         for (E entity : old) {
             if (!fresh.contains(entity))
-                repository.delete(entity);
+                deprecated.add(entity);
         }
+        repository.deleteAll(deprecated);
     }
 }

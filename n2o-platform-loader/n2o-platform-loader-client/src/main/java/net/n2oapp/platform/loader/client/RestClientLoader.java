@@ -30,7 +30,7 @@ public abstract class RestClientLoader<T> implements ClientLoader {
                 request,
                 String.class);
         if (!response.getStatusCode().is2xxSuccessful())
-            throw new IllegalStateException("Fail: " + response.getBody());
+            throw new LoadingException("Loading failed: " + response.getBody());
     }
 
     protected MultiValueMap<String, String> getHeaders() {
@@ -40,9 +40,9 @@ public abstract class RestClientLoader<T> implements ClientLoader {
     protected abstract T getData(Resource file);
 
     protected String getUrl(URI server, String subject, String target) {
-        String normServerUrl = (server.toString().endsWith("/") ?
+        String serverUrl = (server.toString().endsWith("/") ?
                 server.toString().substring(0, server.toString().length() - 1) :
                 server.toString());
-        return normServerUrl + urlPattern.replace("{subject}", subject).replace("{target}", target);
+        return serverUrl + urlPattern.replace("{subject}", subject).replace("{target}", target);
     }
 }
