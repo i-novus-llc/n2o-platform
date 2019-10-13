@@ -16,7 +16,7 @@ import java.util.List;
 public class RepositoryServerLoader<M, E> implements ServerLoader<List<M>> {
     private CrudRepository<E, ?> repository;
     private LoaderMapper<M, E> mapper;
-    private ClientFilter<E> filter;
+    private SubjectFilter<E> filter;
 
     /**
      * Конструктор серверного загрузчика данных с удаленим устаревших.
@@ -28,7 +28,7 @@ public class RepositoryServerLoader<M, E> implements ServerLoader<List<M>> {
      */
     public RepositoryServerLoader(LoaderMapper<M, E> mapper,
                                   CrudRepository<E, ?> repository,
-                                  @Nullable ClientFilter<E> filter) {
+                                  @Nullable SubjectFilter<E> filter) {
         this.mapper = mapper;
         this.repository = repository;
         this.filter = filter;

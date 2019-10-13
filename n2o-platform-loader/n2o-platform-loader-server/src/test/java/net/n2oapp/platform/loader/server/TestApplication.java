@@ -7,6 +7,8 @@ import net.n2oapp.platform.loader.server.repository.RepositoryServerLoader;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import java.util.List;
+
 @SpringBootApplication
 class TestApplication {
     @Bean
@@ -20,9 +22,8 @@ class TestApplication {
     }
 
     @Bean
-    ServerLoaderRunner jsonLoaderEngine(ObjectMapper objectMapper,
-                                      RepositoryServerLoader<TestModel, TestEntity> repositoryServerLoader) {
-        return new JsonLoaderRunner(objectMapper)
-                .add(ServerLoaderCommand.asIterable(repositoryServerLoader, "test", TestModel.class));
+    ServerLoaderRunner jsonLoaderEngine(List<ServerLoader<?>> loaders, ObjectMapper objectMapper) {
+        return new JsonLoaderRunner(loaders, objectMapper)
+                .add(ServerLoaderRoute.asIterable("test", TestModel.class, RepositoryServerLoader.class));
     }
 }

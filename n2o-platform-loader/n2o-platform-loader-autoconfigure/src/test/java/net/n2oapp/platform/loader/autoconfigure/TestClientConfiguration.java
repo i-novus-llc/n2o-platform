@@ -1,7 +1,7 @@
 package net.n2oapp.platform.loader.autoconfigure;
 
 import net.n2oapp.platform.loader.client.ClientLoader;
-import org.springframework.context.annotation.Bean;
+import net.n2oapp.platform.loader.client.ClientLoaderRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -9,13 +9,12 @@ import org.springframework.stereotype.Component;
 import java.net.URI;
 
 @Configuration
-public class TestClientConfiguration {
-    @Bean
-    ClientLoaderConfigurer loaders() {
-        return (runner) -> {
-            runner.add("http://localhost:8080/api", "me", "loader1", "test.json")
-                    .add("http://localhost:8080/api", "me", "loader2", "test.xml", MyClientLoader.class);
-        };
+public class TestClientConfiguration implements ClientLoaderConfigurer {
+
+    @Override
+    public void configure(ClientLoaderRunner runner) {
+        runner.add("http://localhost:8080/api", "me", "loader1", "test.json");
+        runner.add("http://localhost:8081/api", "me", "loader2", "test.xml", MyClientLoader.class);
     }
 
     @Component

@@ -10,7 +10,7 @@ public interface ServerLoader<T> {
      * Загрузить данные
      *
      * @param data    Данные
-     * @param subject Субъект
+     * @param subject Владелец данных
      */
     void load(T data, String subject);
 }

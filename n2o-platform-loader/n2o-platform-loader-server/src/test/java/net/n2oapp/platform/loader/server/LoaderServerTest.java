@@ -67,13 +67,13 @@ public class LoaderServerTest {
     }
 
     /**
-     * Тест {@link ServerLoaderEndpoint}
+     * Тест {@link ServerLoaderRestService}
      */
     @Test
     public void restLoader() {
         BiConsumer<List<TestModel>, String> loader = (data, subject) -> {
             RestTemplate restTemplate = new RestTemplate();
-            String url = "http://localhost:" + port + "/api/run/" + subject + "/test";
+            String url = "http://localhost:" + port + "/api/loaders/" + subject + "/test";
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<List<TestModel>> request = new HttpEntity<>(data, headers);

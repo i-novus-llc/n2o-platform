@@ -14,15 +14,15 @@ import java.net.URI;
  */
 public abstract class RestClientLoader<T> implements ClientLoader {
     private RestOperations restTemplate;
-    private String urlPattern = "/load/{subject}/{target}";
+    private String endpointPattern = "/load/{subject}/{target}";
 
     public RestClientLoader(RestOperations restTemplate) {
         this.restTemplate = restTemplate;
     }
 
-    public RestClientLoader(RestOperations restTemplate, String urlPattern) {
+    public RestClientLoader(RestOperations restTemplate, String endpointPattern) {
         this.restTemplate = restTemplate;
-        this.urlPattern = urlPattern;
+        this.endpointPattern = endpointPattern;
     }
 
     @Override
@@ -34,7 +34,7 @@ public abstract class RestClientLoader<T> implements ClientLoader {
                 request,
                 String.class);
         if (!response.getStatusCode().is2xxSuccessful())
-            throw new LoadingException("Loading failed: " + response.getBody());
+            throw new LoadingException("Loading failed status " + response.getStatusCodeValue() + " response " + response.getBody());
     }
 
     protected MultiValueMap<String, String> getHeaders() {
@@ -47,6 +47,6 @@ public abstract class RestClientLoader<T> implements ClientLoader {
         String serverUrl = (server.toString().endsWith("/") ?
                 server.toString().substring(0, server.toString().length() - 1) :
                 server.toString());
-        return serverUrl + urlPattern.replace("{subject}", subject).replace("{target}", target);
+        return serverUrl + endpointPattern.replace("{subject}", subject).replace("{target}", target);
     }
 }

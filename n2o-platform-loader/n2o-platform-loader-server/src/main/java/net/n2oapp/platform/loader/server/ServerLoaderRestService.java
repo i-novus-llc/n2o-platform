@@ -13,12 +13,12 @@ import java.io.InputStream;
 /**
  * REST сервис загрузки данных
  */
-@Path("/run")
+@Path("/loaders")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@Api("Загрузчик данных")
+@Api("Загрузчики данных")
 @Provider
-public interface ServerLoaderEndpoint extends ServerLoaderRunner {
+public interface ServerLoaderRestService extends ServerLoaderRunner {
 
     @POST
     @Path("/{subject}/{target}")

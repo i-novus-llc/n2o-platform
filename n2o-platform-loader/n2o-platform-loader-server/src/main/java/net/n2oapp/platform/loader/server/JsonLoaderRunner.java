@@ -5,27 +5,28 @@ import com.fasterxml.jackson.databind.type.CollectionType;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * Запускатель загрузчиков json данных
  */
 public class JsonLoaderRunner extends BaseLoaderRunner {
-
     private ObjectMapper objectMapper;
 
-    public JsonLoaderRunner(ObjectMapper objectMapper) {
+    public JsonLoaderRunner(List<ServerLoader<?>> loaders, ObjectMapper objectMapper) {
+        super(loaders);
         this.objectMapper = objectMapper;
     }
 
-    protected Object read(InputStream body, ServerLoaderCommand command) {
+    protected Object read(InputStream body, ServerLoaderRoute route) {
         Object data;
         try {
-            if (command.isIterable()) {
+            if (route.isIterable()) {
                 CollectionType type = objectMapper.getTypeFactory()
-                        .constructCollectionType(command.getIterableType(), command.getElementType());
+                        .constructCollectionType(route.getIterableType(), route.getElementType());
                 data = objectMapper.readValue(body, type);
             } else {
-                data = objectMapper.readValue(body, command.getType());
+                data = objectMapper.readValue(body, route.getType());
             }
         } catch (IOException e) {
             throw new IllegalStateException(e);

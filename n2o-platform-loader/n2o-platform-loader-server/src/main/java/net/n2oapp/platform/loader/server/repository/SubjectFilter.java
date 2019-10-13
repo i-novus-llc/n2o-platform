@@ -7,7 +7,7 @@ import java.util.List;
  * @param <T> Тип сущности
  */
 @FunctionalInterface
-public interface ClientFilter<T> {
+public interface SubjectFilter<T> {
     /**
      * Найти все данные по владельцу
      * @param subject Владелец данных

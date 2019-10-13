@@ -3,17 +3,18 @@
 :toclevels: 3
 :toc-title: Содержание
 
-= Возможности
+== Возможности
 
-Библиотека позволяет загружать небольшие справочные данные, обычно прошитые в коде клиента, в удаленный сервис при старте.
-Например, клиентское приложение имеет свои права доступа, которые необходимо загрузить в микросервис безопасности.
-Для этого достаточно создать файл permissions.json, добавить туда свои права доступа и задать адрес api сервиса безопасности.
-Клиенское приложение выполнит REST запрос на эндпоинт /load в сервисе безопасности, отправив туда свои права доступа.
-Сервис безопасности создаст недостающие, обновит существующие и удалит устаревшие права доступа для этого клиента.
+Библиотека позволяет загружать небольшие справочные данные, которые обычно прошиваются в коде, в сервис расположенный удаленно.
 
-= Сервер
+Например, клиентское приложение НСИ имеет свои права доступа (`permissions`), которые необходимо загрузить в микросервис безопасности.
+Для этого достаточно в НСИ создать файл `permissions.json`, добавить туда свои права доступа и задать адрес api сервиса безопасности.
+Клиенское приложение НСИ выполнит REST запрос на эндпоинт `/load/rdm/permissions` в сервисе безопасности, отправив туда свои права доступа.
+Сервис безопасности создаст недостающие, обновит существующие и удалит устаревшие права доступа для НСИ.
 
-== Подключение
+== Сервер
+
+=== Подключение
 
 Добавьте зависимость `n2o-platform-starter-loader-server`:
 [source,xml]
@@ -23,65 +24,134 @@
   <artifactId>n2o-platform-starter-loader-server</artifactId>
 </dependency>
 ----
-Она добавит библиотеку серверных загрузчиков `n2o-platform-loader-server` и автоконфигуратор `n2o-platform-loader-autoconfigure`.
 
-Создайте загрузчик данных используя интерфейс `ServerLoader`:
+Создайте загрузчик данных используя интерфейс `ServerLoader<T>`:
 
 [source,java]
 ----
 @Component
-class MyServerLoader implements ServerLoader<List<MyModel>> {
+class PermissionServerLoader implements ServerLoader<List<PermissionModel>> {
     @Override
-    public void load(List<MyModel> data, String subject) {
+    public void load(List<PermissionModel> data, String subject) {
         //create new and update old
         //find unused by subject
         //delete unused
     }
 }
 ----
+Параметр `subject` определяет владельца загружаемых данных. С помощью него можно найти и удалить устаревшие данные.
 
-Или используйте `RepositoryServerLoader`:
-
-[source,java]
-----
-@Bean
-RepositoryServerLoader<MyModel, MyEntity> myServerLoader(MyRepository repository) {
-    return new RepositoryServerLoader<>(mapper, repository, finder);
-}
-----
-
-Соедините REST сервис `/load` с вашим загрузчиком:
+Если данные загружаются через Spring Data, можно использовать класс `RepositoryServerLoader`:
 
 [source,java]
 ----
-@Configuration
-class MyLoadersConfiguration implements ServerLoaderConfigurer {
-    @Override
-    public void configure(ServerLoaderRunner runner) {
-        runner.add(asObject(new MyServerLoader(), "myload", MyModel.class));
-        //add something else ...
+class PermissionServerLoader extends RepositoryServerLoader<PermissionModel, PermissionEntity> {
+    public PermissionServerLoader(LoaderMapper<M, E> mapper,
+                                  CrudRepository<E, ?> repository,
+                                  @Nullable SubjectFilter<E> filter) {
+        super(mapper, repository, filter);
     }
 }
 ----
 
-== Использование
+Для работы `RepositoryServerLoader` требуется реализовать маппинг данных из модели в сущность `LoaderMapper<M, E>`:
 
-Отлаживайте ваш загрузчик через REST клиент `/load/{subject}/{target}`:
+[source,java]
+----
+class PermissionLoaderMapper implements LoaderMapper<PermissionModel, PermissionEntity> {
+    public PermissionEntity map(PermissionModel model, String subject) {
+        PermissionEntity entity = new PermissionEntity();
+        entity.setCode(model.getCode());
+        entity.setName(model.getName());
+        entity.setSystem(subject);
+        return entity;
+    }
+}
+----
+
+Если требуется удалять устаревшие неиспользуемые данные, нужно задать метод поиска данных по владельцу `SubjectFilter`.
+Такой метод можно определить без реализации по правилам Spring Data Repository:
+
+[source,java]
+----
+interface PermissionRepository extends CrudRepository<PermissionEntity, String> {
+    List<PermissionEntity> findAllBySystem(String system);
+}
+----
+
+И задать как ссылку на метод `repository::findAllBySystem`:
+
+[source,java]
+----
+@Bean
+PermissionServerLoader permissionServerLoader(PermissionRepository repository) {
+    return new PermissionServerLoader(new MyLoaderMapper(), repository, repository::findAllBySystem);
+}
+----
+
+Чтобы дать информацию REST сервису о том, какой загрузчик нужно запустить,
+необходимо задать настройки `n2o.loader.server.*` в файле `application.yml`:
 
 ----
-POST /load/me/myload
-[
-  {
-    "code": "code1",
-    "name": "name1"
-  },
-  ...
-]
+n2o.loader.server:
+  routes:
+    - target: permissions
+      element-type: com.example.PermissionModel
+      loader-class: com.example.PermissionServerLoader
+----
+[NOTE]
+Другие настройки можно посмотреть в классе `ServerLoaderProperties`.
+
+=== Использование
+
+Отлаживайте ваш загрузчик через REST сервис `ServerLoaderRestService` методом POST `/loaders/{subject}/{target}`
+, где `subject` владелец данных, `target` вид данных:
+
+----
+curl -X POST /loaders/rdm/permissions
+-H "accept: application/json"
+-H "Content-Type: application/json"
+-d "[{ \"code\": \"rdm.read\", \"name\": \"Чтение справочников\"}]"
 ----
 
-= Клиент
+Если статус ответа 200, загрузка прошла успешно.
 
-== Подключение
+Запустить загрузчики можно через класс `ServerLoaderRunnner`:
+
+[source,java]
+----
+@Autowired
+private ServerLoaderRunner runner;
+
+public void loadRdmPermissions(InputStream data) {
+  runner.run("rdm", "permissions", data);
+}
+----
+
+
+=== Кастомизация
+
+В качестве альтернативе `application.yml` через `ServerLoaderConfigurer` можно дать информацию REST сервису для запуска загрузчика:
+
+[source,java]
+----
+@Configuration
+class LoadersConfiguration implements ServerLoaderConfigurer {
+    @Override
+    public void configure(ServerLoaderRunner runner) {
+        runner.add(asIterable("permissions", PermissionModel.class, PermissionServerLoader.class));
+    }
+}
+----
+
+Через статический метод `ServerLoaderRoute.asObject` задается информация о цели загрузки (`target`), типе данных (`type`)
+и классе загрузчика (`loaderClass`).
+Если тип данных списковый, необходимо использовать статический метод `ServerLoaderRoute.asIterable` и задать тип элементов списка (`iterableElementType`).
+
+
+== Клиент
+
+=== Подключение
 
 Добавьте зависимость:
 [source,xml]
@@ -90,4 +160,108 @@ POST /load/me/myload
   <groupId>net.n2oapp.platform</groupId>
   <artifactId>n2o-platform-starter-loader-client</artifactId>
 </dependency>
+----
+
+Создайте файл данных для загрузки `permissions.json`:
+
+----
+[
+  {
+    "code": "rdm.read",
+    "name": "Чтение справочников"
+    },
+    ...
+]
+----
+
+Задайте настройки запуска `n2o.loader.client.*` в файле `application.yml`:
+
+----
+n2o.loader.client:
+  start: UP
+  fail-fast: true
+  commands:
+    - server: http://localhost:8080/api
+      subject: rdm
+      target: permissions
+      file: permissions.json
+----
+
+.Настройки
+[cols="1,1,2"]
+|===
+|Код|Значение|Описание
+
+|start
+|DEPLOY, UP, MANUAL
+|Момент запуска: при деплое (DEPLOY), после деплоя (UP), в ручную (MANUAL).
+
+|fail-fast
+|true, false
+|Падать при первой же ошибке загрузки (true) или продолжить с другими загрузчиками (false).
+Если `start=DEPLOY` и `fail-fast=true`, то при ошибке загрузчки деплой приложения сломается.
+
+|commands
+|ClientLoaderCommand
+|Последовательность загрузок
+
+|===
+[NOTE]
+Другие настройки можно посмотреть в классе `ClientLoaderProperties`.
+
+=== Использование
+
+Если настройка старта `n2o.loader.client.start` имеет значение `DEPLOY` или `UP`,
+для загузки данных в сервисы достаточно запустить приложение.
+
+Так же загрузчики можно запускать через класс `ClientLoaderRunner`:
+[source,java]
+----
+@Autowired
+private ClientLoaderRunner runner;
+
+public void run() {
+  LoaderReport report = runner.run();
+  if (report.isSuccess())
+      System.out.println("Загрузка прошла успешно");
+}
+----
+
+=== Кастомизация
+
+В качестве альтернативы `application.yml` можно задавать последовательность запуска загрузчиков через класс `ClientLoaderConfigurer`:
+
+[source,java]
+----
+@Configuration
+class ClientLoaderConfiguration implements ClientLoaderConfigurer {
+  @Override
+  public void configure(ClientLoaderRunner runner) {
+      runner.add("http://localhost:8080/api", "rdm", "permissions", "permissions.json");
+      ...
+  }
+}
+----
+
+Для кастомизации загрузки данных на сервер можно создать свой клиентский загрузчик с помощью `ClientLoader`:
+
+[source,java]
+----
+@Component
+class MyClientLoader implements ClientLoader {
+  @Override
+  public void load(URI server, String subject, String target, Resource file) {
+      //do something
+  }
+}
+----
+Чтобы свой загрузчик использовался при запуске его класс необходимо указать в ClientLoaderConfigurer:
+
+[source,java]
+----
+@Override
+public void configure(ClientLoaderRunner runner) {
+    runner.add("http://localhost:8080/api", "me", "mydata", "mydata.xml", MyClientLoader.class);
+    ...
+}
 ----

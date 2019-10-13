@@ -4,23 +4,30 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Базовый запускатель загрузчиков
  */
-public abstract class BaseLoaderRunner implements ServerLoaderRunner, ServerLoaderEndpoint {
-    private List<ServerLoaderCommand> commands = new ArrayList<>();
+public abstract class BaseLoaderRunner implements ServerLoaderRunner, ServerLoaderRestService {
+    private List<ServerLoader<?>> loaders;
+    private List<ServerLoaderRoute> routes = new ArrayList<>();
 
-    public ServerLoaderRunner add(ServerLoaderCommand command) {
-        commands.add(command);
+    public BaseLoaderRunner(List<ServerLoader<?>> loaders) {
+        this.loaders = loaders;
+    }
+
+    public ServerLoaderRunner add(ServerLoaderRoute route) {
+        routes.add(route);
         return this;
     }
 
     @Override
     public void run(String subject, String target, InputStream body) {
-        ServerLoaderCommand command = find(target);
-        Object data = read(body, command);
-        execute(subject, command, data);
+        ServerLoaderRoute route = findRoute(target);
+        Object data = read(body, route);
+        ServerLoader<?> loader = findLoader(route);
+        execute(subject, data, loader);
     }
 
     /**
@@ -29,8 +36,8 @@ public abstract class BaseLoaderRunner implements ServerLoaderRunner, ServerLoad
      * @param target Цель
      * @return Загрузчик
      */
-    protected ServerLoaderCommand find(String target) {
-        return commands.stream().filter(l -> l.getTarget().equals(target)).findFirst().orElseThrow();
+    protected ServerLoaderRoute findRoute(String target) {
+        return routes.stream().filter(l -> l.getTarget().equals(target)).findFirst().orElseThrow();
     }
 
     /**
@@ -40,22 +47,34 @@ public abstract class BaseLoaderRunner implements ServerLoaderRunner, ServerLoad
      * @param command Команда
      * @return Данные
      */
-    protected abstract Object read(InputStream body, ServerLoaderCommand command);
+    protected abstract Object read(InputStream body, ServerLoaderRoute command);
+
+    protected ServerLoader<?> findLoader(ServerLoaderRoute command) {
+        if (command.getLoaderClass() != null) {
+            Optional<ServerLoader<?>> loader = loaders.stream()
+                    .filter(l -> l.getClass().equals(command.getLoaderClass()))
+                    .findFirst();
+            if (loader.isEmpty())
+                throw new IllegalArgumentException("Loader bean " + command.getLoaderClass() + " not found");
+            return loader.get();
+        } else {
+            return loaders.get(0);
+        }
+    }
 
     /**
      * Запуск загрузчика
      *
      * @param subject Владелец данных
-     * @param command Команда
      * @param data    Данные
+     * @param loader  Загрузчик
      */
     @SuppressWarnings("unchecked")
-    protected void execute(String subject, ServerLoaderCommand command, Object data) {
-        ServerLoader<?> loader = command.getLoader();
+    protected void execute(String subject, Object data, ServerLoader<?> loader) {
         ((ServerLoader<Object>) loader).load(data, subject);
     }
 
-    public List<ServerLoaderCommand> getCommands() {
-        return Collections.unmodifiableList(commands);
+    public List<ServerLoaderRoute> getCommands() {
+        return Collections.unmodifiableList(routes);
     }
 }

@@ -41,7 +41,8 @@ public class ClientLoaderProperties {
 
     enum StartingTime {
         DEPLOY,
-        UP
+        UP,
+        MANUAL
     }
 
     public void setFailFast(boolean failFast) {

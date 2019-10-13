@@ -9,8 +9,8 @@ public interface ServerLoaderRunner {
     /**
      * Запустить загрузку данных
      *
-     * @param subject Субъект
-     * @param target  Цель
+     * @param subject Владелец данных
+     * @param target  Вид данных
      * @param body    Тело
      */
     void run(String subject, String target, InputStream body);
@@ -18,8 +18,8 @@ public interface ServerLoaderRunner {
     /**
      * Добавить команду запуска загрузчика
      *
-     * @param command Команда
+     * @param route Команда
      * @return Запускатель серверных загрузчиков
      */
-    ServerLoaderRunner add(ServerLoaderCommand command);
+    ServerLoaderRunner add(ServerLoaderRoute route);
 }

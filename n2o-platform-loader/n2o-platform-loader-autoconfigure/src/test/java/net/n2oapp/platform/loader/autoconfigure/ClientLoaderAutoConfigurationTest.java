@@ -1,17 +1,13 @@
 package net.n2oapp.platform.loader.autoconfigure;
 
+import net.n2oapp.platform.loader.client.ClientLoader;
 import net.n2oapp.platform.loader.client.ClientLoaderRunner;
-import net.n2oapp.platform.loader.client.LoaderStarter;
 import org.junit.Test;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ClientLoaderAutoConfigurationTest {
 
@@ -20,19 +16,22 @@ public class ClientLoaderAutoConfigurationTest {
                     ClientLoaderAutoConfiguration.class));
 
     @Test
+    public void disabled() {
+        this.contextRunner
+                .withClassLoader(new FilteredClassLoader(ClientLoader.class))
+                .run((context) -> {
+                    assertThat(context).doesNotHaveBean(ClientLoaderRunner.class);
+                });
+    }
+
+    @Test
     public void startAfterUp() {
         this.contextRunner
                 .withPropertyValues("n2o.loader.client.start=UP")
                 .run((context) -> {
-                    ClientLoaderRunner runner = context.getBean(ClientLoaderRunner.class);
-                    assertThat(runner, notNullValue());
-                    LoaderStarter starter = context
-                            .getBean("startAfterUp", LoaderStarter.class);
-                    assertThat(starter, notNullValue());
-                    try {
-                        context.getBean("startOnDeploy", LoaderStarter.class);
-                        fail();
-                    } catch (NoSuchBeanDefinitionException ignored) {}
+                    assertThat(context).hasSingleBean(ClientLoaderRunner.class);
+                    assertThat(context).hasBean("startAfterUp");
+                    assertThat(context).doesNotHaveBean("startOnDeploy");
                 });
     }
 
@@ -41,15 +40,20 @@ public class ClientLoaderAutoConfigurationTest {
         this.contextRunner
                 .withPropertyValues("n2o.loader.client.start=DEPLOY")
                 .run((context) -> {
-                    ClientLoaderRunner runner = context.getBean(ClientLoaderRunner.class);
-                    assertThat(runner, notNullValue());
-                    LoaderStarter starter = context
-                            .getBean("startOnDeploy", LoaderStarter.class);
-                    assertThat(starter, notNullValue());
-                    try {
-                        context.getBean("startAfterUp", LoaderStarter.class);
-                        fail();
-                    } catch (NoSuchBeanDefinitionException ignored) {}
+                    assertThat(context).hasSingleBean(ClientLoaderRunner.class);
+                    assertThat(context).hasBean("startOnDeploy");
+                    assertThat(context).doesNotHaveBean("startAfterUp");
+                });
+    }
+
+    @Test
+    public void startManual() {
+        this.contextRunner
+                .withPropertyValues("n2o.loader.client.start=MANUAL")
+                .run((context) -> {
+                    assertThat(context).hasSingleBean(ClientLoaderRunner.class);
+                    assertThat(context).doesNotHaveBean("startOnDeploy");
+                    assertThat(context).doesNotHaveBean("startAfterUp");
                 });
     }
 
@@ -58,9 +62,10 @@ public class ClientLoaderAutoConfigurationTest {
         this.contextRunner
                 .withUserConfiguration(TestClientConfiguration.class)
                 .run((context) -> {
+                    assertThat(context).hasSingleBean(ClientLoaderRunner.class);
                     ClientLoaderRunner runner = context.getBean(ClientLoaderRunner.class);
-                    assertThat(runner.getCommands().size(), is(2));
-                    assertThat(runner.getLoaders().size(), is(2));
+                    assertThat(runner.getCommands().size()).isEqualTo(2);
+                    assertThat(runner.getLoaders().size()).isEqualTo(2);
                 });
     }
 
@@ -77,8 +82,9 @@ public class ClientLoaderAutoConfigurationTest {
                         "n2o.loader.client.commands[1].target=bar",
                         "n2o.loader.client.commands[1].file=test2.json")
                 .run((context) -> {
+                    assertThat(context).hasSingleBean(ClientLoaderRunner.class);
                     ClientLoaderRunner runner = context.getBean(ClientLoaderRunner.class);
-                    assertThat(runner.getCommands().size(), is(2));
+                    assertThat(runner.getCommands().size()).isEqualTo(2);
                 });
     }
 }
