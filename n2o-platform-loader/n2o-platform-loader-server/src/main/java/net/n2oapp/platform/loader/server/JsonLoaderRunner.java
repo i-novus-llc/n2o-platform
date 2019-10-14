@@ -13,7 +13,7 @@ import java.util.List;
 public class JsonLoaderRunner extends BaseLoaderRunner {
     private ObjectMapper objectMapper;
 
-    public JsonLoaderRunner(List<ServerLoader<?>> loaders, ObjectMapper objectMapper) {
+    public JsonLoaderRunner(List<ServerLoader> loaders, ObjectMapper objectMapper) {
         super(loaders);
         this.objectMapper = objectMapper;
     }

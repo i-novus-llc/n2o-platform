@@ -22,7 +22,7 @@ class TestApplication {
     }
 
     @Bean
-    ServerLoaderRunner jsonLoaderRunner(List<ServerLoader<?>> loaders, ObjectMapper objectMapper) {
+    ServerLoaderRunner jsonLoaderRunner(List<ServerLoader> loaders, ObjectMapper objectMapper) {
         return new JsonLoaderRunner(loaders, objectMapper)
                 .add(ServerLoaderRoute.asIterable("test", TestModel.class, TestRepositoryLoader.class));
     }

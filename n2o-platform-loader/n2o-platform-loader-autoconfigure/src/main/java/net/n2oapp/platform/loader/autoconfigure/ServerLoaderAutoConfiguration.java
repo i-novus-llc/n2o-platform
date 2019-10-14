@@ -26,7 +26,7 @@ public class ServerLoaderAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public ServerLoaderRunner jsonLoaderRunner(List<ServerLoader<?>> loaders,
+    public ServerLoaderRunner jsonLoaderRunner(List<ServerLoader> loaders,
                                                @Autowired(required = false) List<ServerLoaderConfigurer> configurers) {
         JsonLoaderRunner runner = new JsonLoaderRunner(loaders, new ObjectMapper());
         properties.getRoutes().forEach(runner::add);
