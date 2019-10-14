@@ -48,11 +48,11 @@ public class ClientLoaderTest {
 
     @Test
     public void jsonLoad() throws URISyntaxException {
-        stubFor(post(urlMatching("/load/.*/.*"))
+        stubFor(post(urlMatching("/loaders/.*/.*"))
                 .willReturn(aResponse()
                         .withStatus(200)));
         jsonClientLoader.load(new URI("http://localhost:8787"), "foo", "bar", json);
-        verify(postRequestedFor(urlEqualTo("/load/foo/bar"))
+        verify(postRequestedFor(urlEqualTo("/loaders/foo/bar"))
                 .withHeader("Content-Type", containing("application/json"))
                 .withRequestBody(equalToJson("[{\"code\":\"code1\",\"name\":\"name1\"},{\"code\":\"code2\",\"name\":\"name2\"}]")));
     }
@@ -60,7 +60,7 @@ public class ClientLoaderTest {
     @Test
     public void run() {
         //success
-        stubFor(post(urlMatching("/load/sub/test1")).willReturn(aResponse().withStatus(200)));
+        stubFor(post(urlMatching("/loaders/sub/test1")).willReturn(aResponse().withStatus(200)));
         stubFor(post(urlMatching("/simple/sub/test2")).willReturn(aResponse().withStatus(200)));
         ClientLoaderRunner runner = new ClientLoaderRunner(Arrays.asList(jsonClientLoader, simpleClientLoader));
         runner.add("http://localhost:8787", "sub", "test1", "test.json")
@@ -69,7 +69,7 @@ public class ClientLoaderTest {
         assertThat(report.isSuccess(), is(true));
 
         //fail fast
-        stubFor(post(urlMatching("/load/sub/test1")).willReturn(aResponse().withStatus(500)));
+        stubFor(post(urlMatching("/loaders/sub/test1")).willReturn(aResponse().withStatus(500)));
         stubFor(post(urlMatching("/simple/sub/test2")).willReturn(aResponse().withStatus(200)));
         runner.setFailFast(true);
         report = runner.run();
@@ -78,7 +78,7 @@ public class ClientLoaderTest {
         assertThat(report.getAborted().size(), is(1));
 
         //fail tolerance
-        stubFor(post(urlMatching("/load/sub/test1")).willReturn(aResponse().withStatus(500)));
+        stubFor(post(urlMatching("/loaders/sub/test1")).willReturn(aResponse().withStatus(500)));
         stubFor(post(urlMatching("/simple/sub/test2")).willReturn(aResponse().withStatus(200)));
         runner.setFailFast(false);
         report = runner.run();

@@ -1,11 +1,14 @@
 package net.n2oapp.platform.loader.server.repository;
 
 import net.n2oapp.platform.loader.server.ServerLoader;
+import org.springframework.aop.TargetClassAware;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.lang.Nullable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Серверный загрузчик данных через репозиторий Spring Data
@@ -13,10 +16,11 @@ import java.util.List;
  * @param <M> Тип модели
  * @param <E> Тип сущности
  */
-public class RepositoryServerLoader<M, E> implements ServerLoader<List<M>> {
-    private CrudRepository<E, ?> repository;
+public abstract class RepositoryServerLoader<M, E, ID> implements ServerLoader<List<M>>, TargetClassAware {
+    private CrudRepository<E, ID> repository;
     private LoaderMapper<M, E> mapper;
     private SubjectFilter<E> filter;
+    private EntityIdentifier<E, ID> identifier;
 
     /**
      * Конструктор серверного загрузчика данных с удаленим устаревших.
@@ -26,12 +30,14 @@ public class RepositoryServerLoader<M, E> implements ServerLoader<List<M>> {
      * @param repository Репозиторий
      * @param filter     Фильтр по владельцу
      */
-    public RepositoryServerLoader(LoaderMapper<M, E> mapper,
-                                  CrudRepository<E, ?> repository,
-                                  @Nullable SubjectFilter<E> filter) {
+    public RepositoryServerLoader(CrudRepository<E, ID> repository,
+                                  LoaderMapper<M, E> mapper,
+                                  @Nullable SubjectFilter<E> filter,
+                                  @Nullable EntityIdentifier<E, ID> identifier) {
         this.mapper = mapper;
         this.repository = repository;
         this.filter = filter;
+        this.identifier = identifier;
     }
 
     /**
@@ -40,12 +46,13 @@ public class RepositoryServerLoader<M, E> implements ServerLoader<List<M>> {
      * @param mapper     Конвертер
      * @param repository Репозиторий
      */
-    public RepositoryServerLoader(LoaderMapper<M, E> mapper,
-                                  CrudRepository<E, ?> repository) {
-        this(mapper, repository, null);
+    public RepositoryServerLoader(CrudRepository<E, ID> repository,
+                                  LoaderMapper<M, E> mapper) {
+        this(repository, mapper, null, null);
     }
 
     @Override
+    @Transactional
     public void load(List<M> data, String subject) {
         List<E> fresh = map(data, subject);
         save(fresh);
@@ -65,15 +72,20 @@ public class RepositoryServerLoader<M, E> implements ServerLoader<List<M>> {
         repository.saveAll(fresh);
     }
 
-    protected void delete(List<E> fresh, String subject) {
-        if (filter == null)
+    protected void delete(List<E> loaded, String subject) {
+        if (filter == null || identifier == null)
             return;
+        List<ID> fresh = loaded.stream().map(identifier::identify).collect(Collectors.toList());
         List<E> old = filter.findAllBySubject(subject);
         List<E> unused = new ArrayList<>();
         for (E entity : old) {
-            if (!fresh.contains(entity))
+            if (!fresh.contains(identifier.identify(entity)))
                 unused.add(entity);
         }
         repository.deleteAll(unused);
+    }
+
+    public CrudRepository<E, ID> getRepository() {
+        return repository;
     }
 }

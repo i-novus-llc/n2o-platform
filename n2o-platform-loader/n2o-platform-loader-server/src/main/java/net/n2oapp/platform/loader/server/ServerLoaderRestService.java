@@ -7,7 +7,6 @@ import io.swagger.annotations.ApiResponse;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
 import java.io.InputStream;
 
 /**
@@ -17,7 +16,6 @@ import java.io.InputStream;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Api("Загрузчики данных")
-@Provider
 public interface ServerLoaderRestService extends ServerLoaderRunner {
 
     @POST

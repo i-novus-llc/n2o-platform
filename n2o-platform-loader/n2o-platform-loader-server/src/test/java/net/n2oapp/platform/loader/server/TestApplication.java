@@ -17,13 +17,13 @@ class TestApplication {
     }
 
     @Bean
-    RepositoryServerLoader<TestModel, TestEntity> repositoryServerLoader(TestRepository repository) {
-        return new RepositoryServerLoader<>(TestMapper::map, repository, repository::findAllByClient);
+    TestRepositoryLoader repositoryServerLoader(TestRepository repository) {
+        return new TestRepositoryLoader(repository);
     }
 
     @Bean
-    ServerLoaderRunner jsonLoaderEngine(List<ServerLoader<?>> loaders, ObjectMapper objectMapper) {
+    ServerLoaderRunner jsonLoaderRunner(List<ServerLoader<?>> loaders, ObjectMapper objectMapper) {
         return new JsonLoaderRunner(loaders, objectMapper)
-                .add(ServerLoaderRoute.asIterable("test", TestModel.class, RepositoryServerLoader.class));
+                .add(ServerLoaderRoute.asIterable("test", TestModel.class, TestRepositoryLoader.class));
     }
 }

@@ -2,16 +2,21 @@ package net.n2oapp.platform.loader.autoconfigure;
 
 import net.n2oapp.platform.loader.client.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.context.annotation.*;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.type.AnnotatedTypeMetadata;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.web.client.RestOperations;
 
 import javax.annotation.PostConstruct;
+import java.nio.charset.Charset;
 import java.util.List;
 
 @Configuration
@@ -23,9 +28,19 @@ public class ClientLoaderAutoConfiguration {
     private ClientLoaderProperties properties;
 
     @Bean
+    @ConditionalOnMissingBean(name = "clientLoaderRestTemplate")
+    public RestOperations clientLoaderRestTemplate(@Autowired(required = false) List<RestTemplateCustomizer> customizers) {
+        RestTemplateBuilder builder = new RestTemplateBuilder()
+                .additionalMessageConverters(new StringHttpMessageConverter(Charset.forName("UTF-8")));
+        if (customizers != null)
+            builder.additionalCustomizers(customizers);
+        return builder.build();
+    }
+
+    @Bean
     @ConditionalOnMissingBean
-    public JsonClientLoader jsonClientLoader() {
-        return new JsonClientLoader(new RestTemplate());
+    public JsonClientLoader jsonClientLoader(@Qualifier("clientLoaderRestTemplate") RestOperations clientLoaderRestTemplate) {
+        return new JsonClientLoader(clientLoaderRestTemplate);
     }
 
     @Bean

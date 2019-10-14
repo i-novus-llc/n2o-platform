@@ -13,14 +13,14 @@ class SimpleServerLoader implements ServerLoader<List<TestModel>> {
 
     @Override
     public void load(List<TestModel> data, String subject) {
-        List<TestEntity> loaded = new ArrayList<>();
+        List<String> loaded = new ArrayList<>();
         for (TestModel model : data) {
             TestEntity entity = TestMapper.map(model, subject);
             repository.save(entity);
-            loaded.add(entity);
+            loaded.add(entity.getCode());
         }
         for (TestEntity old : repository.findAllByClient(subject)) {
-            if (!loaded.contains(old))
+            if (!loaded.contains(old.getCode()))
                 repository.deleteById(old.getCode());
         }
 

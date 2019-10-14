@@ -9,7 +9,7 @@
 
 Например, клиентское приложение НСИ имеет свои права доступа (`permissions`), которые необходимо загрузить в микросервис безопасности.
 Для этого достаточно в НСИ создать файл `permissions.json`, добавить туда свои права доступа и задать адрес api сервиса безопасности.
-Клиенское приложение НСИ выполнит REST запрос на эндпоинт `/load/rdm/permissions` в сервисе безопасности, отправив туда свои права доступа.
+Клиенское приложение НСИ выполнит REST запрос на эндпоинт `/loaders/rdm/permissions` в сервисе безопасности, отправив туда свои права доступа.
 Сервис безопасности создаст недостающие, обновит существующие и удалит устаревшие права доступа для НСИ.
 
 == Сервер
@@ -41,15 +41,16 @@ class PermissionServerLoader implements ServerLoader<List<PermissionModel>> {
 ----
 Параметр `subject` определяет владельца загружаемых данных. С помощью него можно найти и удалить устаревшие данные.
 
-Если данные загружаются через Spring Data, можно использовать класс `RepositoryServerLoader`:
+Если данные загружаются через Spring Data, можно использовать класс `RepositoryServerLoader<M, E, ID>`:
 
 [source,java]
 ----
-class PermissionServerLoader extends RepositoryServerLoader<PermissionModel, PermissionEntity> {
-    public PermissionServerLoader(LoaderMapper<M, E> mapper,
-                                  CrudRepository<E, ?> repository,
-                                  @Nullable SubjectFilter<E> filter) {
-        super(mapper, repository, filter);
+class PermissionServerLoader extends RepositoryServerLoader<PermissionModel, PermissionEntity, String> {
+    public PermissionServerLoader(CrudRepository<PermissionEntity, String> repository,
+                                  LoaderMapper<PermissionModel, PermissionEntity> mapper,
+                                  @Nullable SubjectFilter<PermissionEntity> filter,
+                                  @Nullable EntityIdentifier<String> identifier) {
+        super(mapper, repository, filter, identifier);
     }
 }
 ----
@@ -69,28 +70,24 @@ class PermissionLoaderMapper implements LoaderMapper<PermissionModel, Permission
 }
 ----
 
-Если требуется удалять устаревшие неиспользуемые данные, нужно задать метод поиска данных по владельцу `SubjectFilter`.
-Такой метод можно определить без реализации по правилам Spring Data Repository:
+Если требуется удалять устаревшие данные, нужно задать еще два метода:
+- `SubjectFilter<E>` фильтрация записей по владельцу
+- `EntityIdentifier<ID>` получения идентификатора сущности
 
-[source,java]
-----
-interface PermissionRepository extends CrudRepository<PermissionEntity, String> {
-    List<PermissionEntity> findAllBySystem(String system);
-}
-----
-
-И задать как ссылку на метод `repository::findAllBySystem`:
+Реализовать их можно как ссылки на существующие методы:
 
 [source,java]
 ----
 @Bean
 PermissionServerLoader permissionServerLoader(PermissionRepository repository) {
-    return new PermissionServerLoader(new MyLoaderMapper(), repository, repository::findAllBySystem);
+    return new PermissionServerLoader(repository, new PermissionLoaderMapper(),
+                    repository::findAllBySystem,
+                    PermissionEntity::getCode);
 }
 ----
 
-Чтобы дать информацию REST сервису о том, какой загрузчик нужно запустить,
-необходимо задать настройки `n2o.loader.server.*` в файле `application.yml`:
+Далее необходимо дать REST сервису информацию о том, какой загрузчик нужно запустить.
+Сделать это можно через настройки `n2o.loader.server.*` в файле `application.yml`:
 
 ----
 n2o.loader.server:
@@ -100,7 +97,7 @@ n2o.loader.server:
       loader-class: com.example.PermissionServerLoader
 ----
 [NOTE]
-Другие настройки можно посмотреть в классе `ServerLoaderProperties`.
+Эти и другие настройки можно посмотреть в классе `ServerLoaderProperties`.
 
 === Использование
 
@@ -116,7 +113,7 @@ curl -X POST /loaders/rdm/permissions
 
 Если статус ответа 200, загрузка прошла успешно.
 
-Запустить загрузчики можно через класс `ServerLoaderRunnner`:
+Запустить загрузчики можно через класс `ServerLoaderRunner`:
 
 [source,java]
 ----
@@ -131,7 +128,7 @@ public void loadRdmPermissions(InputStream data) {
 
 === Кастомизация
 
-В качестве альтернативе `application.yml` через `ServerLoaderConfigurer` можно дать информацию REST сервису для запуска загрузчика:
+В качестве альтернативы `application.yml` можно задавать информацию о загрузчиках через `ServerLoaderConfigurer`:
 
 [source,java]
 ----
@@ -146,7 +143,7 @@ class LoadersConfiguration implements ServerLoaderConfigurer {
 
 Через статический метод `ServerLoaderRoute.asObject` задается информация о цели загрузки (`target`), типе данных (`type`)
 и классе загрузчика (`loaderClass`).
-Если тип данных списковый, необходимо использовать статический метод `ServerLoaderRoute.asIterable` и задать тип элементов списка (`iterableElementType`).
+Если тип данных списковый, необходимо использовать статический метод `ServerLoaderRoute.asIterable` и задать тип элементов списка (`elementType`).
 
 
 == Клиент
@@ -203,11 +200,12 @@ n2o.loader.client:
 
 |commands
 |ClientLoaderCommand
-|Последовательность загрузок
+|Список команд, определяющих порядок загрузки
 
 |===
 [NOTE]
-Другие настройки можно посмотреть в классе `ClientLoaderProperties`.
+
+Эти и другие настройки можно посмотреть в классе `ClientLoaderProperties`.
 
 === Использование
 

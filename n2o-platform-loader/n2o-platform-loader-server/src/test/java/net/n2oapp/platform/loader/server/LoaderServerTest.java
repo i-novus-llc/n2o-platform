@@ -28,7 +28,7 @@ public class LoaderServerTest {
     @Autowired
     private SimpleServerLoader simpleLoader;
     @Autowired
-    private RepositoryServerLoader<TestModel, TestEntity> repositoryLoader;
+    private RepositoryServerLoader<TestModel, TestEntity, String> repositoryLoader;
     @Autowired
     private TestRepository repository;
     @LocalServerPort
@@ -129,17 +129,18 @@ public class LoaderServerTest {
     }
 
     /**
-     * Вставка двух записей, в БД три записи
+     * Вставка двух записей, в БД три записи, вторая будет обновлена, третья будет удалена
      */
     private void case4(BiConsumer<List<TestModel>, String> loader) {
         List<TestModel> data = Arrays.asList(
                 new TestModel("code1", "name1"),
-                new TestModel("code3", "name3"));
+                new TestModel("code2", "name2"));
         loader.accept(data, "me");
         assertThat(repository.count(), is(2L));
         assertThat(repository.findById("code1").isPresent(), is(true));
-        assertThat(repository.findById("code3").isPresent(), is(true));
-        assertThat(repository.findById("code2").isEmpty(), is(true));
+        assertThat(repository.findById("code2").isPresent(), is(true));
+        assertThat(repository.findById("code2").get().getName(), is("name2"));
+        assertThat(repository.findById("code3").isEmpty(), is(true));
     }
 
     /**

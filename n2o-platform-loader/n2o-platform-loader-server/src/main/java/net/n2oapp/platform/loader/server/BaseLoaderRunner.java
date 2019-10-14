@@ -1,10 +1,9 @@
 package net.n2oapp.platform.loader.server;
 
+import org.springframework.aop.TargetClassAware;
+
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Базовый запускатель загрузчиков
@@ -52,7 +51,7 @@ public abstract class BaseLoaderRunner implements ServerLoaderRunner, ServerLoad
     protected ServerLoader<?> findLoader(ServerLoaderRoute command) {
         if (command.getLoaderClass() != null) {
             Optional<ServerLoader<?>> loader = loaders.stream()
-                    .filter(l -> l.getClass().equals(command.getLoaderClass()))
+                    .filter(l -> matches(command.getLoaderClass(), l))
                     .findFirst();
             if (loader.isEmpty())
                 throw new IllegalArgumentException("Loader bean " + command.getLoaderClass() + " not found");
@@ -60,6 +59,12 @@ public abstract class BaseLoaderRunner implements ServerLoaderRunner, ServerLoad
         } else {
             return loaders.get(0);
         }
+    }
+
+    private boolean matches(Class<? extends ServerLoader> loaderClass, ServerLoader<?> loader) {
+        return loader.getClass().equals(loaderClass)
+                || ((loader instanceof TargetClassAware)
+                && (Objects.equals(((TargetClassAware) loader).getTargetClass(), loaderClass)));
     }
 
     /**

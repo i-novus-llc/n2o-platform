@@ -14,7 +14,7 @@ import java.net.URI;
  */
 public abstract class RestClientLoader<T> implements ClientLoader {
     private RestOperations restTemplate;
-    private String endpointPattern = "/load/{subject}/{target}";
+    private String endpointPattern = "/loaders/{subject}/{target}";
 
     public RestClientLoader(RestOperations restTemplate) {
         this.restTemplate = restTemplate;
@@ -48,5 +48,9 @@ public abstract class RestClientLoader<T> implements ClientLoader {
                 server.toString().substring(0, server.toString().length() - 1) :
                 server.toString());
         return serverUrl + endpointPattern.replace("{subject}", subject).replace("{target}", target);
+    }
+
+    public RestOperations getRestTemplate() {
+        return restTemplate;
     }
 }
