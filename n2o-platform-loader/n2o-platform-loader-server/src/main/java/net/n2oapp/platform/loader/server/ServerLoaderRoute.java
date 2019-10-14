@@ -7,11 +7,6 @@ import java.util.List;
  * Информация для запуска загрузчика на сервере
  */
 public class ServerLoaderRoute {
-    private String target;
-    private Class<?> type;
-    private Class<?> elementType;
-    private Class<? extends ServerLoader> loaderClass;
-
     public static <T> ServerLoaderRoute asObject(String target, Class<T> type,
                                                  Class<? extends ServerLoader> loaderType) {
         return new ServerLoaderRoute(target, type, null, loaderType);
@@ -23,15 +18,21 @@ public class ServerLoaderRoute {
         return new ServerLoaderRoute(target, List.class, type, loaderType);
     }
 
+    private String target;
+    private Class<?> type;
+    private Class<?> elementType;
+
+    private Class<? extends ServerLoader> loaderClass;
+
+    public ServerLoaderRoute() {
+    }
+
     public ServerLoaderRoute(String target, Class<?> type, Class<?> elementType,
-                              Class<? extends ServerLoader> loaderClass) {
+                             Class<? extends ServerLoader> loaderClass) {
         this.target = target;
         this.type = type;
         this.elementType = elementType;
         this.loaderClass = loaderClass;
-    }
-
-    public ServerLoaderRoute() {
     }
 
     public String getTarget() {

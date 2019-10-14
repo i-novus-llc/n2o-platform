@@ -26,9 +26,6 @@ import java.util.List;
 @EnableConfigurationProperties(ClientLoaderProperties.class)
 public class ClientLoaderAutoConfiguration {
 
-    @Autowired
-    private ClientLoaderProperties properties;
-
     @Bean
     @ConditionalOnMissingBean(name = "clientLoaderRestTemplate")
     public RestOperations clientLoaderRestTemplate(@Autowired(required = false) List<RestTemplateCustomizer> customizers) {
@@ -48,7 +45,8 @@ public class ClientLoaderAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public ClientLoaderRunner loaderRunner(List<ClientLoader> loaders,
-                                           @Autowired(required = false) List<ClientLoaderConfigurer> configurers) {
+                                           @Autowired(required = false) List<ClientLoaderConfigurer> configurers,
+                                           ClientLoaderProperties properties) {
         ClientLoaderRunner runner = new ClientLoaderRunner(loaders);
         runner.setFailFast(properties.isFailFast());
         properties.getCommands().forEach(runner::add);
@@ -73,7 +71,7 @@ public class ClientLoaderAutoConfiguration {
     @Bean
     @Conditional(RunOnDeployCondition.class)
     @ConditionalOnMissingBean
-    public LoaderStarter startOnDeploy(ClientLoaderRunner runner) {
+    public LoaderStarter startOnDeploy(ClientLoaderRunner runner, ClientLoaderProperties properties) {
         return new LoaderStarter(runner) {
             @Override
             @PostConstruct
