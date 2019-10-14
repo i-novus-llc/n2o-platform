@@ -3,6 +3,8 @@ package net.n2oapp.platform.loader.autoconfigure;
 import net.n2oapp.platform.loader.client.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -100,6 +102,20 @@ public class ClientLoaderAutoConfiguration {
             if (runningTime == null)
                 return false;
             return runningTime.equals(ClientLoaderProperties.StartingTime.DEPLOY);
+        }
+    }
+
+    @Configuration
+    @ConditionalOnClass(HealthIndicator.class)
+    static class ClientLoaderActuatorConfiguration {
+        @Bean
+        ClientLoaderStarterEndpoint clientLoaderStarterEndpoint() {
+            return new ClientLoaderStarterEndpoint();
+        }
+        @Bean
+        @ConditionalOnBean(LoaderStarter.class)
+        ClientLoaderHealthIndicator clientLoaderHealthIndicator(LoaderStarter starter) {
+            return new ClientLoaderHealthIndicator(starter);
         }
     }
 }

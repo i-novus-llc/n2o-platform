@@ -1,6 +1,12 @@
 package net.n2oapp.platform.loader.client;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -12,7 +18,7 @@ public class LoaderReport {
     private List<ClientLoaderCommand> aborted = new ArrayList<>();
 
     /**
-     * Загрузка прощла успешно?
+     * Загрузка прошла успешно?
      *
      * @return true Да
      */
@@ -33,19 +39,20 @@ public class LoaderReport {
     }
 
     public List<Fail> getFails() {
-        return fails;
+        return Collections.unmodifiableList(fails);
     }
 
     public List<ClientLoaderCommand> getSuccess() {
-        return success;
+        return Collections.unmodifiableList(success);
     }
 
     public List<ClientLoaderCommand> getAborted() {
-        return aborted;
+        return Collections.unmodifiableList(aborted);
     }
 
     public static class Fail {
         private ClientLoaderCommand command;
+        @JsonIgnore
         private Exception exception;
 
         public Fail(ClientLoaderCommand command, Exception exception) {
@@ -59,6 +66,10 @@ public class LoaderReport {
 
         public Exception getException() {
             return exception;
+        }
+
+        public String getMessage() {
+            return exception.getMessage();
         }
     }
 }

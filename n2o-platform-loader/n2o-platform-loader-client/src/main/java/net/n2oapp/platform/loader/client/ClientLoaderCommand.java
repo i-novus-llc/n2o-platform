@@ -1,5 +1,6 @@
 package net.n2oapp.platform.loader.client;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.core.io.Resource;
 
 import java.net.URI;
@@ -8,10 +9,13 @@ import java.net.URI;
  * Команда для запуска загрузки данных на клиенте
  */
 public class ClientLoaderCommand {
+    @JsonIgnore
     private URI server;
     private String subject;
     private String target;
+    @JsonIgnore
     private Resource file;
+    @JsonIgnore
     private Class<? extends ClientLoader> loaderClass;
 
     public ClientLoaderCommand() {
@@ -30,6 +34,14 @@ public class ClientLoaderCommand {
         this.target = target;
         this.file = file;
         this.loaderClass = loaderClass;
+    }
+
+    public String getServerUri() {
+        return server.toString();
+    }
+
+    public String getFilename() {
+        return file.getFilename();
     }
 
     public URI getServer() {

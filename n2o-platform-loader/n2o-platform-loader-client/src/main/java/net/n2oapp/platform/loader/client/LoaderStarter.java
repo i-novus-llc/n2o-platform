@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 public class LoaderStarter {
     private static final Logger logger = LoggerFactory.getLogger(LoaderStarter.class);
     private ClientLoaderRunner runner;
+    private LoaderReport report;
 
     public LoaderStarter(ClientLoaderRunner runner) {
         this.runner = runner;
@@ -17,9 +18,9 @@ public class LoaderStarter {
     /**
      * Начать загрузку
      */
-    public void start() {
+    public synchronized void start() {
         logger.info("Loading started...");
-        LoaderReport report = runner.run();
+        report = runner.run();
         if (report.isSuccess())
             logger.info("Loading success finished!");
         else {
@@ -33,5 +34,12 @@ public class LoaderStarter {
                             fail.getException()));
         }
 
+    }
+
+    /**
+     * Отчёт о последнем запуске загрузчиков
+     */
+    public LoaderReport getReport() {
+        return report;
     }
 }
