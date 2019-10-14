@@ -23,7 +23,7 @@ public class ServerLoaderRoute {
         return new ServerLoaderRoute(target, List.class, type, loaderType);
     }
 
-    private ServerLoaderRoute(String target, Class<?> type, Class<?> elementType,
+    public ServerLoaderRoute(String target, Class<?> type, Class<?> elementType,
                               Class<? extends ServerLoader> loaderClass) {
         this.target = target;
         this.type = type;

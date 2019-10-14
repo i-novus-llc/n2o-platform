@@ -16,7 +16,7 @@ public class ClientLoaderRunner {
     private boolean failFast = true;
 
     public ClientLoaderRunner(List<ClientLoader> loaders) {
-        if (loaders == null || loaders.size() == 0)
+        if (loaders == null || loaders.isEmpty())
             throw new IllegalArgumentException("Loaders required");
         this.loaders = loaders;
     }
@@ -80,7 +80,8 @@ public class ClientLoaderRunner {
                     .findFirst();
             if (loader.isEmpty())
                 throw new IllegalArgumentException("Loader bean " + loaderClass + " not found");
-            return loader.get();
+            else
+                return loader.get();
         } else {
             return loaders.get(0);
         }

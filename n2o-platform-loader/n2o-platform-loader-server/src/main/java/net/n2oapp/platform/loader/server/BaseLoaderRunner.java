@@ -9,10 +9,10 @@ import java.util.*;
  * Базовый запускатель загрузчиков
  */
 public abstract class BaseLoaderRunner implements ServerLoaderRunner, ServerLoaderRestService {
-    private List<ServerLoader<?>> loaders;
+    private List<ServerLoader> loaders;
     private List<ServerLoaderRoute> routes = new ArrayList<>();
 
-    public BaseLoaderRunner(List<ServerLoader<?>> loaders) {
+    public BaseLoaderRunner(List<ServerLoader> loaders) {
         this.loaders = loaders;
     }
 
@@ -25,7 +25,7 @@ public abstract class BaseLoaderRunner implements ServerLoaderRunner, ServerLoad
     public void run(String subject, String target, InputStream body) {
         ServerLoaderRoute route = findRoute(target);
         Object data = read(body, route);
-        ServerLoader<?> loader = findLoader(route);
+        ServerLoader loader = findLoader(route);
         execute(subject, data, loader);
     }
 
@@ -48,9 +48,9 @@ public abstract class BaseLoaderRunner implements ServerLoaderRunner, ServerLoad
      */
     protected abstract Object read(InputStream body, ServerLoaderRoute command);
 
-    protected ServerLoader<?> findLoader(ServerLoaderRoute command) {
+    protected ServerLoader findLoader(ServerLoaderRoute command) {
         if (command.getLoaderClass() != null) {
-            Optional<ServerLoader<?>> loader = loaders.stream()
+            Optional<ServerLoader> loader = loaders.stream()
                     .filter(l -> matches(command.getLoaderClass(), l))
                     .findFirst();
             if (loader.isEmpty())
@@ -61,7 +61,7 @@ public abstract class BaseLoaderRunner implements ServerLoaderRunner, ServerLoad
         }
     }
 
-    private boolean matches(Class<? extends ServerLoader> loaderClass, ServerLoader<?> loader) {
+    private boolean matches(Class<? extends ServerLoader> loaderClass, ServerLoader loader) {
         return loader.getClass().equals(loaderClass)
                 || ((loader instanceof TargetClassAware)
                 && (Objects.equals(((TargetClassAware) loader).getTargetClass(), loaderClass)));
@@ -75,8 +75,8 @@ public abstract class BaseLoaderRunner implements ServerLoaderRunner, ServerLoad
      * @param loader  Загрузчик
      */
     @SuppressWarnings("unchecked")
-    protected void execute(String subject, Object data, ServerLoader<?> loader) {
-        ((ServerLoader<Object>) loader).load(data, subject);
+    protected void execute(String subject, Object data, ServerLoader loader) {
+        loader.load(data, subject);
     }
 
     public List<ServerLoaderRoute> getCommands() {

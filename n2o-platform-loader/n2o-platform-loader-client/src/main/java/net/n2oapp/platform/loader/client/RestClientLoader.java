@@ -39,7 +39,7 @@ public abstract class RestClientLoader<T> implements ClientLoader {
 
     protected MultiValueMap<String, String> getHeaders() {
         return null;
-    };
+    }
 
     protected abstract T getData(Resource file);
 

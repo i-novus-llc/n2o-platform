@@ -20,6 +20,10 @@ public class ServerLoaderAutoConfiguration {
     @Autowired
     private ServerLoaderProperties properties;
 
+    public ServerLoaderAutoConfiguration(ServerLoaderProperties properties) {
+        this.properties = properties;
+    }
+
     @Bean
     @ConditionalOnMissingBean
     public ServerLoaderRunner jsonLoaderRunner(List<ServerLoader<?>> loaders,
