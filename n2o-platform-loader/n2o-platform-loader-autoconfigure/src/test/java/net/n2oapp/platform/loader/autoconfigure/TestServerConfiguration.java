@@ -7,33 +7,38 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static net.n2oapp.platform.loader.server.ServerLoaderRoute.asIterable;
-import static net.n2oapp.platform.loader.server.ServerLoaderRoute.asObject;
-
 @Configuration
 public class TestServerConfiguration {
-
-    static class RoutesConfiguration implements ServerLoaderConfigurer {
-        @Override
-        public void configure(ServerLoaderRunner runner) {
-            runner.add(asObject("load1", Object.class, MyLoader1.class));
-            runner.add(asIterable("load2", Object.class, MyLoader2.class));
-        }
-    }
 
     @Component
     static class MyLoader1 implements ServerLoader<Object> {
         @Override
-        public void load(Object data, String subject) {
-            //run something
+        public void load(List<Object> data, String subject) {}
+
+        @Override
+        public String getTarget() {
+            return "load1";
+        }
+
+        @Override
+        public Class<Object> getDataType() {
+            return Object.class;
         }
     }
 
     @Component
-    static class MyLoader2 implements ServerLoader<List<Object>> {
+    static class MyLoader2 implements ServerLoader<Object> {
         @Override
-        public void load(List<Object> data, String subject) {
-            //run something
+        public void load(List<Object> data, String subject) {}
+
+        @Override
+        public String getTarget() {
+            return "load2";
+        }
+
+        @Override
+        public Class<Object> getDataType() {
+            return Object.class;
         }
     }
 }

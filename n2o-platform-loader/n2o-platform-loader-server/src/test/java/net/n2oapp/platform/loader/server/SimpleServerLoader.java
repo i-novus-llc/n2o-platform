@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-class SimpleServerLoader implements ServerLoader<List<TestModel>> {
+class SimpleServerLoader implements ServerLoader<TestModel> {
     @Autowired
     private TestRepository repository;
 
@@ -26,4 +26,13 @@ class SimpleServerLoader implements ServerLoader<List<TestModel>> {
 
     }
 
+    @Override
+    public String getTarget() {
+        return "test";
+    }
+
+    @Override
+    public Class<TestModel> getDataType() {
+        return TestModel.class;
+    }
 }

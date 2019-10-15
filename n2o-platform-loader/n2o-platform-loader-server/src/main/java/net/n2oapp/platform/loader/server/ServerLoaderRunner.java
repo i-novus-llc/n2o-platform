@@ -14,12 +14,4 @@ public interface ServerLoaderRunner {
      * @param body    Тело
      */
     void run(String subject, String target, InputStream body);
-
-    /**
-     * Добавить команду запуска загрузчика
-     *
-     * @param route Команда
-     * @return Запускатель серверных загрузчиков
-     */
-    ServerLoaderRunner add(ServerLoaderRoute route);
 }

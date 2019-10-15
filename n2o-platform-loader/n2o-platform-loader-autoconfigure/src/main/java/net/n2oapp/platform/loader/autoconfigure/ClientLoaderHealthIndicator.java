@@ -15,10 +15,12 @@ public class ClientLoaderHealthIndicator implements HealthIndicator {
     @Override
     public Health health() {
         LoaderReport report = starter.getReport();
-        if (!report.isSuccess()) {
+        if (report == null)
+            return Health.unknown().build();
+        else if (!report.isSuccess())
             return Health.down()
-                    .withDetail("Loaders failed", report.getFails()).build();
-        }
-        return Health.up().build();
+                    .withDetail("Loaders failed", report).build();
+        else
+            return Health.up().build();
     }
 }

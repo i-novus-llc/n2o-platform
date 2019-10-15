@@ -22,6 +22,7 @@ public interface ServerLoaderRestService extends ServerLoaderRunner {
     @Path("/{subject}/{target}")
     @ApiOperation("Загрузить данные")
     @ApiResponse(code = 200, message = "Данные загружены без ошибок")
+    @Override
     void run(@ApiParam("Владелец данных") @PathParam("subject") String subject,
              @ApiParam("Вид данных") @PathParam("target") String target,
              InputStream body);

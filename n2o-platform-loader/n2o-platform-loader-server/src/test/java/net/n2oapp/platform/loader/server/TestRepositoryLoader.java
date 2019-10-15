@@ -8,7 +8,12 @@ public class TestRepositoryLoader extends RepositoryServerLoader<TestModel, Test
     }
 
     @Override
-    public Class<?> getTargetClass() {
-        return TestRepositoryLoader.class;
+    public String getTarget() {
+        return "test";
+    }
+
+    @Override
+    public Class<TestModel> getDataType() {
+        return TestModel.class;
     }
 }

@@ -1,70 +1,46 @@
 package net.n2oapp.platform.loader.server;
 
-import org.springframework.aop.TargetClassAware;
-
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Базовый запускатель загрузчиков
  */
-public abstract class BaseLoaderRunner implements ServerLoaderRunner, ServerLoaderRestService {
-    private List<ServerLoader> loaders;
-    private List<ServerLoaderRoute> routes = new ArrayList<>();
+public abstract class BaseLoaderRunner implements ServerLoaderRunner {
+    private Map<String, ServerLoader> loaders;
 
     public BaseLoaderRunner(List<ServerLoader> loaders) {
-        this.loaders = loaders;
-    }
-
-    public ServerLoaderRunner add(ServerLoaderRoute route) {
-        routes.add(route);
-        return this;
+        this.loaders = loaders.stream()
+                .collect(Collectors.toMap(LoaderDataInfo::getTarget, v -> v));
     }
 
     @Override
     public void run(String subject, String target, InputStream body) {
-        ServerLoaderRoute route = findRoute(target);
-        Object data = read(body, route);
-        ServerLoader loader = findLoader(route);
+        ServerLoader loader = find(target);
+        List<Object> data = read(body, loader);
         execute(subject, data, loader);
-    }
-
-    /**
-     * Найти загрузчик по цели
-     *
-     * @param target Цель
-     * @return Загрузчик
-     */
-    protected ServerLoaderRoute findRoute(String target) {
-        return routes.stream().filter(l -> l.getTarget().equals(target)).findFirst().orElseThrow();
     }
 
     /**
      * Прочитать данные
      *
-     * @param body    Поток данных
-     * @param command Команда
+     * @param body Поток данных
+     * @param info Информация о типе данных
      * @return Данные
      */
-    protected abstract Object read(InputStream body, ServerLoaderRoute command);
+    protected abstract List<Object> read(InputStream body, LoaderDataInfo<?> info);
 
-    protected ServerLoader findLoader(ServerLoaderRoute command) {
-        if (command.getLoaderClass() != null) {
-            Optional<ServerLoader> loader = loaders.stream()
-                    .filter(l -> matches(command.getLoaderClass(), l))
-                    .findFirst();
-            if (loader.isEmpty())
-                throw new IllegalArgumentException("Loader bean " + command.getLoaderClass() + " not found");
-            return loader.get();
-        } else {
-            return loaders.get(0);
-        }
-    }
-
-    private boolean matches(Class<? extends ServerLoader> loaderClass, ServerLoader loader) {
-        return loader.getClass().equals(loaderClass)
-                || ((loader instanceof TargetClassAware)
-                && (Objects.equals(((TargetClassAware) loader).getTargetClass(), loaderClass)));
+    /**
+     * Поиск загрузчика
+     * @param target Цель загрузки
+     * @return Загрузчик
+     */
+    protected ServerLoader find(String target) {
+        ServerLoader loader = loaders.get(target);
+        if (loader == null)
+            throw new NoSuchElementException(String.format("Loader for %s not found", target));
+        return loader;
     }
 
     /**
@@ -75,11 +51,11 @@ public abstract class BaseLoaderRunner implements ServerLoaderRunner, ServerLoad
      * @param loader  Загрузчик
      */
     @SuppressWarnings("unchecked")
-    protected void execute(String subject, Object data, ServerLoader loader) {
+    protected void execute(String subject, List<Object> data, ServerLoader loader) {
         loader.load(data, subject);
     }
 
-    public List<ServerLoaderRoute> getCommands() {
-        return Collections.unmodifiableList(routes);
+    public Collection<ServerLoader> getLoaders() {
+        return loaders.values();
     }
 }

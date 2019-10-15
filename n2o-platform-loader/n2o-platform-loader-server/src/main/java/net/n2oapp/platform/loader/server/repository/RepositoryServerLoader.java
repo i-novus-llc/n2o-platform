@@ -1,7 +1,6 @@
 package net.n2oapp.platform.loader.server.repository;
 
 import net.n2oapp.platform.loader.server.ServerLoader;
-import org.springframework.aop.TargetClassAware;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +15,7 @@ import java.util.stream.Collectors;
  * @param <M> Тип модели
  * @param <E> Тип сущности
  */
-public abstract class RepositoryServerLoader<M, E, ID> implements ServerLoader<List<M>>, TargetClassAware {
+public abstract class RepositoryServerLoader<M, E, ID> implements ServerLoader<M> {
     private CrudRepository<E, ID> repository;
     private LoaderMapper<M, E> mapper;
     private SubjectFilter<E> filter;

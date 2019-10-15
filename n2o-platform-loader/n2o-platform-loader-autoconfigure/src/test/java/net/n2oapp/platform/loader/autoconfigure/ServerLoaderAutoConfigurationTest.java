@@ -25,34 +25,13 @@ public class ServerLoaderAutoConfigurationTest {
     }
 
     @Test
-    public void routes() {
+    public void loaders() {
         this.contextRunner
                 .withUserConfiguration(TestServerConfiguration.class)
-                .withPropertyValues(
-                        "n2o.loader.server.routes[0].target=route1",
-                        "n2o.loader.server.routes[0].type=java.lang.Object",
-                        "n2o.loader.server.routes[0].loader-class=net.n2oapp.platform.loader.autoconfigure.TestServerConfiguration.MyLoader1",
-                        "n2o.loader.server.routes[1].target=route2",
-                        "n2o.loader.server.routes[1].element-type=java.lang.Object",
-                        "n2o.loader.server.routes[1].loader-class=net.n2oapp.platform.loader.autoconfigure.TestServerConfiguration.MyLoader2"
-                        )
                 .run((context) -> {
                     assertThat(context).hasSingleBean(JsonLoaderRunner.class);
                     JsonLoaderRunner runner = context.getBean(JsonLoaderRunner.class);
-                    assertThat(runner.getCommands().size()).isEqualTo(2);
-                });
-    }
-
-    @Test
-    public void configurers() {
-        this.contextRunner
-                .withUserConfiguration(
-                        TestServerConfiguration.class,
-                        TestServerConfiguration.RoutesConfiguration.class)
-                .run((context) -> {
-                    assertThat(context).hasSingleBean(JsonLoaderRunner.class);
-                    JsonLoaderRunner runner = context.getBean(JsonLoaderRunner.class);
-                    assertThat(runner.getCommands().size()).isEqualTo(2);
+                    assertThat(runner.getLoaders().size()).isEqualTo(2);
                 });
     }
 }

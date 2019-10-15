@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Запускатель загрузчиков json данных
  */
-public class JsonLoaderRunner extends BaseLoaderRunner {
+public class JsonLoaderRunner extends BaseLoaderRunner implements ServerLoaderRestService {
     private ObjectMapper objectMapper;
 
     public JsonLoaderRunner(List<ServerLoader> loaders, ObjectMapper objectMapper) {
@@ -18,18 +18,14 @@ public class JsonLoaderRunner extends BaseLoaderRunner {
         this.objectMapper = objectMapper;
     }
 
-    protected Object read(InputStream body, ServerLoaderRoute route) {
-        Object data;
+    protected List<Object> read(InputStream body, LoaderDataInfo<?> info) {
+        List<Object> data;
         try {
-            if (route.isIterable()) {
-                CollectionType type = objectMapper.getTypeFactory()
-                        .constructCollectionType(route.getIterableType(), route.getElementType());
-                data = objectMapper.readValue(body, type);
-            } else {
-                data = objectMapper.readValue(body, route.getType());
-            }
+            CollectionType type = objectMapper.getTypeFactory()
+                    .constructCollectionType(List.class, info.getDataType());
+            data = objectMapper.readValue(body, type);
         } catch (IOException e) {
-            throw new IllegalStateException(e);
+            throw new IllegalArgumentException(String.format("Cannot read body for %s", info.getTarget()), e);
         }
         return data;
     }
