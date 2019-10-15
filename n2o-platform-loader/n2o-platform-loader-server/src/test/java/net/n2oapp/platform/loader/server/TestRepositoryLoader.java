@@ -9,7 +9,7 @@ public class TestRepositoryLoader extends RepositoryServerLoader<TestModel, Test
 
     @Override
     public String getTarget() {
-        return "test";
+        return "load2";
     }
 
     @Override

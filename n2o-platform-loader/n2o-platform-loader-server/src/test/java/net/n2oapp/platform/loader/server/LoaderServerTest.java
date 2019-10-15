@@ -73,7 +73,7 @@ public class LoaderServerTest {
     public void restLoader() {
         BiConsumer<List<TestModel>, String> loader = (data, subject) -> {
             RestTemplate restTemplate = new RestTemplate();
-            String url = "http://localhost:" + port + "/api/loaders/" + subject + "/test";
+            String url = "http://localhost:" + port + "/api/loaders/" + subject + "/load2";
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<List<TestModel>> request = new HttpEntity<>(data, headers);

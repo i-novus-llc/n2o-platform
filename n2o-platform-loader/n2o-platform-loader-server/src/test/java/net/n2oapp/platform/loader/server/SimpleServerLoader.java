@@ -28,7 +28,7 @@ class SimpleServerLoader implements ServerLoader<TestModel> {
 
     @Override
     public String getTarget() {
-        return "test";
+        return "load1";
     }
 
     @Override
