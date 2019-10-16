@@ -1,0 +1,273 @@
+= Документация
+:toc:
+:toclevels: 3
+:toc-title: Содержание
+
+== Возможности
+
+Библиотека позволяет загружать небольшие справочные данные (которые обычно прошиваются в коде) в сервис расположенный удаленно.
+
+Например, клиентское приложение НСИ имеет свои права доступа (`permissions`), которые необходимо загрузить в микросервис безопасности.
+Для этого достаточно в НСИ создать файл `permissions.json`, добавить туда свои права доступа и задать адрес api сервиса безопасности.
+Клиенское приложение НСИ выполнит REST запрос на эндпоинт `/loaders/rdm/permissions` в сервисе безопасности, отправив туда свои права доступа.
+Сервис безопасности создаст недостающие, обновит существующие и удалит устаревшие права доступа для НСИ.
+
+Эндпоинт состоит из трех частей: `/loaders/{subject}/{target}`, где
+`subject` это владелец данных, а `target` вид данных.
+
+Удаление устаревших данных происходит на сервере за счет сравнения данных
+переданных клиентом и данных в БД, отфильтрованных по владельцу.
+Данные, которые присутствуют в БД, но не были переданы, будут удалены.
+
+== Клиент
+
+=== Подключение
+
+Добавьте зависимость:
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-starter-loader-client</artifactId>
+</dependency>
+----
+
+Создайте файл данных для загрузки, например, `permissions.json`:
+
+----
+[
+  {
+    "code": "rdm.read",
+    "name": "Чтение справочников"
+    },
+    ...
+]
+----
+
+Задайте настройки запуска в файле `application.yml`:
+
+----
+n2o.loader.client:
+  start: UP
+  fail-fast: true
+  commands:
+    - server: http://localhost:8080/api
+      subject: rdm
+      target: permissions
+      file: classpath:permissions.json
+----
+
+.Настройки
+[cols="1,1,2"]
+|===
+|Код|Значение|Описание
+
+|start
+|DEPLOY, UP, MANUAL
+|Момент запуска: при деплое (DEPLOY), после деплоя (UP), в ручную (MANUAL).
+
+|fail-fast
+|true, false
+|Падать при первой же ошибке загрузки (true) или продолжить с другими загрузчиками (false).
+Если `start=DEPLOY` и `fail-fast=true`, то при ошибке деплой приложения прервется.
+
+|commands
+|ClientLoaderCommand
+|Список команд, определяющих порядок загрузки
+
+|===
+[NOTE]
+
+=== Использование
+
+Если настройка старта `n2o.loader.client.start` имеет значение `DEPLOY` или `UP`,
+для загрузки данных в сервисы достаточно запустить приложение.
+
+Результаты загрузки можно узнать с помощью сервиса актуатора `GET /monitoring/loaders`.
+Через метод POST можно запустить загрузчики еще раз:
+----
+curl -X POST /monitoring/loaders
+----
+
+Загрузчики можно запускать программно через класс `ClientLoaderRunner`:
+[source,java]
+----
+@Autowired
+private ClientLoaderRunner runner;
+
+public void run() {
+  LoaderReport report = runner.run();
+  if (report.isSuccess())
+      System.out.println("Загрузка прошла успешно");
+}
+----
+
+=== Кастомизация
+
+Можно задавать последовательность запуска загрузчиков через класс `ClientLoaderConfigurer`:
+
+[source,java]
+----
+@Configuration
+class ClientLoaderConfiguration implements ClientLoaderConfigurer {
+  @Override
+  public void configure(ClientLoaderRunner runner) {
+      runner.add("http://localhost:8080/api", "rdm", "permissions", "permissions.json");
+      ...
+  }
+}
+----
+
+Для кастомизации загрузки данных можно создать свой клиентский загрузчик реализовав интерфейс `ClientLoader`:
+
+[source,java]
+----
+@Component
+class MyClientLoader implements ClientLoader {
+  @Override
+  public void load(URI server, String subject, String target, Resource file) {
+      //do something
+  }
+}
+----
+Чтобы кастомный загрузчик использовался при запуске, его класс необходимо указать в ClientLoaderConfigurer:
+
+[source,java]
+----
+@Override
+public void configure(ClientLoaderRunner runner) {
+    runner.add("http://localhost:8080/api", "me", "mydata", "mydata.xml", MyClientLoader.class);
+    ...
+}
+----
+
+
+== Сервер
+
+=== Подключение
+
+Добавьте зависимость `n2o-platform-starter-loader-server`:
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-starter-loader-server</artifactId>
+</dependency>
+----
+
+Создайте загрузчик данных используя интерфейс `ServerLoader<T>`:
+
+[source,java]
+----
+@Component
+class PermissionServerLoader implements ServerLoader<PermissionModel> {
+    @Override
+    public void load(List<PermissionModel> data, String subject) {
+        //create new and update old
+        //find all by subject
+        //delete unused
+    }
+}
+----
+Параметр `subject` определяет владельца загружаемых данных.
+С помощью него можно найти и удалить устаревшие данные.
+Типичный алгоритм удаления может быть такой:
+
+[source,java]
+----
+List<String> fresh;//Коды актуальных данных, которые прислал клиент
+for (PermissionEntity old : repository.findAllBySystem(subject)) {
+    if (!fresh.contains(old.getCode()))
+        repository.deleteById(old.getCode());
+}
+----
+
+В `ServerLoader` так же необходимо реализовать два метода:
+
+- `getTarget` вид загружаемых данных;
+- `getDataType` тип данных;
+
+[source,java]
+----
+@Override
+public String getTarget() {
+    return "permissions";
+}
+
+@Override
+public Class<PermissionModel> getDataType() {
+    return PermissionModel.class;
+}
+----
+
+Если данные загружаются через Spring Data, можно использовать класс `RepositoryServerLoader<M, E, ID>`:
+
+[source,java]
+----
+class PermissionServerLoader extends RepositoryServerLoader<PermissionModel, PermissionEntity, String> {
+    public PermissionServerLoader(CrudRepository<PermissionEntity, String> repository,
+                                  LoaderMapper<PermissionModel, PermissionEntity> mapper,
+                                  @Nullable SubjectFilter<PermissionEntity> filter,
+                                  @Nullable EntityIdentifier<String> identifier) {
+        super(mapper, repository, filter, identifier);
+    }
+}
+----
+
+Для работы `RepositoryServerLoader` требуется реализовать маппинг данных из модели в сущность `LoaderMapper<M, E>`:
+
+[source,java]
+----
+class PermissionLoaderMapper implements LoaderMapper<PermissionModel, PermissionEntity> {
+    public PermissionEntity map(PermissionModel model, String subject) {
+        PermissionEntity entity = new PermissionEntity();
+        entity.setCode(model.getCode());
+        entity.setName(model.getName());
+        entity.setSystem(subject);
+        return entity;
+    }
+}
+----
+
+Если требуется удалять устаревшие данные, нужно задать еще два метода:
+
+- `SubjectFilter<E>` фильтрация записей по владельцу;
+- `EntityIdentifier<ID>` получения идентификатора сущности;
+
+Реализовать их можно как ссылки на существующие методы:
+
+[source,java]
+----
+@Bean
+PermissionServerLoader permissionServerLoader(PermissionRepository repository) {
+    return new PermissionServerLoader(repository, new PermissionLoaderMapper(),
+                    repository::findAllBySystem,
+                    PermissionEntity::getCode);
+}
+----
+
+=== Использование
+
+Отлаживайте ваш загрузчик через REST сервис `ServerLoaderRestService` методом POST `/loaders/{subject}/{target}`
+, где `subject` владелец данных, `target` вид данных:
+
+----
+curl -X POST /loaders/rdm/permissions
+-H "accept: application/json"
+-H "Content-Type: application/json"
+-d "[{ \"code\": \"rdm.read\", \"name\": \"Чтение справочников\"}]"
+----
+
+Если статус ответа 200, загрузка прошла успешно.
+
+Запустить загрузчики можно через класс `ServerLoaderRunner`:
+
+[source,java]
+----
+@Autowired
+private ServerLoaderRunner runner;
+
+public void loadRdmPermissions(InputStream data) {
+  runner.run("rdm", "permissions", data);
+}
+----

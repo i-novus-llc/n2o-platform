@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>n2o-platform-loader</artifactId>
+    <packaging>pom</packaging>
+
+    <parent>
+        <groupId>net.n2oapp.platform</groupId>
+        <artifactId>n2o-platform-parent</artifactId>
+        <version>2.16-SNAPSHOT</version>
+        <relativePath>../n2o-platform-parent</relativePath>
+    </parent>
+
+    <modules>
+        <module>n2o-platform-loader-server</module>
+        <module>n2o-platform-loader-client</module>
+        <module>n2o-platform-loader-autoconfigure</module>
+        <module>n2o-platform-starter-loader-server</module>
+        <module>n2o-platform-starter-loader-client</module>
+    </modules>
+</project>
