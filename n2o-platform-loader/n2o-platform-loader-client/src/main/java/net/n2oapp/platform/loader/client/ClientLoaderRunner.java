@@ -10,6 +10,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Отправка всех данных загрузчиков на сервер
+ */
 public class ClientLoaderRunner {
     private List<ClientLoader> loaders;
     private List<ClientLoaderCommand> commands = new ArrayList<>();
@@ -21,11 +24,25 @@ public class ClientLoaderRunner {
         this.loaders = loaders;
     }
 
+    /**
+     * Добавить информацию о загрузке
+     *
+     * @param command Информация о загрузке
+     */
     public ClientLoaderRunner add(ClientLoaderCommand command) {
         commands.add(command);
         return this;
     }
 
+    /**
+     * Добавить информацию о загрузке с классом загрузчика
+     *
+     * @param serverUrl   Адрес сервера
+     * @param subject     Владелец данных
+     * @param target      Цель загрузки
+     * @param fileUri     Адрес ресурса с данными
+     * @param loaderClass Класс клиентского загрузчика
+     */
     public ClientLoaderRunner add(String serverUrl, String subject, String target,
                                   Resource fileUri, Class<? extends ClientLoader> loaderClass) {
         try {
@@ -41,15 +58,37 @@ public class ClientLoaderRunner {
         return this;
     }
 
+    /**
+     * Добавить информацию о загрузке
+     *
+     * @param serverUrl Адрес сервера
+     * @param subject   Владелец данных
+     * @param target    Цель загрузки
+     * @param filePath  Путь к файлу в classpath
+     */
     public ClientLoaderRunner add(String serverUrl, String subject, String target, String filePath) {
         return add(serverUrl, subject, target, new ClassPathResource(filePath), null);
     }
 
+    /**
+     * Добавить информацию о загрузке с классом загрузчика
+     *
+     * @param serverUrl   Адрес сервера
+     * @param subject     Владелец данных
+     * @param target      Цель загрузки
+     * @param filePath    Путь к файлу в classpath
+     * @param loaderClass Класс клиентского загрузчика
+     */
     public ClientLoaderRunner add(String serverUrl, String subject, String target,
                                   String filePath, Class<? extends ClientLoader> loaderClass) {
         return add(serverUrl, subject, target, new ClassPathResource(filePath), loaderClass);
     }
 
+    /**
+     * Запуск отправки загрузчиков
+     *
+     * @return Отчет о выполнении
+     */
     public LoaderReport run() {
         LoaderReport report = new LoaderReport();
         for (ClientLoaderCommand command : commands) {
@@ -73,6 +112,13 @@ public class ClientLoaderRunner {
         return report;
     }
 
+    /**
+     * Найти клиентский загрузчик
+     *
+     * @param loaderClass Класс загрузчика
+     * @return Клиентский загрузчик
+     * @throws IllegalArgumentException Загрузчик не был найден
+     */
     protected ClientLoader find(Class<? extends ClientLoader> loaderClass) {
         if (loaderClass != null) {
             Optional<ClientLoader> loader = loaders.stream()
