@@ -147,27 +147,27 @@
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-loader-server</artifactId>
-                <version>2.16-SNAPSHOT</version>
+                <version>2.18-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-loader-client</artifactId>
-                <version>2.16-SNAPSHOT</version>
+                <version>2.18-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-loader-autoconfigure</artifactId>
-                <version>2.16-SNAPSHOT</version>
+                <version>2.18-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-loader-client</artifactId>
-                <version>2.16-SNAPSHOT</version>
+                <version>2.18-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-loader-server</artifactId>
-                <version>2.16-SNAPSHOT</version>
+                <version>2.18-SNAPSHOT</version>
             </dependency>
 
             <!--N2O Framework-->
