@@ -9,7 +9,7 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-platform-jaxrs</artifactId>
-        <version>2.18-SNAPSHOT</version>
+        <version>2.18</version>
         <relativePath>..</relativePath>
     </parent>
 
