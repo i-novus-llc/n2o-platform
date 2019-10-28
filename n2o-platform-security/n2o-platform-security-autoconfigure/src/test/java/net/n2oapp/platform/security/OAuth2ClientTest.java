@@ -1,7 +1,6 @@
 package net.n2oapp.platform.security;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import net.n2oapp.platform.security.autoconfigure.SecurityAutoConfiguration;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -11,13 +10,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
@@ -38,6 +39,8 @@ import static org.hamcrest.Matchers.notNullValue;
         classes = OAuth2ClientTest.class,
         properties = {"n2o.platform.security.key-set-uri=http://localhost:8787/auth/certs",
                 "n2o.platform.security.check-token-expired=false",
+                "n2o.platform.security.resource-id=test",
+                "n2o.platform.security.check-aud=false",
                 "n2o.platform.security.access-token-uri=http://localhost:8787/auth/token"})
 @EnableResourceServer
 public class OAuth2ClientTest {
