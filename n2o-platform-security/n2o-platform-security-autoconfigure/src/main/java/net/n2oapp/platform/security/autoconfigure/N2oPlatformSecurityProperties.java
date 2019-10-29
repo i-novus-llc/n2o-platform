@@ -14,6 +14,11 @@ public class N2oPlatformSecurityProperties {
     private boolean checkTokenExpired = true;
 
     /**
+     * Проверять ли в токене поле aud
+     */
+    private boolean checkAud = true;
+
+    /**
      * Идентификатор ресурса (должен соответствовать значению поля aud в токене, часто совпадает с clientId)
      */
     private String resourceId;
@@ -79,5 +84,13 @@ public class N2oPlatformSecurityProperties {
 
     public void setAccessTokenUri(String accessTokenUri) {
         this.accessTokenUri = accessTokenUri;
+    }
+
+    public boolean isCheckAud() {
+        return checkAud;
+    }
+
+    public void setCheckAud(boolean checkAud) {
+        this.checkAud = checkAud;
     }
 }
