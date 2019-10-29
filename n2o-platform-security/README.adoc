@@ -42,6 +42,14 @@ n2o.platform.security.resource-id=test
 ```
 Он совпадает с идентификатором клиента (`client-id`) который может получать доступ к этому ресурсу.
 
+Для отключения валидации поля `aud` можно задать настройку:
+
+```
+n2o.platform.security.check-aud=false
+```
+
+По умолчанию включено (true).
+
 Если необходимо выключить проверку действительности токена задайте настройку `n2o.platform.security.check-token-expired`:
 ```
 n2o.platform.security.check-token-expired=false
