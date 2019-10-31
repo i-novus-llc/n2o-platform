@@ -1,6 +1,5 @@
 package net.n2oapp.platform.security.autoconfigure;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,28 +18,33 @@ import java.util.Map;
  */
 public class N2oPlatformAuthenticationConverter implements UserAuthenticationConverter {
 
-    @Autowired
-    private N2oPlatformSecurityProperties securityProperties;
     private UserDetailsService userDetailsService;
+    private String usernameKey;
+    private String authoritiesKey;
     private Collection<GrantedAuthority> defaultAuthorities = AuthorityUtils.createAuthorityList("ROLE_USER");
+
+    public N2oPlatformAuthenticationConverter(String usernameKey, String authoritiesKey) {
+        this.usernameKey = usernameKey;
+        this.authoritiesKey = authoritiesKey;
+    }
 
     @Override
     public Map<String, ?> convertUserAuthentication(Authentication authentication) {
         Map<String, Object> response = new LinkedHashMap<>();
-        response.put(securityProperties.getUsernameKey(), authentication.getName());
+        response.put(usernameKey, authentication.getName());
         if (authentication.getAuthorities() != null && !authentication.getAuthorities().isEmpty()) {
-            response.put(securityProperties.getAuthoritiesKey(), AuthorityUtils.authorityListToSet(authentication.getAuthorities()));
+            response.put(authoritiesKey, AuthorityUtils.authorityListToSet(authentication.getAuthorities()));
         }
         return response;
     }
 
     @Override
     public Authentication extractAuthentication(Map<String, ?> map) {
-        if (map.containsKey(securityProperties.getUsernameKey())) {
-            Object principal = map.get(securityProperties.getUsernameKey());
+        if (map.containsKey(usernameKey)) {
+            Object principal = map.get(usernameKey);
             Collection<? extends GrantedAuthority> authorities = getAuthorities(map);
             if (userDetailsService != null) {
-                UserDetails user = userDetailsService.loadUserByUsername((String) map.get(securityProperties.getUsernameKey()));
+                UserDetails user = userDetailsService.loadUserByUsername((String) map.get(usernameKey));
                 authorities = user.getAuthorities();
                 principal = user;
             }
@@ -53,12 +57,20 @@ public class N2oPlatformAuthenticationConverter implements UserAuthenticationCon
         this.userDetailsService = userDetailsService;
     }
 
+    public void setUsernameKey(String usernameKey) {
+        this.usernameKey = usernameKey;
+    }
+
+    public void setAuthoritiesKey(String authoritiesKey) {
+        this.authoritiesKey = authoritiesKey;
+    }
+
     public void setDefaultAuthorities(Collection<GrantedAuthority> defaultAuthorities) {
         this.defaultAuthorities = defaultAuthorities;
     }
 
     protected Collection<GrantedAuthority> getAuthorities(Map<String, ?> map) {
-        Object authorities = map.get(securityProperties.getAuthoritiesKey());
+        Object authorities = map.get(authoritiesKey);
 
         if (authorities == null) {
             return defaultAuthorities;
