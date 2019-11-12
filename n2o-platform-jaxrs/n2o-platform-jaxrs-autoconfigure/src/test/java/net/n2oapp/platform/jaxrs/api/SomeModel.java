@@ -12,15 +12,20 @@ import java.util.Date;
 /**
  * Модель данных, используемая в демонстрационном REST сервисе
  */
-@Getter @Setter
+@Getter
+@Setter
 @Validated
 public class SomeModel {
     private Long id;
-    private @NotBlank String name;
-    private @Past Date date;
-    private @Past LocalDateTime dateEnd;
+    @NotBlank
+    private String name;
+    @Past
+    private Date date;
+    @Past
+    private LocalDateTime dateEnd;
 
-    public SomeModel() { }
+    public SomeModel() {
+    }
 
     public SomeModel(Long id) {
         this.id = id;
