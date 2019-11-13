@@ -34,9 +34,6 @@ public class BaseServerLoaderTest {
     @LocalServerPort
     private int port;
 
-    @Autowired
-    private ServerLoaderProperties properties;
-
 
     /**
      * Тест {@link RepositoryServerLoader}
@@ -60,7 +57,7 @@ public class BaseServerLoaderTest {
      * Настройка запрещает сохранять. Проверка, что сохранения не будет
      */
     private void case1(BiConsumer<List<TestModel>, String> loader) {
-        properties.setCreateRequired(false);
+        repositoryLoader.setCreateRequired(false);
         List<TestModel> data = Arrays.asList(
                 new TestModel("code1", "name1"),
                 new TestModel("code2", "name2"));
@@ -72,7 +69,7 @@ public class BaseServerLoaderTest {
      * Вставка двух новых записей, в БД нет записей
      */
     private void case2(BiConsumer<List<TestModel>, String> loader) {
-        properties.setCreateRequired(true);
+        repositoryLoader.setCreateRequired(true);
         List<TestModel> data = Arrays.asList(
                 new TestModel("code1", "name1"),
                 new TestModel("code2", "name2"));
@@ -87,7 +84,7 @@ public class BaseServerLoaderTest {
      * Настройка запрещает обновлять. Проверка, что обновления не будет
      */
     private void case3(BiConsumer<List<TestModel>, String> loader) {
-        properties.setUpdateRequired(false);
+        repositoryLoader.setUpdateRequired(false);
         List<TestModel> data = Arrays.asList(
                 new TestModel("code1", "name1"),
                 new TestModel("code2", "nameNew"));
@@ -100,7 +97,7 @@ public class BaseServerLoaderTest {
      * Вставка двух записей, обе есть в БД, но одна со старым именем
      */
     private void case4(BiConsumer<List<TestModel>, String> loader) {
-        properties.setUpdateRequired(true);
+        repositoryLoader.setUpdateRequired(true);
         List<TestModel> data = Arrays.asList(
                 new TestModel("code1", "name1"),
                 new TestModel("code2", "nameNew"));
@@ -114,9 +111,9 @@ public class BaseServerLoaderTest {
      * Настройки запрещают создавать, обновлять, удалять.
      */
     private void case5(BiConsumer<List<TestModel>, String> loader) {
-        properties.setCreateRequired(false);
-        properties.setUpdateRequired(false);
-        properties.setDeleteRequired(false);
+        repositoryLoader.setCreateRequired(false);
+        repositoryLoader.setUpdateRequired(false);
+        repositoryLoader.setDeleteRequired(false);
         List<TestModel> data = Arrays.asList(
                 new TestModel("code3", "name3"),
                 new TestModel("code2", "name2"));
@@ -130,9 +127,9 @@ public class BaseServerLoaderTest {
      * Вставка двух записей, в БД две записи, первая будет заменена на новую, вторая - обновлена
      */
     private void case6(BiConsumer<List<TestModel>, String> loader) {
-        properties.setCreateRequired(true);
-        properties.setUpdateRequired(true);
-        properties.setDeleteRequired(true);
+        repositoryLoader.setCreateRequired(true);
+        repositoryLoader.setUpdateRequired(true);
+        repositoryLoader.setDeleteRequired(true);
         List<TestModel> data = Arrays.asList(
                 new TestModel("code3", "name3"),
                 new TestModel("code2", "name2"));
@@ -147,7 +144,7 @@ public class BaseServerLoaderTest {
      * Настройка запрещает удалять. Проверка, что удаления не будет
      */
     private void case7(BiConsumer<List<TestModel>, String> loader) {
-        properties.setDeleteRequired(false);
+        repositoryLoader.setDeleteRequired(false);
         List<TestModel> data = Arrays.asList(
                 new TestModel("code2", "name2"));
         loader.accept(data, "me");
@@ -160,7 +157,7 @@ public class BaseServerLoaderTest {
      * Вставка одной записи, в БД две записи, вторая будет удалена
      */
     private void case8(BiConsumer<List<TestModel>, String> loader) {
-        properties.setDeleteRequired(true);
+        repositoryLoader.setDeleteRequired(true);
         List<TestModel> data = Arrays.asList(
                 new TestModel("code2", "name2"));
         loader.accept(data, "me");
