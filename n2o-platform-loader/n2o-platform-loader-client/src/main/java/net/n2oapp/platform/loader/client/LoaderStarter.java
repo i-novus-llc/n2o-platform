@@ -24,10 +24,12 @@ public class LoaderStarter {
         if (report.isSuccess())
             logger.info("Loading success finished!");
         else {
-            logger.error("Loading failed: {} fails, {} success, {} aborted.",
-                    report.getFails().size(),
-                    report.getSuccess().size(),
-                    report.getAborted().size());
+            if (logger.isErrorEnabled()) {
+                logger.error(String.format("Loading failed: %d fails, %d success, %d aborted.",
+                        report.getFails().size(),
+                        report.getSuccess().size(),
+                        report.getAborted().size()));
+            }
             report.getFails().forEach(fail ->
                     logger.debug(String.format("Loading %s failed by %s",
                             fail.getCommand().getTarget(), fail.getException().getMessage()),
