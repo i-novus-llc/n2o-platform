@@ -9,7 +9,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.provider.token.UserAuthenticationConverter;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Получение данных о пользователе из токена
@@ -17,9 +19,14 @@ import java.util.*;
 public class N2oPlatformAuthenticationConverter implements UserAuthenticationConverter {
 
     private UserDetailsService userDetailsService;
-    private String usernameKey = "username";
-    private String authoritiesKey = "roles";
+    private String usernameKey;
+    private String authoritiesKey;
     private Collection<GrantedAuthority> defaultAuthorities = AuthorityUtils.createAuthorityList("ROLE_USER");
+
+    public N2oPlatformAuthenticationConverter(String usernameKey, String authoritiesKey) {
+        this.usernameKey = usernameKey;
+        this.authoritiesKey = authoritiesKey;
+    }
 
     @Override
     public Map<String, ?> convertUserAuthentication(Authentication authentication) {

@@ -36,6 +36,15 @@ public class N2oPlatformSecurityProperties {
      */
     private String accessTokenUri;
 
+    /**
+     * Ключ имени пользователя
+     */
+    private String usernameKey = "username";
+    /**
+     * Ключ прав доступа
+     */
+    private String authoritiesKey = "roles";
+
     public String getKeySetUri() {
         return keySetUri;
     }
@@ -92,5 +101,21 @@ public class N2oPlatformSecurityProperties {
 
     public void setCheckAud(boolean checkAud) {
         this.checkAud = checkAud;
+    }
+
+    public String getUsernameKey() {
+        return usernameKey;
+    }
+
+    public void setUsernameKey(String usernameKey) {
+        this.usernameKey = usernameKey;
+    }
+
+    public String getAuthoritiesKey() {
+        return authoritiesKey;
+    }
+
+    public void setAuthoritiesKey(String authoritiesKey) {
+        this.authoritiesKey = authoritiesKey;
     }
 }

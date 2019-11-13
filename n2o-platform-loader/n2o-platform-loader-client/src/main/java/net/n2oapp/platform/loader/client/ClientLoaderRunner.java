@@ -124,11 +124,10 @@ public class ClientLoaderRunner {
             Optional<ClientLoader> loader = loaders.stream()
                     .filter(l -> l.getClass().equals(loaderClass))
                     .findFirst();
-            if (loader.isPresent()) {
+            if (loader.isPresent())
                 return loader.get();
-            } else {
+            else
                 throw new IllegalArgumentException("Loader bean " + loaderClass + " not found");
-            }
         } else {
             return loaders.get(0);
         }
