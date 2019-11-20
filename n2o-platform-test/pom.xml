@@ -10,7 +10,7 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-platform-parent</artifactId>
-        <version>2.20</version>
+        <version>2.21-SNAPSHOT</version>
         <relativePath>../n2o-platform-parent</relativePath>
     </parent>
 
