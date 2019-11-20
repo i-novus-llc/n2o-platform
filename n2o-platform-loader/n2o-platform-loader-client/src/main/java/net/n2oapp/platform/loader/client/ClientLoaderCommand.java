@@ -17,6 +17,8 @@ public class ClientLoaderCommand {
     private Resource file;
     @JsonIgnore
     private Class<? extends ClientLoader> loaderClass;
+    @JsonIgnore
+    private AuthDetails auth;
 
     public ClientLoaderCommand() {
     }
@@ -82,5 +84,70 @@ public class ClientLoaderCommand {
 
     public void setLoaderClass(Class<? extends ClientLoader> loaderClass) {
         this.loaderClass = loaderClass;
+    }
+
+    public AuthDetails getAuth() {
+        return auth;
+    }
+
+    public void setAuth(AuthDetails auth) {
+        this.auth = auth;
+    }
+
+    public static class AuthDetails {
+        private String type;
+        private String username;
+        private String password;
+        private String tokenUri;
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.type = "basic";
+            this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public String getClientId() {
+            return username;
+        }
+
+        public void setClientId(String username) {
+            this.type = "oauth2";
+            this.username = username;
+        }
+
+        public String getClientSecret() {
+            return password;
+        }
+
+        public void setClientSecret(String password) {
+            this.password = password;
+        }
+
+        public String getTokenUri() {
+            return tokenUri;
+        }
+
+        public void setTokenUri(String tokenUri) {
+            this.tokenUri = tokenUri;
+        }
     }
 }
