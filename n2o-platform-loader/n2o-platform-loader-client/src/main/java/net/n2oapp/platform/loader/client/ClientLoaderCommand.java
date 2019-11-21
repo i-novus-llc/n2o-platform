@@ -126,20 +126,20 @@ public class ClientLoaderCommand {
         }
 
         public String getClientId() {
-            return username;
+            return getUsername();
         }
 
-        public void setClientId(String username) {
+        public void setClientId(String clientId) {
             this.type = "oauth2";
-            this.username = username;
+            setUsername(clientId);
         }
 
         public String getClientSecret() {
-            return password;
+            return getPassword();
         }
 
-        public void setClientSecret(String password) {
-            this.password = password;
+        public void setClientSecret(String clientSecret) {
+            setPassword(clientSecret);
         }
 
         public String getTokenUri() {
