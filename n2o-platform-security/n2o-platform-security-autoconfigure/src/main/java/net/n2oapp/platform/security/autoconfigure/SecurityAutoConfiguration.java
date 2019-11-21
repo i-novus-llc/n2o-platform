@@ -104,7 +104,7 @@ public class SecurityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public UserAuthenticationConverter n2oPlatformAuthenticationConverter() {
-        return new N2oPlatformAuthenticationConverter();
+        return new N2oPlatformAuthenticationConverter(securityProperties.getUsernameKey(), securityProperties.getAuthoritiesKey());
     }
 
     @Bean
