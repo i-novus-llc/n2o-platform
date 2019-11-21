@@ -18,12 +18,14 @@ import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.context.annotation.*;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,14 +35,16 @@ import java.util.Map;
 @EnableConfigurationProperties(ClientLoaderProperties.class)
 public class ClientLoaderAutoConfiguration {
 
-    private final static String ENDPOINT_PATTERN = "/loaders/{subject}/{target}";
+    private static final String ENDPOINT_PATTERN = "/loaders/{subject}/{target}";
 
     @Bean
     @ConditionalOnMissingBean(name = "clientLoaderRestTemplate")
     public RestOperations clientLoaderRestTemplate(@Autowired(required = false) List<RestTemplateCustomizer> customizers,
                                                    @Autowired(required = false) Map<String, ClientContext> contextMap) {
         RestTemplate restTemplate = new AuthRestTemplate(contextMap);
-        restTemplate.getMessageConverters().add(new StringHttpMessageConverter(Charset.forName("UTF-8")));
+        List<HttpMessageConverter<?>> converters = new ArrayList<>();
+        converters.add(new StringHttpMessageConverter(Charset.forName("UTF-8")));
+        restTemplate.setMessageConverters(converters);
         if (customizers != null)
             customizers.forEach(c -> c.customize(restTemplate));
         return restTemplate;
