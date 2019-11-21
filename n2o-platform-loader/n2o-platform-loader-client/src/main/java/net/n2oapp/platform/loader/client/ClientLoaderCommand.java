@@ -130,8 +130,8 @@ public class ClientLoaderCommand {
         }
 
         public void setClientId(String clientId) {
-            this.type = "oauth2";
             setUsername(clientId);
+            this.type = "oauth2";
         }
 
         public String getClientSecret() {
