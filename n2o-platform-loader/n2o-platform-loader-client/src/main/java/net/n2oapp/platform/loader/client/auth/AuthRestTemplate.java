@@ -25,8 +25,12 @@ public class AuthRestTemplate extends RestTemplate {
 
         if (contextStorage != null) {
             ClientContext ctx = contextStorage.get(uri.toString());
-            if (ctx != null && ctx.getAccessToken() != null)
-                req.getHeaders().set("Authorization", String.format("%s %s", ctx.getTokenType(), ctx.getAccessToken()));
+            if (ctx != null) {
+                String accessToken = ctx.getAccessToken();
+                if (accessToken != null)
+                    req.getHeaders().set("Authorization", String.format("%s %s", ctx.getTokenType(), accessToken));
+
+            }
         }
 
         return req;
