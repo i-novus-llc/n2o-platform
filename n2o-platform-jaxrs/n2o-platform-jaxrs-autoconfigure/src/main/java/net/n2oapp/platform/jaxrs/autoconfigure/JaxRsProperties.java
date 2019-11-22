@@ -92,6 +92,7 @@ public class JaxRsProperties {
         private String version;
         private String resourcePackage;
         private String[] schemes = new String[]{"http", "https"};
+        private Auth auth;
 
         public boolean isEnabled() {
             return enabled;
@@ -139,6 +140,35 @@ public class JaxRsProperties {
 
         public void setSchemes(String[] schemes) {
             this.schemes = schemes;
+        }
+
+        public Auth getAuth() {
+            return auth;
+        }
+
+        public void setAuth(Auth auth) {
+            this.auth = auth;
+        }
+
+        public static class Auth {
+            private String name;
+            private String tokenUri;
+
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+
+            public String getTokenUri() {
+                return tokenUri;
+            }
+
+            public void setTokenUri(String tokenUri) {
+                this.tokenUri = tokenUri;
+            }
         }
     }
 
