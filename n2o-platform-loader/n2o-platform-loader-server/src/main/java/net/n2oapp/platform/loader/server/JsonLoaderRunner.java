@@ -3,8 +3,11 @@ package net.n2oapp.platform.loader.server;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -23,7 +26,8 @@ public class JsonLoaderRunner extends BaseLoaderRunner implements ServerLoaderRe
         try {
             CollectionType type = objectMapper.getTypeFactory()
                     .constructCollectionType(List.class, info.getDataType());
-            data = objectMapper.readValue(body, type);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(body, StandardCharsets.UTF_8));
+            data = objectMapper.readValue(bufferedReader, type);
         } catch (IOException e) {
             throw new IllegalArgumentException(String.format("Cannot read body for %s", info.getTarget()), e);
         }
