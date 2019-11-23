@@ -238,7 +238,13 @@ jaxrs.swagger.version=1.0
 jaxrs.swagger.resource-package=net.n2oapp.microservice.example
 #Опционально можно указать какие протоколы (http,https,ws,wss):
 jaxrs.swagger.schemes=http,https
+jaxrs.swagger.auth.name=oauth2
+jaxrs.swagger.auth.token-uri=http://localhost:8080/oauth/token
 ----
+
+[NOTE]
+Для корректной работы авторизации необходимо передать аргумент `authorizations = @Authorization(value = "oauth2")`
+в аннотацию `@Api(...)` сервисов, требующих авторизации. Аргумент `value` должен соответствовать настройке `jaxrs.swagger.auth.name`.
 
 Ссылка на документацию Swagger будет доступна по адресу `/api/info` (cxf.path + cxf.servlet.init.service-list-path).
 
