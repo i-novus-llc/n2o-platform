@@ -7,9 +7,8 @@ import java.util.List;
  *
  * @param <M>  Тип модели
  * @param <E>  Тип сущности
- * @param <ID> Тип идентификатора сущности
  */
-abstract public class BaseServerLoader<M, E, ID> implements ServerLoader<M> {
+abstract public class BaseServerLoader<M, E> implements ServerLoader<M> {
 
     /**
      *  Сохранение данных
@@ -53,13 +52,13 @@ abstract public class BaseServerLoader<M, E, ID> implements ServerLoader<M> {
      * Сохранение записей
      * @param fresh Список сущностей
      */
-    abstract protected void create(List<E> fresh);
+    protected abstract void create(List<E> fresh);
 
     /**
      * Обновление записей
      * @param fresh Список сущностей
      */
-    abstract protected void update(List<E> fresh);
+    protected abstract void update(List<E> fresh);
 
     /**
      * Удаление устаревших записей

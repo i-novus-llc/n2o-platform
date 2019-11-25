@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * @param <E> Тип сущности
  * @param <ID> Тип идентификатора сущности
  */
-public abstract class RepositoryServerLoader<M, E, ID> extends BaseServerLoader<M, E, ID> {
+public abstract class RepositoryServerLoader<M, E, ID> extends BaseServerLoader<M, E> {
     private CrudRepository<E, ID> repository;
     private LoaderMapper<M, E> mapper;
     private SubjectFilter<E> filter;
