@@ -8,7 +8,7 @@ import java.util.List;
  * @param <M>  Тип модели
  * @param <E>  Тип сущности
  */
-abstract public class BaseServerLoader<M, E> implements ServerLoader<M> {
+public abstract class BaseServerLoader<M, E> implements ServerLoader<M> {
 
     /**
      *  Сохранение данных
