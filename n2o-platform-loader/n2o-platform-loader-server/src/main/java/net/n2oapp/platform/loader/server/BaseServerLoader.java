@@ -1,6 +1,12 @@
 package net.n2oapp.platform.loader.server;
 
+import net.n2oapp.platform.loader.server.repository.EntityIdentifier;
+import net.n2oapp.platform.loader.server.repository.SubjectFilter;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Серверный загрузчик данных
@@ -8,7 +14,17 @@ import java.util.List;
  * @param <M>  Тип модели
  * @param <E>  Тип сущности
  */
-public abstract class BaseServerLoader<M, E> implements ServerLoader<M> {
+public abstract class BaseServerLoader<M, E, ID> implements ServerLoader<M> {
+
+    /**
+     * Фильтр по владельцу
+     */
+    private SubjectFilter<E> filter;
+
+    /**
+     * Идентификатор сущности
+     */
+    private EntityIdentifier<E, ID> identifier;
 
     /**
      *  Сохранение данных
@@ -23,6 +39,11 @@ public abstract class BaseServerLoader<M, E> implements ServerLoader<M> {
      */
     private boolean deleteRequired = true;
 
+
+    public BaseServerLoader(SubjectFilter<E> filter, EntityIdentifier<E, ID> identifier) {
+        this.filter = filter;
+        this.identifier = identifier;
+    }
 
     public boolean isCreateRequired() {
         return createRequired;
@@ -48,22 +69,65 @@ public abstract class BaseServerLoader<M, E> implements ServerLoader<M> {
         this.deleteRequired = deleteRequired;
     }
 
+    public SubjectFilter<E> getFilter() {
+        return filter;
+    }
+
+    public EntityIdentifier<E, ID> getIdentifier() {
+        return identifier;
+    }
+
+    public void load(List data, String subject) {
+        List<E> entities = map(data, subject);
+
+        if (filter == null || identifier == null) {
+            update(entities);
+        } else {
+            List<E> created = new ArrayList<>();
+            List<E> updated = new ArrayList<>();
+            Set<ID> oldIds = filter.findAllBySubject(subject).stream().map(identifier::identify).collect(Collectors.toSet());
+
+            for (E entity : entities) {
+                if (oldIds.contains(identifier.identify(entity)))
+                    updated.add(entity);
+                else
+                    created.add(entity);
+            }
+
+            if (isCreateRequired())
+                create(created);
+            if (isUpdateRequired())
+                update(updated);
+        }
+
+        if (isDeleteRequired())
+            delete(entities, subject);
+    }
+
+    /**
+     * Преобразование списка моделей в список сущностей
+     * @param models Список моделей
+     * @param subject Владелец данных
+     * @return Список сущностей
+     */
+    protected abstract List<E> map(List<M> models, String subject);
+
     /**
      * Сохранение записей
-     * @param fresh Список сущностей
+     * @param entities Список сущностей
      */
-    protected abstract void create(List<E> fresh);
+    protected abstract void create(List<E> entities);
 
     /**
      * Обновление записей
-     * @param fresh Список сущностей
+     * @param entities Список сущностей
      */
-    protected abstract void update(List<E> fresh);
+    protected abstract void update(List<E> entities);
 
     /**
      * Удаление устаревших записей
-     * @param loaded  Список сущностей
+     * @param entities  Список сущностей
      * @param subject Владелец данных
      */
-    protected abstract void delete(List<E> loaded, String subject);
+    protected abstract void delete(List<E> entities, String subject);
 }
