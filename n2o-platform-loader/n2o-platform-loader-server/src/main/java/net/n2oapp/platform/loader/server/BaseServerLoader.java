@@ -1,8 +1,5 @@
 package net.n2oapp.platform.loader.server;
 
-import net.n2oapp.platform.loader.server.repository.EntityIdentifier;
-import net.n2oapp.platform.loader.server.repository.SubjectFilter;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -39,6 +36,9 @@ public abstract class BaseServerLoader<M, E, ID> implements ServerLoader<M> {
      */
     private boolean deleteRequired = true;
 
+
+    public BaseServerLoader() {
+    }
 
     public BaseServerLoader(SubjectFilter<E> filter, EntityIdentifier<E, ID> identifier) {
         this.filter = filter;

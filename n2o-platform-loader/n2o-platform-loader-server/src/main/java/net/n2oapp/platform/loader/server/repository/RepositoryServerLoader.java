@@ -1,6 +1,8 @@
 package net.n2oapp.platform.loader.server.repository;
 
 import net.n2oapp.platform.loader.server.BaseServerLoader;
+import net.n2oapp.platform.loader.server.EntityIdentifier;
+import net.n2oapp.platform.loader.server.SubjectFilter;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.lang.Nullable;
 
