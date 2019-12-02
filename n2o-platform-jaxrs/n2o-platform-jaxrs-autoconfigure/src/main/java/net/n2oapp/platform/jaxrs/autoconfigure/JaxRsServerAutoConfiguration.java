@@ -1,8 +1,10 @@
 package net.n2oapp.platform.jaxrs.autoconfigure;
 
 import brave.Tracing;
+import io.swagger.models.auth.OAuth2Definition;
 import net.n2oapp.platform.i18n.Messages;
-import net.n2oapp.platform.jaxrs.*;
+import net.n2oapp.platform.jaxrs.MessageExceptionMapper;
+import net.n2oapp.platform.jaxrs.ViolationRestExceptionMapper;
 import org.apache.cxf.ext.logging.LoggingInInterceptor;
 import org.apache.cxf.ext.logging.LoggingOutInterceptor;
 import org.apache.cxf.jaxrs.swagger.Swagger2Feature;
@@ -20,6 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.validation.ValidatorFactory;
+import java.util.Map;
 
 /**
  * Автоматическая конфигурация REST сервисов
@@ -49,13 +52,16 @@ public class JaxRsServerAutoConfiguration {
         result.setVersion(jaxRsProperties.getSwagger().getVersion());
         result.setSchemes(jaxRsProperties.getSwagger().getSchemes());
         result.setPrettyPrint(true);
-
+        JaxRsProperties.Swagger.Auth auth = jaxRsProperties.getSwagger().getAuth();
+        if (auth != null && auth.getName() != null && auth.getTokenUri() != null) {
+            result.setSecurityDefinitions(Map.of(auth.getName(), new OAuth2Definition().application(auth.getTokenUri())));
+        }
         result.setResourcePackage(jaxRsProperties.getSwagger().getResourcePackage());
         return result;
     }
 
     @Bean
-    @ConditionalOnProperty(prefix="jaxrs", name={"log-in", "logging-in.enabled"}, matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "jaxrs", name = {"log-in", "logging-in.enabled"}, matchIfMissing = true)
     LoggingInInterceptor loggingInInterceptor() {
         AnnotatedLoggingInInterceptor loggingInInterceptor = new AnnotatedLoggingInInterceptor();
         loggingInInterceptor.setLimit(jaxRsProperties.getLoggingIn().getLimit());
@@ -67,7 +73,7 @@ public class JaxRsServerAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix="jaxrs", name={"log-out", "logging-out.enabled"}, matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "jaxrs", name = {"log-out", "logging-out.enabled"}, matchIfMissing = true)
     LoggingOutInterceptor loggingOutInterceptor() {
         LoggingOutInterceptor loggingOutInterceptor = new AnnotatedLoggingOutInterceptor();
         loggingOutInterceptor.setLimit(jaxRsProperties.getLoggingOut().getLimit());
@@ -79,7 +85,7 @@ public class JaxRsServerAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix="jaxrs", name="jsr303", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "jaxrs", name = "jsr303", matchIfMissing = true)
     BeanValidationInInterceptor beanValidationInInterceptor(ValidatorFactory validatorFactory) {
         JAXRSBeanValidationInInterceptor validationInInterceptor = new JAXRSBeanValidationInInterceptor();
         BeanValidationProvider validationProvider = new BeanValidationProvider(validatorFactory);

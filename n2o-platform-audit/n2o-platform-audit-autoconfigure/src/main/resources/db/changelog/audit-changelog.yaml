@@ -20,4 +20,8 @@ databaseChangeLog:
   - include:
       file: classpath*:/audit/201804161602_full_audit_func_without_pglogical.xml
   - include:
+      file: classpath*:/audit/201911131146_add_delta.xml
+  - include:
+      file: classpath*:/audit/201911141107_audit_trigger_fun_bfx_2.xml
+  - include:
       file: classpath*:/audit/999999999999_add_aud_trigger.xml

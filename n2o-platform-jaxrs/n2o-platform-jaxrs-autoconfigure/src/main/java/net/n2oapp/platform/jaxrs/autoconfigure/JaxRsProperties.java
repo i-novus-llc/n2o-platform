@@ -86,12 +86,42 @@ public class JaxRsProperties {
     private final Swagger swagger = new Swagger();
 
     public static class Swagger {
+
+        /**
+         * Включить/выключить Swagger
+         */
         private boolean enabled = true;
+
+        /**
+         * Заголовок главной страницы
+         */
         private String title;
+
+        /**
+         * Описание
+         */
         private String description;
+
+        /**
+         * Версия Swagger
+         */
         private String version;
+
+        /**
+         * Сканируемый пакет
+         */
         private String resourcePackage;
+
+        /**
+         * Доступные схемы запросов
+         */
         private String[] schemes = new String[]{"http", "https"};
+
+        /**
+         * Настройки авторизации
+         * Протокол - OAuth2, тип - Client credentials
+         */
+        private Auth auth;
 
         public boolean isEnabled() {
             return enabled;
@@ -139,6 +169,44 @@ public class JaxRsProperties {
 
         public void setSchemes(String[] schemes) {
             this.schemes = schemes;
+        }
+
+        public Auth getAuth() {
+            return auth;
+        }
+
+        public void setAuth(Auth auth) {
+            this.auth = auth;
+        }
+
+        public static class Auth {
+            /**
+             * Наименование способа авторизации
+             * Должно совпадать с аргументом value в аннотации
+             * {@link io.swagger.annotations.Authorization} на стороне сервиса
+             */
+            private String name;
+
+            /**
+             * Конечная точка сервиса авторизации
+             */
+            private String tokenUri;
+
+            public String getName() {
+                return name;
+            }
+
+            public void setName(String name) {
+                this.name = name;
+            }
+
+            public String getTokenUri() {
+                return tokenUri;
+            }
+
+            public void setTokenUri(String tokenUri) {
+                this.tokenUri = tokenUri;
+            }
         }
     }
 

@@ -1,6 +1,11 @@
 package net.n2oapp.platform.loader.autoconfigure;
 
 import net.n2oapp.platform.loader.client.*;
+import net.n2oapp.platform.loader.client.ClientLoaderCommand.AuthDetails;
+import net.n2oapp.platform.loader.client.auth.AuthRestTemplate;
+import net.n2oapp.platform.loader.client.auth.BasicAuthClientContext;
+import net.n2oapp.platform.loader.client.auth.ClientContext;
+import net.n2oapp.platform.loader.client.auth.OAuth2ClientContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.actuate.health.HealthIndicator;
@@ -9,37 +14,48 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.context.annotation.*;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestOperations;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Configuration
 @ConditionalOnClass(ClientLoader.class)
 @EnableConfigurationProperties(ClientLoaderProperties.class)
 public class ClientLoaderAutoConfiguration {
 
+    private static final String ENDPOINT_PATTERN = "/loaders/{subject}/{target}";
+
     @Bean
     @ConditionalOnMissingBean(name = "clientLoaderRestTemplate")
-    public RestOperations clientLoaderRestTemplate(@Autowired(required = false) List<RestTemplateCustomizer> customizers) {
-        RestTemplateBuilder builder = new RestTemplateBuilder()
-                .additionalMessageConverters(new StringHttpMessageConverter(Charset.forName("UTF-8")));
+    public RestOperations clientLoaderRestTemplate(@Autowired(required = false) List<RestTemplateCustomizer> customizers,
+                                                   @Autowired(required = false) Map<String, ClientContext> contextMap) {
+        RestTemplate restTemplate = new AuthRestTemplate(contextMap);
+        List<HttpMessageConverter<?>> converters = new ArrayList<>();
+        converters.add(new StringHttpMessageConverter(Charset.forName("UTF-8")));
+        restTemplate.setMessageConverters(converters);
         if (customizers != null)
-            builder.additionalCustomizers(customizers);
-        return builder.build();
+            customizers.forEach(c -> c.customize(restTemplate));
+        return restTemplate;
     }
 
     @Bean
     @ConditionalOnMissingBean
     public JsonClientLoader jsonClientLoader(@Qualifier("clientLoaderRestTemplate") RestOperations clientLoaderRestTemplate) {
-        return new JsonClientLoader(clientLoaderRestTemplate);
+        JsonClientLoader loader = new JsonClientLoader(clientLoaderRestTemplate);
+        loader.setEndpointPattern(ENDPOINT_PATTERN);
+        return loader;
     }
 
     @Bean
@@ -53,6 +69,34 @@ public class ClientLoaderAutoConfiguration {
         if (configurers != null)
             configurers.forEach(c -> c.configure(runner));
         return runner;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "contextStorage")
+    public Map<String, ClientContext> contextStorage(ClientLoaderProperties properties) {
+        Map<String, ClientContext> contextMap = new HashMap<>();
+        properties.getCommands().forEach(c -> {
+            if (c.getAuth() != null) {
+                String url = c.getServerUri();
+                url = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+                url = url + ENDPOINT_PATTERN.replace("{subject}", c.getSubject()).replace("{target}", c.getTarget());
+                AuthDetails auth = c.getAuth();
+                if ("oauth2".equals(auth.getType())) {
+                    ClientContext ctx = new OAuth2ClientContext(
+                            auth.getClientId(),
+                            auth.getClientSecret(),
+                            auth.getTokenUri());
+                    contextMap.put(url, ctx);
+                } else if ("basic".equals(auth.getType())) {
+                    ClientContext ctx = new BasicAuthClientContext(
+                            auth.getUsername(),
+                            auth.getPassword());
+                    contextMap.put(url, ctx);
+                }
+            }
+        });
+
+        return contextMap;
     }
 
     @Bean
@@ -110,6 +154,7 @@ public class ClientLoaderAutoConfiguration {
         ClientLoaderStarterEndpoint clientLoaderStarterEndpoint() {
             return new ClientLoaderStarterEndpoint();
         }
+
         @Bean
         @ConditionalOnBean(LoaderStarter.class)
         ClientLoaderHealthIndicator clientLoaderHealthIndicator(LoaderStarter starter) {

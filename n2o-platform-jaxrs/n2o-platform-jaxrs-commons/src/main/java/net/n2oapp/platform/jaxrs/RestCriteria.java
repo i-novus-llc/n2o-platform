@@ -51,7 +51,7 @@ public class RestCriteria implements Pageable {
     @Override
     @JsonIgnore
     public long getOffset() {
-        return this.pageNumber * this.pageSize;
+        return ((long) this.pageNumber) * this.pageSize;
     }
 
     @Override

@@ -10,6 +10,7 @@ import java.net.URI;
 
 /**
  * Загрузчик данных через REST API
+ *
  * @param <T> Тип данных
  */
 public abstract class RestClientLoader<T> implements ClientLoader {
@@ -52,5 +53,9 @@ public abstract class RestClientLoader<T> implements ClientLoader {
 
     public RestOperations getRestTemplate() {
         return restTemplate;
+    }
+
+    public void setEndpointPattern(String endpointPattern) {
+        this.endpointPattern = endpointPattern;
     }
 }

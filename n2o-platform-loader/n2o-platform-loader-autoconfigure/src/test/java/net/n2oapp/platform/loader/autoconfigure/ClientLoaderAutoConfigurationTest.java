@@ -74,10 +74,15 @@ public class ClientLoaderAutoConfigurationTest {
         this.contextRunner
                 .withPropertyValues(
                         "n2o.loader.client.commands[0].server=http://localhost:8080/api",
+                        "n2o.loader.client.commands[0].auth.client-id=test_client",
+                        "n2o.loader.client.commands[0].auth.client-secret=test_secret",
+                        "n2o.loader.client.commands[0].auth.token-uri=token_url",
                         "n2o.loader.client.commands[0].subject=me",
                         "n2o.loader.client.commands[0].target=foo",
                         "n2o.loader.client.commands[0].file=test.json",
                         "n2o.loader.client.commands[1].server=http://localhost:8081/api",
+                        "n2o.loader.client.commands[1].auth.username=test_user",
+                        "n2o.loader.client.commands[1].auth.password=test_password",
                         "n2o.loader.client.commands[1].subject=me",
                         "n2o.loader.client.commands[1].target=bar",
                         "n2o.loader.client.commands[1].file=test2.json")
@@ -85,6 +90,11 @@ public class ClientLoaderAutoConfigurationTest {
                     assertThat(context).hasSingleBean(ClientLoaderRunner.class);
                     ClientLoaderRunner runner = context.getBean(ClientLoaderRunner.class);
                     assertThat(runner.getCommands().size()).isEqualTo(2);
+                    assertThat(runner.getCommands().get(0).getAuth().getClientId()).isEqualTo("test_client");
+                    assertThat(runner.getCommands().get(0).getAuth().getClientSecret()).isEqualTo("test_secret");
+                    assertThat(runner.getCommands().get(0).getAuth().getTokenUri()).isEqualTo("token_url");
+                    assertThat(runner.getCommands().get(1).getAuth().getUsername()).isEqualTo("test_user");
+                    assertThat(runner.getCommands().get(1).getAuth().getPassword()).isEqualTo("test_password");
                 });
     }
 }
