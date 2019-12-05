@@ -1,12 +1,22 @@
 package net.n2oapp.platform.loader.server;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Настройки серверного загрузчика
  */
 @ConfigurationProperties(prefix = "n2o.loader.server")
 public class ServerLoaderProperties {
+    /**
+     * Очередь загрузчиков
+     */
+    @NestedConfigurationProperty
+    private final List<ServerLoaderCommand> commands = new ArrayList<>();
+
     /**
      * Сохранение данных
      */
@@ -45,5 +55,9 @@ public class ServerLoaderProperties {
 
     public void setDeleteRequired(boolean deleteRequired) {
         this.deleteRequired = deleteRequired;
+    }
+
+    public List<ServerLoaderCommand> getCommands() {
+        return commands;
     }
 }
