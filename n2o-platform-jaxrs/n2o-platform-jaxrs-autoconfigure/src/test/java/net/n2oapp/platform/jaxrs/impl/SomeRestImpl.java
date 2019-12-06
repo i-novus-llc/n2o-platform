@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Controller;
 
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,6 +19,9 @@ import java.util.stream.LongStream;
  */
 @Controller
 public class SomeRestImpl implements SomeRest {
+
+    @Context
+    private HttpHeaders httpHeaders;
 
     @Override
     public Page<SomeModel> search(SomeCriteria criteria) {
@@ -93,6 +98,11 @@ public class SomeRestImpl implements SomeRest {
     @Override
     public Map<String, String> searchBySetOfTypedMap(Map<String, String> map) {
         return map;
+    }
+
+    @Override
+    public Map<String, String> authHeader() {
+        return Map.of("Authorization", httpHeaders.getHeaderString("Authorization"));
     }
 
     private List<SomeModel> findAll(SomeCriteria criteria) {

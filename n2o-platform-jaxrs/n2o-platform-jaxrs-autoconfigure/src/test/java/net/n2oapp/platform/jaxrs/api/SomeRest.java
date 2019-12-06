@@ -102,4 +102,9 @@ public interface SomeRest {
     @ApiResponse(code = 200, message = "Карта")
     Map<String,String> searchBySetOfTypedMap(@QueryParam("map") Map<String, String> setOfMap);
 
+    @GET
+    @Path("/authHeader")
+    @ApiOperation("Вернуть заголовок Authorization")
+    @ApiResponse(code = 200, message = "Страница моделей")
+    Map<String, String> authHeader();
 }
