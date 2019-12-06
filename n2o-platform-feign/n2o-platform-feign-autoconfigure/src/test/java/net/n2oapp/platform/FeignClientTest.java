@@ -59,17 +59,7 @@ public class FeignClientTest {
     @Autowired
     private SomeFeignClient client;
 
-    private static final String jwt = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJkZkRGYlJkU3FDZlVkMGV" +
-            "vTXRQV0UzVXk2bko5UFhHRDFFN2Q3MXE5c1pNIn0.eyJqdGkiOiJiNmZjZWZhMC0yZjc1LTRlNTMtYTNjMS02M2ExZjE2ZTYzNjciLCJl" +
-            "eHAiOjE1NjMyNTg0MTMsIm5iZiI6MCwiaWF0IjoxNTYzMjU4MTEzLCJpc3MiOiJodHRwOi8vMTcyLjE2LjEuMTMwOjg4ODgvYXV0aC9yZ" +
-            "WFsbXMvTVBTIiwiYXVkIjoibXBzIiwic3ViIjoiNjRjMDQ1MDgtMWU2Mi00OGQ3LTk2ZjMtNjc3YWE1NzVmNTNmIiwidHlwIjoiQmVhcm" +
-            "VyIiwiYXpwIjoibXBzIiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiYzcyZjc2YzQtYWM0ZC00ZjU4LWFmOTUtNDA4MzU4ZTF" +
-            "iYzJlIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6W10sInJlc291cmNlX2FjY2VzcyI6e30sIm5hbWUiOiJUZXN0IFRlc3QiLCJn" +
-            "aXZlbl9uYW1lIjoiVGVzdCIsImZhbWlseV9uYW1lIjoiVGVzdCIsImVtYWlsIjoidG8uaXJ5YWJvdkBnbWFpbC5jb20iLCJ1c2VybmFtZ" +
-            "SI6InRlc3QifQ.AQpCJEQZnAews_F_-VBxIiSUMYmNerx_YulUvOAC6YTRWVVlt4BuuKNHS-0i1RURum5x5C7uDcry59r-3Cil8LRBmms" +
-            "KUWNoqoWxr4H2Hfny0eFw8rlLwZeDdV7C-jvpO8Z3FTTHk7PybJIBDYG7pLcNStKtpzBeqTVahRt9vxQKhJ5lb0vdPpKnWtyoRaTTnQ7o" +
-            "gNchsSSKfsHpvpkG7Ne_3Rd0JiES80VAH9HA8mCqOpRJ1ic2c-hFdmUvhfXSC0pNGcRzKR5hlk7BC9OX0_s5uk-Qi9kf0S_z5pgsPrJD3" +
-            "tt5ey_6UoRXtOL7FCNmrLzTVBOsWu0PTgz0XFdh_w";
+    private static final String jwt = "aejo8hboejazpgauhp2mrejhjopahuipizdaskovorodagsfdho25pjigrpher";
 
     @Before
     public void setUp() {
