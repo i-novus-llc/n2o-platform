@@ -17,12 +17,9 @@ import java.util.Date;
 @Validated
 public class SomeModel {
     private Long id;
-    @NotBlank
-    private String name;
-    @Past
-    private Date date;
-    @Past
-    private LocalDateTime dateEnd;
+    private @NotBlank String name;
+    private @Past Date date;
+    private @Past LocalDateTime dateEnd;
 
     public SomeModel() {
     }

@@ -46,33 +46,5 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-core</artifactId>
-            <version>9.6.0</version>
-            <optional>true</optional>
-        </dependency>
-
-        <!--TEST-->
-
-        <dependency>
-            <groupId>net.n2oapp.platform</groupId>
-            <artifactId>n2o-platform-starter-feign-client</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>net.n2oapp.platform</groupId>
-            <artifactId>n2o-platform-jaxrs-autoconfigure</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-jaxrs</artifactId>
-            <version>9.6.0</version>
-        </dependency>
-
     </dependencies>
-
 </project>

@@ -1,7 +1,6 @@
 package net.n2oapp.platform.security;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -35,7 +34,7 @@ import static org.hamcrest.Matchers.notNullValue;
  * Тесты чтения токена jwt и аутентификации
  */
 @RunWith(SpringRunner.class)
-@SpringBootApplication(exclude = CxfAutoConfiguration.class)
+@SpringBootApplication
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         classes = OAuth2ClientTest.class,
         properties = {"n2o.platform.security.key-set-uri=http://localhost:8787/auth/certs",
