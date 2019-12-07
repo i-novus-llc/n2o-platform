@@ -1,36 +1,44 @@
 package net.n2oapp.platform.loader.server;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Общие настройки серверных загрузчиков
+ * Настройки серверного загрузчика
  */
-@ConfigurationProperties(prefix = "n2o.loader.server")
-public class ServerLoaderProperties {
+public class ServerLoaderSettings {
 
     /**
-     * Очередь загрузчиков
+     * Вид данных
      */
-    private final List<ServerLoaderSettings> settings = new ArrayList<>();
+    private String target;
 
     /**
      * Сохранение данных
      */
-    private boolean createRequired = true;
+    private boolean createRequired;
 
     /**
      * Обновление данных
      */
-    private boolean updateRequired = true;
+    private boolean updateRequired;
 
     /**
      * Удаление данных
      */
-    private boolean deleteRequired = true;
+    private boolean deleteRequired;
 
+
+    public ServerLoaderSettings(String target) {
+        this.target = target;
+        this.createRequired = true;
+        this.updateRequired = true;
+        this.deleteRequired = true;
+    }
+
+    public ServerLoaderSettings(String target, boolean createRequired, boolean updateRequired, boolean deleteRequired) {
+        this.target = target;
+        this.createRequired = createRequired;
+        this.updateRequired = updateRequired;
+        this.deleteRequired = deleteRequired;
+    }
 
     public boolean isCreateRequired() {
         return createRequired;
@@ -56,7 +64,7 @@ public class ServerLoaderProperties {
         this.deleteRequired = deleteRequired;
     }
 
-    public List<ServerLoaderSettings> getSettings() {
-        return settings;
+    public String getTarget() {
+        return target;
     }
 }
