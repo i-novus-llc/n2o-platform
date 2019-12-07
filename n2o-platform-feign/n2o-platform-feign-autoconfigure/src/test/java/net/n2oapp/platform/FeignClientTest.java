@@ -59,7 +59,7 @@ public class FeignClientTest {
     @Autowired
     private SomeFeignClient client;
 
-    private static final String jwt = "aejo8hboejazpgauhp2mrejhjopahuipizdaskovorodagsfdho25pjigrpher";
+    private static final String jwt = "Test_token";
 
     @Before
     public void setUp() {
