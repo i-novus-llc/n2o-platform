@@ -5,12 +5,13 @@ import feign.RequestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.Collections;
 
-@Component
+/**
+ * Добавление токена в заголовки реквестов при использовании Feign
+ */
 public class FeignJwtHeaderInterceptor implements RequestInterceptor {
 
     @Autowired(required = false)

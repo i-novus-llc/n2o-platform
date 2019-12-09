@@ -71,6 +71,12 @@ public class FeignClientAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean
+    public FeignJwtHeaderInterceptor feignJwtHeaderInterceptor() {
+        return new FeignJwtHeaderInterceptor();
+    }
+
+    @Bean
     @Scope("prototype")
     public Feign.Builder feignBuilder(Retryer retryer, feign.Client client) {
         return JAXRS2Profile.create().client(client).retryer(retryer);
