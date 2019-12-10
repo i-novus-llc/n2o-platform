@@ -2,7 +2,6 @@ package net.n2oapp.platform.feign.autoconfigure;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.util.StringUtils;
@@ -14,8 +13,11 @@ import java.util.Collections;
  */
 public class FeignJwtHeaderInterceptor implements RequestInterceptor {
 
-    @Autowired(required = false)
     private OAuth2ClientContext oauth2ClientContext;
+
+    public FeignJwtHeaderInterceptor(OAuth2ClientContext oauth2ClientContext) {
+        this.oauth2ClientContext = oauth2ClientContext;
+    }
 
     @Override
     public void apply(RequestTemplate requestTemplate) {
