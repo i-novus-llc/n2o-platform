@@ -72,11 +72,15 @@ public class FeignClientAutoConfiguration {
         return Retryer.NEVER_RETRY;
     }
 
-    @Bean
-    @ConditionalOnMissingBean
+    @Configuration
     @ConditionalOnClass(OAuth2ClientContext.class)
-    public FeignJwtHeaderInterceptor feignJwtHeaderInterceptor(OAuth2ClientContext oAuth2ClientContext) {
-        return new FeignJwtHeaderInterceptor(oAuth2ClientContext);
+    public static class FeignJwtHeaderInterceptorConfig {
+        @Bean
+        @ConditionalOnMissingBean
+        public FeignJwtHeaderInterceptor feignJwtHeaderInterceptor(OAuth2ClientContext oAuth2ClientContext) {
+            return new FeignJwtHeaderInterceptor(oAuth2ClientContext);
+        }
+
     }
 
     @Bean
