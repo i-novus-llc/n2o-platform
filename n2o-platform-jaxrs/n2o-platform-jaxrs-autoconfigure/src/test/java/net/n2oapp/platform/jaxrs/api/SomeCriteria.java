@@ -9,7 +9,8 @@ import javax.ws.rs.QueryParam;
 import java.time.LocalDateTime;
 import java.util.Date;
 
-@Getter @Setter
+@Getter
+@Setter
 public class SomeCriteria extends RestCriteria {
     @QueryParam("name")
     private String likeName;

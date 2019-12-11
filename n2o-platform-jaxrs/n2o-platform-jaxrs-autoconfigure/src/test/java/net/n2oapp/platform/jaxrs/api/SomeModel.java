@@ -12,7 +12,8 @@ import java.util.Date;
 /**
  * Модель данных, используемая в демонстрационном REST сервисе
  */
-@Getter @Setter
+@Getter
+@Setter
 @Validated
 public class SomeModel {
     private Long id;
@@ -20,7 +21,8 @@ public class SomeModel {
     private @Past Date date;
     private @Past LocalDateTime dateEnd;
 
-    public SomeModel() { }
+    public SomeModel() {
+    }
 
     public SomeModel(Long id) {
         this.id = id;

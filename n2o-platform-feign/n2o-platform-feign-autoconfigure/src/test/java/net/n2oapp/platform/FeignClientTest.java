@@ -6,18 +6,23 @@ import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.*;
 import net.n2oapp.platform.jaxrs.api.*;
 import net.n2oapp.platform.jaxrs.impl.SomeRestImpl;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.lang.reflect.Method;
@@ -36,7 +41,7 @@ import static org.junit.Assert.fail;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = SecurityAutoConfiguration.class)
 @EnableFeignClients
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = FeignClientTest.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
@@ -48,8 +53,20 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
                 "org.apache.cxf.jaxrs.validation"})
 public class FeignClientTest {
 
+    @MockBean
+    private OAuth2ClientContext oAuth2ClientContext;
+
     @Autowired
     private SomeFeignClient client;
+
+    private static final String jwt = "Test_token";
+
+    @Before
+    public void setUp() {
+        DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken(jwt);
+        token.setTokenType("Bearer");
+        Mockito.when(oAuth2ClientContext.getAccessToken()).thenReturn(token);
+    }
 
     /**
      * Проверка, что REST прокси клиент обрабатывает Pageable параметры и параметры фильтрации.
@@ -178,6 +195,11 @@ public class FeignClientTest {
             List<String> errorTextList = restException.getErrors().stream().map(RestMessage.Error::getMessage).collect(Collectors.toList());
             assertThat(errorTextList, anyOf(hasItems("Ошибка пользователя раз", "Ошибка пользователя два", "Другая ошибка пользователя"), hasItems("user.error1", "user.error1", "user.error2")));
         }
+    }
+
+    @Test
+    public void testAuthorization() {
+        assertThat(client.authHeader().get("Authorization"), is("Bearer " + jwt));
     }
 
     @Configuration

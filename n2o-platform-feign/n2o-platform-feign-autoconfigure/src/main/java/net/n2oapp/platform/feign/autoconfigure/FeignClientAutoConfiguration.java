@@ -24,6 +24,7 @@ import org.springframework.cloud.openfeign.ribbon.FeignRibbonClientAutoConfigura
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
 
 import java.util.List;
 
@@ -65,9 +66,21 @@ public class FeignClientAutoConfiguration {
         return new JAXRSContract();
     }
 
+
     @Bean
     public Retryer feignRetryer() {
         return Retryer.NEVER_RETRY;
+    }
+
+    @Configuration
+    @ConditionalOnClass(OAuth2ClientContext.class)
+    public static class FeignJwtHeaderInterceptorConfig {
+        @Bean
+        @ConditionalOnMissingBean
+        public FeignJwtHeaderInterceptor feignJwtHeaderInterceptor(OAuth2ClientContext oAuth2ClientContext) {
+            return new FeignJwtHeaderInterceptor(oAuth2ClientContext);
+        }
+
     }
 
     @Bean

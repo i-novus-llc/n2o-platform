@@ -64,7 +64,6 @@ public class OAuth2ClientTest {
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().port(8787));
 
-
     /**
      * Тест чтения токена через {@link TokenStore}
      */
