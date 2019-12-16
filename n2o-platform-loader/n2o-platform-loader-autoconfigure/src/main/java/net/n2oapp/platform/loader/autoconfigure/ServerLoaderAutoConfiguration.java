@@ -9,7 +9,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
@@ -22,17 +21,6 @@ import java.util.stream.Collectors;
 @EnableConfigurationProperties(ServerLoaderProperties.class)
 public class ServerLoaderAutoConfiguration {
 
-    @Autowired
-    private ServerLoaderProperties serverLoaderProperties;
-    private Map<String, ServerLoaderSettings> settingsByTarget;
-
-    @PostConstruct
-    public void init() {
-        settingsByTarget = (serverLoaderProperties == null) ? new HashMap<>() :
-                serverLoaderProperties.getSettings().stream()
-                        .collect(Collectors.toMap(ServerLoaderSettings::getTarget, s -> s));
-    }
-
     @Bean
     @ConditionalOnMissingBean
     public ServerLoaderRunner jsonLoaderRunner(List<ServerLoader> loaders,
@@ -43,8 +31,20 @@ public class ServerLoaderAutoConfiguration {
         return runner;
     }
 
-    @Component
+    @Configuration
     class ServerLoaderPostProcessorImpl implements BeanPostProcessor {
+
+        @Autowired
+        private ServerLoaderProperties serverLoaderProperties;
+        private Map<String, ServerLoaderSettings> settingsByTarget;
+
+        @PostConstruct
+        public void init() {
+            settingsByTarget = (serverLoaderProperties == null) ? new HashMap<>() :
+                    serverLoaderProperties.getSettings().stream()
+                            .collect(Collectors.toMap(ServerLoaderSettings::getTarget, s -> s));
+        }
+
         @Override
         public Object postProcessBeforeInitialization(Object bean, String beanName) {
             if (bean instanceof BaseServerLoader) {

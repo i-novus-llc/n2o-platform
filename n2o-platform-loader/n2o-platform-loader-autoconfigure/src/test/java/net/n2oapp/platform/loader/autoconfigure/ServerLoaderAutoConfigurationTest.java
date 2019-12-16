@@ -40,11 +40,11 @@ public class ServerLoaderAutoConfigurationTest {
         this.contextRunner
                 .withUserConfiguration(TestServerConfiguration.class)
                 .withPropertyValues(
-                        "n2o.loader.server.settings[0].target=load3",
+                        "n2o.loader.server.settings[0].target=load1",
                         "n2o.loader.server.settings[0].create-required=true",
                         "n2o.loader.server.settings[0].update-required=false",
                         "n2o.loader.server.settings[0].delete-required=false",
-                        "n2o.loader.server.settings[1].target=load4",
+                        "n2o.loader.server.settings[1].target=load2",
                         "n2o.loader.server.settings[1].create-required=false",
                         "n2o.loader.server.settings[1].update-required=false",
                         "n2o.loader.server.settings[1].delete-required=true")
