@@ -34,4 +34,24 @@ public class ServerLoaderAutoConfigurationTest {
                     assertThat(runner.getLoaders().size()).isEqualTo(2);
                 });
     }
+
+    @Test
+    public void settings() {
+        this.contextRunner
+                .withUserConfiguration(TestServerConfiguration.class)
+                .withPropertyValues(
+                        "n2o.loader.server.settings[0].target=load3",
+                        "n2o.loader.server.settings[0].create-required=true",
+                        "n2o.loader.server.settings[0].update-required=false",
+                        "n2o.loader.server.settings[0].delete-required=false",
+                        "n2o.loader.server.settings[1].target=load4",
+                        "n2o.loader.server.settings[1].create-required=false",
+                        "n2o.loader.server.settings[1].update-required=false",
+                        "n2o.loader.server.settings[1].delete-required=true")
+                .run((context) -> {
+                    assertThat(context).hasSingleBean(JsonLoaderRunner.class);
+                    JsonLoaderRunner runner = context.getBean(JsonLoaderRunner.class);
+                    assertThat(runner.getLoaders().size()).isEqualTo(2);
+                });
+    }
 }

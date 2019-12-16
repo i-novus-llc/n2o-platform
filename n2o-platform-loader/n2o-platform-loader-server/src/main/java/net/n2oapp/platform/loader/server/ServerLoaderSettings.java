@@ -26,6 +26,9 @@ public class ServerLoaderSettings {
     private boolean deleteRequired;
 
 
+    public ServerLoaderSettings() {
+    }
+
     public ServerLoaderSettings(String target) {
         this.target = target;
         this.createRequired = true;
@@ -66,5 +69,9 @@ public class ServerLoaderSettings {
 
     public String getTarget() {
         return target;
+    }
+
+    public void setTarget(String target) {
+        this.target = target;
     }
 }
