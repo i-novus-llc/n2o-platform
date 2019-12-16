@@ -2,7 +2,6 @@ package net.n2oapp.platform.loader.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.n2oapp.platform.loader.server.*;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -47,7 +46,7 @@ public class ServerLoaderAutoConfiguration {
     @Component
     class ServerLoaderPostProcessorImpl implements BeanPostProcessor {
         @Override
-        public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        public Object postProcessBeforeInitialization(Object bean, String beanName) {
             if (bean instanceof BaseServerLoader) {
                 ServerLoaderSettings serverLoaderSettings = settingsByTarget.get(((BaseServerLoader) bean).getTarget());
                 if (serverLoaderSettings != null) {
