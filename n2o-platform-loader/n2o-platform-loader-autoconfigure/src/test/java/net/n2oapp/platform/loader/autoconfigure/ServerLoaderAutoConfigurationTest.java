@@ -60,24 +60,15 @@ public class ServerLoaderAutoConfigurationTest {
                     List<ServerLoader> loaders = new ArrayList<>(runner.getLoaders());
                     assertThat(loaders.size()).isEqualTo(2);
 
-                    Map<String, boolean[]> expectedResult = Map.of(
-                            "load1", new boolean[]{true, false, false},
-                            "load2", new boolean[]{false, false, true}
-                    );
+                    TestServerConfiguration.MyLoader1 loader1 = context.getBean(TestServerConfiguration.MyLoader1.class);
+                    assertThat(loader1.isCreateRequired()).isEqualTo(true);
+                    assertThat(loader1.isUpdateRequired()).isEqualTo(false);
+                    assertThat(loader1.isDeleteRequired()).isEqualTo(false);
 
-                    BaseServerLoader serverLoader = (BaseServerLoader) loaders.get(0);
-                    assertThat(expectedResult.containsKey(serverLoader.getTarget())).isEqualTo(true);
-                    boolean[] settings = expectedResult.get(serverLoader.getTarget());
-                    assertThat(serverLoader.isCreateRequired()).isEqualTo(settings[0]);
-                    assertThat(serverLoader.isUpdateRequired()).isEqualTo(settings[1]);
-                    assertThat(serverLoader.isDeleteRequired()).isEqualTo(settings[2]);
-
-                    serverLoader = (BaseServerLoader) loaders.get(1);
-                    assertThat(expectedResult.containsKey(serverLoader.getTarget())).isEqualTo(true);
-                    settings = expectedResult.get(serverLoader.getTarget());
-                    assertThat(serverLoader.isCreateRequired()).isEqualTo(settings[0]);
-                    assertThat(serverLoader.isUpdateRequired()).isEqualTo(settings[1]);
-                    assertThat(serverLoader.isDeleteRequired()).isEqualTo(settings[2]);
+                    TestServerConfiguration.MyLoader2 loader2 = context.getBean(TestServerConfiguration.MyLoader2.class);
+                    assertThat(loader2.isCreateRequired()).isEqualTo(false);
+                    assertThat(loader2.isUpdateRequired()).isEqualTo(false);
+                    assertThat(loader2.isDeleteRequired()).isEqualTo(true);
                 });
     }
 }
