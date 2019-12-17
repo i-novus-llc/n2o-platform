@@ -1,12 +1,14 @@
 package net.n2oapp.platform.loader.server.repository;
 
-import net.n2oapp.platform.loader.server.ServerLoader;
+import net.n2oapp.platform.loader.server.BaseServerLoader;
+import net.n2oapp.platform.loader.server.EntityIdentifier;
+import net.n2oapp.platform.loader.server.SubjectFilter;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.lang.Nullable;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -14,12 +16,11 @@ import java.util.stream.Collectors;
  *
  * @param <M> Тип модели
  * @param <E> Тип сущности
+ * @param <ID> Тип идентификатора сущности
  */
-public abstract class RepositoryServerLoader<M, E, ID> implements ServerLoader<M> {
+public abstract class RepositoryServerLoader<M, E, ID> extends BaseServerLoader<M, E, ID> {
     private CrudRepository<E, ID> repository;
     private LoaderMapper<M, E> mapper;
-    private SubjectFilter<E> filter;
-    private EntityIdentifier<E, ID> identifier;
 
     /**
      * Конструктор серверного загрузчика данных с удаленим устаревших.
@@ -33,10 +34,9 @@ public abstract class RepositoryServerLoader<M, E, ID> implements ServerLoader<M
                                   LoaderMapper<M, E> mapper,
                                   @Nullable SubjectFilter<E> filter,
                                   @Nullable EntityIdentifier<E, ID> identifier) {
-        this.mapper = mapper;
+        super(filter, identifier);
         this.repository = repository;
-        this.filter = filter;
-        this.identifier = identifier;
+        this.mapper = mapper;
     }
 
     /**
@@ -51,34 +51,34 @@ public abstract class RepositoryServerLoader<M, E, ID> implements ServerLoader<M
     }
 
     @Override
-    @Transactional
-    public void load(List<M> data, String subject) {
-        List<E> fresh = map(data, subject);
-        save(fresh);
-        delete(fresh, subject);
-    }
-
-    protected List<E> map(List<M> data, String subject) {
-        List<E> fresh = new ArrayList<>();
-        for (M model : data) {
+    protected List<E> map(List<M> models, String subject) {
+        List<E> entities = new ArrayList<>();
+        for (M model : models) {
             E entity = mapper.map(model, subject);
-            fresh.add(entity);
+            entities.add(entity);
         }
-        return fresh;
+        return entities;
     }
 
-    protected void save(List<E> fresh) {
-        repository.saveAll(fresh);
+    @Override
+    protected void create(List<E> entities) {
+        repository.saveAll(entities);
     }
 
-    protected void delete(List<E> loaded, String subject) {
-        if (filter == null || identifier == null)
+    @Override
+    protected void update(List<E> entities) {
+        repository.saveAll(entities);
+    }
+
+    @Override
+    protected void delete(List<E> entities, String subject) {
+        if (getFilter() == null || getIdentifier() == null)
             return;
-        List<ID> fresh = loaded.stream().map(identifier::identify).collect(Collectors.toList());
-        List<E> old = filter.findAllBySubject(subject);
+        Set<ID> fresh = entities.stream().map(getIdentifier()::identify).collect(Collectors.toSet());
+        List<E> old = getFilter().findAllBySubject(subject);
         List<E> unused = new ArrayList<>();
         for (E entity : old) {
-            if (!fresh.contains(identifier.identify(entity)))
+            if (!fresh.contains(getIdentifier().identify(entity)))
                 unused.add(entity);
         }
         repository.deleteAll(unused);

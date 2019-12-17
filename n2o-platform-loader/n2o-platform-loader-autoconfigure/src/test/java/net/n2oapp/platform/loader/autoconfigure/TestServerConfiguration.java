@@ -1,7 +1,6 @@
 package net.n2oapp.platform.loader.autoconfigure;
 
-import net.n2oapp.platform.loader.server.ServerLoader;
-import net.n2oapp.platform.loader.server.ServerLoaderRunner;
+import net.n2oapp.platform.loader.server.BaseServerLoader;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
@@ -11,9 +10,18 @@ import java.util.List;
 public class TestServerConfiguration {
 
     @Component
-    static class MyLoader1 implements ServerLoader<Object> {
+    static class MyLoader1 extends BaseServerLoader<Object, Object, Object> {
         @Override
-        public void load(List<Object> data, String subject) {}
+        protected List map(List models, String subject) { return null; }
+
+        @Override
+        protected void create(List entities) {}
+
+        @Override
+        protected void update(List entities) {}
+
+        @Override
+        protected void delete(List entities, String subject) {}
 
         @Override
         public String getTarget() {
@@ -27,9 +35,18 @@ public class TestServerConfiguration {
     }
 
     @Component
-    static class MyLoader2 implements ServerLoader<Object> {
+    static class MyLoader2 extends BaseServerLoader<Object, Object, Object> {
         @Override
-        public void load(List<Object> data, String subject) {}
+        protected List map(List models, String subject) { return null; }
+
+        @Override
+        protected void create(List entities) {}
+
+        @Override
+        protected void update(List entities) {}
+
+        @Override
+        protected void delete(List entities, String subject) {}
 
         @Override
         public String getTarget() {
