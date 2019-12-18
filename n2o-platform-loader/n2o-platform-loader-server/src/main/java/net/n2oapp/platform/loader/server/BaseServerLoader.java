@@ -34,11 +34,11 @@ public abstract class BaseServerLoader<M, E> extends ServerLoaderSettings<M> imp
                     entitiesForDelete.add(entity);
             }
 
-        if (isCreateRequired() && !entitiesForCreate.isEmpty())
+        if (isCreateRequired())
             create(entitiesForCreate);
-        if (isUpdateRequired() && !entitiesForUpdate.isEmpty())
+        if (isUpdateRequired())
             update(entitiesForUpdate);
-        if (isDeleteRequired() && !entitiesForDelete.isEmpty())
+        if (isDeleteRequired())
             delete(entitiesForDelete);
     }
 
