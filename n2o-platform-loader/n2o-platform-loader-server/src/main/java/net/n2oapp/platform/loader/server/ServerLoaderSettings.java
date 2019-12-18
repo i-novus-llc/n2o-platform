@@ -3,27 +3,32 @@ package net.n2oapp.platform.loader.server;
 /**
  * Настройки серверного загрузчика
  */
-public class ServerLoaderSettings {
+public class ServerLoaderSettings<T> implements LoaderDataInfo<T> {
 
     /**
-     * Вид данных
+     * Цель загрузки
      */
     private String target;
 
     /**
+     * Тип данных
+     */
+    private Class<T> dataType;
+
+    /**
      * Сохранение данных
      */
-    private boolean createRequired;
+    private boolean createRequired = true;
 
     /**
      * Обновление данных
      */
-    private boolean updateRequired;
+    private boolean updateRequired = true;
 
     /**
      * Удаление данных
      */
-    private boolean deleteRequired;
+    private boolean deleteRequired = true;
 
 
     public ServerLoaderSettings() {
@@ -31,16 +36,6 @@ public class ServerLoaderSettings {
 
     public ServerLoaderSettings(String target) {
         this.target = target;
-        this.createRequired = true;
-        this.updateRequired = true;
-        this.deleteRequired = true;
-    }
-
-    public ServerLoaderSettings(String target, boolean createRequired, boolean updateRequired, boolean deleteRequired) {
-        this.target = target;
-        this.createRequired = createRequired;
-        this.updateRequired = updateRequired;
-        this.deleteRequired = deleteRequired;
     }
 
     public boolean isCreateRequired() {
@@ -73,5 +68,14 @@ public class ServerLoaderSettings {
 
     public void setTarget(String target) {
         this.target = target;
+    }
+
+    @Override
+    public Class<T> getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(Class<T> dataType) {
+        this.dataType = dataType;
     }
 }

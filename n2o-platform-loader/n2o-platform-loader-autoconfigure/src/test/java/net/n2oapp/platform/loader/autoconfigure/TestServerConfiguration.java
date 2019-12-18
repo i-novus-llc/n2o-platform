@@ -10,18 +10,18 @@ import java.util.List;
 public class TestServerConfiguration {
 
     @Component
-    static class MyLoader1 extends BaseServerLoader<Object, Object, Object> {
+    static class MyLoader1 extends BaseServerLoader<Object, Object> {
         @Override
-        protected List map(List models, String subject) { return null; }
+        protected List<Object> map(List<Object> models, String subject) { return null; }
 
         @Override
-        protected void create(List entities) {}
+        protected void create(List<Object> entities) {}
 
         @Override
-        protected void update(List entities) {}
+        protected void update(List<Object> entities) {}
 
         @Override
-        protected void delete(List entities, String subject) {}
+        protected void delete(List<Object> entities) {}
 
         @Override
         public String getTarget() {
@@ -35,18 +35,18 @@ public class TestServerConfiguration {
     }
 
     @Component
-    static class MyLoader2 extends BaseServerLoader<Object, Object, Object> {
+    static class MyLoader2 extends BaseServerLoader<Object, Object> {
         @Override
-        protected List map(List models, String subject) { return null; }
+        protected List<Object> map(List<Object> models, String subject) { return null; }
 
         @Override
-        protected void create(List entities) {}
+        protected void create(List<Object> entities) {}
 
         @Override
-        protected void update(List entities) {}
+        protected void update(List<Object> entities) {}
 
         @Override
-        protected void delete(List entities, String subject) {}
+        protected void delete(List<Object> entities) {}
 
         @Override
         public String getTarget() {

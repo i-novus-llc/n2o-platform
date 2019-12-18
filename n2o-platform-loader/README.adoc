@@ -226,21 +226,105 @@ public Class<PermissionModel> getDataType() {
 }
 ----
 
-Если данные загружаются через Spring Data, можно использовать класс `RepositoryServerLoader<M, E, ID>`:
+Для упрощения реализации создания, изменения, удаления данных существует абстрактный класс
+`BaseServerLoader`:
+
+[source,java]
+----
+@Component
+class PermissionServerLoader extends BaseServerLoader<PermissionModel, PermissionEntity> {
+  @Autowired
+  private PermissionRepository repository;
+
+  @Override
+  protected void create(List<PermissionEntity> entities) {
+      repository.saveAll(entities);
+  }
+
+  @Override
+  protected void update(List<PermissionEntity> entities) {
+      repository.saveAll(entities);
+  }
+
+  @Override
+  protected void delete(List<PermissionEntity> entities) {
+      repository.deleteAll(entities);
+  }
+
+  ...
+}
+----
+
+Для его работы требуется реализовать абстрактные методы:
+
+- `map` Маппинг данных из модели в сущность (обязательный);
+- `findAllBySubject` Получение всех текущих данных по владельцу (опционально);
+- `contains` Сравнение сущностей по идентификаторам (опционально).
+
+Пример реализации `map`:
+[source,java]
+----
+@Override
+protected List<PermissionEntity> map(List<PermissionModel> models, String subject) {
+    List<TestEntity> entities = new ArrayList<>();
+    for (TestModel model : models) {
+        PermissionEntity entity = new PermissionEntity();
+        entity.setCode(model.getCode());
+        entity.setName(model.getName());
+        entity.setSystem(subject);
+        entities.add(entity);
+    }
+    return entities;
+}
+----
+
+Пример реализации `findAllBySubject`:
+[source,java]
+----
+@Override
+protected List<PermissionEntity> findAllBySubject(String subject) {
+    return repository.findAllBySystem(subject);
+}
+----
+
+Пример реализации `contains`:
+[source,java]
+----
+@Override
+protected boolean contains(List<PermissionEntity> entities, PermissionEntity candidate) {
+    for (PermissionEntity entity : entities) {
+        if (entity.getCode().equals(candidate.getCode()))
+            return true;
+    }
+    return false;
+}
+----
+
+Если данные загружаются через Spring Data, можно использовать готовый класс
+`RepositoryServerLoader<M, E, ID>`:
 
 [source,java]
 ----
 class PermissionServerLoader extends RepositoryServerLoader<PermissionModel, PermissionEntity, String> {
-    public PermissionServerLoader(CrudRepository<PermissionEntity, String> repository,
-                                  LoaderMapper<PermissionModel, PermissionEntity> mapper,
-                                  @Nullable SubjectFilter<PermissionEntity> filter,
-                                  @Nullable EntityIdentifier<String> identifier) {
-        super(mapper, repository, filter, identifier);
+    public PermissionServerLoader(PermissionRepository repository) {
+        super(repository,
+              new PermissionLoaderMapper(),
+              repository::findAllByClient,
+              PermissionEntity::getCode);
     }
+
+    ...
 }
 ----
 
-Для работы `RepositoryServerLoader` требуется реализовать маппинг данных из модели в сущность `LoaderMapper<M, E>`:
+Для его работы требуется реализовать следующие интерфейсы:
+
+- `LoaderMapper<M, E>` Маппинг из модели в сущность (обязательно);
+- `SubjectFilter<E>` Фильтрация записей по владельцу (опционально);
+- `EntityIdentifier<ID>` Получение идентификатора сущности (опционально).
+
+
+Пример реализации `LoaderMapper<M, E>`:
 
 [source,java]
 ----
@@ -252,23 +336,6 @@ class PermissionLoaderMapper implements LoaderMapper<PermissionModel, Permission
         entity.setSystem(subject);
         return entity;
     }
-}
-----
-
-Если требуется удалять устаревшие данные, нужно задать еще два метода:
-
-- `SubjectFilter<E>` фильтрация записей по владельцу;
-- `EntityIdentifier<ID>` получения идентификатора сущности;
-
-Реализовать их можно как ссылки на существующие методы:
-
-[source,java]
-----
-@Bean
-PermissionServerLoader permissionServerLoader(PermissionRepository repository) {
-    return new PermissionServerLoader(repository, new PermissionLoaderMapper(),
-                    repository::findAllBySystem,
-                    PermissionEntity::getCode);
 }
 ----
 
@@ -295,5 +362,42 @@ private ServerLoaderRunner runner;
 
 public void loadRdmPermissions(InputStream data) {
   runner.run("rdm", "permissions", data);
+}
+----
+
+=== Кастомизация
+
+Можно настраивать необходимость создания, изменения, удаления данных
+для каждого загрузчика (если они расширяют `BaseServerLoader`) в файле `application.yml`:
+
+----
+n2o.loader.server:
+  settings:
+    - target: permissions
+      create-required: true
+      update-required: true
+      delete-required: false
+----
+
+.Настройки
+[cols="1,1,2"]
+|===
+|Код|Значение|Описание
+
+|settings
+|ServerLoaderSetting
+|Список настроек серверных загрузчиков
+|===
+
+Можно настраивать запускателей серверных загрузчиков через класс `ServerLoaderConfigurer`:
+
+[source,java]
+----
+@Configuration
+class ServerLoaderConfiguration implements ServerLoaderConfigurer {
+  @Override
+  public void configure(ServerLoaderRunner runner) {
+      ...
+  }
 }
 ----

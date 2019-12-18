@@ -1,12 +1,13 @@
-package net.n2oapp.platform.loader.server;
+package net.n2oapp.platform.loader.autoconfigure;
 
+import net.n2oapp.platform.loader.server.ServerLoaderSettings;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Общие настройки серверных загрузчиков
+ * Настройки серверных загрузчиков
  */
 @ConfigurationProperties(prefix = "n2o.loader.server")
 public class ServerLoaderProperties {
