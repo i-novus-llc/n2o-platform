@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Настройки клиентского загрузчика
+ * Настройки клиентских загрузчиков
  */
 @ConfigurationProperties(prefix = "n2o.loader.client")
 public class ClientLoaderProperties {

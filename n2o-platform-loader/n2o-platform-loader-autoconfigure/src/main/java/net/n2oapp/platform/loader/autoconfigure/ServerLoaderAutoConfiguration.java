@@ -32,7 +32,7 @@ public class ServerLoaderAutoConfiguration {
     }
 
     @Configuration
-    class ServerLoaderPostProcessorImpl implements BeanPostProcessor {
+    static class ServerLoaderPostProcessorImpl implements BeanPostProcessor {
 
         @Autowired
         private ServerLoaderProperties serverLoaderProperties;
@@ -47,12 +47,13 @@ public class ServerLoaderAutoConfiguration {
 
         @Override
         public Object postProcessBeforeInitialization(Object bean, String beanName) {
-            if (bean instanceof BaseServerLoader) {
-                ServerLoaderSettings serverLoaderSettings = settingsByTarget.get(((BaseServerLoader) bean).getTarget());
-                if (serverLoaderSettings != null) {
-                    ((BaseServerLoader) bean).setCreateRequired(serverLoaderSettings.isCreateRequired());
-                    ((BaseServerLoader) bean).setUpdateRequired(serverLoaderSettings.isUpdateRequired());
-                    ((BaseServerLoader) bean).setDeleteRequired(serverLoaderSettings.isDeleteRequired());
+            if (bean instanceof ServerLoaderSettings) {
+                ServerLoaderSettings loader = (ServerLoaderSettings) bean;
+                ServerLoaderSettings settings = settingsByTarget.get(loader.getTarget());
+                if (settings != null) {
+                    loader.setCreateRequired(settings.isCreateRequired());
+                    loader.setUpdateRequired(settings.isUpdateRequired());
+                    loader.setDeleteRequired(settings.isDeleteRequired());
                 }
             }
             return bean;

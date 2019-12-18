@@ -1,12 +1,11 @@
 package net.n2oapp.platform.loader.server.repository;
 
 import net.n2oapp.platform.loader.server.BaseServerLoader;
-import net.n2oapp.platform.loader.server.EntityIdentifier;
-import net.n2oapp.platform.loader.server.SubjectFilter;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.lang.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,9 +17,11 @@ import java.util.stream.Collectors;
  * @param <E> Тип сущности
  * @param <ID> Тип идентификатора сущности
  */
-public abstract class RepositoryServerLoader<M, E, ID> extends BaseServerLoader<M, E, ID> {
+public abstract class RepositoryServerLoader<M, E, ID> extends BaseServerLoader<M, E> {
     private CrudRepository<E, ID> repository;
     private LoaderMapper<M, E> mapper;
+    private SubjectFilter<E> filter;
+    private EntityIdentifier<E, ID> identifier;
 
     /**
      * Конструктор серверного загрузчика данных с удаленим устаревших.
@@ -34,9 +35,10 @@ public abstract class RepositoryServerLoader<M, E, ID> extends BaseServerLoader<
                                   LoaderMapper<M, E> mapper,
                                   @Nullable SubjectFilter<E> filter,
                                   @Nullable EntityIdentifier<E, ID> identifier) {
-        super(filter, identifier);
         this.repository = repository;
         this.mapper = mapper;
+        this.filter = filter;
+        this.identifier = identifier;
     }
 
     /**
@@ -61,6 +63,28 @@ public abstract class RepositoryServerLoader<M, E, ID> extends BaseServerLoader<
     }
 
     @Override
+    protected List<E> findAllBySubject(String subject) {
+        if (filter != null)
+            return filter.findAllBySubject(subject);
+        else
+            return super.findAllBySubject(subject);
+    }
+
+    @Override
+    protected boolean contains(List<E> entities, E candidate) {
+        if (identifier != null) {
+            ID candidateId = identifier.identify(candidate);
+            for (E entity : entities) {
+                if (identifier.identify(entity).equals(candidateId))
+                    return true;
+            }
+            return false;
+        } else {
+            return super.contains(entities, candidate);
+        }
+    }
+
+    @Override
     protected void create(List<E> entities) {
         repository.saveAll(entities);
     }
@@ -71,20 +95,7 @@ public abstract class RepositoryServerLoader<M, E, ID> extends BaseServerLoader<
     }
 
     @Override
-    protected void delete(List<E> entities, String subject) {
-        if (getFilter() == null || getIdentifier() == null)
-            return;
-        Set<ID> fresh = entities.stream().map(getIdentifier()::identify).collect(Collectors.toSet());
-        List<E> old = getFilter().findAllBySubject(subject);
-        List<E> unused = new ArrayList<>();
-        for (E entity : old) {
-            if (!fresh.contains(getIdentifier().identify(entity)))
-                unused.add(entity);
-        }
-        repository.deleteAll(unused);
-    }
-
-    public CrudRepository<E, ID> getRepository() {
-        return repository;
+    protected void delete(List<E> entities) {
+        repository.deleteAll(entities);
     }
 }

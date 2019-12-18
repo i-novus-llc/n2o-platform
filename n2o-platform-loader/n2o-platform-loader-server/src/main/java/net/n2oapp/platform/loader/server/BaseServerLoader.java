@@ -1,107 +1,65 @@
 package net.n2oapp.platform.loader.server;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
- * Серверный загрузчик данных
+ * Базовый серверный загрузчик данных
  *
  * @param <M>  Тип модели
  * @param <E>  Тип сущности
  */
-public abstract class BaseServerLoader<M, E, ID> implements ServerLoader<M> {
+public abstract class BaseServerLoader<M, E> extends ServerLoaderSettings<M> implements ServerLoader<M> {
 
-    /**
-     * Фильтр по владельцу
-     */
-    private SubjectFilter<E> filter;
+    @Transactional
+    public void load(List<M> data, String subject) {
+        List<E> fresh = map(data, subject);
+        List<E> old = findAllBySubject(subject);
+        List<E> entitiesForCreate = new ArrayList<>();
+        List<E> entitiesForUpdate = new ArrayList<>();
+        List<E> entitiesForDelete = new ArrayList<>();
 
-    /**
-     * Идентификатор сущности
-     */
-    private EntityIdentifier<E, ID> identifier;
-
-    /**
-     *  Сохранение данных
-     */
-    private boolean createRequired = true;
-    /**
-     *  Обновление данных
-     */
-    private boolean updateRequired = true;
-    /**
-     *  Удаление данных
-     */
-    private boolean deleteRequired = true;
-
-
-    public BaseServerLoader() {
-    }
-
-    public BaseServerLoader(SubjectFilter<E> filter, EntityIdentifier<E, ID> identifier) {
-        this.filter = filter;
-        this.identifier = identifier;
-    }
-
-    public boolean isCreateRequired() {
-        return createRequired;
-    }
-
-    public boolean isUpdateRequired() {
-        return updateRequired;
-    }
-
-    public boolean isDeleteRequired() {
-        return deleteRequired;
-    }
-
-    public void setCreateRequired(boolean createRequired) {
-        this.createRequired = createRequired;
-    }
-
-    public void setUpdateRequired(boolean updateRequired) {
-        this.updateRequired = updateRequired;
-    }
-
-    public void setDeleteRequired(boolean deleteRequired) {
-        this.deleteRequired = deleteRequired;
-    }
-
-    public SubjectFilter<E> getFilter() {
-        return filter;
-    }
-
-    public EntityIdentifier<E, ID> getIdentifier() {
-        return identifier;
-    }
-
-    public void load(List data, String subject) {
-        List<E> entities = map(data, subject);
-
-        if (filter == null || identifier == null) {
-            update(entities);
-        } else {
-            List<E> created = new ArrayList<>();
-            List<E> updated = new ArrayList<>();
-            Set<ID> oldIds = filter.findAllBySubject(subject).stream().map(identifier::identify).collect(Collectors.toSet());
-
-            for (E entity : entities) {
-                if (oldIds.contains(identifier.identify(entity)))
-                    updated.add(entity);
-                else
-                    created.add(entity);
+        for (E entity : fresh) {
+            if (contains(old, entity))
+                entitiesForUpdate.add(entity);
+            else
+                entitiesForCreate.add(entity);
+        }
+        if (isDeleteRequired())
+            for (E entity : old) {
+                if (!contains(fresh, entity))
+                    entitiesForDelete.add(entity);
             }
 
-            if (isCreateRequired())
-                create(created);
-            if (isUpdateRequired())
-                update(updated);
-        }
+        if (isCreateRequired() && !entitiesForCreate.isEmpty())
+            create(entitiesForCreate);
+        if (isUpdateRequired() && !entitiesForUpdate.isEmpty())
+            update(entitiesForUpdate);
+        if (isDeleteRequired() && !entitiesForDelete.isEmpty())
+            delete(entitiesForDelete);
+    }
 
-        if (isDeleteRequired())
-            delete(entities, subject);
+    /**
+     * Найти все данные по владельцу
+     * @param subject Владелец данных
+     * @return Список данных
+     */
+    protected List<E> findAllBySubject(String subject) {
+        return Collections.emptyList();
+    }
+
+    /**
+     * Содержится ли сущность в списке.
+     * Сравнивать нужно не по полной эквивалентности, а по ключевым свойствам.
+     * @param entities Список
+     * @param candidate Сущность
+     * @return Содержится true, не содержится false
+     */
+    protected boolean contains(List<E> entities, E candidate) {
+        return entities.contains(candidate);
     }
 
     /**
@@ -114,20 +72,19 @@ public abstract class BaseServerLoader<M, E, ID> implements ServerLoader<M> {
 
     /**
      * Сохранение записей
-     * @param entities Список сущностей
+     * @param entities Список сущностей, которые требуется создать
      */
     protected abstract void create(List<E> entities);
 
     /**
      * Обновление записей
-     * @param entities Список сущностей
+     * @param entities Список сущностей, которые требуется обновить
      */
     protected abstract void update(List<E> entities);
 
     /**
      * Удаление устаревших записей
-     * @param entities  Список сущностей
-     * @param subject Владелец данных
+     * @param entities  Список сущностей, которые требуется удалить
      */
-    protected abstract void delete(List<E> entities, String subject);
+    protected abstract void delete(List<E> entities);
 }

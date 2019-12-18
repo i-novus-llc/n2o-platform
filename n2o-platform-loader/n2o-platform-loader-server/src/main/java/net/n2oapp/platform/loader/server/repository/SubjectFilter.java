@@ -1,4 +1,4 @@
-package net.n2oapp.platform.loader.server;
+package net.n2oapp.platform.loader.server.repository;
 
 import java.util.List;
 
