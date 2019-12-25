@@ -12,12 +12,12 @@ import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.context.annotation.*;
 import org.springframework.context.event.EventListener;
-import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestOperations;
@@ -100,7 +100,7 @@ public class ClientLoaderAutoConfiguration {
     }
 
     @Bean
-    @Conditional(RunAfterStartedCondition.class)
+    @ConditionalOnProperty(prefix = "n2o.loader.client", name="start", havingValue = "UP")
     @ConditionalOnMissingBean
     public LoaderStarter startAfterUp(ClientLoaderRunner runner) {
         return new LoaderStarter(runner) {
@@ -113,7 +113,7 @@ public class ClientLoaderAutoConfiguration {
     }
 
     @Bean
-    @Conditional(RunOnDeployCondition.class)
+    @ConditionalOnProperty(prefix = "n2o.loader.client", name="start", havingValue = "DEPLOY")
     @ConditionalOnMissingBean
     public LoaderStarter startOnDeploy(ClientLoaderRunner runner, ClientLoaderProperties properties) {
         return new LoaderStarter(runner) {
@@ -127,24 +127,11 @@ public class ClientLoaderAutoConfiguration {
         };
     }
 
-    static class RunAfterStartedCondition implements Condition {
-        @Override
-        public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-            ClientLoaderProperties.StartingTime runningTime = context.getEnvironment().getProperty("n2o.loader.client.start", ClientLoaderProperties.StartingTime.class);
-            if (runningTime == null)
-                return true;
-            return runningTime.equals(ClientLoaderProperties.StartingTime.UP);
-        }
-    }
-
-    static class RunOnDeployCondition implements Condition {
-        @Override
-        public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-            ClientLoaderProperties.StartingTime runningTime = context.getEnvironment().getProperty("n2o.loader.client.start", ClientLoaderProperties.StartingTime.class);
-            if (runningTime == null)
-                return false;
-            return runningTime.equals(ClientLoaderProperties.StartingTime.DEPLOY);
-        }
+    @Bean
+    @ConditionalOnProperty(prefix = "n2o.loader.client", name="start", havingValue = "MANUAL")
+    @ConditionalOnMissingBean
+    public LoaderStarter startManual(ClientLoaderRunner runner) {
+        return new LoaderStarter(runner);
     }
 
     @Configuration
