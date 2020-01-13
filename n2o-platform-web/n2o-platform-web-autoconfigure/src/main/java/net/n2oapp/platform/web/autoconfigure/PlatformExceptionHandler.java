@@ -16,6 +16,9 @@ import net.n2oapp.platform.jaxrs.RestMessage;
 import org.springframework.web.client.HttpStatusCodeException;
 
 import java.io.IOException;
+import java.util.stream.IntStream;
+
+import static java.util.stream.Collectors.joining;
 
 /**
  * Получение пользовательских сообщений и стектрейса ошибок от REST сервисов
@@ -26,6 +29,8 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
 
     @Override
     public N2oException handle(CompiledObject.Operation operation, DataSet dataSet, Exception e) {
+        if (isMultipleErrorsException(e))
+            return handleMultipleErrorsException(e);
         N2oException exception = handle(e);
         if (exception != null) return exception;
         return super.handle(operation, dataSet, e);
@@ -33,6 +38,8 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
 
     @Override
     public N2oException handle(CompiledQuery compiledQuery, N2oPreparedCriteria n2oPreparedCriteria, Exception e) {
+        if (isMultipleErrorsException(e))
+            return handleMultipleErrorsException(e);
         N2oException exception = handle(e);
         if (exception != null) return exception;
         if (e instanceof N2oException)
@@ -110,6 +117,23 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
             return unwrapEx(e.getCause(), exClass);
         } else
             return null;
+    }
+
+    private boolean isMultipleErrorsException(Exception e) {
+        if (e instanceof N2oException && e.getCause() instanceof RestException) {
+            RestException restException = (RestException) e.getCause();
+            return restException.getErrors() != null;
+        }
+        return false;
+    }
+
+    private N2oException handleMultipleErrorsException(Exception e) {
+        RestException restException = (RestException) e.getCause();
+        String message = IntStream
+                .rangeClosed(1, restException.getErrors().size())
+                .mapToObj(i -> i + ") " + restException.getErrors().get(i - 1).getMessage())
+                .collect(joining("\n"));
+        return new N2oUserException(message);
     }
 
 }
