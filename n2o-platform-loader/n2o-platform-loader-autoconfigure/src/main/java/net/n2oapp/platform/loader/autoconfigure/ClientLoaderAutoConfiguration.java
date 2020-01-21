@@ -9,6 +9,7 @@ import net.n2oapp.platform.loader.client.auth.OAuth2ClientContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -25,6 +26,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +45,7 @@ public class ClientLoaderAutoConfiguration {
                                                    @Autowired(required = false) Map<String, ClientContext> contextMap) {
         RestTemplate restTemplate = new AuthRestTemplate(contextMap);
         List<HttpMessageConverter<?>> converters = new ArrayList<>();
-        converters.add(new StringHttpMessageConverter(Charset.forName("UTF-8")));
+        converters.add(new StringHttpMessageConverter(StandardCharsets.UTF_8));
         restTemplate.setMessageConverters(converters);
         if (customizers != null)
             customizers.forEach(c -> c.customize(restTemplate));
@@ -136,6 +138,7 @@ public class ClientLoaderAutoConfiguration {
 
     @Configuration
     @ConditionalOnClass(HealthIndicator.class)
+    @AutoConfigureAfter(ClientLoaderAutoConfiguration.class)
     static class ClientLoaderActuatorConfiguration {
         @Bean
         ClientLoaderStarterEndpoint clientLoaderStarterEndpoint() {
@@ -143,7 +146,6 @@ public class ClientLoaderAutoConfiguration {
         }
 
         @Bean
-        @ConditionalOnBean(LoaderStarter.class)
         ClientLoaderHealthIndicator clientLoaderHealthIndicator(LoaderStarter starter) {
             return new ClientLoaderHealthIndicator(starter);
         }

@@ -13,6 +13,7 @@ public class LoaderStarter {
 
     public LoaderStarter(ClientLoaderRunner runner) {
         this.runner = runner;
+        this.report = new LoaderReport();
     }
 
     /**
