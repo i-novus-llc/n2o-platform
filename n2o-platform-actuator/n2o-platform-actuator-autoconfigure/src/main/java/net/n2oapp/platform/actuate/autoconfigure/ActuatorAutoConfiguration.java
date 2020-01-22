@@ -45,7 +45,7 @@ public class ActuatorAutoConfiguration {
         Environment env;
 
         protected void configure(HttpSecurity http) throws Exception {
-            http.antMatcher(env.getProperty("management.endpoints.web.base-path") + "/**").authorizeRequests().anyRequest().permitAll();
+            http.csrf().disable().antMatcher(env.getProperty("management.endpoints.web.base-path") + "/**").authorizeRequests().anyRequest().permitAll();
         }
     }
 
