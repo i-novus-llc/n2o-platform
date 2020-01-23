@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.mapping.SimpleAttributes2GrantedAuthoritiesMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.DefaultOAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
@@ -104,7 +105,11 @@ public class SecurityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public UserAuthenticationConverter n2oPlatformAuthenticationConverter() {
-        return new N2oPlatformAuthenticationConverter(securityProperties.getUsernameKey(), securityProperties.getAuthoritiesKey());
+        SimpleAttributes2GrantedAuthoritiesMapper authoritiesMapper = new SimpleAttributes2GrantedAuthoritiesMapper();
+        authoritiesMapper.setAttributePrefix(securityProperties.getAuthoritiesPrefix());
+        authoritiesMapper.setConvertAttributeToUpperCase(securityProperties.isAuthoritiesUpperCase());
+        authoritiesMapper.setConvertAttributeToLowerCase(securityProperties.isAuthoritiesLowerCase());
+        return new N2oPlatformAuthenticationConverter(securityProperties.getUsernameKey(), securityProperties.getAuthoritiesKey(), authoritiesMapper);
     }
 
     @Bean
