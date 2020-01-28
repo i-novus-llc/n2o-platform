@@ -139,6 +139,7 @@ public class ClientLoaderAutoConfiguration {
     @Configuration
     @ConditionalOnClass(HealthIndicator.class)
     @AutoConfigureAfter(ClientLoaderAutoConfiguration.class)
+    @ConditionalOnBean(LoaderStarter.class)
     static class ClientLoaderActuatorConfiguration {
         @Bean
         ClientLoaderStarterEndpoint clientLoaderStarterEndpoint() {
