@@ -44,6 +44,18 @@ public class N2oPlatformSecurityProperties {
      * Ключ прав доступа
      */
     private String authoritiesKey = "roles";
+    /**
+     * Префикс прав доступа
+     */
+    private String authoritiesPrefix = "";
+    /**
+     * Права доступа в верхнем регистре
+     */
+    private boolean authoritiesUpperCase = false;
+    /**
+     * Права доступа в нижнем регистре
+     */
+    private boolean authoritiesLowerCase = false;
 
     public String getKeySetUri() {
         return keySetUri;
@@ -117,5 +129,29 @@ public class N2oPlatformSecurityProperties {
 
     public void setAuthoritiesKey(String authoritiesKey) {
         this.authoritiesKey = authoritiesKey;
+    }
+
+    public String getAuthoritiesPrefix() {
+        return authoritiesPrefix;
+    }
+
+    public void setAuthoritiesPrefix(String authoritiesPrefix) {
+        this.authoritiesPrefix = authoritiesPrefix;
+    }
+
+    public boolean isAuthoritiesUpperCase() {
+        return authoritiesUpperCase;
+    }
+
+    public void setAuthoritiesUpperCase(boolean authoritiesUpperCase) {
+        this.authoritiesUpperCase = authoritiesUpperCase;
+    }
+
+    public boolean isAuthoritiesLowerCase() {
+        return authoritiesLowerCase;
+    }
+
+    public void setAuthoritiesLowerCase(boolean authoritiesLowerCase) {
+        this.authoritiesLowerCase = authoritiesLowerCase;
     }
 }
