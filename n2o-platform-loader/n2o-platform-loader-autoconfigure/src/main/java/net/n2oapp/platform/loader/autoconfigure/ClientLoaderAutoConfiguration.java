@@ -102,7 +102,7 @@ public class ClientLoaderAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "n2o.loader.client", name="start", havingValue = "UP")
+    @ConditionalOnProperty(prefix = "n2o.loader.client", name="start", havingValue = "UP", matchIfMissing = true)
     @ConditionalOnMissingBean
     public LoaderStarter startAfterUp(ClientLoaderRunner runner) {
         return new LoaderStarter(runner) {
@@ -139,7 +139,6 @@ public class ClientLoaderAutoConfiguration {
     @Configuration
     @ConditionalOnClass(HealthIndicator.class)
     @AutoConfigureAfter(ClientLoaderAutoConfiguration.class)
-    @ConditionalOnBean(LoaderStarter.class)
     static class ClientLoaderActuatorConfiguration {
         @Bean
         ClientLoaderStarterEndpoint clientLoaderStarterEndpoint() {
