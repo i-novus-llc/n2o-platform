@@ -2,6 +2,8 @@ package net.n2oapp.platform.jaxrs.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.List;
+
 /**
  * Настройки JaxRS конфигурации
  */
@@ -119,9 +121,9 @@ public class JaxRsProperties {
 
         /**
          * Настройки авторизации
-         * Протокол - OAuth2, тип - Client credentials
+         * Протокол - OAuth2, возможные типы - Client credentials, Resource Owner Password Credentials
          */
-        private Auth auth;
+        private List<Auth> auth;
 
         public boolean isEnabled() {
             return enabled;
@@ -171,11 +173,11 @@ public class JaxRsProperties {
             this.schemes = schemes;
         }
 
-        public Auth getAuth() {
+        public List<Auth> getAuth() {
             return auth;
         }
 
-        public void setAuth(Auth auth) {
+        public void setAuth(List<Auth> auth) {
             this.auth = auth;
         }
 
@@ -188,9 +190,14 @@ public class JaxRsProperties {
             private String name;
 
             /**
-             * Конечная точка сервиса авторизации
+             * Конечная точка сервиса предоставления токена
              */
             private String tokenUri;
+
+            /**
+             * Флоу (application, password)
+             */
+            private String flow = "application";
 
             public String getName() {
                 return name;
@@ -206,6 +213,14 @@ public class JaxRsProperties {
 
             public void setTokenUri(String tokenUri) {
                 this.tokenUri = tokenUri;
+            }
+
+            public String getFlow() {
+                return flow;
+            }
+
+            public void setFlow(String flow) {
+                this.flow = flow;
             }
         }
     }
