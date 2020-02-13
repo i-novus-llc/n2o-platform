@@ -61,18 +61,12 @@ public class JaxRsServerAutoConfiguration {
         if (!CollectionUtils.isEmpty(auth)) {
             Map<String, SecuritySchemeDefinition> oAuth2DefinitionMap = new HashMap<>(auth.size());
             auth.stream()
-                .filter(x -> StringUtils.isNotBlank(x.getName()) && StringUtils.isNotBlank(x.getFlow()))
+                .filter(x -> StringUtils.isNotBlank(x.getName()) && ("application".equals(x.getFlow()) || "password".equals(x.getFlow())))
                 .forEach(x -> {
-                    switch (x.getFlow()) {
-                        case "application":
-                        case "password": {
-                            OAuth2Definition oAuth2Definition = new OAuth2Definition();
-                            oAuth2Definition.setFlow(x.getFlow());
-                            oAuth2Definition.setTokenUrl(x.getTokenUri());
-                            oAuth2DefinitionMap.put(x.getName(), oAuth2Definition);
-                            break;
-                        }
-                    }
+                    OAuth2Definition oAuth2Definition = new OAuth2Definition();
+                    oAuth2Definition.setFlow(x.getFlow());
+                    oAuth2Definition.setTokenUrl(x.getTokenUri());
+                    oAuth2DefinitionMap.put(x.getName(), oAuth2Definition);
                 });
             result.setSecurityDefinitions(oAuth2DefinitionMap);
         }
