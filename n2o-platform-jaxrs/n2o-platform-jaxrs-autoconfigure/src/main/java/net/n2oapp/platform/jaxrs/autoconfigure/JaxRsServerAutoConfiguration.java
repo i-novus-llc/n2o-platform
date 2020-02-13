@@ -54,7 +54,10 @@ public class JaxRsServerAutoConfiguration {
         result.setPrettyPrint(true);
         JaxRsProperties.Swagger.Auth auth = jaxRsProperties.getSwagger().getAuth();
         if (auth != null && auth.getName() != null && auth.getTokenUri() != null) {
-            result.setSecurityDefinitions(Map.of(auth.getName(), new OAuth2Definition().application(auth.getTokenUri())));
+            OAuth2Definition oAuth2Definition = new OAuth2Definition();
+            oAuth2Definition.setFlow(auth.getFlow());
+            oAuth2Definition.setTokenUrl(auth.getTokenUri());
+            result.setSecurityDefinitions(Map.of(auth.getName(), oAuth2Definition));
         }
         result.setResourcePackage(jaxRsProperties.getSwagger().getResourcePackage());
         return result;

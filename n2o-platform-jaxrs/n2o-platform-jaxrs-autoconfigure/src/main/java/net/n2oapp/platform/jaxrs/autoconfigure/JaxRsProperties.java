@@ -119,7 +119,7 @@ public class JaxRsProperties {
 
         /**
          * Настройки авторизации
-         * Протокол - OAuth2, тип - Client credentials
+         * Протокол - OAuth2, возможные типы - Client credentials, Resource Owner Password Credentials
          */
         private Auth auth;
 
@@ -188,9 +188,14 @@ public class JaxRsProperties {
             private String name;
 
             /**
-             * Конечная точка сервиса авторизации
+             * Конечная точка сервиса предоставления токена
              */
             private String tokenUri;
+
+            /**
+             * Флоу (application, password)
+             */
+            private String flow = "application";
 
             public String getName() {
                 return name;
@@ -206,6 +211,14 @@ public class JaxRsProperties {
 
             public void setTokenUri(String tokenUri) {
                 this.tokenUri = tokenUri;
+            }
+
+            public String getFlow() {
+                return flow;
+            }
+
+            public void setFlow(String flow) {
+                this.flow = flow;
             }
         }
     }
