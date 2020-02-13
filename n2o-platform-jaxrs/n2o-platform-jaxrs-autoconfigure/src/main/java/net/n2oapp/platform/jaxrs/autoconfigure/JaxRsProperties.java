@@ -2,8 +2,6 @@ package net.n2oapp.platform.jaxrs.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.List;
-
 /**
  * Настройки JaxRS конфигурации
  */
