@@ -123,7 +123,7 @@ public class JaxRsProperties {
          * Настройки авторизации
          * Протокол - OAuth2, возможные типы - Client credentials, Resource Owner Password Credentials
          */
-        private List<Auth> auth;
+        private Auth auth;
 
         public boolean isEnabled() {
             return enabled;
@@ -173,11 +173,11 @@ public class JaxRsProperties {
             this.schemes = schemes;
         }
 
-        public List<Auth> getAuth() {
+        public Auth getAuth() {
             return auth;
         }
 
-        public void setAuth(List<Auth> auth) {
+        public void setAuth(Auth auth) {
             this.auth = auth;
         }
 

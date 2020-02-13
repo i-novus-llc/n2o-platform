@@ -2,11 +2,9 @@ package net.n2oapp.platform.jaxrs.autoconfigure;
 
 import brave.Tracing;
 import io.swagger.models.auth.OAuth2Definition;
-import io.swagger.models.auth.SecuritySchemeDefinition;
 import net.n2oapp.platform.i18n.Messages;
 import net.n2oapp.platform.jaxrs.MessageExceptionMapper;
 import net.n2oapp.platform.jaxrs.ViolationRestExceptionMapper;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.ext.logging.LoggingInInterceptor;
 import org.apache.cxf.ext.logging.LoggingOutInterceptor;
 import org.apache.cxf.jaxrs.swagger.Swagger2Feature;
@@ -22,11 +20,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.CollectionUtils;
 
 import javax.validation.ValidatorFactory;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -57,18 +52,12 @@ public class JaxRsServerAutoConfiguration {
         result.setVersion(jaxRsProperties.getSwagger().getVersion());
         result.setSchemes(jaxRsProperties.getSwagger().getSchemes());
         result.setPrettyPrint(true);
-        List<JaxRsProperties.Swagger.Auth> auth = jaxRsProperties.getSwagger().getAuth();
-        if (!CollectionUtils.isEmpty(auth)) {
-            Map<String, SecuritySchemeDefinition> oAuth2DefinitionMap = new HashMap<>(auth.size());
-            auth.stream()
-                .filter(x -> StringUtils.isNotBlank(x.getName()) && ("application".equals(x.getFlow()) || "password".equals(x.getFlow())))
-                .forEach(x -> {
-                    OAuth2Definition oAuth2Definition = new OAuth2Definition();
-                    oAuth2Definition.setFlow(x.getFlow());
-                    oAuth2Definition.setTokenUrl(x.getTokenUri());
-                    oAuth2DefinitionMap.put(x.getName(), oAuth2Definition);
-                });
-            result.setSecurityDefinitions(oAuth2DefinitionMap);
+        JaxRsProperties.Swagger.Auth auth = jaxRsProperties.getSwagger().getAuth();
+        if (auth != null && auth.getName() != null && auth.getTokenUri() != null) {
+            OAuth2Definition oAuth2Definition = new OAuth2Definition();
+            oAuth2Definition.setFlow(auth.getFlow());
+            oAuth2Definition.setTokenUrl(auth.getTokenUri());
+            result.setSecurityDefinitions(Map.of(auth.getName(), oAuth2Definition));
         }
         result.setResourcePackage(jaxRsProperties.getSwagger().getResourcePackage());
         return result;
