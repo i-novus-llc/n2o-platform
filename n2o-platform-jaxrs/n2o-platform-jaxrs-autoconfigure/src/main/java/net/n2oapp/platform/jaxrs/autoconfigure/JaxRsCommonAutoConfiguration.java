@@ -8,10 +8,7 @@ import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
@@ -34,6 +31,7 @@ public class JaxRsCommonAutoConfiguration {
         this.mapperConfigurers = mapperConfigurers;
     }
 
+    @Primary
     @Bean("cxfObjectMapper")
     ObjectMapper cxfObjectMapper() {
         return new RestObjectMapper(mapperConfigurers);

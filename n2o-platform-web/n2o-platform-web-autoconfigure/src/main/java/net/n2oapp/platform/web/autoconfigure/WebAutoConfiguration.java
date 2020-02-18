@@ -1,7 +1,7 @@
 package net.n2oapp.platform.web.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.n2oapp.framework.boot.N2oAutoConfiguration;
+import net.n2oapp.framework.boot.N2oFrameworkAutoConfiguration;
 import net.n2oapp.framework.engine.data.rest.SpringRestDataProviderEngine;
 import net.n2oapp.framework.engine.data.rest.json.RestEngineTimeModule;
 import net.n2oapp.platform.i18n.Messages;
@@ -23,7 +23,7 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
 import java.text.SimpleDateFormat;
 
 @Configuration
-@AutoConfigureBefore(N2oAutoConfiguration.class)
+@AutoConfigureBefore(N2oFrameworkAutoConfiguration.class)
 public class WebAutoConfiguration {
 
     @Bean

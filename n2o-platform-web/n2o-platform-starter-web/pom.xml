@@ -18,11 +18,6 @@
             <artifactId>n2o-platform-web-autoconfigure</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>net.n2oapp.framework</groupId>
-            <artifactId>n2o-config-ehcache</artifactId>
-        </dependency>
-
     </dependencies>
 
 </project>
