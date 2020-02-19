@@ -1,7 +1,6 @@
 package net.n2oapp.platform.web.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.n2oapp.framework.boot.N2oFrameworkAutoConfiguration;
 import net.n2oapp.framework.engine.data.rest.SpringRestDataProviderEngine;
 import net.n2oapp.framework.engine.data.rest.json.RestEngineTimeModule;
 import net.n2oapp.platform.i18n.Messages;
@@ -10,12 +9,11 @@ import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
@@ -23,10 +21,10 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
 import java.text.SimpleDateFormat;
 
 @Configuration
-@AutoConfigureBefore(N2oFrameworkAutoConfiguration.class)
 public class WebAutoConfiguration {
 
     @Bean
+    @Primary
     public PlatformExceptionHandler platformOperationExceptionHandler(@Autowired(required = false) Messages messages) {
         PlatformExceptionHandler platformExceptionHandler = new PlatformExceptionHandler();
         if (messages != null)
@@ -50,9 +48,9 @@ public class WebAutoConfiguration {
             return restTemplate;
         }
 
-        @Bean("restDataProviderEngine")
-        @ConditionalOnMissingBean(name = "restDataProviderEngine")
-        public SpringRestDataProviderEngine restDataProviderEngine(@Qualifier("oauth2RestTemplate") OAuth2RestTemplate oauth2RestTemplate,
+        @Bean
+        @Primary
+        public SpringRestDataProviderEngine springRestDataProviderEngine(@Qualifier("oauth2RestTemplate") OAuth2RestTemplate oauth2RestTemplate,
                                                                    @Value("${n2o.engine.rest.url}") String baseRestUrl) {
             ObjectMapper restObjectMapper = new ObjectMapper();
             restObjectMapper.setDateFormat(new SimpleDateFormat(serializingFormat));
