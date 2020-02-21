@@ -49,7 +49,4 @@ public class XmlProvider implements MessageBodyReader<Object>, MessageBodyWriter
         xmlMapper.writeValue(entityStream, o);
     }
 
-    XmlMapper getXmlMapper() {
-        return xmlMapper;
-    }
 }
