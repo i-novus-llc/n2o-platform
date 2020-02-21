@@ -36,15 +36,15 @@ public class JaxRsCommonAutoConfiguration {
     }
 
     @Bean
-    ObjectMapper jsonObjectMapper() {
+    ObjectMapper cxfObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         RestObjectMapperConfigurer.configure(objectMapper, mapperConfigurers);
         return objectMapper;
     }
 
     @Bean
-    JacksonJsonProvider jsonProvider(@Qualifier("jsonObjectMapper") ObjectMapper jsonObjectMapper) {
-        return new JacksonJsonProvider(jsonObjectMapper, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
+    JacksonJsonProvider jsonProvider(@Qualifier("cxfObjectMapper") ObjectMapper cxfObjectMapper) {
+        return new JacksonJsonProvider(cxfObjectMapper, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
     }
 
     @Bean

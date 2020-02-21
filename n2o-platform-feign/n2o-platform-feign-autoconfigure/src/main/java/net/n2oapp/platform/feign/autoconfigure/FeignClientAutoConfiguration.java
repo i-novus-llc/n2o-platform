@@ -41,26 +41,26 @@ public class FeignClientAutoConfiguration {
     }
 
     @ConditionalOnMissingBean
-    @Bean("jsonObjectMapper")// По контракту мы должны использовать серверный маппер
-    public ObjectMapper jsonObjectMapper() {
+    @Bean("cxfObjectMapper")// По контракту мы должны использовать серверный маппер
+    public ObjectMapper cxfObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         RestObjectMapperConfigurer.configure(objectMapper, mapperConfigurers);
         return objectMapper;
     }
 
     @Bean
-    public Decoder feignDecoder(@Qualifier("jsonObjectMapper") ObjectMapper jsonObjectMapper) {
-        return new JacksonDecoder(jsonObjectMapper);
+    public Decoder feignDecoder(@Qualifier("cxfObjectMapper") ObjectMapper cxfObjectMapper) {
+        return new JacksonDecoder(cxfObjectMapper);
     }
 
     @Bean
-    public Encoder feignEncoder(@Qualifier("jsonObjectMapper") ObjectMapper jsonObjectMapper) {
-        return new JacksonEncoder(jsonObjectMapper);
+    public Encoder feignEncoder(@Qualifier("cxfObjectMapper") ObjectMapper cxfObjectMapper) {
+        return new JacksonEncoder(cxfObjectMapper);
     }
 
     @Bean
-    public ErrorDecoder feignErrorDecoder(@Qualifier("jsonObjectMapper") ObjectMapper jsonObjectMapper) {
-        return new FeignErrorDecoder(jsonObjectMapper);
+    public ErrorDecoder feignErrorDecoder(@Qualifier("cxfObjectMapper") ObjectMapper cxfObjectMapper) {
+        return new FeignErrorDecoder(cxfObjectMapper);
     }
 
     @Bean
