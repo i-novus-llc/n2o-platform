@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.api.*;
 import net.n2oapp.platform.jaxrs.impl.SomeRestImpl;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

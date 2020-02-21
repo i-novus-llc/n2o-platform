@@ -46,7 +46,11 @@ public class SomeRestImpl implements SomeRest {
 
     @Override
     public SomeModel getById(Long id) {
-        return new SomeModel(id);
+        SomeModel someModel = new SomeModel(id);
+        someModel.setDate(new Date());
+        someModel.setDateEnd(LocalDateTime.now());
+        someModel.setName("SOME_NAME");
+        return someModel;
     }
 
     @Override

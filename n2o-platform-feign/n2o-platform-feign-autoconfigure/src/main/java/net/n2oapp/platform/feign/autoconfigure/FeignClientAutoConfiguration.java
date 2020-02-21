@@ -12,7 +12,7 @@ import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.jaxrs.JAXRSContract;
 import net.n2oapp.platform.jaxrs.MapperConfigurer;
-import net.n2oapp.platform.jaxrs.RestObjectMapper;
+import net.n2oapp.platform.jaxrs.RestObjectMapperConfigurer;
 import net.n2oapp.platform.jaxrs.autoconfigure.JaxRsCommonAutoConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -41,24 +41,26 @@ public class FeignClientAutoConfiguration {
     }
 
     @ConditionalOnMissingBean
-    @Bean("cxfObjectMapper")// По контракту мы должны использовать серверный маппер
-    public ObjectMapper cxfObjectMapper() {
-        return new RestObjectMapper(mapperConfigurers);
+    @Bean("jsonObjectMapper")// По контракту мы должны использовать серверный маппер
+    public ObjectMapper jsonObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        RestObjectMapperConfigurer.configure(objectMapper, mapperConfigurers);
+        return objectMapper;
     }
 
     @Bean
-    public Decoder feignDecoder(@Qualifier("cxfObjectMapper") ObjectMapper cxfObjectMapper) {
-        return new JacksonDecoder(cxfObjectMapper);
+    public Decoder feignDecoder(@Qualifier("jsonObjectMapper") ObjectMapper jsonObjectMapper) {
+        return new JacksonDecoder(jsonObjectMapper);
     }
 
     @Bean
-    public Encoder feignEncoder(@Qualifier("cxfObjectMapper") ObjectMapper cxfObjectMapper) {
-        return new JacksonEncoder(cxfObjectMapper);
+    public Encoder feignEncoder(@Qualifier("jsonObjectMapper") ObjectMapper jsonObjectMapper) {
+        return new JacksonEncoder(jsonObjectMapper);
     }
 
     @Bean
-    public ErrorDecoder feignErrorDecoder(@Qualifier("cxfObjectMapper") ObjectMapper cxfObjectMapper) {
-        return new FeignErrorDecoder(cxfObjectMapper);
+    public ErrorDecoder feignErrorDecoder(@Qualifier("jsonObjectMapper") ObjectMapper jsonObjectMapper) {
+        return new FeignErrorDecoder(jsonObjectMapper);
     }
 
     @Bean
