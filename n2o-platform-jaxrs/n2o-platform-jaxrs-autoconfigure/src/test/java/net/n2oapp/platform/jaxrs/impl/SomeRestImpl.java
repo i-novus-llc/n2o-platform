@@ -31,7 +31,7 @@ public class SomeRestImpl implements SomeRest {
 
     @Override
     public Page<AbstractModel> searchModel(SomeCriteria criteria) {
-        return new PageImpl<>(Collections.singletonList(new StringModel()), criteria, 1);
+        return new PageImpl<>(Collections.singletonList(new StringModel("ABRACADABRA")), criteria, 1);
     }
 
     @Override

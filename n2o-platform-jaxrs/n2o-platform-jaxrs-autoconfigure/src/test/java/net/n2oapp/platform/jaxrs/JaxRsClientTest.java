@@ -35,7 +35,7 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 @SpringBootApplication
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = JaxRsClientTest.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-        properties = {"server.port=9876"})
+        properties = {"server.port=9876", "cxf.jaxrs.client.content-type=application/xml", "cxf.jaxrs.client.accept=application/xml"})
 public class JaxRsClientTest {
 
 
@@ -189,8 +189,6 @@ public class JaxRsClientTest {
         Map<String, String> actual = client.searchBySetOfTypedMap(expectedMap);
         Assert.assertEquals(expectedMap, actual);
     }
-
-
 
     @Configuration
     public static class JaxRsClientTestConfig {

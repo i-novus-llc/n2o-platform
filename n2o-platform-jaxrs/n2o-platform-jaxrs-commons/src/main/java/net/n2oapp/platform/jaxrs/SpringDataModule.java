@@ -133,6 +133,7 @@ public abstract class SpringDataModule extends SimpleModule {
 
 
     @JsonDeserialize(as = RestPage.class)
+    @JacksonXmlRootElement(localName = "page")
     @JsonIgnoreProperties({"last", "number", "numberOfElements", "size", "totalPages", "first", "pageable", "empty"})
     static class PageMixin {
     }

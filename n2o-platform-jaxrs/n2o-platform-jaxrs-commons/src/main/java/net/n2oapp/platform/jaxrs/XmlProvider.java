@@ -35,7 +35,8 @@ public class XmlProvider implements MessageBodyReader<Object>, MessageBodyWriter
 
     @Override
     public Object readFrom(Class<Object> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException {
-        return xmlMapper.readValue(entityStream, type);
+        JavaType javaType = xmlMapper.getTypeFactory().constructType(genericType);
+        return xmlMapper.readValue(entityStream, javaType);
     }
 
     @Override
