@@ -35,9 +35,8 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 @SpringBootApplication
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = JaxRsClientTest.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-        properties = {"server.port=9876", "cxf.jaxrs.client.content-type=application/xml", "cxf.jaxrs.client.accept=application/xml"})
+        properties = {"server.port=9876"})
 public class JaxRsClientTest {
-
 
     @Autowired
     @Qualifier("someRestJaxRsProxyClient")//в контексте теста есть 2 бина SomeRest: SomeRestImpl и прокси клиент

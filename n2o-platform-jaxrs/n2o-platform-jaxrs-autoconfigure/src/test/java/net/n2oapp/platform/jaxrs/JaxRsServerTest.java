@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -31,6 +32,22 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = JaxRsServerTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class JaxRsServerTest {
+
+    private static final String[] ACCEPT_HEADERS = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML};
+    private static final String[] CONTENT_TYPE_HEADERS = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML};
+
+    private static final Map[] PARAMS = new HashMap[ACCEPT_HEADERS.length * CONTENT_TYPE_HEADERS.length];
+    static {
+        int paramsIdx = 0;
+        for (String accept : ACCEPT_HEADERS) {
+            for (String contentType : CONTENT_TYPE_HEADERS) {
+                Map<String, String> params = new HashMap<>();
+                params.put(HttpHeaders.ACCEPT, accept);
+                params.put(HttpHeaders.CONTENT_TYPE, contentType);
+                PARAMS[paramsIdx++] = params;
+            }
+        }
+    }
 
     @LocalServerPort
     private int port;
@@ -163,7 +180,7 @@ public class JaxRsServerTest {
     @Test
     public void idResult() {
         forEachClient(webClient -> {
-            if (webClient.getHeaders().getFirst(Application.ACCEPT_HEADER_KEY).equals(MediaType.APPLICATION_XML))
+            if (webClient.getHeaders().getFirst(HttpHeaders.ACCEPT).equals(MediaType.APPLICATION_XML))
                 return; // Мы вызываем метод, возвращающий примитивное значение (Long), которое не может быть десереализовано из XML.
             Long result = webClient.path("example").path("count").get(Long.class);
             assertThat(result, equalTo(100L));
@@ -242,10 +259,10 @@ public class JaxRsServerTest {
     }
 
     private Object[][] clients() {
-        Object[][] clients = new Object[Application.PARAMS.length][3];
+        Object[][] clients = new Object[PARAMS.length][3];
         for (int i = 0; i < clients.length; i++) {
-            String accept = (String) Application.PARAMS[i].get(Application.ACCEPT_HEADER_KEY);
-            String contentType = (String) Application.PARAMS[i].get(Application.CONTENT_TYPE_HEADER_KEY);
+            String accept = (String) PARAMS[i].get(HttpHeaders.ACCEPT);
+            String contentType = (String) PARAMS[i].get(HttpHeaders.CONTENT_TYPE);
             clients[i][0] = WebClient.create("http://localhost:" + port, List.of(jsonProvider, xmlProvider))
                             .accept(accept)
                             .type(contentType)
