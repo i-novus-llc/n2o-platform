@@ -96,7 +96,7 @@ public abstract class SpringDataModule extends SimpleModule {
                 orders[i] = new Sort.Order(direction, obj.get(PROPERTY).asText());
                 i++;
             }
-            return new Sort(orders);
+            return Sort.by(orders);
         }
     }
 
@@ -126,7 +126,7 @@ public abstract class SpringDataModule extends SimpleModule {
         @Override
         public Sort deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
             SortWrapper sortWrapper = p.readValueAs(SortWrapper.class);
-            return new Sort(sortWrapper.getOrders().stream().map(orderWrapper -> new Sort.Order(Sort.Direction.valueOf(orderWrapper.getDirection().toUpperCase()), orderWrapper.getProperty())).collect(Collectors.toList()));
+            return Sort.by(sortWrapper.getOrders().stream().map(orderWrapper -> new Sort.Order(Sort.Direction.valueOf(orderWrapper.getDirection().toUpperCase()), orderWrapper.getProperty())).collect(Collectors.toList()));
         }
 
     }
