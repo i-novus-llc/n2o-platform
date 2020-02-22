@@ -1,6 +1,8 @@
 package net.n2oapp.platform.jaxrs;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.json.PackageVersion;
@@ -27,15 +29,12 @@ import java.util.stream.Collectors;
  * Модуль для {@link com.fasterxml.jackson.databind.ObjectMapper} позволяющий
  * серилизовать / десерилизовать базовые модели Spring Data, такие как Page, Pageable, Sort и т.п.
  */
-public abstract class SpringDataModule extends SimpleModule {
+abstract class SpringDataModule extends SimpleModule {
 
-    static final String DIRECTION = "direction";
-    static final String PROPERTY = "property";
-    static final String CONTENT = "content";
-    static final String TOTAL_ELEMENTS = "totalElements";
-    static final String SORT = "sort";
+    private static final String DIRECTION = "direction";
+    private static final String PROPERTY = "property";
 
-    public SpringDataModule() {
+    SpringDataModule() {
         super(PackageVersion.VERSION);
         SimpleAbstractTypeResolver resolver = new SimpleAbstractTypeResolver();
         resolver.addMapping(Pageable.class, RestCriteria.class);
@@ -43,9 +42,9 @@ public abstract class SpringDataModule extends SimpleModule {
         this.setMixInAnnotation(Page.class, PageMixin.class);
     }
 
-    public static class SpringDataJsonModule extends SpringDataModule {
+    static class SpringDataJsonModule extends SpringDataModule {
 
-        public SpringDataJsonModule() {
+        SpringDataJsonModule() {
             super();
             this.addSerializer(new JsonSortSerializer());
             this.addDeserializer(Sort.class, new JsonSortDeserializer());
@@ -53,9 +52,9 @@ public abstract class SpringDataModule extends SimpleModule {
 
     }
 
-    public static class SpringDataXmlModule extends SpringDataModule {
+    static class SpringDataXmlModule extends SpringDataModule {
 
-        public SpringDataXmlModule() {
+        SpringDataXmlModule() {
             super();
             this.addSerializer(new XmlSortSerializer());
             this.addDeserializer(Sort.class, new XmlSortDeserializer());
@@ -102,21 +101,21 @@ public abstract class SpringDataModule extends SimpleModule {
 
     static class XmlSortSerializer extends StdSerializer<Sort> {
 
-        protected XmlSortSerializer() {
+        XmlSortSerializer() {
             super(Sort.class);
         }
 
         @Override
         public void serialize(Sort value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            SortWrapper sortWrapper = new SortWrapper();
-            sortWrapper.setOrders(new ArrayList<>());
+            AnnotatedSort annotatedSort = new AnnotatedSort();
+            annotatedSort.setOrders(new ArrayList<>());
             for (Sort.Order order : value) {
-                SortWrapper.OrderWrapper orderWrapper = new SortWrapper.OrderWrapper();
-                orderWrapper.setProperty(order.getProperty());
-                orderWrapper.setDirection(order.getDirection().name().toLowerCase());
-                sortWrapper.getOrders().add(orderWrapper);
+                AnnotatedSort.AnnotatedOrder annotatedOrder = new AnnotatedSort.AnnotatedOrder();
+                annotatedOrder.setProperty(order.getProperty());
+                annotatedOrder.setDirection(order.getDirection().name().toLowerCase());
+                annotatedSort.getOrders().add(annotatedOrder);
             }
-            gen.writeObject(sortWrapper);
+            gen.writeObject(annotatedSort);
         }
 
     }
@@ -125,8 +124,8 @@ public abstract class SpringDataModule extends SimpleModule {
 
         @Override
         public Sort deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-            SortWrapper sortWrapper = p.readValueAs(SortWrapper.class);
-            return Sort.by(sortWrapper.getOrders().stream().map(orderWrapper -> new Sort.Order(Sort.Direction.valueOf(orderWrapper.getDirection().toUpperCase()), orderWrapper.getProperty())).collect(Collectors.toList()));
+            AnnotatedSort annotatedSort = p.readValueAs(AnnotatedSort.class);
+            return Sort.by(annotatedSort.getOrders().stream().map(annotatedOrder -> new Sort.Order(Sort.Direction.valueOf(annotatedOrder.getDirection().toUpperCase()), annotatedOrder.getProperty())).collect(Collectors.toList()));
         }
 
     }
@@ -135,40 +134,46 @@ public abstract class SpringDataModule extends SimpleModule {
     @JsonDeserialize(as = RestPage.class)
     @JacksonXmlRootElement(localName = "page")
     @JsonIgnoreProperties({"last", "number", "numberOfElements", "size", "totalPages", "first", "pageable", "empty"})
-    static class PageMixin {
+    private static class PageMixin {
     }
 
     @JacksonXmlRootElement(localName = "sort")
-    private static class SortWrapper {
+    private static class AnnotatedSort {
 
-        private List<OrderWrapper> orders;
+        private List<AnnotatedOrder> orders;
 
-        public List<OrderWrapper> getOrders() {
+        @JsonGetter
+        List<AnnotatedOrder> getOrders() {
             return orders;
         }
 
-        public void setOrders(List<OrderWrapper> orders) {
+        @JsonSetter
+        void setOrders(List<AnnotatedOrder> orders) {
             this.orders = orders;
         }
 
-        private static class OrderWrapper {
+        private static class AnnotatedOrder {
 
             private String property;
             private String direction;
 
-            public String getProperty() {
+            @JsonGetter
+            String getProperty() {
                 return property;
             }
 
-            public void setProperty(String property) {
+            @JsonSetter
+            void setProperty(String property) {
                 this.property = property;
             }
 
-            public String getDirection() {
+            @JsonGetter
+            String getDirection() {
                 return direction;
             }
 
-            public void setDirection(String direction) {
+            @JsonSetter
+            void setDirection(String direction) {
                 this.direction = direction;
             }
 

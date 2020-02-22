@@ -252,7 +252,7 @@ public class JaxRsServerTest {
             try {
                 clientConsumer.accept((WebClient) client[0]);
             } catch (Exception e) {
-                System.out.println("ERROR AT SUCH HEADERS: 'accept: " + client[1] + "; content-type: " + client[2] + "'");
+                System.out.println("ERROR AT SUCH PARAMS: " + client[1]);
                 throw e;
             }
         }
@@ -267,8 +267,7 @@ public class JaxRsServerTest {
                             .accept(accept)
                             .type(contentType)
                             .path("api");
-            clients[i][1] = accept;
-            clients[i][2] = contentType;
+            clients[i][1] = PARAMS[i];
         }
         return clients;
     }
