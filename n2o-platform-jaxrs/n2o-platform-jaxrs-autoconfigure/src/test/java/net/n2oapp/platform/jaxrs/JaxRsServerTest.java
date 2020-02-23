@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static net.n2oapp.platform.jaxrs.Application.HEADERS;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -32,22 +33,6 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = JaxRsServerTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class JaxRsServerTest {
-
-    private static final String[] ACCEPT_HEADERS = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML};
-    private static final String[] CONTENT_TYPE_HEADERS = {MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML};
-
-    private static final Map[] PARAMS = new HashMap[ACCEPT_HEADERS.length * CONTENT_TYPE_HEADERS.length];
-    static {
-        int paramsIdx = 0;
-        for (String accept : ACCEPT_HEADERS) {
-            for (String contentType : CONTENT_TYPE_HEADERS) {
-                Map<String, String> params = new HashMap<>();
-                params.put(HttpHeaders.ACCEPT, accept);
-                params.put(HttpHeaders.CONTENT_TYPE, contentType);
-                PARAMS[paramsIdx++] = params;
-            }
-        }
-    }
 
     @LocalServerPort
     private int port;
@@ -259,15 +244,15 @@ public class JaxRsServerTest {
     }
 
     private Object[][] clients() {
-        Object[][] clients = new Object[PARAMS.length][3];
+        Object[][] clients = new Object[HEADERS.length][3];
         for (int i = 0; i < clients.length; i++) {
-            String accept = (String) PARAMS[i].get(HttpHeaders.ACCEPT);
-            String contentType = (String) PARAMS[i].get(HttpHeaders.CONTENT_TYPE);
+            String accept = (String) HEADERS[i].get(HttpHeaders.ACCEPT);
+            String contentType = (String) HEADERS[i].get(HttpHeaders.CONTENT_TYPE);
             clients[i][0] = WebClient.create("http://localhost:" + port, List.of(jsonProvider, xmlProvider))
                             .accept(accept)
                             .type(contentType)
                             .path("api");
-            clients[i][1] = PARAMS[i];
+            clients[i][1] = HEADERS[i];
         }
         return clients;
     }

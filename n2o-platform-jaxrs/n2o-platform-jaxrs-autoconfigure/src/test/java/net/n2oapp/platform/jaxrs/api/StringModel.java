@@ -5,8 +5,8 @@ public class StringModel extends AbstractModel<String> {
     public StringModel() {
     }
 
-    public StringModel(String s) {
-        this.setValue(s);
+    public StringModel(String value) {
+        super(value);
     }
 
 }

@@ -109,6 +109,18 @@ public class SomeRestImpl implements SomeRest {
         return Map.of("Authorization", httpHeaders.getHeaderString("Authorization"));
     }
 
+    @Override
+    public List<AbstractModel<?>> getListOfAbstractModels() {
+        return List.of(new StringModel("1"), new IntegerModel(2));
+    }
+
+    @Override
+    public List<ListModel> getListModels() {
+        return List.of(
+                new ListModel(List.of(new IntegerModel(0), new IntegerModel(1), new IntegerModel(2))),
+                new ListModel(List.of(new IntegerModel(3), new IntegerModel(4), new IntegerModel(5))));
+    }
+
     private List<SomeModel> findAll(SomeCriteria criteria) {
         return LongStream.range(criteria.getOffset(), criteria.getOffset() + criteria.getPageSize())
                 .mapToObj(id -> model(id, criteria))

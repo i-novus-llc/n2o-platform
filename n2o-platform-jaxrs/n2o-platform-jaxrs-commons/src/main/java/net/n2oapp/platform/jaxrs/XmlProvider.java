@@ -46,7 +46,7 @@ public class XmlProvider implements MessageBodyReader<Object>, MessageBodyWriter
 
     @Override
     public void writeTo(Object o, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException {
-        xmlMapper.writeValue(entityStream, o);
+        xmlMapper.writerFor(xmlMapper.constructType(genericType)).writeValue(entityStream, o);
     }
 
 }

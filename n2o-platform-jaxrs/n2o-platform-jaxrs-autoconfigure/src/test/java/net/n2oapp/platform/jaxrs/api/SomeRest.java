@@ -22,6 +22,7 @@ import java.util.Set;
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 @Api("REST сервис для демонстрации возможностей библиотеки")
 public interface SomeRest {
+
     @GET
     @Path("/search")
     @ApiOperation("Найти страницу моделей по критериям поиска")
@@ -107,4 +108,13 @@ public interface SomeRest {
     @ApiOperation("Вернуть заголовок Authorization")
     @ApiResponse(code = 200, message = "Страница моделей")
     Map<String, String> authHeader();
+
+    @GET
+    @Path("/listOfAbstractModels")
+    List<AbstractModel<?>> getListOfAbstractModels();
+
+    @GET
+    @Path("/genericList")
+    List<ListModel> getListModels();
+
 }
