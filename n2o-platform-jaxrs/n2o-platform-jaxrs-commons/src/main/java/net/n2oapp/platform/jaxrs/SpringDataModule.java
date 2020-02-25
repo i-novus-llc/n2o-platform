@@ -62,9 +62,9 @@ abstract class SpringDataModule extends SimpleModule {
 
     }
 
-    static class JsonSortSerializer extends StdSerializer<Sort> {
+    private static class JsonSortSerializer extends StdSerializer<Sort> {
 
-        JsonSortSerializer() {
+        private JsonSortSerializer() {
             super(Sort.class);
         }
 
@@ -79,9 +79,10 @@ abstract class SpringDataModule extends SimpleModule {
             }
             gen.writeEndArray();
         }
+
     }
 
-    static class JsonSortDeserializer extends JsonDeserializer<Sort> {
+    private static class JsonSortDeserializer extends JsonDeserializer<Sort> {
 
         @Override
         public Sort deserialize(JsonParser jp, DeserializationContext ctxt)
@@ -97,9 +98,10 @@ abstract class SpringDataModule extends SimpleModule {
             }
             return Sort.by(orders);
         }
+
     }
 
-    static class XmlSortSerializer extends StdSerializer<Sort> {
+    private static class XmlSortSerializer extends StdSerializer<Sort> {
 
         XmlSortSerializer() {
             super(Sort.class);
@@ -120,7 +122,7 @@ abstract class SpringDataModule extends SimpleModule {
 
     }
 
-    static class XmlSortDeserializer extends JsonDeserializer<Sort> {
+    private static class XmlSortDeserializer extends JsonDeserializer<Sort> {
 
         @Override
         public Sort deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
