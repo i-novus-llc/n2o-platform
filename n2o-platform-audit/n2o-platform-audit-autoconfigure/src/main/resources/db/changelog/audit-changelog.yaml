@@ -24,4 +24,6 @@ databaseChangeLog:
   - include:
       file: classpath*:/audit/201911141107_audit_trigger_fun_bfx_2.xml
   - include:
+      file: classpath*:/audit/202001131500_tables_to_full_audit_func_bfx_2.xml
+  - include:
       file: classpath*:/audit/999999999999_add_aud_trigger.xml
