@@ -233,26 +233,25 @@ public class JaxRsServerTest {
     }
 
     private void forEachClient(Consumer<WebClient> clientConsumer) {
-        for (Object[] client : clients()) {
+        for (WebClient client : clients()) {
             try {
-                clientConsumer.accept((WebClient) client[0]);
+                clientConsumer.accept(client);
             } catch (Exception e) {
-                System.out.println("ERROR AT SUCH PARAMS: " + client[1]);
+                System.out.println("ERROR AT SUCH HEADERS: " + client.getHeaders());
                 throw e;
             }
         }
     }
 
-    private Object[][] clients() {
-        Object[][] clients = new Object[HEADERS.length][3];
+    private WebClient[] clients() {
+        WebClient[] clients = new WebClient[HEADERS.length];
         for (int i = 0; i < clients.length; i++) {
-            String accept = (String) HEADERS[i].get(HttpHeaders.ACCEPT);
-            String contentType = (String) HEADERS[i].get(HttpHeaders.CONTENT_TYPE);
-            clients[i][0] = WebClient.create("http://localhost:" + port, List.of(jsonProvider, xmlProvider))
+            String accept = HEADERS[i].get(HttpHeaders.ACCEPT);
+            String contentType = HEADERS[i].get(HttpHeaders.CONTENT_TYPE);
+            clients[i] = WebClient.create("http://localhost:" + port, List.of(jsonProvider, xmlProvider))
                             .accept(accept)
                             .type(contentType)
                             .path("api");
-            clients[i][1] = HEADERS[i];
         }
         return clients;
     }

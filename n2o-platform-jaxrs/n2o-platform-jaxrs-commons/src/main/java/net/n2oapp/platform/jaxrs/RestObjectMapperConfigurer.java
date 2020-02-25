@@ -28,18 +28,26 @@ public final class RestObjectMapperConfigurer {
 
     private static final DateFormat STD_DATE_FORMAT = new StdDateFormat();
 
-    private RestObjectMapperConfigurer() {throw new UnsupportedOperationException();}
+    private RestObjectMapperConfigurer() {
+        throw new UnsupportedOperationException();
+    }
 
     public static void configure(ObjectMapper objectMapper, List<MapperConfigurer> mapperConfigurers) {
+        configureCommon(objectMapper, mapperConfigurers);
+        objectMapper.registerModule(SPRING_DATA_JSON_MODULE);
+    }
+
+    public static void configure(XmlMapper xmlMapper, List<MapperConfigurer> mapperConfigurers) {
+        configureCommon(xmlMapper, mapperConfigurers);
+        xmlMapper.registerModule(SPRING_DATA_XML_MODULE);
+        xmlMapper.registerModule(JACKSON_XML_MODULE);
+        xmlMapper.registerModule(JAXB_MODULE);
+    }
+
+    private static void configureCommon(ObjectMapper objectMapper, List<MapperConfigurer> mapperConfigurers) {
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         objectMapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        if (objectMapper instanceof XmlMapper) {
-            objectMapper.registerModule(SPRING_DATA_XML_MODULE);
-            objectMapper.registerModule(JACKSON_XML_MODULE);
-            objectMapper.registerModule(JAXB_MODULE);
-        } else
-            objectMapper.registerModule(SPRING_DATA_JSON_MODULE);
         objectMapper.registerModule(JAVA_TIME_MODULE);
         objectMapper.setDateFormat(STD_DATE_FORMAT);
         if (mapperConfigurers != null) {
