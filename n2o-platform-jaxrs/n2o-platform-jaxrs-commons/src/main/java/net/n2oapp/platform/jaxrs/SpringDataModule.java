@@ -107,15 +107,15 @@ abstract class SpringDataModule extends SimpleModule {
 
         @Override
         public void serialize(Sort value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            AnnotatedSort annotatedSort = new AnnotatedSort();
-            annotatedSort.setOrders(new ArrayList<>());
+            XmlSort xmlSort = new XmlSort();
+            xmlSort.setOrders(new ArrayList<>());
             for (Sort.Order order : value) {
-                AnnotatedSort.AnnotatedOrder annotatedOrder = new AnnotatedSort.AnnotatedOrder();
-                annotatedOrder.setProperty(order.getProperty());
-                annotatedOrder.setDirection(order.getDirection().name().toLowerCase());
-                annotatedSort.getOrders().add(annotatedOrder);
+                XmlSort.XmlOrder xmlOrder = new XmlSort.XmlOrder();
+                xmlOrder.setProperty(order.getProperty());
+                xmlOrder.setDirection(order.getDirection().name().toLowerCase());
+                xmlSort.getOrders().add(xmlOrder);
             }
-            gen.writeObject(annotatedSort);
+            gen.writeObject(xmlSort);
         }
 
     }
@@ -124,8 +124,8 @@ abstract class SpringDataModule extends SimpleModule {
 
         @Override
         public Sort deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-            AnnotatedSort annotatedSort = p.readValueAs(AnnotatedSort.class);
-            return Sort.by(annotatedSort.getOrders().stream().map(annotatedOrder -> new Sort.Order(Sort.Direction.valueOf(annotatedOrder.getDirection().toUpperCase()), annotatedOrder.getProperty())).collect(Collectors.toList()));
+            XmlSort xmlSort = p.readValueAs(XmlSort.class);
+            return Sort.by(xmlSort.getOrders().stream().map(xmlOrder -> new Sort.Order(Sort.Direction.valueOf(xmlOrder.getDirection().toUpperCase()), xmlOrder.getProperty())).collect(Collectors.toList()));
         }
 
     }
@@ -138,42 +138,42 @@ abstract class SpringDataModule extends SimpleModule {
     }
 
     @JacksonXmlRootElement(localName = "sort")
-    private static class AnnotatedSort {
+    private static class XmlSort {
 
-        private List<AnnotatedOrder> orders;
+        private List<XmlOrder> orders;
 
         @JsonGetter
-        List<AnnotatedOrder> getOrders() {
+        private List<XmlOrder> getOrders() {
             return orders;
         }
 
         @JsonSetter
-        void setOrders(List<AnnotatedOrder> orders) {
+        private void setOrders(List<XmlOrder> orders) {
             this.orders = orders;
         }
 
-        private static class AnnotatedOrder {
+        private static class XmlOrder {
 
             private String property;
             private String direction;
 
             @JsonGetter
-            String getProperty() {
+            private String getProperty() {
                 return property;
             }
 
             @JsonSetter
-            void setProperty(String property) {
+            private void setProperty(String property) {
                 this.property = property;
             }
 
             @JsonGetter
-            String getDirection() {
+            private String getDirection() {
                 return direction;
             }
 
             @JsonSetter
-            void setDirection(String direction) {
+            private void setDirection(String direction) {
                 this.direction = direction;
             }
 
