@@ -1,6 +1,7 @@
 package net.n2oapp.platform.jaxrs.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import net.n2oapp.platform.jaxrs.*;
@@ -34,14 +35,23 @@ public class JaxRsCommonAutoConfiguration {
         this.mapperConfigurers = mapperConfigurers;
     }
 
-    @Bean("cxfObjectMapper")
+    @Bean
     ObjectMapper cxfObjectMapper() {
-        return new RestObjectMapper(mapperConfigurers);
+        ObjectMapper objectMapper = new ObjectMapper();
+        RestObjectMapperConfigurer.configure(objectMapper, mapperConfigurers);
+        return objectMapper;
     }
 
     @Bean
     JacksonJsonProvider jsonProvider(@Qualifier("cxfObjectMapper") ObjectMapper cxfObjectMapper) {
         return new JacksonJsonProvider(cxfObjectMapper, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
+    }
+
+    @Bean
+    XmlProvider xmlProvider() {
+        XmlMapper xmlMapper = new XmlMapper();
+        RestObjectMapperConfigurer.configure(xmlMapper, mapperConfigurers);
+        return new XmlProvider(xmlMapper);
     }
 
     @Bean

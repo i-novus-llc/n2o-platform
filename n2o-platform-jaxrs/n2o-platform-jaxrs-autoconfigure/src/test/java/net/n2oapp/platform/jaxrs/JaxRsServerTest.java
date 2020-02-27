@@ -5,43 +5,65 @@ import net.n2oapp.platform.jaxrs.api.SomeModel;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
+import static net.n2oapp.platform.jaxrs.Application.HEADERS;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertNotNull;
 
 @SpringBootApplication
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = JaxRsServerTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class JaxRsServerTest {
+
     @LocalServerPort
     private int port;
+
+    @Autowired
+    private JacksonJsonProvider jsonProvider;
+
+    @Autowired
+    private XmlProvider xmlProvider;
 
     /**
      * Проверка, что REST сервис был автоматически найден и поднят по пути /api/info.
      */
     @Test
     public void info() {
-        Response response = client().path("info").get();
-        assertThat(response.getStatus(), equalTo(200));
-        String html = response.readEntity(String.class);
-        assertThat(html, containsString("Endpoint address"));
-        assertThat(html, containsString("Swagger"));
-        assertThat(html, containsString("WADL"));
-        response = client().path("example").path("search").head();
-        assertThat(response.getStatus(), equalTo(200));
+        forEachClient(webClient -> {
+            Response response = webClient.path("info").get();
+            assertThat(response.getStatus(), equalTo(200));
+            String html = response.readEntity(String.class);
+            assertThat(html, containsString("Endpoint address"));
+            assertThat(html, containsString("Swagger"));
+            assertThat(html, containsString("WADL"));
+        });
+    }
+
+    @Test
+    public void testSearchHead() {
+        forEachClient(webClient -> {
+            Response response = webClient.path("example").path("search").head();
+            assertThat(response.getStatus(), equalTo(200));
+        });
     }
 
     /**
@@ -49,13 +71,15 @@ public class JaxRsServerTest {
      */
     @Test
     public void paging() {
-        Map<?, ?> page = client().path("example").path("search")
-                .query("size", 20).query("page", 2).get(Map.class);
-        assertThat(page.get("totalElements"), equalTo(100));
-        assertThat(page.get("content"), instanceOf(List.class));
-        List<Map<String, Object>> content = (List) page.get("content");
-        assertThat(content.size(), equalTo(20));
-        assertThat(content.get(0).get("id"), equalTo(40));
+        forEachClient(webClient -> {
+            Page<Map<String, Object>> page = webClient.path("example").path("search")
+                    .query("size", 20).query("page", 2).get(Page.class);
+            assertThat(page.getTotalElements(), equalTo(100L));
+            assertThat(page.getContent(), instanceOf(List.class));
+            List<Map<String, Object>> content = page.getContent();
+            assertThat(content.size(), equalTo(20));
+            assertThat(content.get(0).get("id").toString(), equalTo("40"));
+        });
     }
 
     /**
@@ -63,12 +87,14 @@ public class JaxRsServerTest {
      */
     @Test
     public void pagingByDefault() {
-        Map<?, ?> page = client().path("example").path("search").get(Map.class);
-        assertThat(page.get("totalElements"), equalTo(100));
-        assertThat(page.get("content"), instanceOf(List.class));
-        List<Map<String, Object>> content = (List) page.get("content");
-        assertThat(content.size(), equalTo(10));
-        assertThat(content.get(0).get("id"), equalTo(0));
+        forEachClient(webClient -> {
+            Page<Map<String, Object>> page = webClient.path("example").path("search").get(Page.class);
+            assertThat(page.getTotalElements(), equalTo(100L));
+            assertThat(page.getContent(), instanceOf(List.class));
+            List<Map<String, Object>> content = page.getContent();
+            assertThat(content.size(), equalTo(10));
+            assertThat(content.get(0).get("id").toString(), equalTo("0"));
+        });
     }
 
     /**
@@ -76,16 +102,21 @@ public class JaxRsServerTest {
      */
     @Test
     public void sort() {
-        Map<?, ?> page = client().path("example").path("search")
-                .query("sort", "name: asc", "id: desc")
-                .get(Map.class);
-        assertThat(page.get("sort"), notNullValue());
-        List<Map<String, Object>> sort = (List<Map<String, Object>>) page.get("sort");
-        assertThat(sort.size(), equalTo(2));
-        assertThat(sort.get(0).get("property"), equalTo("name"));
-        assertThat(sort.get(0).get("direction").toString(), equalToIgnoringCase("asc"));
-        assertThat(sort.get(1).get("property"), equalTo("id"));
-        assertThat(sort.get(1).get("direction").toString(), equalToIgnoringCase("desc"));
+        forEachClient(webClient -> {
+            Page<Map<String, Object>> page = webClient.path("example").path("search")
+                    .query("sort", "name: asc", "id: desc")
+                    .get(Page.class);
+            assertThat(page.getSort(), notNullValue());
+            Sort sort = page.getSort();
+            List<Sort.Order> orders = new ArrayList<>();
+            for (Sort.Order order : sort)
+                orders.add(order);
+            assertThat(orders.size(), equalTo(2));
+            assertThat(orders.get(0).getProperty(), equalTo("name"));
+            assertThat(orders.get(0).getDirection().toString(), equalToIgnoringCase("asc"));
+            assertThat(orders.get(1).getProperty(), equalTo("id"));
+            assertThat(orders.get(1).getDirection().toString(), equalToIgnoringCase("desc"));
+        });
     }
 
     /**
@@ -93,10 +124,11 @@ public class JaxRsServerTest {
      */
     @Test
     public void pageResult() {
-        Map<?, ?> page = client().path("example").path("search").get(Map.class);
-        assertThat(page.size(), equalTo(2));
-        assertThat(page.get("content"), instanceOf(List.class));
-        assertThat(page.get("totalElements"), instanceOf(Number.class));
+        forEachClient(webClient -> {
+            Page page = webClient.path("example").path("search").get(Page.class);
+            assertThat(page.getContent(), instanceOf(List.class));
+            assertThat(page.getTotalElements(), instanceOf(Number.class));
+        });
     }
 
     /**
@@ -104,13 +136,15 @@ public class JaxRsServerTest {
      */
     @Test
     public void sortResult() {
-        Map<?, ?> page = client().path("example").path("search")
-                .query("sort", "name: asc").get(Map.class);
-        assertThat(page.size(), equalTo(3));
-        assertThat(page.get("sort"), instanceOf(List.class));
-        List<Map<String, Object>> sort = (List<Map<String, Object>>) page.get("sort");
-        assertThat(sort.size(), equalTo(1));
-        assertThat(sort.get(0).size(), equalTo(2));
+        forEachClient(webClient -> {
+            Page<Map<String, Object>> page = webClient.path("example").path("search")
+                    .query("sort", "name: asc").get(Page.class);
+            Sort sort = page.getSort();
+            int numSorts = 0;
+            for (Sort.Order ignored : sort)
+                numSorts++;
+            assertThat(numSorts, equalTo(1));
+        });
     }
 
 
@@ -119,8 +153,10 @@ public class JaxRsServerTest {
      */
     @Test
     public void listResult() {
-        List<?> list = client().path("example").path("list").get(List.class);
-        assertThat(list.size(), notNullValue());
+        forEachClient(webClient -> {
+            List<?> list = webClient.path("example").path("list").get(List.class);
+            assertThat(list.size(), notNullValue());
+        });
     }
 
     /**
@@ -128,8 +164,12 @@ public class JaxRsServerTest {
      */
     @Test
     public void idResult() {
-        Long result = client().path("example").path("count").get(Long.class);
-        assertThat(result, equalTo(100L));
+        forEachClient(webClient -> {
+            if (webClient.getHeaders().getFirst(HttpHeaders.ACCEPT).equals(MediaType.APPLICATION_XML))
+                return; // Мы вызываем метод, возвращающий примитивное значение (Long), которое не может быть десереализовано из XML.
+            Long result = webClient.path("example").path("count").get(Long.class);
+            assertThat(result, equalTo(100L));
+        });
     }
 
     /**
@@ -137,9 +177,11 @@ public class JaxRsServerTest {
      */
     @Test
     public void singleResult() {
-        SomeModel result = client().path("example").path(1).get(SomeModel.class);
-        assertThat(result, notNullValue());
-        assertThat(result.getId(), equalTo(1L));
+        forEachClient(webClient -> {
+            SomeModel result = webClient.path("example").path(1).get(SomeModel.class);
+            assertThat(result, notNullValue());
+            assertThat(result.getId(), equalTo(1L));
+        });
     }
 
     /**
@@ -147,15 +189,17 @@ public class JaxRsServerTest {
      */
     @Test
     public void filters() {
-        Map<?, ?> page = client().path("example").path("search")
-                .query("name", "John")
-                .query("date", "2018-03-01T08:00:00.000+0000")
-                .query("dateEnd", "2018-03-31T08:00:00")
-                .get(Map.class);
-        List<Map<String, Object>> content = (List<Map<String, Object>>) page.get("content");
-        assertThat(content.get(0).get("name"), equalTo("John"));
-        assertThat(content.get(0).get("date"), equalTo("2018-03-01T08:00:00.000+0000"));
-        assertThat(content.get(0).get("dateEnd"), equalTo("2018-03-31T08:00:00"));
+        forEachClient(webClient -> {
+            Page<Map<String, Object>> page = webClient.path("example").path("search")
+                    .query("name", "John")
+                    .query("date", "2018-03-01T08:00:00.000+0000")
+                    .query("dateEnd", "2018-03-31T08:00:00")
+                    .get(Page.class);
+            List<Map<String, Object>> content = page.getContent();
+            assertThat(content.get(0).get("name"), equalTo("John"));
+            assertThat(content.get(0).get("date"), equalTo("2018-03-01T08:00:00.000+0000"));
+            assertThat(content.get(0).get("dateEnd"), equalTo("2018-03-31T08:00:00"));
+        });
     }
 
     /**
@@ -164,20 +208,52 @@ public class JaxRsServerTest {
     @Test
     public void validations() {
         Map<String, Object> model = new HashMap<>();
-        model.put("name", "");//Имя должно быть задано
-        model.put("date", "2030-01-01T12:00:00Z");//Дата не должна быть в будущем
-        Response response = client().path("example").post(model);
-        assertThat(response.getStatusInfo().getFamily(), equalTo(Response.Status.Family.CLIENT_ERROR));
-        Map<?, ?> message = response.readEntity(Map.class);
-        assertThat(message, notNullValue());
-        assertThat(message.get("errors"), notNullValue());
-        assertThat(((List) message.get("errors")).size(), equalTo(2));
+        model.put("name", ""); // Имя должно быть задано
+        model.put("date", "2030-01-01T12:00:00Z"); // Дата не должна быть в будущем
+        forEachClient(webClient -> {
+            Response response = webClient.path("example").post(model);
+            assertThat(response.getStatusInfo().getFamily(), equalTo(Response.Status.Family.CLIENT_ERROR));
+            Map<?, ?> message = response.readEntity(Map.class);
+            assertThat(message, notNullValue());
+            assertThat(message.get("errors"), notNullValue());
+            assertThat(((List) message.get("errors")).size(), equalTo(2));
+        });
     }
 
-    private WebClient client() {
-        return WebClient.create("http://localhost:" + port, Collections.singletonList(new JacksonJsonProvider()))
-                .accept(MediaType.APPLICATION_JSON)
-                .type(MediaType.APPLICATION_JSON)
-                .path("api");
+    @Test
+    public void testGetById() {
+        forEachClient(webClient -> {
+            SomeModel model = webClient.path("example").path("{id}", 50).get(SomeModel.class);
+            assertNotNull(model);
+            assertNotNull(model.getId());
+            assertNotNull(model.getName());
+            assertNotNull(model.getDate());
+            assertNotNull(model.getDateEnd());
+        });
     }
+
+    private void forEachClient(Consumer<WebClient> clientConsumer) {
+        for (WebClient client : clients()) {
+            try {
+                clientConsumer.accept(client);
+            } catch (Exception e) {
+                System.out.println("ERROR AT SUCH HEADERS: " + client.getHeaders());
+                throw e;
+            }
+        }
+    }
+
+    private WebClient[] clients() {
+        WebClient[] clients = new WebClient[HEADERS.length];
+        for (int i = 0; i < clients.length; i++) {
+            String accept = HEADERS[i].get(HttpHeaders.ACCEPT);
+            String contentType = HEADERS[i].get(HttpHeaders.CONTENT_TYPE);
+            clients[i] = WebClient.create("http://localhost:" + port, List.of(jsonProvider, xmlProvider))
+                            .accept(accept)
+                            .type(contentType)
+                            .path("api");
+        }
+        return clients;
+    }
+
 }

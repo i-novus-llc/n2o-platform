@@ -31,7 +31,7 @@ public class SomeRestImpl implements SomeRest {
 
     @Override
     public Page<AbstractModel> searchModel(SomeCriteria criteria) {
-        return new PageImpl<>(Collections.singletonList(new StringModel()), criteria, 1);
+        return new PageImpl<>(Collections.singletonList(new StringModel("ABRACADABRA")), criteria, 1);
     }
 
     @Override
@@ -46,7 +46,11 @@ public class SomeRestImpl implements SomeRest {
 
     @Override
     public SomeModel getById(Long id) {
-        return new SomeModel(id);
+        SomeModel someModel = new SomeModel(id);
+        someModel.setDate(new Date());
+        someModel.setDateEnd(LocalDateTime.now());
+        someModel.setName("SOME_NAME");
+        return someModel;
     }
 
     @Override
@@ -103,6 +107,18 @@ public class SomeRestImpl implements SomeRest {
     @Override
     public Map<String, String> authHeader() {
         return Map.of("Authorization", httpHeaders.getHeaderString("Authorization"));
+    }
+
+    @Override
+    public List<AbstractModel<?>> getListOfAbstractModels() {
+        return List.of(new StringModel("1"), new IntegerModel(2));
+    }
+
+    @Override
+    public List<ListModel> getListModels() {
+        return List.of(
+                new ListModel(List.of(new IntegerModel(0), new IntegerModel(1), new IntegerModel(2))),
+                new ListModel(List.of(new IntegerModel(3), new IntegerModel(4), new IntegerModel(5))));
     }
 
     private List<SomeModel> findAll(SomeCriteria criteria) {

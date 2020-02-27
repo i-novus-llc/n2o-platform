@@ -18,11 +18,15 @@ public class RestCriteria implements Pageable {
     public static final int FIRST_PAGE_NUMBER = 0;
     public static final int MIN_PAGE_SIZE = 1;
 
-    private @QueryParam("page") @DefaultValue("0") int pageNumber;
-    private @QueryParam("size") @DefaultValue("10") int pageSize;
+    public static final int DEFAULT_PAGE_NUMBER = 0;
+    public static final int DEFAULT_PAGE_SIZE = 10;
+
+    private @QueryParam("page") @DefaultValue(DEFAULT_PAGE_NUMBER + "") int pageNumber;
+    private @QueryParam("size") @DefaultValue(DEFAULT_PAGE_SIZE + "") int pageSize;
     private @QueryParam("sort") List<Sort.Order> orders;
 
     public RestCriteria() {
+        this(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE);
     }
 
     public RestCriteria(int pageNumber, int pageSize, Sort sort) {

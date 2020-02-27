@@ -207,7 +207,7 @@ public class FeignClientTest {
         @Bean
         public MapperConfigurer mapperPreparer() {
             return mapper -> {
-                mapper.addMixIn(AbstractModel.class, ValueMixin.class);
+                mapper.addMixIn(AbstractModel.class, AbstractModelMixin.class);
                 mapper.writerFor(new TypeReference<PageImpl<AbstractModel>>() {
                 });
             };
