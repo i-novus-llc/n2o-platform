@@ -36,6 +36,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
         </dependency>
@@ -69,6 +74,7 @@
             <artifactId>lombok</artifactId>
             <scope>test</scope>
         </dependency>
+
         <!-- /TEST -->
 
     </dependencies>

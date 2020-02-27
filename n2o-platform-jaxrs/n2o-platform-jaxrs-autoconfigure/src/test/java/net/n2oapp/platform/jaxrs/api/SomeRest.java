@@ -18,10 +18,11 @@ import java.util.Set;
  * REST сервис для демонстрации возможностей библиотеки
  */
 @Path("/example")
-@Consumes(MediaType.APPLICATION_JSON)
-@Produces(MediaType.APPLICATION_JSON)
+@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 @Api("REST сервис для демонстрации возможностей библиотеки")
 public interface SomeRest {
+
     @GET
     @Path("/search")
     @ApiOperation("Найти страницу моделей по критериям поиска")
@@ -107,4 +108,13 @@ public interface SomeRest {
     @ApiOperation("Вернуть заголовок Authorization")
     @ApiResponse(code = 200, message = "Страница моделей")
     Map<String, String> authHeader();
+
+    @GET
+    @Path("/listOfAbstractModels")
+    List<AbstractModel<?>> getListOfAbstractModels();
+
+    @GET
+    @Path("/genericList")
+    List<ListModel> getListModels();
+
 }

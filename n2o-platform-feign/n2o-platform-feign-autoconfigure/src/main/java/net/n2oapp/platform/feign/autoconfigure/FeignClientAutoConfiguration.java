@@ -12,7 +12,7 @@ import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.jaxrs.JAXRSContract;
 import net.n2oapp.platform.jaxrs.MapperConfigurer;
-import net.n2oapp.platform.jaxrs.RestObjectMapper;
+import net.n2oapp.platform.jaxrs.RestObjectMapperConfigurer;
 import net.n2oapp.platform.jaxrs.autoconfigure.JaxRsCommonAutoConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -43,7 +43,9 @@ public class FeignClientAutoConfiguration {
     @ConditionalOnMissingBean
     @Bean("cxfObjectMapper")// По контракту мы должны использовать серверный маппер
     public ObjectMapper cxfObjectMapper() {
-        return new RestObjectMapper(mapperConfigurers);
+        ObjectMapper objectMapper = new ObjectMapper();
+        RestObjectMapperConfigurer.configure(objectMapper, mapperConfigurers);
+        return objectMapper;
     }
 
     @Bean

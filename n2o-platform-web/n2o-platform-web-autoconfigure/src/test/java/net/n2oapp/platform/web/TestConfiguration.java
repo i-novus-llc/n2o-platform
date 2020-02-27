@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.MediaType;
 import java.util.Collections;
 import java.util.Map;
 
@@ -19,7 +20,7 @@ public class TestConfiguration extends WebSecurityConfigurerAdapter {
         http.authorizeRequests().anyRequest().permitAll();
     }
 
-    @GetMapping("/token")
+    @GetMapping(value = "/token", produces = MediaType.APPLICATION_JSON)
     public DataSet token(HttpServletRequest request) {
         return new DataSet("token", Collections.singletonList(Map.of("auth", request.getHeader("authorization"))));
     }
