@@ -9,8 +9,9 @@ import org.springframework.util.ReflectionUtils;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
-import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -144,29 +145,32 @@ public abstract class RestCriteria implements Pageable {
 
     private RestCriteria constructNew(int pageNumber, int pageSize, List<Sort.Order> orders) {
         Class<? extends RestCriteria> c = this.getClass();
-        Constructor<? extends RestCriteria> constructor;
-        try {
-            constructor = c.getConstructor();
-        } catch (NoSuchMethodException e) {
-            throw new IllegalStateException("Can't access constructor of criteria class: " + c + ". No empty public constructor found.", e);
-        }
         RestCriteria criteria;
         try {
-            criteria = constructor.newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new IllegalStateException("Can't instantiate criteria of class: " + c, e);
+            criteria = c.getConstructor().newInstance();
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalStateException("Exception occurred while creating criteria of classs: " + c, e);
         }
         criteria.setPageNumber(pageNumber);
         criteria.setPageSize(pageSize);
         criteria.setOrders(orders);
         Map<String, Object> fields = new HashMap<>();
-        ReflectionUtils.doWithLocalFields(c, field -> {
-            field.setAccessible(true);
-            Object param = field.get(this);
-            fields.put(field.getName().intern(), param);
+        ReflectionUtils.doWithFields(c, field -> {
+            if (canSetField(field)) {
+                field.setAccessible(true);
+                Object param = field.get(this);
+                fields.put(field.getName().intern(), param);
+            }
         });
-        ReflectionUtils.doWithLocalFields(c, field -> field.set(criteria, fields.get(field.getName())));
+        ReflectionUtils.doWithFields(c, field -> {
+            if (canSetField(field))
+                field.set(criteria, fields.get(field.getName()));
+        });
         return criteria;
+    }
+
+    private boolean canSetField(Field field) {
+        return field.getDeclaringClass() != RestCriteria.class && !Modifier.isStatic(field.getModifiers());
     }
 
 }
