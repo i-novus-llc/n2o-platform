@@ -8,10 +8,14 @@ import org.springframework.data.domain.Sort;
 import javax.ws.rs.QueryParam;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
+
+import static java.util.Collections.singletonList;
 
 @Getter
 @Setter
 public class SomeCriteria extends RestCriteria {
+
     @QueryParam("name")
     private String likeName;
     @QueryParam("date")
@@ -26,7 +30,13 @@ public class SomeCriteria extends RestCriteria {
         super(page, size);
     }
 
+    @Override
+    protected List<Sort.Order> getDefaultOrders() {
+        return singletonList(Sort.Order.asc("date"));
+    }
+
     public SomeCriteria(int page, int size, Sort sort) {
         super(page, size, sort);
     }
+
 }

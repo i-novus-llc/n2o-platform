@@ -64,7 +64,7 @@ public class JaxRsClientTest {
             assertThat(page.getContent().get(0).getName(), equalTo("John"));
             assertThat(page.getContent().get(0).getDate(), equalTo(df.parse("01.01.2018 01:00")));
             Method[] declaredMethods = page.getClass().getDeclaredMethods();
-            RestPage expectedPage = new RestPage<>(page.getContent());
+            RestPage expectedPage = new RestPage<>(page.getContent(), criteria, 100L);
             expectedPage.setTotalElements(page.getTotalElements());
             StringBuilder expectedStringOfValues = new StringBuilder();
             StringBuilder actualStringOfValues = new StringBuilder();

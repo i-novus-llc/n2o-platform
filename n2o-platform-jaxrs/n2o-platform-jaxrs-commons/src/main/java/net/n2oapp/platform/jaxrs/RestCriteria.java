@@ -4,16 +4,23 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ReflectionUtils;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
-import java.util.ArrayList;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Универсальный способ передачи параметров фильтрации, паджинации и сортировки в REST запросе
  */
-public class RestCriteria implements Pageable {
+public abstract class RestCriteria implements Pageable {
 
     public static final int FIRST_PAGE_NUMBER = 0;
     public static final int MIN_PAGE_SIZE = 1;
@@ -31,13 +38,12 @@ public class RestCriteria implements Pageable {
 
     public RestCriteria(int pageNumber, int pageSize, Sort sort) {
         this(pageNumber, pageSize);
-        orders = new ArrayList<>();
-        sort.forEach(orders::add);
+        orders = sort.get().collect(Collectors.toList());
     }
 
     public RestCriteria(int pageNumber, int pageSize) {
-        this.setPageNumber(pageNumber);
-        this.setPageSize(pageSize);
+        this.pageNumber = pageNumber;
+        this.pageSize = pageSize;
     }
 
     @Override
@@ -61,12 +67,13 @@ public class RestCriteria implements Pageable {
     @Override
     @JsonIgnore
     public Sort getSort() {
-        if (orders != null && !orders.isEmpty()) {
-            return new Sort(orders);
+        if (!CollectionUtils.isEmpty(orders)) {
+            return Sort.by(orders);
         }
-        else
-            return null;
+        return Sort.by(getDefaultOrders());
     }
+
+    protected abstract List<Sort.Order> getDefaultOrders();
 
     public void setPageNumber(int pageNumber) {
         if (pageNumber < FIRST_PAGE_NUMBER) {
@@ -95,13 +102,15 @@ public class RestCriteria implements Pageable {
 
     @Override
     @JsonIgnore
-    public Pageable next() {
-        return new RestCriteria(this.getPageNumber() + 1, this.getPageSize(), this.getSort());
+    public RestCriteria next() {
+        return constructNew(pageNumber + 1, pageSize, orders);
     }
 
     @JsonIgnore
-    public Pageable previous() {
-        return this.getPageNumber() == FIRST_PAGE_NUMBER ? this : new RestCriteria(this.getPageNumber() - 1, this.getPageSize(), this.getSort());
+    public RestCriteria previous() {
+        if (pageNumber == FIRST_PAGE_NUMBER)
+            throw new IllegalStateException("The beginning reached. Page number is: " + FIRST_PAGE_NUMBER);
+        return constructNew(pageNumber - 1, pageSize, orders);
     }
 
     @Override
@@ -110,29 +119,54 @@ public class RestCriteria implements Pageable {
         return this.pageNumber > FIRST_PAGE_NUMBER;
     }
 
+    @Override
     @JsonIgnore
-    public Pageable previousOrFirst() {
+    public RestCriteria previousOrFirst() {
         return this.hasPrevious() ? this.previous() : this.first();
     }
 
     @Override
     @JsonIgnore
-    public Pageable first() {
-        return new RestCriteria(FIRST_PAGE_NUMBER, this.getPageSize(), this.getSort());
+    public RestCriteria first() {
+        return constructNew(FIRST_PAGE_NUMBER, pageSize, orders);
     }
 
-    @JsonIgnore
-    static Pageable unpaged() {
-        return Pageable.unpaged();
-    }
-
+    @Override
     @JsonIgnore
     public boolean isPaged() {
         return true;
     }
 
+    @Override
     @JsonIgnore
     public boolean isUnpaged() {
         return !isPaged();
     }
+
+    private RestCriteria constructNew(int pageNumber, int pageSize, List<Sort.Order> orders) {
+        Class<? extends RestCriteria> c = this.getClass();
+        Class<?>[] argsType = {Integer.TYPE, Integer.TYPE};
+        Constructor<? extends RestCriteria> constructor;
+        try {
+            constructor = c.getConstructor(argsType);
+        } catch (NoSuchMethodException e) {
+            throw new IllegalStateException("Can't access constructor of criteria class: " + c + ". No public constructor with args signature " + Arrays.toString(argsType) + " found.", e);
+        }
+        RestCriteria criteria;
+        try {
+            criteria = constructor.newInstance(pageNumber, pageSize);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalStateException("Can't instantiate criteria of class: " + c, e);
+        }
+        criteria.setOrders(orders);
+        Map<String, Object> fields = new HashMap<>();
+        ReflectionUtils.doWithLocalFields(c, field -> {
+            field.setAccessible(true);
+            Object param = field.get(this);
+            fields.put(field.getName().intern(), param);
+        });
+        ReflectionUtils.doWithLocalFields(c, field -> field.set(criteria, fields.get(field.getName())));
+        return criteria;
+    }
+
 }
