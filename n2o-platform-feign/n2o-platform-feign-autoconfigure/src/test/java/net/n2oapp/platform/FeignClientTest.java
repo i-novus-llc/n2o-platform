@@ -87,7 +87,7 @@ public class FeignClientTest {
         assertThat(page.getContent().get(0).getDate(), equalTo(df.parse("01.01.2018 01:00")));
         assertThat(page.getContent().get(0).getDateEnd(), equalTo(LocalDateTime.parse("2018-01-12T01:00:00")));
         Method[] declaredMethods = page.getClass().getDeclaredMethods();
-        RestPage expectedPage = new RestPage<>(page.getContent());
+        RestPage expectedPage = new RestPage<>(page.getContent(), criteria, page.getTotalElements());
         expectedPage.setTotalElements(page.getTotalElements());
         StringBuilder expectedStringOfValues = new StringBuilder();
         StringBuilder actualStringOfValues = new StringBuilder();
