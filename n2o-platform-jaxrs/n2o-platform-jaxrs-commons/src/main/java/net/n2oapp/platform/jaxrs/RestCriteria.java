@@ -41,8 +41,8 @@ public abstract class RestCriteria implements Pageable {
     }
 
     public RestCriteria(int pageNumber, int pageSize) {
-        this.pageNumber = pageNumber;
-        this.pageSize = pageSize;
+        this.setPageNumber(pageNumber);
+        this.setPageSize(pageSize);
     }
 
     @Override
