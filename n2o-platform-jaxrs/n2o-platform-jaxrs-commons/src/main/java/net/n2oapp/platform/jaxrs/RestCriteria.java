@@ -170,7 +170,7 @@ public abstract class RestCriteria implements Pageable {
     }
 
     private boolean canSetField(Field field) {
-        return field.getDeclaringClass() != RestCriteria.class && !Modifier.isStatic(field.getModifiers());
+        return field.getDeclaringClass() != RestCriteria.class && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers());
     }
 
 }
