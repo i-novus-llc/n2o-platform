@@ -11,7 +11,6 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -145,19 +144,20 @@ public abstract class RestCriteria implements Pageable {
 
     private RestCriteria constructNew(int pageNumber, int pageSize, List<Sort.Order> orders) {
         Class<? extends RestCriteria> c = this.getClass();
-        Class<?>[] argsType = {Integer.TYPE, Integer.TYPE};
         Constructor<? extends RestCriteria> constructor;
         try {
-            constructor = c.getConstructor(argsType);
+            constructor = c.getConstructor();
         } catch (NoSuchMethodException e) {
-            throw new IllegalStateException("Can't access constructor of criteria class: " + c + ". No public constructor with args signature " + Arrays.toString(argsType) + " found.", e);
+            throw new IllegalStateException("Can't access constructor of criteria class: " + c + ". No empty public constructor found.", e);
         }
         RestCriteria criteria;
         try {
-            criteria = constructor.newInstance(pageNumber, pageSize);
+            criteria = constructor.newInstance();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new IllegalStateException("Can't instantiate criteria of class: " + c, e);
         }
+        criteria.setPageNumber(pageNumber);
+        criteria.setPageSize(pageSize);
         criteria.setOrders(orders);
         Map<String, Object> fields = new HashMap<>();
         ReflectionUtils.doWithLocalFields(c, field -> {
