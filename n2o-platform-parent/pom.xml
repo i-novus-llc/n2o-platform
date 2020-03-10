@@ -217,9 +217,6 @@
 
         <profile>
             <id>consul</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
             <properties>
                 <config.server.enable>true</config.server.enable>
             </properties>
@@ -227,9 +224,6 @@
 
         <profile>
             <id>docker-config-filter</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
             <build>
                 <plugins>
                     <plugin>
