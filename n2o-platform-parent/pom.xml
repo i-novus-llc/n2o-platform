@@ -28,7 +28,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
 
-        <jacoco.skip>true</jacoco.skip> <!-- Skip all by default for projects root and aggregator pom modules. Disable skip in jar modules. -->
+        <jacoco.skip>true</jacoco.skip> <!-- Skip all by default for project's root and aggregator pom modules. Disable skip in jar modules. -->
     </properties>
 
     <dependencies>
@@ -210,6 +210,52 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>consul</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <config.server.enable>true</config.server.enable>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>docker-config-filter</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>copy-resources</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.basedir}</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${project.basedir}/docker-compose</directory>
+                                            <filtering>true</filtering>
+                                            <includes>
+                                                <include>*.yml</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
