@@ -15,7 +15,7 @@
     <properties>
         <versions-maven-plugin.version>2.7</versions-maven-plugin.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
-        <jacoco-maven-plugin.version>0.8.2</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
         <maven.source.version>3.0.1</maven.source.version>
         <maven.javadoc.version>3.1.0</maven.javadoc.version>
         <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
@@ -27,6 +27,8 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+
+        <jacoco.skip>true</jacoco.skip> <!-- Skip all by default for projects root and aggregator pom modules. Disable skip in jar modules. -->
     </properties>
 
     <dependencies>
@@ -85,31 +87,31 @@
                 </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
-                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <artifactId>jacoco-maven-plugin</artifactId>  <!-- See info about jacoco.skip property. -->
                     <version>${jacoco-maven-plugin.version}</version>
-                    <configuration>
-                        <destFile>${project.basedir}/../target/jacoco.exec</destFile>
-                        <append>true</append>
-                    </configuration>
                     <executions>
                         <execution>
-                            <id>agent-for-ut</id>
+                            <id>prepare</id>
                             <goals>
                                 <goal>prepare-agent</goal>
                             </goals>
                         </execution>
                         <execution>
-                            <id>agent-for-it</id>
+                            <id>report</id>
+                            <phase>verify</phase>
                             <goals>
-                                <goal>prepare-agent-integration</goal>
+                                <goal>report</goal>
                             </goals>
                         </execution>
                         <execution>
                             <id>jacoco-site</id>
                             <phase>verify</phase>
                             <goals>
-                                <goal>report</goal>
+                                <goal>report-aggregate</goal>
                             </goals>
+                            <configuration>
+                                <outputDirectory>${project.basedir}/../target/site/jacoco-aggregate</outputDirectory>
+                            </configuration>
                         </execution>
                     </executions>
                 </plugin>
@@ -202,7 +204,7 @@
 
     <profiles>
         <profile>
-            <id>jacoco</id>
+            <id>jacoco</id> <!-- See info about jacoco.skip property. -->
             <build>
                 <plugins>
                     <plugin>

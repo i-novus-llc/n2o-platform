@@ -1,0 +1,29 @@
+= Документация
+:toc:
+:toclevels: 3
+:toc-title: Содержание
+
+= Описание
+Родительская maven-конфигурация для всех проектов на основе платформы.
+
+= Подключение
+Пример подключения в корневой pom.xml проекта:
+[source,xml]
+----
+<parent>
+    <groupId>net.n2oapp.platform</groupId>
+    <artifactId>n2o-platform-parent</artifactId>
+    <version>3.0.0-SNAPSHOT</version>
+</parent>
+----
+
+= Использование JaCoCo
+Включите профиль `jacoco`.
+
+Добавьте в модули, содержащих тесты либо тестируемые классы, свойство:
+[source,xml]
+----
+<properties>
+    <jacoco.skip>false</jacoco.skip>
+</properties>
+----
