@@ -1,4 +1,4 @@
-package net.n2oapp.platform.web;
+package net.n2oapp.platform.web.test;
 
 import net.n2oapp.criteria.dataset.DataSet;
 import net.n2oapp.framework.api.register.route.RouteInfo;

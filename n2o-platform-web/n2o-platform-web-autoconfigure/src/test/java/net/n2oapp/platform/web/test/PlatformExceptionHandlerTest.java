@@ -1,4 +1,4 @@
-package net.n2oapp.platform.web;
+package net.n2oapp.platform.web.test;
 
 import net.n2oapp.framework.api.exception.N2oException;
 import net.n2oapp.framework.api.exception.N2oUserException;

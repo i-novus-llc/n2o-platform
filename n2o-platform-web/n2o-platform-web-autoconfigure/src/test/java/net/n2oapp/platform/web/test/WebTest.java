@@ -1,4 +1,4 @@
-package net.n2oapp.platform.web;
+package net.n2oapp.platform.web.test;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
