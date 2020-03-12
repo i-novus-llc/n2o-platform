@@ -1,7 +1,7 @@
 package net.n2oapp.platform.web.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.n2oapp.framework.boot.N2oFrameworkAutoConfiguration;
+import net.n2oapp.engine.factory.integration.spring.OverrideBean;
 import net.n2oapp.framework.engine.data.rest.SpringRestDataProviderEngine;
 import net.n2oapp.framework.engine.data.rest.json.RestEngineTimeModule;
 import net.n2oapp.platform.i18n.Messages;
@@ -10,7 +10,6 @@ import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
@@ -19,11 +18,11 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
+import org.springframework.web.client.RestTemplate;
 
 import java.text.SimpleDateFormat;
 
 @Configuration
-@AutoConfigureBefore(N2oFrameworkAutoConfiguration.class)
 public class WebAutoConfiguration {
 
     @Bean
@@ -51,16 +50,27 @@ public class WebAutoConfiguration {
             return restTemplate;
         }
 
-        @Bean("restDataProviderEngine")
+        @Bean
         public SpringRestDataProviderEngine oauthRestDataProviderEngine(@Qualifier("oauth2RestTemplate") OAuth2RestTemplate oauth2RestTemplate,
-                                                                   @Value("${n2o.engine.rest.url}") String baseRestUrl) {
+                                                                        @Value("${n2o.engine.rest.url}") String baseRestUrl) {
             ObjectMapper restObjectMapper = new ObjectMapper();
             restObjectMapper.setDateFormat(new SimpleDateFormat(serializingFormat));
             RestEngineTimeModule module = new RestEngineTimeModule(deserializingFormats);
             restObjectMapper.registerModules(module);
-            SpringRestDataProviderEngine springRestDataProviderEngine = new SpringRestDataProviderEngine(oauth2RestTemplate, restObjectMapper);
+            SpringRestDataProviderEngine springRestDataProviderEngine = new OverrideRestDataProviderEngine(oauth2RestTemplate, restObjectMapper);
             springRestDataProviderEngine.setBaseRestUrl(baseRestUrl);
             return springRestDataProviderEngine;
+        }
+
+        private static class OverrideRestDataProviderEngine extends SpringRestDataProviderEngine implements OverrideBean {
+            private OverrideRestDataProviderEngine(RestTemplate restTemplate, ObjectMapper objectMapper) {
+                super(restTemplate, objectMapper);
+            }
+
+            @Override
+            public String getOverrideBeanName() {
+                return "restDataProviderEngine";
+            }
         }
     }
 
