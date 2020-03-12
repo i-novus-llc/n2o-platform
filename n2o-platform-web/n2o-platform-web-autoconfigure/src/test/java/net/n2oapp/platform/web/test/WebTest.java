@@ -1,4 +1,4 @@
-package net.n2oapp.platform.web;
+package net.n2oapp.platform.web.test;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,7 +17,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
 
 
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = WebTest.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

@@ -1,4 +1,4 @@
-package net.n2oapp.platform.web;
+package net.n2oapp.platform.web.test;
 
 import net.n2oapp.criteria.dataset.DataSet;
 import net.n2oapp.framework.api.register.route.RouteInfo;
@@ -30,7 +30,7 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = JwtForwardingTest.class,
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
