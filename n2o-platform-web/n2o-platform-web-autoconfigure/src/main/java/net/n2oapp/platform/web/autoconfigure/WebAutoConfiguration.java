@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 @AutoConfigureBefore(N2oFrameworkAutoConfiguration.class)
 public class WebAutoConfiguration {
 
+    @ConditionalOnMissingBean
     @Bean
     public PlatformExceptionHandler platformOperationExceptionHandler(@Autowired(required = false) Messages messages) {
         PlatformExceptionHandler platformExceptionHandler = new PlatformExceptionHandler();

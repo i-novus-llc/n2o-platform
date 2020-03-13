@@ -9,6 +9,7 @@ import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.*;
 import org.springframework.data.domain.Sort;
 
@@ -32,9 +33,10 @@ public class JaxRsCommonAutoConfiguration {
         this.mapperConfigurers = mapperConfigurers;
     }
 
+    @ConditionalOnMissingBean(name = "cxfObjectMapper")
     @Primary
-    @Bean
-    ObjectMapper cxfObjectMapper() {
+    @Bean("cxfObjectMapper")
+    public ObjectMapper cxfObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         RestObjectMapperConfigurer.configure(objectMapper, mapperConfigurers);
         return objectMapper;
