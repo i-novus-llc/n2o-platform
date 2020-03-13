@@ -14,9 +14,9 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
@@ -29,7 +29,6 @@ import java.text.SimpleDateFormat;
 public class WebAutoConfiguration {
 
     @Bean
-    @Primary
     public PlatformExceptionHandler platformOperationExceptionHandler(@Autowired(required = false) Messages messages) {
         PlatformExceptionHandler platformExceptionHandler = new PlatformExceptionHandler();
         if (messages != null)
@@ -55,6 +54,7 @@ public class WebAutoConfiguration {
         }
 
         @Bean("restDataProviderEngine")
+        @ConditionalOnMissingBean(name = "restDataProviderEngine")
         public SpringRestDataProviderEngine oauthRestDataProviderEngine(@Qualifier("oauth2RestTemplate") OAuth2RestTemplate oauth2RestTemplate,
                                                                         @Value("${n2o.engine.rest.url}") String baseRestUrl) {
             ObjectMapper restObjectMapper = new ObjectMapper();
