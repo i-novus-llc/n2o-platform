@@ -354,7 +354,7 @@
             <dependency>
                 <groupId>ru.i-novus.components</groupId>
                 <artifactId>liquibase-core</artifactId>
-                <version>3.6.2.2.inovus</version>
+                <version>3.6.2.3.inovus</version>
             </dependency>
 
             <dependency>
