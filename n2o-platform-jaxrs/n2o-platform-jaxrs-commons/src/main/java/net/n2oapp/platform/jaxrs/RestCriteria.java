@@ -91,11 +91,6 @@ public abstract class RestCriteria implements Pageable {
         }
     }
 
-    @JsonIgnore
-    public List<Sort.Order> getOrders() {
-        return orders;
-    }
-
     public void setOrders(List<Sort.Order> orders) {
         this.orders = orders;
     }
