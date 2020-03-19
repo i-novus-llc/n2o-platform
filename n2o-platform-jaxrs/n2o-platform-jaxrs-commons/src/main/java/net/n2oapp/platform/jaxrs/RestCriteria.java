@@ -15,6 +15,7 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -168,4 +169,18 @@ public abstract class RestCriteria implements Pageable {
         return field.getDeclaringClass() != RestCriteria.class && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers());
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RestCriteria)) return false;
+        RestCriteria that = (RestCriteria) o;
+        return pageNumber == that.pageNumber &&
+                pageSize == that.pageSize &&
+                Objects.equals(orders, that.orders);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pageNumber, pageSize, orders);
+    }
 }
