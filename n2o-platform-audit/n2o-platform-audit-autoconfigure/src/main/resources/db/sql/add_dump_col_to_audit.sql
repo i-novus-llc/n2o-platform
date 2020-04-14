@@ -40,9 +40,7 @@ CREATE OR REPLACE FUNCTION audit.gen_audit_table_ddl(table_name TEXT)
 				CREATE INDEX ON audit.%s(%s);
 				CREATE INDEX %s_aud_when_ix ON audit.%s(aud_when);
 				CREATE INDEX %s_aud_who_ix ON audit.%s(aud_who);
-				CREATE INDEX %s_aud_source_ix ON audit.%s(aud_source);
-
-				COMMENT ON COLUMN audit."%s".delta IS ''deprecated'';'
+				CREATE INDEX %s_aud_source_ix ON audit.%s(aud_source);'
     , audit_table_name, pk_value_to_write_with_types, audit_table_name, audit_table_name,
                   substring(pk_value_to_write, 1, length(pk_value_to_write) - 1)
     , audit_table_name, audit_table_name, audit_table_name, audit_table_name, audit_table_name, audit_table_name,
@@ -258,10 +256,12 @@ BEGIN
                and table_name <> 'databasechangelog' and table_name <> 'databasechangeloglock'
                and not table_name like '%_aud'
                and not exists (select 1 from aud_excluded_schemas where schema_name = information_schema.tables.table_schema)
-               and exists(select 1 from information_schema.triggers where trigger_name = 'audit_trigger' and event_object_schema ||'.'|| event_object_table = information_schema.tables.table_schema||'.'||information_schema.tables.table_name)
+               and exists(select 1 from information_schema.triggers where trigger_name = 'audit_trigger_full' and event_object_schema ||'.'|| event_object_table = information_schema.tables.table_schema||'.'||information_schema.tables.table_name)
                and not exists(select 1 from aud_excluded_tables where table_name = information_schema.tables.table_schema||'.'||information_schema.tables.table_name)
         LOOP
-            return next r;
+            if exists (select 1 from information_schema.tables where table_schema = 'audit' and table_name =  replace(r, '.','$')) then
+                return next r;
+            end if;
         END LOOP;
 END;
 $BODY$
@@ -282,3 +282,5 @@ begin
 end;
     $$
     LANGUAGE plpgsql;
+
+drop function aud_auditable_tables();
