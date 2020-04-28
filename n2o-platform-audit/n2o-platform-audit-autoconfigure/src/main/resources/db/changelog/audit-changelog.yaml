@@ -26,6 +26,8 @@ databaseChangeLog:
   - include:
       file: classpath*:/audit/202001131500_tables_to_full_audit_func_bfx_2.xml
   - include:
+      file: classpath*:/audit/202004131430_add_dump.xml
+  - include:
       file: classpath*:/audit/202004271543_all_to_utc.xml
   - include:
       file: classpath*:/audit/202004281554_exclude_quartz.xml
