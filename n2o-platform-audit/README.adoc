@@ -1,10 +1,10 @@
 = Документация
 
 
-= Возможности
+== Возможности
 Эта библиотека подключает аудит на уровне БД.
 
-= Подключение
+== Подключение
 ----
 <dependency>
   <groupId>net.n2oapp.platform</groupId>
@@ -12,6 +12,37 @@
 </dependency>
 ----
 
+== Кастомизация
+
+=== Зачем это нужно
+
+Иногда у вас есть набор технических таблиц, которые не надо аудировать. У данного аудита есть предопределенный набор
+схем и таблиц, которые по - умолчанию не аудируются (например, `databasechangelog` ликуйбейза). Но в вашем проекте могут быть какие - то еще,
+предусмотреть все невозможно. Некоторые не технические таблицы тоже не надо аудировать (справочники и т.д.). В этом случае добавить в исключения и
+аудит не будет их трогать.
+
+=== Как это сделать
+
+В ресурсах приложения необходимо создать папку `audit/customize`.
+Туда по мере необходимости добавлять скрипты точно так же, как добавляем обычные скрипты с префиксами
+`ГГГГММДДЧЧММ-описание-скрипта.xml`. Они будут включаться в changelog при каждом прогоне auditLiquibase-а.
+
+Например вам нужно исключить схему Quartz-а из аудита. Для этого вам нужно создать файл `ГГГГММДДЧЧММ-exclude-quartz.xml` с таким содержимым:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+    <changeSet id="ГГГГММДДЧЧММ-exclude-quartz" author="author" dbms="postgresql">
+        <sql splitStatements="false">
+            insert into aud_excluded_schemas(id, schema_name) values(nextval('aud_excluded_schemas_seq'), 'quartz');
+        </sql>
+    </changeSet>
+</databaseChangeLog>
+----
 
 
 
