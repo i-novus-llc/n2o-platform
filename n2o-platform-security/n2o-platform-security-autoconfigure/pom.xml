@@ -10,11 +10,13 @@
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-platform-security</artifactId>
         <version>3.0.2-SNAPSHOT</version>
-        <relativePath>..</relativePath>
     </parent>
 
-    <dependencies>
+    <properties>
+        <jacoco.skip>false</jacoco.skip>
+    </properties>
 
+    <dependencies>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

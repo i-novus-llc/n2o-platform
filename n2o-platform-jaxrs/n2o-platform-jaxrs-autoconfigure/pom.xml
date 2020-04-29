@@ -10,8 +10,11 @@
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-platform-jaxrs</artifactId>
         <version>3.0.2-SNAPSHOT</version>
-        <relativePath>..</relativePath>
     </parent>
+
+    <properties>
+        <jacoco.skip>false</jacoco.skip>
+    </properties>
 
     <dependencies>
 

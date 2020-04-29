@@ -9,6 +9,10 @@
 
     <artifactId>n2o-platform-actuator-autoconfigure</artifactId>
 
+    <properties>
+        <jacoco.skip>false</jacoco.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
