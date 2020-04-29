@@ -6,7 +6,7 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-platform-quartz</artifactId>
-        <version>3.0.3-SNAPSHOT</version>
+        <version>3.0.3</version>
         <relativePath>..</relativePath>
     </parent>
 
