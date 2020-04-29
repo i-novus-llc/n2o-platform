@@ -9,7 +9,7 @@
         <artifactId>n2o-platform-audit</artifactId>
         <version>3.0.2-SNAPSHOT</version>
     </parent>
-c
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
