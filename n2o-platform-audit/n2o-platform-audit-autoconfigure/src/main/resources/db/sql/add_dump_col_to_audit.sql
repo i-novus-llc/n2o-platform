@@ -123,14 +123,14 @@ CREATE OR REPLACE FUNCTION audit.trigger_fun()
       IF (TG_OP = 'INSERT' OR TG_OP = 'UPDATE')
       THEN
         pk_values_from_new :=
-        pk_values_from_new || '''' || (new_row_json :: JSONB -> pk_column_info.column_name) || '''' || '::' ||
+        pk_values_from_new || '''' || replace((new_row_json :: JSONB -> pk_column_info.column_name)::varchar, '"', '') || '''' || '::' ||
         pk_column_info.type || ', ';
       END IF;
 
       IF (TG_OP = 'DELETE')
       THEN
         pk_values_from_old :=
-        pk_values_from_old || '''' || (old_row_json :: JSONB -> pk_column_info.column_name) || '''' || '::' ||
+        pk_values_from_old || '''' || replace((old_row_json :: JSONB -> pk_column_info.column_name)::varchar, '"', '') || '''' || '::' ||
         pk_column_info.type || ', ';
       END IF;
 
