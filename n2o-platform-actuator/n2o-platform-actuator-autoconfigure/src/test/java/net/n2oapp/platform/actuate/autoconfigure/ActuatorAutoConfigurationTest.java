@@ -15,7 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @since 06.09.2018
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes=ActuatorAutoConfigurationTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes={ActuatorAutoConfigurationTest.class,TestWebSecurityConfig.class,TestKafkaConfig.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EnableAutoConfiguration
 public class ActuatorAutoConfigurationTest {
     @Autowired
@@ -25,9 +25,11 @@ public class ActuatorAutoConfigurationTest {
     Environment env;
 
     @Test
-    public void testActuator() {
+    public void testActuatorAutoConfiguration() {
         ActuatorHealthResponse response = restTemplate.getForObject(env.getProperty("management.endpoints.web.base-path") + "/health", ActuatorHealthResponse.class);
-        assert response.getStatus().equals(Status.UP.getCode());
+
+        /// assert that health endpoint is up and accessible, and that kafka is down and overall application health is "DOWN"
+        assert response.getStatus().equals(Status.DOWN.getCode());
     }
 
     private static class ActuatorHealthResponse {
