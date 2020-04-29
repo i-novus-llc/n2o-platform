@@ -8,9 +8,8 @@
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-platform-audit</artifactId>
         <version>3.0.2-SNAPSHOT</version>
-        <relativePath>..</relativePath>
     </parent>
-
+c
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

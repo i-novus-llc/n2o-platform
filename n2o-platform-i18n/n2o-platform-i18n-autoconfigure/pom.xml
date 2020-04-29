@@ -7,11 +7,14 @@
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-platform-i18n</artifactId>
         <version>3.0.2-SNAPSHOT</version>
-        <relativePath>..</relativePath>
     </parent>
 
     <artifactId>n2o-platform-i18n-autoconfigure</artifactId>
     <packaging>jar</packaging>
+
+    <properties>
+        <jacoco.skip>false</jacoco.skip>
+    </properties>
 
     <dependencies>
 

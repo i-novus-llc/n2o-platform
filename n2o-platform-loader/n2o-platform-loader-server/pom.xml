@@ -12,6 +12,10 @@
         <version>3.0.2-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <jacoco.skip>false</jacoco.skip>
+    </properties>
+
     <dependencies>
 
         <dependency>

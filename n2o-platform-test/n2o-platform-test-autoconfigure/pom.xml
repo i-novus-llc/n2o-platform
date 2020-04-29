@@ -4,13 +4,15 @@
         <artifactId>n2o-platform-test</artifactId>
         <groupId>net.n2oapp.platform</groupId>
         <version>3.0.2-SNAPSHOT</version>
-        <relativePath>..</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>n2o-platform-test-autoconfigure</artifactId>
     <packaging>jar</packaging>
 
+    <properties>
+        <jacoco.skip>false</jacoco.skip>
+    </properties>
 
     <dependencies>
 
