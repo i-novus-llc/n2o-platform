@@ -8,7 +8,7 @@ DECLARE
     old_row_json       JSONB;
     data               JSONB;
     delta              JSONB;
-    dump              JSONB;
+    dump               JSONB;
     nullable_key       TEXT;
     insert_query       TEXT;
     pk_column_info     RECORD;
@@ -72,14 +72,14 @@ BEGIN
             IF (TG_OP = 'INSERT' OR TG_OP = 'UPDATE')
             THEN
                 pk_values_from_new :=
-                                                pk_values_from_new || '''' || (new_row_json :: JSONB -> pk_column_info.column_name) || '''' || '::' ||
+                                                pk_values_from_new || '''' || replace((new_row_json :: JSONB -> pk_column_info.column_name)::varchar, '"', '') || '''' || '::' ||
                                                 pk_column_info.type || ', ';
             END IF;
 
             IF (TG_OP = 'DELETE')
             THEN
                 pk_values_from_old :=
-                                                pk_values_from_old || '''' || (old_row_json :: JSONB -> pk_column_info.column_name) || '''' || '::' ||
+                                                pk_values_from_old || '''' || replace((old_row_json :: JSONB -> pk_column_info.column_name)::varchar, '"', '') || '''' || '::' ||
                                                 pk_column_info.type || ', ';
             END IF;
 
@@ -156,7 +156,7 @@ BEGIN
         dump := audit.jsonb_diff_val((old_row_json - 'aud_when' - 'aud_who' - 'aud_source' - 'aud_when_create' - 'aud_who_create' - 'aud_source_create'), data);
 
         insert_query := format(
-                'INSERT INTO %s (%s type, data, delta, dump, aud_when, aud_who, aud_source, aud_rec) VALUES (%s $1, $2, $3, $4, $5, $6, %7, nextval(''%s'') );'
+                'INSERT INTO %s (%s type, data, delta, dump, aud_when, aud_who, aud_source, aud_rec) VALUES (%s $1, $2, $3, $4, $5, $6, $7, nextval(''%s'') );'
             , audit_table_name, pk_column_names, pk_values_from_new, seq_name);
         BEGIN
             EXECUTE insert_query
