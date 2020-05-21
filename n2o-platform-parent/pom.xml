@@ -29,6 +29,8 @@
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
 
         <jacoco.skip>true</jacoco.skip> <!-- Skip all by default for project's root and aggregator pom modules. Disable skip in jar modules. -->
+        <jacoco.aggregate.report.path>${project.basedir}/../target/site/jacoco-aggregate</jacoco.aggregate.report.path> <!-- By default use parent directory of module for multimodule projects. -->
+
         <config.server.enable>false</config.server.enable> <!-- Disable configuration server by default. To enable it use `consul` profile. -->
     </properties>
 
@@ -105,7 +107,7 @@
                                 <goal>report-aggregate</goal>
                             </goals>
                             <configuration>
-                                <outputDirectory>${project.basedir}/../target/site/jacoco-aggregate</outputDirectory>
+                                <outputDirectory>${jacoco.aggregate.report.path}</outputDirectory>
                             </configuration>
                         </execution>
                     </executions>

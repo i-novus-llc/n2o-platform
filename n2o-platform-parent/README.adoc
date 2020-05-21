@@ -28,6 +28,13 @@
 </properties>
 ----
 
+В одномодульных проектах переопределите свойство `jacoco.aggregate.report.path`, поставьте значение по умолчанию:
+----
+<properties>
+    <jacoco.aggregate.report.path>${project.basedir}/target/site/jacoco-aggregate</jacoco.aggregate.report.path>
+</properties>
+----
+
 = Включение конфигурации через Consul
 Включите профиль `consul`.
 
