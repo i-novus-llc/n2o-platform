@@ -60,9 +60,7 @@ public class JaxRsProxyClientRegistrar implements ImportBeanDefinitionRegistrar,
         String[] scanPackages = attributes.getStringArray("scanPackages");
         if (scanPackages != null && scanPackages.length > 0) {
             Optional<String> reduceResult = Stream.of(scanPackages).reduce((a, b) -> a + "," + b);
-            if (reduceResult.isPresent()) {
-                this.scanPackages = reduceResult.get();
-            }
+            reduceResult.ifPresent(s -> this.scanPackages = s);
         }
     }
 

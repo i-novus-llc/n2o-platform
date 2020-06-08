@@ -4,12 +4,10 @@ import net.n2oapp.platform.jaxrs.api.AbstractModel;
 import net.n2oapp.platform.jaxrs.api.SomeCriteria;
 import net.n2oapp.platform.jaxrs.api.SomeModel;
 import net.n2oapp.platform.jaxrs.api.SomeRest;
-import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
 
 /**
  * Приходится дублировать интерфейс {@link SomeRest},
