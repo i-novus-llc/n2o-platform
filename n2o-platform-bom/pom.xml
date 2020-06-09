@@ -20,6 +20,8 @@
         <modelmapper.version>2.3.2</modelmapper.version>
         <commons.version>2.6</commons.version>
         <spring.cloud.version>Hoxton.SR5</spring.cloud.version>
+        <spring-kafka.version>2.4.6.RELEASE</spring-kafka.version>
+        <kafka.version>2.4.1</kafka.version>
         <activation.version>1.1.1</activation.version>
         <feign.version>10.10.1</feign.version>
     </properties>
@@ -418,6 +420,35 @@
                 <groupId>io.github.openfeign</groupId>
                 <artifactId>feign-sax</artifactId>
                 <version>${feign.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka-clients</artifactId>
+                <version>${kafka.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka-clients</artifactId>
+                <version>${kafka.version}</version>
+                <classifier>test</classifier>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka_2.12</artifactId>
+                <version>${kafka.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka_2.12</artifactId>
+                <version>${kafka.version}</version>
+                <classifier>test</classifier>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

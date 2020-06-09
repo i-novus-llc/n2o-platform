@@ -15,13 +15,11 @@ public class KafkaHealthIndicator extends AbstractHealthIndicator {
     }
 
     @Override
-    protected void doHealthCheck(Health.Builder builder) throws Exception {
+    protected void doHealthCheck(Health.Builder builder) {
         try {
             kafkaTemplate.send("test", null).get();
             builder.up();
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             builder.down(ex);
         }
     }

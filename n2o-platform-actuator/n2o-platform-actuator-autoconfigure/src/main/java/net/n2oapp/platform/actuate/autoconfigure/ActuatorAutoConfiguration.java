@@ -2,10 +2,10 @@ package net.n2oapp.platform.actuate.autoconfigure;
 
 import net.n2oapp.platform.actuate.health.KafkaHealthIndicator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.autoconfigure.health.CompositeHealthIndicatorConfiguration;
+import org.springframework.boot.actuate.autoconfigure.health.CompositeHealthContributorConfiguration;
 import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.actuate.autoconfigure.web.servlet.ServletManagementContextAutoConfiguration;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.actuate.health.HealthContributor;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -44,6 +44,7 @@ public class ActuatorAutoConfiguration {
         @Autowired
         Environment env;
 
+        @Override
         protected void configure(HttpSecurity http) throws Exception {
             http.csrf().disable().antMatcher(env.getProperty("management.endpoints.web.base-path") + "/**").authorizeRequests().anyRequest().permitAll();
         }
@@ -54,20 +55,18 @@ public class ActuatorAutoConfiguration {
     @ConditionalOnBean(KafkaTemplate.class)
     @ConditionalOnEnabledHealthIndicator("kafka")
     public static class KafkaHealthIndicatorConfiguration extends
-            CompositeHealthIndicatorConfiguration<KafkaHealthIndicator, KafkaTemplate> {
+            CompositeHealthContributorConfiguration<KafkaHealthIndicator, KafkaTemplate> {
 
         private final Map<String, KafkaTemplate> kafkaTemplates;
 
-        public KafkaHealthIndicatorConfiguration(
-                Map<String, KafkaTemplate> kafkaTemplates) {
+        public KafkaHealthIndicatorConfiguration(Map<String, KafkaTemplate> kafkaTemplates) {
             this.kafkaTemplates = kafkaTemplates;
         }
 
         @Bean
-        @ConditionalOnMissingBean(name = "kafkaHealthIndicator")
-        public HealthIndicator kafkaHealthIndicator() {
-            return createHealthIndicator(this.kafkaTemplates);
+        @ConditionalOnMissingBean(name = "kafkaHealthContributor")
+        public HealthContributor kafkaHealthContributor() {
+            return createContributor(this.kafkaTemplates);
         }
-
     }
 }
