@@ -5,14 +5,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Страница данных Spring Data серилизуемая через Jackson ObjectMapper
  */
-public class RestPage<T extends Serializable> extends PageImpl<T> {
+public class RestPage<T> extends PageImpl<T> {
     private static final long serialVersionUID = -7939773709100742007L;
     private long totalElements;
     private List<T> content;

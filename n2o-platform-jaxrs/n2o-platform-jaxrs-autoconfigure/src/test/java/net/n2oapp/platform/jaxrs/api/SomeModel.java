@@ -6,7 +6,6 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Past;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -16,7 +15,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Validated
-public class SomeModel implements Serializable {
+public class SomeModel {
     private Long id;
     private @NotBlank String name;
     private @Past Date date;
