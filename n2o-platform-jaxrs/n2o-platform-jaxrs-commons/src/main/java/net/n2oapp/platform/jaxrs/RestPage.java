@@ -40,7 +40,7 @@ public class RestPage<T> extends PageImpl<T> {
     }
 
     public PageImpl<T> unwrap() {
-        return new PageImpl<T>(getContent(), new PageRequest(getNumber(),
+        return new PageImpl<>(getContent(), PageRequest.of(getNumber(),
                 getSize(), getSort()), getTotalElements());
     }
 

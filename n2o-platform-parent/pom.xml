@@ -8,7 +8,7 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-platform-bom</artifactId>
-        <version>3.0.5-SNAPSHOT</version>
+        <version>4.0.0-SNAPSHOT</version>
         <relativePath>../n2o-platform-bom</relativePath>
     </parent>
 
@@ -16,8 +16,8 @@
         <versions-maven-plugin.version>2.7</versions-maven-plugin.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
-        <maven.source.version>3.0.1</maven.source.version>
-        <maven.javadoc.version>3.1.0</maven.javadoc.version>
+        <maven.source.version>3.2.0</maven.source.version>
+        <maven.javadoc.version>3.2.0</maven.javadoc.version>
         <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
 
         <java.version>11</java.version>
@@ -26,7 +26,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
 
         <jacoco.skip>true</jacoco.skip> <!-- Skip all by default for project's root and aggregator pom modules. Disable skip in jar modules. -->
         <jacoco.aggregate.report.path>${project.basedir}/../target/site/jacoco-aggregate</jacoco.aggregate.report.path> <!-- By default use parent directory of module for multimodule projects. -->

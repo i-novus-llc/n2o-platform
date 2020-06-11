@@ -22,7 +22,7 @@ public class ActuatorAutoConfigurationTest {
     private TestRestTemplate restTemplate;
 
     @Autowired
-    Environment env;
+    private Environment env;
 
     @Test
     public void testActuatorAutoConfiguration() {

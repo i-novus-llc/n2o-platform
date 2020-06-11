@@ -22,13 +22,13 @@ public class JaxRsProxyClientFactoryBean extends JaxRsProxyClientConfiguration i
     private String receiveTimeout;
 
     @Override
-    public Object getObject() throws Exception {
+    public Object getObject() {
         Client client = createClient();
         HTTPClientPolicy httpClientPolicy = WebClient.getConfig(client).getHttpConduit().getClient();
         if (!StringUtils.isEmpty(connectionTimeout))
-            httpClientPolicy.setConnectionTimeout(Long.valueOf(connectionTimeout));
+            httpClientPolicy.setConnectionTimeout(Long.parseLong(connectionTimeout));
         if (!StringUtils.isEmpty(receiveTimeout))
-            httpClientPolicy.setReceiveTimeout(Long.valueOf(receiveTimeout));
+            httpClientPolicy.setReceiveTimeout(Long.parseLong(receiveTimeout));
         return client;
     }
 

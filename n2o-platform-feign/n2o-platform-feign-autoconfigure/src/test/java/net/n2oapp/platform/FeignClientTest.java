@@ -59,11 +59,11 @@ public class FeignClientTest {
     @Autowired
     private SomeFeignClient client;
 
-    private static final String jwt = "Test_token";
+    private static final String TEST_TOKEN = "Test_token";
 
     @Before
     public void setUp() {
-        DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken(jwt);
+        DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken(TEST_TOKEN);
         token.setTokenType("Bearer");
         Mockito.when(oAuth2ClientContext.getAccessToken()).thenReturn(token);
     }
@@ -87,7 +87,7 @@ public class FeignClientTest {
         assertThat(page.getContent().get(0).getDate(), equalTo(df.parse("01.01.2018 01:00")));
         assertThat(page.getContent().get(0).getDateEnd(), equalTo(LocalDateTime.parse("2018-01-12T01:00:00")));
         Method[] declaredMethods = page.getClass().getDeclaredMethods();
-        RestPage expectedPage = new RestPage<>(page.getContent(), criteria, page.getTotalElements());
+        RestPage<SomeModel> expectedPage = new RestPage<>(page.getContent(), criteria, page.getTotalElements());
         expectedPage.setTotalElements(page.getTotalElements());
         StringBuilder expectedStringOfValues = new StringBuilder();
         StringBuilder actualStringOfValues = new StringBuilder();
@@ -106,7 +106,7 @@ public class FeignClientTest {
     @Test
     public void sort() {
         SomeCriteria criteria = new SomeCriteria(1, 10,
-                new Sort(new Sort.Order(ASC, "name"), new Sort.Order(DESC, "date")));
+                Sort.by(new Sort.Order(ASC, "name"), new Sort.Order(DESC, "date")));
         Page<SomeModel> page = client.search(criteria);
         assertThat(page.getSort(), notNullValue());
         assertThat(page.getSort().getOrderFor("name").getDirection(), equalTo(ASC));
@@ -172,12 +172,10 @@ public class FeignClientTest {
 
     /**
      * Проверка сериализации/десериализации Page c абстрактным типом
-     * @throws Exception
      */
     @Test
-    public void pageOfAbstractModel() throws Exception {
+    public void pageOfAbstractModel() {
         assertThat(client.searchModel(new SomeCriteria()).getContent().get(0), instanceOf(StringModel.class));
-
     }
 
     /**
@@ -199,7 +197,7 @@ public class FeignClientTest {
 
     @Test
     public void testAuthorization() {
-        assertThat(client.authHeader().get("Authorization"), is("Bearer " + jwt));
+        assertThat(client.authHeader().get("Authorization"), is("Bearer " + TEST_TOKEN));
     }
 
     @Configuration
@@ -212,6 +210,5 @@ public class FeignClientTest {
                 });
             };
         }
-
     }
 }

@@ -59,7 +59,6 @@ public class FeignClientAutoConfiguration {
         return new JAXRSContract();
     }
 
-
     @Bean
     public Retryer feignRetryer() {
         return Retryer.NEVER_RETRY;
@@ -73,7 +72,6 @@ public class FeignClientAutoConfiguration {
         public FeignJwtHeaderInterceptor feignJwtHeaderInterceptor(OAuth2ClientContext oAuth2ClientContext) {
             return new FeignJwtHeaderInterceptor(oAuth2ClientContext);
         }
-
     }
 
     @Bean

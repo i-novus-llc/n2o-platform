@@ -1,17 +1,18 @@
 package net.n2oapp.platform.actuate.autoconfigure;
 
 import net.n2oapp.platform.actuate.health.KafkaHealthIndicator;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.*;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
+import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.SocketUtils;
 
@@ -24,13 +25,21 @@ import java.util.Map;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = KafkaHealthIndicatorTest.class)
+@EmbeddedKafka(
+        // We're only needing to test Kafka serializing interactions, so keep partitioning simple
+        partitions = 1,
+        topics = {
+                KafkaHealthIndicatorTest.TEST_TOPIC
+        })
 public class KafkaHealthIndicatorTest {
-    @ClassRule
-    public static EmbeddedKafkaRule kafkaEmbedded = new EmbeddedKafkaRule(1);
+    public static final String TEST_TOPIC = "test";
 
-//    @Test todo sometimes embedded kafka fails to start, should be fixed in future releases
-    public void kafkaIsUp() throws Exception {
-        KafkaTemplate kafkaTemplate = initKafkaTemplate(this.kafkaEmbedded.getEmbeddedKafka().getBrokersAsString());
+    @Autowired
+    private EmbeddedKafkaBroker kafkaEmbedded;
+
+    @Test
+    public void kafkaIsUp() {
+        KafkaTemplate<String, Object> kafkaTemplate = initKafkaTemplate(kafkaEmbedded.getBrokersAsString());
 
         KafkaHealthIndicator healthIndicator = new KafkaHealthIndicator(kafkaTemplate);
         Health health = healthIndicator.health();
@@ -48,12 +57,12 @@ public class KafkaHealthIndicatorTest {
         assert health.getStatus() == Status.DOWN;
     }
 
-    private KafkaTemplate initKafkaTemplate(String bootstrapServers) {
+    private KafkaTemplate<String, Object> initKafkaTemplate(String bootstrapServers) {
         Map<String, Object> config = new HashMap<>();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 1000); /// timeout reduced for testing speed up
-        return new KafkaTemplate(new DefaultKafkaProducerFactory(config));
+        return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(config));
     }
 }

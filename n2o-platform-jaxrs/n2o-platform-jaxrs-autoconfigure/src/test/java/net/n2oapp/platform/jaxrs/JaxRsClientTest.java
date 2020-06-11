@@ -50,7 +50,7 @@ public class JaxRsClientTest {
      * Проверка, что REST прокси клиент обрабатывает Pageable параметры и параметры фильтрации.
      */
     @Test
-    public void pagingAndFiltering() throws Exception {
+    public void pagingAndFiltering() {
         forEachHeaderCombination(() -> {
             SomeCriteria criteria = new SomeCriteria(2, 20);
             criteria.setLikeName("John");
@@ -64,7 +64,7 @@ public class JaxRsClientTest {
             assertThat(page.getContent().get(0).getName(), equalTo("John"));
             assertThat(page.getContent().get(0).getDate(), equalTo(df.parse("01.01.2018 01:00")));
             Method[] declaredMethods = page.getClass().getDeclaredMethods();
-            RestPage expectedPage = new RestPage<>(page.getContent(), criteria, page.getTotalElements());
+            RestPage<SomeModel> expectedPage = new RestPage<>(page.getContent(), criteria, page.getTotalElements());
             expectedPage.setTotalElements(page.getTotalElements());
             StringBuilder expectedStringOfValues = new StringBuilder();
             StringBuilder actualStringOfValues = new StringBuilder();
@@ -85,7 +85,7 @@ public class JaxRsClientTest {
     public void sort() {
         forEachHeaderCombination(() -> {
             SomeCriteria criteria = new SomeCriteria(1, 10,
-                    new Sort(new Sort.Order(ASC, "name"), new Sort.Order(DESC, "date")));
+                    Sort.by(new Sort.Order(ASC, "name"), new Sort.Order(DESC, "date")));
             Page<SomeModel> page = client.search(criteria);
             assertThat(page.getSort(), notNullValue());
             assertThat(page.getSort().getOrderFor("name").getDirection(), equalTo(ASC));
@@ -132,7 +132,7 @@ public class JaxRsClientTest {
                 Optional<StackTraceElement> causeLine = Stream.of(restException.getCause().getStackTrace()).filter(ste ->
                         ste.getMethodName().equals("update")
                                 && ste.getClassName().equals(SomeRestImpl.class.getName())
-                                && ste.getFileName().equals(SomeRestImpl.class.getSimpleName() + ".java")
+                                && (SomeRestImpl.class.getSimpleName() + ".java").equals(ste.getFileName())
                                 && ste.getLineNumber() > 0).findAny();
                 assertThat(causeLine.isPresent(), is(true));
             }
@@ -158,10 +158,9 @@ public class JaxRsClientTest {
 
     /**
      * Проверка сериализации/десериализации Page c абстрактным типом
-     * @throws Exception
      */
     @Test
-    public void pageOfAbstractModel() throws Exception {
+    public void pageOfAbstractModel() {
         forEachHeaderCombination(() -> {
             assertThat(client.searchModel(new SomeCriteria()).getContent().get(0), instanceOf(StringModel.class));
         });
