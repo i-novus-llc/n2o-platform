@@ -14,7 +14,7 @@
     <properties>
         <n2o.version>7.5.1</n2o.version>
         <cxf.version>3.3.6</cxf.version>
-        <swagger.version>3.20.1</swagger.version>
+        <swagger.version>3.25.3</swagger.version>
         <swagger-annotations.version>1.5.21</swagger-annotations.version>
         <jaxrs-api.version>2.1.1</jaxrs-api.version>
         <modelmapper.version>2.3.2</modelmapper.version>
