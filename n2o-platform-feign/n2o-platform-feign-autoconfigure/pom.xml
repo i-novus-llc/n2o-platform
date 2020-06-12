@@ -13,7 +13,7 @@
     </parent>
 
     <properties>
-        <feign.version>10.10.1</feign.version>
+        <feign.version>11.0</feign.version>
         <jacoco.skip>false</jacoco.skip>
     </properties>
 
