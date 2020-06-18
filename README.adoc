@@ -14,7 +14,7 @@ image:https://img.shields.io/hexpm/l/plug.svg?style=flat[link="http://www.apache
 * link:/n2o-platform-test/README.adoc[test] - стартер для создания тестов
 
 = Требования
-Данная версия платформы протестирована с использованием Open JDK 11
+Данная версия платформы протестирована с использованием OpenJDK 11, OpenJDK 14
 
 = Подключение
 Устанавливаем родителький maven артефакт:
