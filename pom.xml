@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>net.n2oapp.platform</groupId>
-    <artifactId>n2o-platform</artifactId>
+    <artifactId>n2o-boot-platform</artifactId>
     <packaging>pom</packaging>
     <version>4.0.0-SNAPSHOT</version>
 
@@ -13,7 +13,7 @@
         <version>2.2.7.RELEASE</version>
     </parent>
 
-    <name>N2O Platform</name>
+    <name>N2O Boot Platform</name>
     <description>Free platform for building microservices based on Spring Boot</description>
     <url>https://github.com/i-novus-llc/n2o-platform</url>
 
@@ -39,7 +39,7 @@
     </organization>
 
     <modules>
-        <module>n2o-platform-bom</module>
+        <module>n2o-platform-dependencies</module>
         <module>n2o-platform-parent</module>
         <module>n2o-platform-i18n</module>
         <module>n2o-platform-actuator</module>
