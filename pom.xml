@@ -89,8 +89,8 @@
                     </plugin>
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nxrm3-maven-plugin</artifactId>
-                        <version>1.0.3</version>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.7</version>
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>ossrh</serverId>
