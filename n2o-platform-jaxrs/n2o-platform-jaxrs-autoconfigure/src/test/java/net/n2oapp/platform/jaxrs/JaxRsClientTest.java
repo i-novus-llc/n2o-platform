@@ -39,7 +39,8 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = JaxRsClientTest.class,
                 webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-                properties = {"server.port=8423"})
+                properties = {"server.port=8423",
+                "n2o.ui.message.stacktrace=true"})
 public class JaxRsClientTest {
 
     @Autowired
@@ -126,7 +127,10 @@ public class JaxRsClientTest {
             } catch (Exception e) {
                 assertThat(e, instanceOf(RestException.class));
                 RestException restException = (RestException) e;
-                assertThat(restException.getMessage(), is("Field [id] mustn't be null"));
+                CodeModel codeModel = CodeModel.buildCode(e.getMessage());
+                String message = restException.getMessage();
+                codeModel.setCode(message.substring(message.lastIndexOf(" ") + 1));
+                assertThat(restException.getMessage(), is(codeModel.getCode()));
                 assertThat(restException.getCause(), instanceOf(RemoteException.class));
                 assertThat(restException.getCause().getMessage(), is("java.lang.IllegalArgumentException: Field [id] mustn't be null"));
                 Optional<StackTraceElement> causeLine = Stream.of(restException.getCause().getStackTrace()).filter(ste ->

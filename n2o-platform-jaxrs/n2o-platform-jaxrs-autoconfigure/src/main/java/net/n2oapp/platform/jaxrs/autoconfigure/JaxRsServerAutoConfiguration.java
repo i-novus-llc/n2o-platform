@@ -102,8 +102,19 @@ public class JaxRsServerAutoConfiguration {
     }
 
     @Bean
-    RestServerExceptionMapper restServerExceptionMapper() {
-        return new RestServerExceptionMapper();
+    @ConditionalOnProperty(name = {"n2o.ui.message.stacktrace"}, havingValue = "true")
+    RestServerExceptionMapper restServerExceptionMapperWithStackTrace() {
+        RestServerExceptionMapper restServerExceptionMapper = new RestServerExceptionMapper();
+        restServerExceptionMapper.setCanExportStack(true);
+        return restServerExceptionMapper;
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = {"n2o.ui.message.stacktrace"}, havingValue = "false", matchIfMissing = true)
+    RestServerExceptionMapper restServerExceptionMapperWithoutStackTrace() {
+        RestServerExceptionMapper restServerExceptionMapper = new RestServerExceptionMapper();
+        restServerExceptionMapper.setCanExportStack(false);
+        return restServerExceptionMapper;
     }
 
     @Bean

@@ -50,7 +50,8 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
                 "net.n2oapp.platform.jaxrs.impl," +
                 "net.n2oapp.platform.jaxrs.api," +
                 "net.n2oapp.platform.jaxrs.autoconfigure," +
-                "org.apache.cxf.jaxrs.validation"})
+                "org.apache.cxf.jaxrs.validation",
+                "n2o.ui.message.stacktrace=true"})
 public class FeignClientTest {
 
     @MockBean
@@ -143,7 +144,10 @@ public class FeignClientTest {
         } catch (Exception e) {
             assertThat(e, instanceOf(RestException.class));
             RestException restException = (RestException) e;
-            assertThat(restException.getMessage(), is("Field [id] mustn't be null"));
+            CodeModel codeModel = CodeModel.buildCode(e.getMessage());
+            String message = restException.getMessage();
+            codeModel.setCode(message.substring(message.lastIndexOf(" ") + 1));
+            assertThat(restException.getMessage(), is(codeModel.getCode()));
             assertThat(restException.getCause(), instanceOf(RemoteException.class));
             assertThat(restException.getCause().getMessage(), is("java.lang.IllegalArgumentException: Field [id] mustn't be null"));
             Optional<StackTraceElement> causeLine = Stream.of(restException.getCause().getStackTrace()).filter(ste ->
