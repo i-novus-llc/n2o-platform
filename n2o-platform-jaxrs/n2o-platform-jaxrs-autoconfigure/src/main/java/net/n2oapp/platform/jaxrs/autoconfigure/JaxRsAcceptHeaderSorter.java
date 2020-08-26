@@ -15,6 +15,11 @@ import java.util.Map;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static org.apache.cxf.message.Message.PROTOCOL_HEADERS;
 
+/*
+  Сортировка Accept заголовка, отдающая предпочтение json.
+  Таким образом, если сервер получит запрос с "Accept=application/xml,application/json" (клиенту неважно,
+  в каком формате он получит свои данные) -- сервер всегда выберет json.
+ */
 @Component
 @Provider(value = Provider.Type.InInterceptor)
 public class JaxRsAcceptHeaderSorter extends AbstractPhaseInterceptor<Message> {
