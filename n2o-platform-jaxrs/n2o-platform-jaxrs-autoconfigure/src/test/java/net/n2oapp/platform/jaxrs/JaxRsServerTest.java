@@ -27,6 +27,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @SpringBootApplication
@@ -230,6 +231,17 @@ public class JaxRsServerTest {
             assertNotNull(model.getDate());
             assertNotNull(model.getDateEnd());
         });
+    }
+
+    @Test
+    public void testDefaultContentTypeIsJson() {
+        WebClient client = WebClient.create("http://localhost:" + port, List.of(jsonProvider, xmlProvider))
+                .accept(MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON)
+                .type(MediaType.APPLICATION_JSON)
+                .path("api");
+        Response response = client.path("example").path("{id}", 50).get();
+        String contentType = response.getHeaderString(HttpHeaders.CONTENT_TYPE);
+        assertEquals(MediaType.APPLICATION_JSON, contentType);
     }
 
     private void forEachClient(Consumer<WebClient> clientConsumer) {
