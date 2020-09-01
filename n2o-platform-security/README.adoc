@@ -66,6 +66,7 @@ n2o.platform.security.client-id=test
 #Секретный код клиента
 n2o.platform.security.client-secret=qwerty
 ```
+Указанный client-id должен быть зарегистрирован в сервере аутентификации.
 
 Если микросервис выполняет запросы к другим авторизованным микросервисам с тем же идентификатором ресурса,
 то задавать настройку `n2o.platform.security.resource-id` не требуется, достаточно задать `n2o.platform.security.client-id`.
