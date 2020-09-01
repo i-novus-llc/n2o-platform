@@ -12,7 +12,7 @@
 * Автоматическое подключение stateless аутентификации по jwt к микросервису
 * Получение пользователя обычным для spring security способом (SecurityContextHolder и т.п.)
 * Прозрачная отправка jwt через RestTemplate
-* Прозрачная отправлка jwt через feign client при подключении n2o-platform-starter-feign-client
+* Прозрачная отправка jwt через feign client при подключении n2o-platform-starter-feign-client
 * Прозрачная отправка jwt по REST при подключении n2o-platform-starter-web
 
 = Подключение
