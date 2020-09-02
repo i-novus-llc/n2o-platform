@@ -6,6 +6,7 @@ import net.n2oapp.framework.api.criteria.N2oPreparedCriteria;
 import net.n2oapp.framework.api.data.QueryExceptionHandler;
 import net.n2oapp.framework.api.exception.N2oException;
 import net.n2oapp.framework.api.exception.N2oUserException;
+import net.n2oapp.framework.api.exception.ValidationMessage;
 import net.n2oapp.framework.api.metadata.local.CompiledObject;
 import net.n2oapp.framework.api.metadata.local.CompiledQuery;
 import net.n2oapp.framework.engine.data.N2oOperationExceptionHandler;
@@ -13,9 +14,12 @@ import net.n2oapp.platform.i18n.Messages;
 import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.RestException;
 import net.n2oapp.platform.jaxrs.RestMessage;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.HttpStatusCodeException;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.joining;
@@ -101,7 +105,15 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
                 return n2oException;
             }
             if (restClientException.getStatusCode().is4xxClientError() && message != null) {
-                return new N2oUserException(message.getMessage());
+
+                if (CollectionUtils.isEmpty(message.getErrors())) {
+                    return new N2oUserException(message.getMessage());
+                } else {
+                    List<ValidationMessage> validationMessages = message.getErrors().stream()
+                            .map(error -> new ValidationMessage(error.getMessage(), error.getField(), null))
+                            .collect(Collectors.toList());
+                    return new N2oUserException(message.getMessage(), null, validationMessages);
+                }
             } else if (restClientException.getStatusCode().is5xxServerError() && message != null) {
                 return new N2oException(new RestException(message, restClientException.getRawStatusCode()));
             }
