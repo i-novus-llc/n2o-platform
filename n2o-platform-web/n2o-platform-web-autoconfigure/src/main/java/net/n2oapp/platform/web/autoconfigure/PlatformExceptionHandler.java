@@ -103,11 +103,10 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
             }
             if (restClientException.getStatusCode().is4xxClientError() && message != null) {
 
-                if (CollectionUtils.isEmpty(message.getErrors())) {
-                    return new N2oUserException(message.getMessage());
-                } else {
-                    return handleMessageErrorsException(message);
-                }
+                return CollectionUtils.isEmpty(message.getErrors())
+                        ? new N2oUserException(message.getMessage())
+                        : handleMessageErrorsException(message);
+
             } else if (restClientException.getStatusCode().is5xxServerError() && message != null) {
                 return new N2oException(new RestException(message, restClientException.getRawStatusCode()));
             }
@@ -142,8 +141,8 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
         return new N2oUserException(message);
     }
 
-
     private N2oException handleMessageErrorsException(RestMessage restMessage) {
+
         String message = IntStream
                 .rangeClosed(1, restMessage.getErrors().size())
                 .mapToObj(i -> i + ") " + restMessage.getErrors().get(i - 1).getMessage())
