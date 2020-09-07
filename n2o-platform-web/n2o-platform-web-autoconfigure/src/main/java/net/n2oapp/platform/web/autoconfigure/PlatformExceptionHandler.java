@@ -6,7 +6,6 @@ import net.n2oapp.framework.api.criteria.N2oPreparedCriteria;
 import net.n2oapp.framework.api.data.QueryExceptionHandler;
 import net.n2oapp.framework.api.exception.N2oException;
 import net.n2oapp.framework.api.exception.N2oUserException;
-import net.n2oapp.framework.api.exception.ValidationMessage;
 import net.n2oapp.framework.api.metadata.local.CompiledObject;
 import net.n2oapp.framework.api.metadata.local.CompiledQuery;
 import net.n2oapp.framework.engine.data.N2oOperationExceptionHandler;
@@ -18,8 +17,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.HttpStatusCodeException;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.joining;
@@ -109,10 +106,7 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
                 if (CollectionUtils.isEmpty(message.getErrors())) {
                     return new N2oUserException(message.getMessage());
                 } else {
-                    List<ValidationMessage> validationMessages = message.getErrors().stream()
-                            .map(error -> new ValidationMessage(error.getMessage(), error.getField(), null))
-                            .collect(Collectors.toList());
-                    return new N2oUserException(message.getMessage(), null, validationMessages);
+                    return handleMessageErrorsException(message);
                 }
             } else if (restClientException.getStatusCode().is5xxServerError() && message != null) {
                 return new N2oException(new RestException(message, restClientException.getRawStatusCode()));
@@ -148,4 +142,12 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
         return new N2oUserException(message);
     }
 
+
+    private N2oException handleMessageErrorsException(RestMessage restMessage) {
+        String message = IntStream
+                .rangeClosed(1, restMessage.getErrors().size())
+                .mapToObj(i -> i + ") " + restMessage.getErrors().get(i - 1).getMessage())
+                .collect(joining("\n"));
+        return new N2oUserException(message);
+    }
 }
