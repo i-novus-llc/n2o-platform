@@ -60,6 +60,7 @@ public class JaxRsServerAutoConfiguration {
             result.setSecurityDefinitions(Map.of(auth.getName(), oAuth2Definition));
         }
         result.setResourcePackage(jaxRsProperties.getSwagger().getResourcePackage());
+        result.setScan(true);
         return result;
     }
 
