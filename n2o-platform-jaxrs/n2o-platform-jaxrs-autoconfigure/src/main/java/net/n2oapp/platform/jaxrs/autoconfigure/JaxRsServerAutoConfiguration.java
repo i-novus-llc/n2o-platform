@@ -117,4 +117,10 @@ public class JaxRsServerAutoConfiguration {
     BraveFeature braveFeature(Tracing brave) {
         return new BraveFeature(brave);
     }
+
+    @Bean
+    JaxRsAcceptHeaderSorter jaxRsAcceptHeaderSorter() {
+        return new JaxRsAcceptHeaderSorter();
+    }
+
 }

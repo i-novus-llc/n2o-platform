@@ -5,7 +5,6 @@ import org.apache.cxf.annotations.Provider;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
-import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,7 +19,6 @@ import static org.apache.cxf.message.Message.PROTOCOL_HEADERS;
   Таким образом, если сервер получит запрос с "Accept=application/xml,application/json" (клиенту неважно,
   в каком формате он получит свои данные) -- сервер всегда выберет json.
  */
-@Component
 @Provider(value = Provider.Type.InInterceptor)
 public class JaxRsAcceptHeaderSorter extends AbstractPhaseInterceptor<Message> {
 
