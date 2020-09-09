@@ -12,7 +12,7 @@
     </parent>
 
     <properties>
-        <n2o.version>7.5.6</n2o.version>
+        <n2o.version>7.8.0</n2o.version>
         <cxf.version>3.3.6</cxf.version>
         <swagger.version>3.20.1</swagger.version>
         <swagger-annotations.version>1.5.21</swagger-annotations.version>
@@ -211,7 +211,7 @@
             <dependency>
                 <groupId>org.springframework.security.oauth</groupId>
                 <artifactId>spring-security-oauth2</artifactId>
-                <version>2.3.5.RELEASE</version>
+                <version>2.4.1.RELEASE</version>
             </dependency>
 
             <!-- CXF -->
