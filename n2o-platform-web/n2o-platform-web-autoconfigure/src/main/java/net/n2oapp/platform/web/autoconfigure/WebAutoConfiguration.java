@@ -47,6 +47,9 @@ public class WebAutoConfiguration {
         @Value("${n2o.engine.rest.dateformat.deserialize}")
         private String[] deserializingFormats;
 
+        @Value("${n2o.engine.rest.dateformat.exclusion-keys}")
+        private String[] exclusionKeys;
+
         @Bean("oauth2RestTemplate")
         public OAuth2RestTemplate oauth2RestTemplate(OAuth2ProtectedResourceDetails details, OAuth2ClientContext oauth2ClientContext) {
             OAuth2RestTemplate restTemplate = new OAuth2RestTemplate(details, oauth2ClientContext);
@@ -60,7 +63,7 @@ public class WebAutoConfiguration {
                                                                         @Value("${n2o.engine.rest.url}") String baseRestUrl) {
             ObjectMapper restObjectMapper = new ObjectMapper();
             restObjectMapper.setDateFormat(new SimpleDateFormat(serializingFormat));
-            RestEngineTimeModule module = new RestEngineTimeModule(deserializingFormats);
+            RestEngineTimeModule module = new RestEngineTimeModule(deserializingFormats, exclusionKeys);
             restObjectMapper.registerModules(module);
             SpringRestDataProviderEngine springRestDataProviderEngine = new SpringRestDataProviderEngine(oauth2RestTemplate, restObjectMapper);
             springRestDataProviderEngine.setBaseRestUrl(baseRestUrl);
