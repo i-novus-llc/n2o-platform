@@ -193,12 +193,12 @@ public class JaxRsServerTest {
         forEachClient(webClient -> {
             Page<Map<String, Object>> page = webClient.path("example").path("search")
                     .query("name", "John")
-                    .query("date", "2018-03-01T08:00:00.000+0000")
+                    .query("date", "2018-03-01T08:00:00.000+00:00")
                     .query("dateEnd", "2018-03-31T08:00:00")
                     .get(Page.class);
             List<Map<String, Object>> content = page.getContent();
             assertThat(content.get(0).get("name"), equalTo("John"));
-            assertThat(content.get(0).get("date"), equalTo("2018-03-01T08:00:00.000+0000"));
+            assertThat(content.get(0).get("date"), equalTo("2018-03-01T08:00:00.000+00:00"));
             assertThat(content.get(0).get("dateEnd"), equalTo("2018-03-31T08:00:00"));
         });
     }

@@ -8,14 +8,14 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-boot-platform</artifactId>
-        <version>4.1.0-SNAPSHOT</version>
+        <version>4.2.0-SNAPSHOT</version>
     </parent>
 
     <properties>
         <n2o.version>7.5.6</n2o.version>
-        <cxf.version>3.3.6</cxf.version>
-        <swagger.version>3.20.1</swagger.version>
-        <swagger-annotations.version>1.5.21</swagger-annotations.version>
+        <cxf.version>3.4.0</cxf.version>
+        <swagger.version>3.30.0</swagger.version>
+        <swagger-annotations.version>1.6.2</swagger-annotations.version>
         <jaxrs-api.version>2.1.1</jaxrs-api.version>
         <modelmapper.version>2.3.2</modelmapper.version>
         <commons.version>2.6</commons.version>
@@ -24,6 +24,7 @@
         <kafka.version>2.4.1</kafka.version>
         <activation.version>1.1.1</activation.version>
         <feign.version>10.10.1</feign.version>
+        <feign-jaxrs-inovus.version>2.0</feign-jaxrs-inovus.version>
     </properties>
 
     <dependencyManagement>
@@ -32,144 +33,144 @@
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-i18n-commons</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-jaxrs-commons</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-jaxrs-server</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-jaxrs-client</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-test</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-actuator</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-quartz</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-audit</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-audit-autoconfigure</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-ms</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
 
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-i18n-autoconfigure</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-jaxrs-autoconfigure</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-jaxrs-autoconfigure</artifactId>
                 <type>test-jar</type>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-test-autoconfigure</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-actuator-autoconfigure</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-quartz-autoconfigure</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-security-autoconfigure</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-jwt</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-ms-autoconfigure</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-feign-client</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-feign-autoconfigure</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-web-autoconfigure</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-web</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-loader-server</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-loader-client</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-loader-autoconfigure</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-loader-client</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-starter-loader-server</artifactId>
-                <version>4.1.0-SNAPSHOT</version>
+                <version>4.2.0-SNAPSHOT</version>
             </dependency>
 
             <!--N2O Framework-->
@@ -254,7 +255,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.jaxrs</groupId>
                 <artifactId>jackson-jaxrs-json-provider</artifactId>
-                <version>${jackson.version}</version>
+                <version>${jackson-bom.version}</version>
             </dependency>
 
             <dependency>
@@ -342,7 +343,7 @@
             <dependency>
                 <groupId>ru.i-novus.components</groupId>
                 <artifactId>liquibase-core</artifactId>
-                <version>3.6.2.3.inovus</version>
+                <version>3.6.2.4.inovus</version>
             </dependency>
 
             <dependency>
@@ -414,6 +415,11 @@
                 <groupId>io.github.openfeign</groupId>
                 <artifactId>feign-sax</artifactId>
                 <version>${feign.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ru.i-novus.components</groupId>
+                <artifactId>feign-jaxrs</artifactId>
+                <version>${feign-jaxrs-inovus.version}</version>
             </dependency>
 
             <dependency>
