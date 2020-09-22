@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
@@ -26,6 +27,7 @@ import java.text.SimpleDateFormat;
 @Configuration
 @AutoConfigureAfter(name = "org.springframework.boot.autoconfigure.security.oauth2.OAuth2AutoConfiguration")
 @AutoConfigureBefore(N2oFrameworkAutoConfiguration.class)
+@PropertySource("classpath:web.n2o.default.properties")
 public class WebAutoConfiguration {
 
     @ConditionalOnMissingBean
