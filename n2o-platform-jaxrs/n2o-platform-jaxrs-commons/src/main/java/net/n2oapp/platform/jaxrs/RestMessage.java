@@ -102,15 +102,17 @@ public class RestMessage implements Serializable {
 
         private String field;
         private String leafBeanClass;
+        private String rootBeanClass;
         private String constraintAnnotation;
 
         public ConstraintViolationError() {
         }
 
-        public ConstraintViolationError(String field, String message, String leafBeanClass, String constraintAnnotation) {
+        public ConstraintViolationError(String message, String field, String leafBeanClass, String rootBeanClass, String constraintAnnotation) {
             super(message);
             this.field = field;
             this.leafBeanClass = leafBeanClass;
+            this.rootBeanClass = rootBeanClass;
             this.constraintAnnotation = constraintAnnotation;
         }
 
@@ -130,6 +132,14 @@ public class RestMessage implements Serializable {
             this.leafBeanClass = leafBeanClass;
         }
 
+        public String getRootBeanClass() {
+            return rootBeanClass;
+        }
+
+        public void setRootBeanClass(String rootBeanClass) {
+            this.rootBeanClass = rootBeanClass;
+        }
+
         public String getConstraintAnnotation() {
             return constraintAnnotation;
         }
@@ -146,12 +156,13 @@ public class RestMessage implements Serializable {
             ConstraintViolationError that = (ConstraintViolationError) o;
             return Objects.equals(getField(), that.getField()) &&
                     Objects.equals(getLeafBeanClass(), that.getLeafBeanClass()) &&
+                    Objects.equals(getRootBeanClass(), that.getRootBeanClass()) &&
                     Objects.equals(getConstraintAnnotation(), that.getConstraintAnnotation());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(super.hashCode(), getField(), getLeafBeanClass(), getConstraintAnnotation());
+            return Objects.hash(super.hashCode(), getField(), getLeafBeanClass(), getRootBeanClass(), getConstraintAnnotation());
         }
 
     }

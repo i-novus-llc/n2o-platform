@@ -25,6 +25,7 @@ public class ViolationRestExceptionMapper implements RestExceptionMapper<Validat
                         c.getPropertyPath().toString(),
                         c.getMessage(),
                         c.getLeafBean() == null ? null : c.getLeafBean().getClass().getName(),
+                        c.getRootBeanClass().getName(),
                         c.getConstraintDescriptor().getAnnotation().annotationType().getName()
                 );
                 errors.add(constraintViolationError);
