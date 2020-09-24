@@ -5,9 +5,9 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Преобразование исключений JSR303 в сообщения {@link RestMessage} REST сервиса
@@ -19,9 +19,16 @@ public class ViolationRestExceptionMapper implements RestExceptionMapper<Validat
     public RestMessage toMessage(ValidationException exception) {
         if (exception instanceof ConstraintViolationException) {
             Set<ConstraintViolation<?>> constraintViolations = ((ConstraintViolationException)exception).getConstraintViolations();
-            List<RestMessage.Error> errors = constraintViolations.stream()
-                    .map(c -> new RestMessage.Error(c.getPropertyPath().toString(), c.getMessage()))
-                    .collect(Collectors.toList());
+            List<RestMessage.ConstraintViolationError> errors = new ArrayList<>();
+            for (ConstraintViolation<?> c : constraintViolations) {
+                RestMessage.ConstraintViolationError constraintViolationError = new RestMessage.ConstraintViolationError(
+                        c.getPropertyPath().toString(),
+                        c.getMessage(),
+                        c.getLeafBean() == null ? null : c.getLeafBean().getClass().getName(),
+                        c.getConstraintDescriptor().getAnnotation().annotationType().getName()
+                );
+                errors.add(constraintViolationError);
+            }
             return new RestMessage(errors);
         } else {
             return new RestMessage(exception.getMessage());
