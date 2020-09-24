@@ -1,5 +1,7 @@
 package net.n2oapp.platform.jaxrs.api;
 
+import javax.validation.constraints.NotNull;
+
 public abstract class AbstractModel<T> {
 
     public AbstractModel() {
@@ -9,6 +11,7 @@ public abstract class AbstractModel<T> {
         this.value = value;
     }
 
+    @NotNull
     private T value;
 
     public T getValue() {

@@ -1,6 +1,6 @@
 package net.n2oapp.platform.jaxrs;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Исключение, выбрасываемое на клиенте при возникновении исключения в REST сервисе
@@ -16,17 +16,12 @@ public class RestException extends RuntimeException {
         this.responseStatus = responseStatus;
     }
 
-    public List<RestMessage.Error> getErrors() {
+    public List<? extends RestMessage.BaseError> getErrors() {
         return restMessage.getErrors();
     }
 
     public int getResponseStatus() {
         return responseStatus;
-    }
-
-    @Override
-    public String getMessage() {
-        return super.getMessage();
     }
 
     private static RemoteException getRemoteCause(RestMessage restMessage) {
