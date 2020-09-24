@@ -21,7 +21,6 @@ import org.springframework.util.ReflectionUtils;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 import java.lang.reflect.Method;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -31,7 +30,7 @@ import java.util.stream.Stream;
 import static net.n2oapp.platform.jaxrs.Application.HEADERS;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
@@ -97,19 +96,27 @@ public class JaxRsClientTest {
      * Проверка обработки JSR303 валидаций от сервера к прокси клиенту.
      */
     @Test
-    public void validations() throws ParseException {
+    public void validations() {
         forEachHeaderCombination(() -> {
             SomeModel model = new SomeModel();
-            SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy hh:mm");
-            df.setTimeZone(TimeZone.getTimeZone("UTC"));
-            model.setDate(df.parse("01.01.2050 01:00"));
+            model.setStringModel(new StringModel(null));
             try {
                 client.create(model);
                 fail();
             } catch (Exception e) {
                 assertThat(e, instanceOf(RestException.class));
                 RestException restException = (RestException)e;
-                assertThat(restException.getErrors().size(), equalTo(2));
+                assertThat(restException.getErrors().size(), equalTo(4));
+                for (RestMessage.BaseError error : restException.getErrors()) {
+                    assertThat(error, instanceOf(RestMessage.ConstraintViolationError.class));
+                    RestMessage.ConstraintViolationError constraintViolationError = (RestMessage.ConstraintViolationError) error;
+                    assertNotNull(constraintViolationError.getConstraintAnnotation());
+                    assertTrue(
+                            SomeModel.class.getName().equals(constraintViolationError.getLeafBeanClass()) ||
+                            StringModel.class.getName().equals(constraintViolationError.getLeafBeanClass())
+                    );
+                    assertEquals("javax.validation.constraints.NotNull", constraintViolationError.getConstraintAnnotation());
+                }
             }
         });
     }
@@ -158,13 +165,12 @@ public class JaxRsClientTest {
 
     /**
      * Проверка сериализации/десериализации Page c абстрактным типом
-     * @throws Exception
      */
     @Test
-    public void pageOfAbstractModel() throws Exception {
-        forEachHeaderCombination(() -> {
-            assertThat(client.searchModel(new SomeCriteria()).getContent().get(0), instanceOf(StringModel.class));
-        });
+    public void pageOfAbstractModel() {
+        forEachHeaderCombination(() ->
+                assertThat(client.searchModel(new SomeCriteria()).getContent().get(0), instanceOf(StringModel.class))
+        );
     }
 
     /**
@@ -180,7 +186,7 @@ public class JaxRsClientTest {
                 assertThat(e, instanceOf(RestException.class));
                 RestException restException = (RestException) e;
                 assertThat(restException.getErrors().size(), equalTo(3));
-                List<String> errorTextList = restException.getErrors().stream().map(RestMessage.Error::getMessage).collect(Collectors.toList());
+                List<String> errorTextList = restException.getErrors().stream().map(RestMessage.BaseError::getMessage).collect(Collectors.toList());
                 assertThat(errorTextList, anyOf(hasItems("Ошибка пользователя раз", "Ошибка пользователя два", "Другая ошибка пользователя"), hasItems("user.error1", "user.error1", "user.error2")));
             }
         });

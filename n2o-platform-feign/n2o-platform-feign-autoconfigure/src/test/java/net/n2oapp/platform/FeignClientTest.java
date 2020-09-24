@@ -192,7 +192,7 @@ public class FeignClientTest {
             assertThat(e, instanceOf(RestException.class));
             RestException restException = (RestException) e;
             assertThat(restException.getErrors().size(), equalTo(3));
-            List<String> errorTextList = restException.getErrors().stream().map(RestMessage.Error::getMessage).collect(Collectors.toList());
+            List<String> errorTextList = restException.getErrors().stream().map(RestMessage.BaseError::getMessage).collect(Collectors.toList());
             assertThat(errorTextList, anyOf(hasItems("Ошибка пользователя раз", "Ошибка пользователя два", "Другая ошибка пользователя"), hasItems("user.error1", "user.error1", "user.error2")));
         }
     }
