@@ -74,7 +74,7 @@ public class RestMessage implements Serializable {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            Error error = (Error) o;
+            BaseError error = (BaseError) o;
             return Objects.equals(getMessage(), error.getMessage());
         }
 

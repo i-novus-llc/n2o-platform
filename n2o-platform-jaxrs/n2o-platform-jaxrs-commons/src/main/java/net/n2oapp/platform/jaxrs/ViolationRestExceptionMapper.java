@@ -22,8 +22,8 @@ public class ViolationRestExceptionMapper implements RestExceptionMapper<Validat
             List<RestMessage.ConstraintViolationError> errors = new ArrayList<>();
             for (ConstraintViolation<?> c : constraintViolations) {
                 RestMessage.ConstraintViolationError constraintViolationError = new RestMessage.ConstraintViolationError(
-                        c.getPropertyPath().toString(),
                         c.getMessage(),
+                        c.getPropertyPath().toString(),
                         c.getLeafBean() == null ? null : c.getLeafBean().getClass().getName(),
                         c.getRootBeanClass().getName(),
                         c.getConstraintDescriptor().getAnnotation().annotationType().getName()
