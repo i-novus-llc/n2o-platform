@@ -27,21 +27,26 @@ public class JaxRsAcceptHeaderSorter extends AbstractPhaseInterceptor<Message> {
     }
 
     @Override
+    @SuppressWarnings({"unchecked", "rawtypes", "java:S3740"})
     public void handleMessage(Message message) {
-        if (message.containsKey(ACCEPT)) {
-            Object o = message.get(ACCEPT);
-            if (o.getClass() == String.class) {
-                message.put(ACCEPT, sort((String) o));
-            }
+        Object o = message.get(ACCEPT);
+        if (o instanceof String) {
+            message.put(ACCEPT, sort((String) o));
         }
-        if (message.containsKey(PROTOCOL_HEADERS)) {
-            Map<String, List<String>> headers = (Map<String, List<String>>) message.get(PROTOCOL_HEADERS);
-            if (headers.containsKey(ACCEPT)) {
-                List<String> accept = headers.get(ACCEPT);
-                if (!accept.isEmpty()) {
-                    ListIterator<String> iterator = accept.listIterator();
-                    while (iterator.hasNext()) {
-                        String s = sort(iterator.next());
+        Object protocolHeaders = message.get(PROTOCOL_HEADERS);
+        if (!(protocolHeaders instanceof Map)) {
+            return;
+        }
+        Map headers = (Map) protocolHeaders;
+        Object accept = headers.get(ACCEPT);
+        if (accept instanceof List) {
+            List list = (List) accept;
+            if (!list.isEmpty()) {
+                ListIterator iterator = list.listIterator();
+                while (iterator.hasNext()) {
+                    Object next = iterator.next();
+                    if (next instanceof String) {
+                        String s = sort((String) next);
                         iterator.set(s);
                     }
                 }
