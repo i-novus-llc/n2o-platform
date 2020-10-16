@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class PortFinder {
 
@@ -29,17 +29,15 @@ public class PortFinder {
         int startPort = getRandomPort();
         int attemptsCount = 1;
         while (!available(startPort)) {
-            if (attemptsCount > ATTEMPTS_LIMIT)
+            if (attemptsCount++ > ATTEMPTS_LIMIT)
                 throw new IllegalStateException("Attempts limit exceeded");
             startPort = getRandomPort();
-            attemptsCount++;
         }
         return startPort;
     }
 
     private static int getRandomPort() {
-        Random r = new Random();
-        return r.nextInt((MAX_PORT_NUMBER - MIN_PORT_NUMBER) + 1) + MIN_PORT_NUMBER;
+        return ThreadLocalRandom.current().nextInt(MIN_PORT_NUMBER, MAX_PORT_NUMBER);
     }
 
     /**
