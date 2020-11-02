@@ -26,14 +26,13 @@ public class JaxRsAcceptHeaderSorter extends AbstractPhaseInterceptor<Message> {
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes", "java:S3740"})
+    @SuppressWarnings({"unchecked", "rawtypes", "java:S3740", "java:S3776"})
     public void handleMessage(Message message) {
         Object o = message.get(ACCEPT);
-        if (o instanceof String) {
-            message.put(ACCEPT, sort((String) o));
-        } else if (o == null) {
+        if (o == null || o.equals(MediaType.WILDCARD))
             message.put(ACCEPT, MediaType.APPLICATION_JSON);
-        }
+        else
+            message.put(ACCEPT, sort((String) o));
         Object protocolHeaders = message.get(PROTOCOL_HEADERS);
         if (protocolHeaders != null && !(protocolHeaders instanceof Map))
             return;
@@ -45,19 +44,23 @@ public class JaxRsAcceptHeaderSorter extends AbstractPhaseInterceptor<Message> {
         Object accept = headers.get(ACCEPT);
         if (accept != null && !(accept instanceof List))
             return;
-        if (accept == null) {
-            accept = new ArrayList<>(1);
-            ((ArrayList<String>) accept).add(MediaType.APPLICATION_JSON);
-            headers.put(ACCEPT, accept);
+        List list = (List) accept;
+        if (list == null) {
+            list = new ArrayList(1);
+            list.add(MediaType.APPLICATION_JSON);
+            headers.put(ACCEPT, list);
         } else {
-            List list = (List) accept;
-            if (!list.isEmpty()) {
-                ListIterator iterator = list.listIterator();
-                while (iterator.hasNext()) {
-                    Object next = iterator.next();
-                    if (next instanceof String) {
-                        String s = sort((String) next);
-                        iterator.set(s);
+            if (list.size() == 1 && list.get(0).equals(MediaType.WILDCARD)) {
+                list.set(0, MediaType.APPLICATION_JSON);
+            } else {
+                if (!list.isEmpty()) {
+                    ListIterator iterator = list.listIterator();
+                    while (iterator.hasNext()) {
+                        Object next = iterator.next();
+                        if (next instanceof String) {
+                            String s = sort((String) next);
+                            iterator.set(s);
+                        }
                     }
                 }
             }
