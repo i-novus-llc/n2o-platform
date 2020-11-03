@@ -26,13 +26,13 @@ public class JaxRsAcceptHeaderSorter extends AbstractPhaseInterceptor<Message> {
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes", "java:S3740", "java:S3776"})
     public void handleMessage(Message message) {
-        Object o = message.get(ACCEPT);
-        if (o == null || o.equals(MediaType.WILDCARD))
-            message.put(ACCEPT, MediaType.APPLICATION_JSON);
-        else
-            message.put(ACCEPT, sort((String) o));
+        processAcceptHeader(message);
+        processProtocolHeaders(message);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    private void processProtocolHeaders(Message message) {
         Object protocolHeaders = message.get(PROTOCOL_HEADERS);
         if (protocolHeaders != null && !(protocolHeaders instanceof Map))
             return;
@@ -40,31 +40,47 @@ public class JaxRsAcceptHeaderSorter extends AbstractPhaseInterceptor<Message> {
             protocolHeaders = new HashMap<>();
             message.put(PROTOCOL_HEADERS, protocolHeaders);
         }
-        Map headers = (Map) protocolHeaders;
+        Map<Object, Object> headers = (Map<Object, Object>) protocolHeaders;
         Object accept = headers.get(ACCEPT);
         if (accept != null && !(accept instanceof List))
             return;
-        List list = (List) accept;
+        List<Object> list = (List<Object>) accept;
         if (list == null) {
-            list = new ArrayList(1);
+            list = new ArrayList<>(1);
             list.add(MediaType.APPLICATION_JSON);
             headers.put(ACCEPT, list);
         } else {
-            if (list.size() == 1 && list.get(0).equals(MediaType.WILDCARD)) {
-                list.set(0, MediaType.APPLICATION_JSON);
-            } else {
-                if (!list.isEmpty()) {
-                    ListIterator iterator = list.listIterator();
-                    while (iterator.hasNext()) {
-                        Object next = iterator.next();
-                        if (next instanceof String) {
-                            String s = sort((String) next);
-                            iterator.set(s);
-                        }
+            processListOfAcceptHeaders(list);
+        }
+    }
+
+    private void processListOfAcceptHeaders(List<Object> headers) {
+        if (headers.size() == 1 && wildcardOrNull(headers.get(0))) {
+            headers.set(0, MediaType.APPLICATION_JSON);
+        } else {
+            if (!headers.isEmpty()) {
+                ListIterator<Object> iterator = headers.listIterator();
+                while (iterator.hasNext()) {
+                    Object next = iterator.next();
+                    if (next instanceof String) {
+                        String s = sort((String) next);
+                        iterator.set(s);
                     }
                 }
             }
         }
+    }
+
+    private void processAcceptHeader(Message message) {
+        Object o = message.get(ACCEPT);
+        if (wildcardOrNull(o))
+            message.put(ACCEPT, MediaType.APPLICATION_JSON);
+        else
+            message.put(ACCEPT, sort((String) o));
+    }
+
+    private boolean wildcardOrNull(Object header) {
+        return header == null || header.equals(MediaType.WILDCARD);
     }
 
     private String sort(String accept) {
