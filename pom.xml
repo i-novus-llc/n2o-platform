@@ -56,7 +56,13 @@
     </modules>
 
     <properties>
-        <sonar.sources>src/main/java,src/main/resources</sonar.sources>
+        <sonar.sources>.</sonar.sources>
+        <sonar.inclusions>
+            src/main/resources/db/**,
+            src/main/resources/**/*.yml,
+            src/main/java/**
+        </sonar.inclusions>
+        <sonar.test.exclusions>src/test/**</sonar.test.exclusions>
     </properties>
 
     <profiles>
