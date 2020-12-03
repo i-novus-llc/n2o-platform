@@ -55,16 +55,6 @@
         <module>n2o-platform-initializr</module>
     </modules>
 
-    <properties>
-        <sonar.sources>.</sonar.sources>
-        <sonar.inclusions>
-            src/main/resources/db/**,
-            src/main/resources/**/*.yml,
-            src/main/java/**
-        </sonar.inclusions>
-        <sonar.test.exclusions>src/test/**</sonar.test.exclusions>
-    </properties>
-
     <profiles>
         <profile>
             <id>n2o-platform-release</id>
