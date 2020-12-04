@@ -1,4 +1,4 @@
-package net.n2oapp.platform.jaxrs.seek;
+package net.n2oapp.platform.seek;
 
 import org.springframework.data.domain.Sort;
 
@@ -10,11 +10,15 @@ public class SeekableCriteria {
 
     @QueryParam("next")
     @DefaultValue("true")
-    private Boolean next;
+    private boolean next = true;
 
     @QueryParam("prev")
     @DefaultValue("false")
-    private Boolean prev;
+    private boolean prev;
+
+    @QueryParam("size")
+    @DefaultValue("10")
+    private int size = 10;
 
     @QueryParam("sort")
     private List<Sort.Order> orders;
@@ -22,20 +26,28 @@ public class SeekableCriteria {
     @QueryParam("last")
     private List<SeekPivot> pivots;
 
-    public Boolean getNext() {
+    public boolean getNext() {
         return next;
     }
 
-    public void setNext(Boolean next) {
+    public void setNext(boolean next) {
         this.next = next;
     }
 
-    public Boolean getPrev() {
+    public boolean getPrev() {
         return prev;
     }
 
-    public void setPrev(Boolean prev) {
+    public void setPrev(boolean prev) {
         this.prev = prev;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
     }
 
     public List<Sort.Order> getOrders() {

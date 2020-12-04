@@ -1,4 +1,4 @@
-package net.n2oapp.platform.jaxrs.seek;
+package net.n2oapp.platform.seek;
 
 import java.io.Serializable;
 import java.util.Objects;

@@ -1,4 +1,4 @@
-package net.n2oapp.platform.jaxrs.seek;
+package net.n2oapp.platform.seek;
 
 import net.n2oapp.platform.jaxrs.TypedParamConverter;
 
