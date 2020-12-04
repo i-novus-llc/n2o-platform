@@ -81,7 +81,15 @@
                         <execution>
                             <goals>
                                 <goal>repackage</goal>
+                                <goal>build-info</goal>
                             </goals>
+                            <configuration>
+                                <additionalProperties>
+                                    <java.source>${maven.compiler.source}</java.source>
+                                    <java.target>${maven.compiler.target}</java.target>
+                                    <config.server.enable>${config.server.enable}</config.server.enable>
+                                </additionalProperties>
+                            </configuration>
                         </execution>
                     </executions>
                     <configuration>
