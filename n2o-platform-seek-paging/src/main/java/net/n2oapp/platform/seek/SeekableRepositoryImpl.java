@@ -43,6 +43,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     private final Querydsl querydsl;
     private final EntityPath<?> path;
     private final LoadingCache<String, ComparableExpression<?>> cache;
+    private final String entityPrefix;
 
     public SeekableRepositoryImpl(
         JpaEntityInformation<T, ?> entityInformation,
@@ -61,6 +62,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         } catch (Exception e) {
             throw new BeanCreationException("Can't instantiate seekable repository", e);
         }
+        this.entityPrefix = resolver.createPath(entityInformation.getJavaType()).getMetadata().getName();
         this.cache = CacheBuilder.newBuilder().build(new CacheLoader<>() {
             @Override
             public ComparableExpression<?> load(@NonNull String key) {
@@ -102,11 +104,10 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     }
 
     private SeekableCriteria invert(SeekableCriteria criteria) {
-        SeekableCriteria inverted = new SeekableCriteria();
+        SeekableCriteria inverted = criteria.copy();
         inverted.setSize(0);
+        inverted.setPrev(!criteria.getPrev());
         inverted.setNext(!criteria.getNext());
-        inverted.setPivots(criteria.getPivots());
-        inverted.setOrders(criteria.getOrders());
         return inverted;
     }
 
@@ -131,7 +132,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
                 throw new IllegalArgumentException(order.getProperty() + " is not found in pivots list.");
             });
             ComparableExpression<?> comparable = cache.getUnchecked(pivot.getName());
-            Comparable<?> cast = cast(pivot.getLastValue(), comparable);
+            Comparable<?> cast = cast(pivot.getName(), pivot.getLastValue(), comparable);
             EnrichedSeekRequestItem item = new EnrichedSeekRequestItem(cast, order, comparable);
             res.add(item);
         }
@@ -150,10 +151,11 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     private List<Order> copyOrders(SeekableCriteria criteria) {
         List<Order> result = new ArrayList<>(criteria.getOrders().size());
         for (Order order : criteria.getOrders()) {
+            String property = order.getProperty().startsWith(entityPrefix) ? order.getProperty().substring(entityPrefix.length() + 1) : order.getProperty();
             if (criteria.getNext()) {
-                result.add(new Order(order.getDirection(), order.getProperty(), order.getNullHandling()));
+                result.add(new Order(order.getDirection(), property, order.getNullHandling()));
             } else {
-                result.add(new Order(order.getDirection() == ASC ? DESC : ASC, order.getProperty(), order.getNullHandling()));
+                result.add(new Order(order.getDirection() == ASC ? DESC : ASC, property, order.getNullHandling()));
             }
         }
         return result;
@@ -162,7 +164,10 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     private List<SeekPivot> copyPivots(SeekableCriteria criteria) {
         List<SeekPivot> pivots = new ArrayList<>(criteria.getPivots().size());
         for (SeekPivot pivot : criteria.getPivots()) {
-            pivots.add(pivot.copy());
+            if (!pivot.getName().startsWith(entityPrefix))
+                pivots.add(pivot.copy());
+            else
+                pivots.add(SeekPivot.of(pivot.getName().substring(entityPrefix.length() + 1), pivot.getLastValue()));
         }
         return pivots;
     }
@@ -222,13 +227,15 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         return res;
     }
 
-    private Comparable<?> cast(String lastValue, ComparableExpression<?> target) {
+    private Comparable<?> cast(String name, String lastValue, ComparableExpression<?> target) {
         try {
             return StringConvert.INSTANCE.convertFromString(target.getType(), lastValue);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException exception) {
             throw new IllegalArgumentException(
-                "Unable to convert from string '" + lastValue + "' to target type: " + target.getType().getName() + ". " +
-                "Entity name: " + path.getMetadata().getName()
+                "Unable to convert from string '" + lastValue + "' to target type: " + target.getType().getSimpleName() + ". " +
+                "Entity name: " + path.getMetadata().getName() +
+                "Property: " + name,
+                exception
             );
         }
     }

@@ -1,5 +1,6 @@
 package net.n2oapp.platform.seek;
 
+import net.n2oapp.platform.jaxrs.seek.EmptySeekableCriteria;
 import net.n2oapp.platform.jaxrs.seek.SeekPivot;
 import net.n2oapp.platform.jaxrs.seek.SeekableCriteria;
 import net.n2oapp.platform.jaxrs.seek.SeekedPage;
@@ -16,6 +17,12 @@ import java.util.concurrent.ThreadLocalRandom;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SeekableRepositoryTest extends SeekPagingTest {
+
+    private static final String BIRTH_DATE = QAnimal.animalEntity.birthDate.toString();
+    private static final String FAV_FOOD = QAnimal.animalEntity.favoriteFood.name.toString();
+    private static final String PARENT = QAnimal.animalEntity.parent.name.toString();
+    private static final String HEIGHT = QAnimal.animalEntity.height.toString();
+    private static final String ID = QAnimal.animalEntity.id.toString();
 
     @Autowired
     AnimalRepository repository;
@@ -63,14 +70,14 @@ public class SeekableRepositoryTest extends SeekPagingTest {
         Integer prevId = 0;
         SeekedPage<Animal> prevPage = null;
         List<SeekedPage<Animal>> pageSequence = new ArrayList<>();
-        SeekableCriteria criteria = new SeekableCriteria();
+        SeekableCriteria criteria = new EmptySeekableCriteria();
         criteria.setSize(10);
         criteria.setOrders(List.of(
-            Sort.Order.desc("birthDate"),
-            Sort.Order.asc("favoriteFood.name"),
-            Sort.Order.desc("parent.name"),
-            Sort.Order.asc("height"),
-            Sort.Order.asc("id")
+            Sort.Order.desc(BIRTH_DATE),
+            Sort.Order.asc(FAV_FOOD),
+            Sort.Order.desc(PARENT),
+            Sort.Order.asc(HEIGHT),
+            Sort.Order.asc(ID)
         ));
         setPivots(prevBirthDate, prevFavoriteFood, prevParentName, prevHeight, prevId, criteria);
         while (true) {
@@ -82,26 +89,7 @@ public class SeekableRepositoryTest extends SeekPagingTest {
                 }
                 for (Animal animal : page) {
                     assertTrue(animals.remove(animal));
-                    if (prevId != null) {
-                        int cmp1 = prevBirthDate.compareTo(animal.getBirthDate());
-                        if (cmp1 == 0) {
-                            int cmp2 = prevFavoriteFood.compareTo(animal.getFavoriteFood().getName());
-                            if (cmp2 == 0) {
-                                int cmp3 = prevParentName.compareTo(animal.getParent().getName());
-                                if (cmp3 == 0) {
-                                    int cmp4 = prevHeight.compareTo(animal.getHeight());
-                                    if (cmp4 == 0)
-                                        assertTrue(prevId.compareTo(animal.getId()) < 0);
-                                    else
-                                        assertTrue(cmp4 < 0);
-                                } else
-                                    assertTrue(cmp3 > 0);
-                            } else
-                                assertTrue(cmp2 < 0);
-                        } else {
-                            assertTrue(cmp1 > 0);
-                        }
-                    }
+                    checkSorted(prevBirthDate, prevFavoriteFood, prevParentName, prevHeight, prevId, animal);
                     prevBirthDate = animal.getBirthDate();
                     prevFavoriteFood = animal.getFavoriteFood().getName();
                     prevParentName = animal.getParent().getName();
@@ -157,16 +145,44 @@ public class SeekableRepositoryTest extends SeekPagingTest {
             setPivots(prevBirthDate, prevFavoriteFood, prevParentName, prevHeight, prevId, criteria);
         }
         assertEquals(n, animals.size());
+        criteria.setNext(true);
+    }
+
+    private void checkSorted(LocalDate prevBirthDate, String prevFavoriteFood, String prevParentName, BigInteger prevHeight, Integer prevId, Animal animal) {
+        if (prevId != null) {
+            int cmp1 = prevBirthDate.compareTo(animal.getBirthDate());
+            if (cmp1 == 0) {
+                int cmp2 = prevFavoriteFood.compareTo(animal.getFavoriteFood().getName());
+                if (cmp2 == 0) {
+                    int cmp3 = prevParentName.compareTo(animal.getParent().getName());
+                    if (cmp3 == 0) {
+                        int cmp4 = prevHeight.compareTo(animal.getHeight());
+                        if (cmp4 == 0)
+                            assertTrue(prevId.compareTo(animal.getId()) < 0);
+                        else
+                            assertTrue(cmp4 < 0);
+                    } else
+                        assertTrue(cmp3 > 0);
+                } else
+                    assertTrue(cmp2 < 0);
+            } else {
+                assertTrue(cmp1 > 0);
+            }
+        }
     }
 
     private void setPivots(LocalDate prevBirthDate, String prevFavoriteFood, String prevParentName, BigInteger prevHeight, Integer prevId, SeekableCriteria criteria) {
-        criteria.setPivots(List.of(
-            SeekPivot.of("birthDate", prevBirthDate.toString()),
-            SeekPivot.of("favoriteFood.name", prevFavoriteFood),
-            SeekPivot.of("parent.name", prevParentName),
-            SeekPivot.of("height", prevHeight.toString()),
-            SeekPivot.of("id", prevId.toString())
-        ));
+        criteria.setPivots(getPivots(prevBirthDate, prevFavoriteFood, prevParentName, prevHeight, prevId));
+    }
+
+    private List<SeekPivot> getPivots(LocalDate prevBirthDate, String prevFavoriteFood, String prevParentName, BigInteger prevHeight, Integer prevId) {
+        return List.of(
+            SeekPivot.of(BIRTH_DATE, prevBirthDate.toString()),
+            SeekPivot.of(FAV_FOOD, prevFavoriteFood),
+            SeekPivot.of(PARENT, prevParentName),
+            SeekPivot.of(HEIGHT, prevHeight.toString()),
+            SeekPivot.of(ID, prevId.toString())
+        );
     }
 
 }
