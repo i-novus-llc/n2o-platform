@@ -1,13 +1,8 @@
 package net.n2oapp.platform.seek;
 
-import net.n2oapp.platform.jaxrs.TypedParamConverter;
+import javax.ws.rs.ext.ParamConverter;
 
-public class SeekPivotParameterConverter implements TypedParamConverter<SeekPivot> {
-
-    @Override
-    public Class<SeekPivot> getType() {
-        return SeekPivot.class;
-    }
+public class SeekPivotParameterConverter implements ParamConverter<SeekPivot> {
 
     @Override
     public SeekPivot fromString(String value) {

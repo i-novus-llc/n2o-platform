@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @DataJpaTest
@@ -20,8 +21,8 @@ public abstract class SeekPagingTest {
 
     protected LocalDate randomLocalDate() {
         return LocalDate.ofYearDay(
-            ThreadLocalRandom.current().nextInt(1988, 2020),
-            ThreadLocalRandom.current().nextInt(1, 364)
+            2020,
+            ThreadLocalRandom.current().nextInt(1, 365)
         );
     }
 
@@ -35,6 +36,12 @@ public abstract class SeekPagingTest {
             i++;
         }
         return sb.toString();
+    }
+
+    protected <T> T randomFrom(List<T> list) {
+        if (list.isEmpty())
+            return null;
+        return list.get(ThreadLocalRandom.current().nextInt(list.size()));
     }
 
 }

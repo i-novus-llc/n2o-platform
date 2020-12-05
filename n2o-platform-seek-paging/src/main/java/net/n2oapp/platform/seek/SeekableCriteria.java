@@ -31,6 +31,7 @@ public class SeekableCriteria {
     }
 
     public void setNext(boolean next) {
+        this.prev = !next;
         this.next = next;
     }
 
@@ -39,6 +40,7 @@ public class SeekableCriteria {
     }
 
     public void setPrev(boolean prev) {
+        this.next = !prev;
         this.prev = prev;
     }
 
@@ -65,5 +67,5 @@ public class SeekableCriteria {
     public void setPivots(List<SeekPivot> pivots) {
         this.pivots = pivots;
     }
-    
+
 }

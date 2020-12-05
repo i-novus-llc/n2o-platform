@@ -11,11 +11,11 @@ import org.springframework.lang.NonNull;
 import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
 
-public class CustomRepositoryFactory extends JpaRepositoryFactory {
+public class SeekableRepositoryFactory extends JpaRepositoryFactory {
 
     private final EntityManager entityManager;
 
-    public CustomRepositoryFactory(EntityManager entityManager) {
+    public SeekableRepositoryFactory(EntityManager entityManager) {
         super(entityManager);
         this.entityManager = entityManager;
     }

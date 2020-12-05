@@ -21,6 +21,10 @@ public class SeekPivot implements Serializable {
         return lastValue;
     }
 
+    public SeekPivot copy() {
+        return new SeekPivot(name, lastValue);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

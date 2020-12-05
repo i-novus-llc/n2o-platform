@@ -1,10 +1,9 @@
 package net.n2oapp.platform.seek;
 
 import javax.persistence.*;
-import java.time.LocalDate;
 
 @Entity
-public class AnimalEntity {
+public class Food {
 
     @Id
     @SequenceGenerator(name = "seq", sequenceName = "animal_seq")
@@ -14,16 +13,12 @@ public class AnimalEntity {
     @Column
     private String name;
 
-    @Column
-    private LocalDate birthDate;
-
-    protected AnimalEntity() {
+    protected Food() {
     }
 
-    public AnimalEntity(Integer id, String name, LocalDate birthDate) {
+    public Food(Integer id, String name) {
         this.id = id;
         this.name = name;
-        this.birthDate = birthDate;
     }
 
     public Integer getId() {
@@ -42,12 +37,12 @@ public class AnimalEntity {
         this.name = name;
     }
 
-    public LocalDate getBirthDate() {
-        return birthDate;
-    }
-
-    public void setBirthDate(LocalDate birthDate) {
-        this.birthDate = birthDate;
+    @Override
+    public String toString() {
+        return "Food{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            '}';
     }
 
 }

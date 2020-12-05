@@ -7,15 +7,15 @@ import org.springframework.lang.NonNull;
 
 import javax.persistence.EntityManager;
 
-public class CustomJpaRepositoryFactoryBean<T extends Repository<S, I>, S, I> extends JpaRepositoryFactoryBean<T, S, I> {
+public class SeekableJpaRepositoryFactoryBean<T extends Repository<S, I>, S, I> extends JpaRepositoryFactoryBean<T, S, I> {
 
-    public CustomJpaRepositoryFactoryBean(Class<? extends T> repositoryInterface) {
+    public SeekableJpaRepositoryFactoryBean(Class<? extends T> repositoryInterface) {
         super(repositoryInterface);
     }
 
     @Override
     protected @NonNull RepositoryFactorySupport createRepositoryFactory(@NonNull EntityManager entityManager) {
-        return new CustomRepositoryFactory(entityManager);
+        return new SeekableRepositoryFactory(entityManager);
     }
 
 }
