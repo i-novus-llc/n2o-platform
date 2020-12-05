@@ -6,8 +6,8 @@ import javax.persistence.*;
 public class Food {
 
     @Id
-    @SequenceGenerator(name = "seq", sequenceName = "animal_seq")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq")
+    @SequenceGenerator(name = "seq2", sequenceName = "food_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq2")
     private Integer id;
 
     @Column

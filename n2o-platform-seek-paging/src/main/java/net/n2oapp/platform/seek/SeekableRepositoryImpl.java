@@ -233,32 +233,41 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         }
     }
 
-    private ComparableExpressionBase<?> findProperty(String name) {
+    private ComparableExpressionBase<?> findProperty(String property) {
         Path<?> curr = path;
-        do {
-            Class<?> c = curr.getClass();
-            Field superField = null;
-            try {
-                for (Field field : c.getDeclaredFields()) {
-                    if (field.getName().equals(name)) {
-                        field.setAccessible(true);
-                        Object o = field.get(curr);
-                        Preconditions.checkArgument(o != null, "Path is null. Entity: %s", curr.getMetadata().getName());
-                        Preconditions.checkArgument(ComparableExpressionBase.class.isAssignableFrom(o.getClass()), "Property %s is not comparable. Entity: %s", name, curr.getMetadata().getName());
-                        return ((ComparableExpressionBase<?>) o);
+        String[] pathParts = property.split("\\.");
+        for (int i = 0; i < pathParts.length; i++) {
+            String name = pathParts[i];
+            outer: do {
+                Class<?> c = curr.getClass();
+                Field superField = null;
+                try {
+                    for (Field field : c.getDeclaredFields()) {
+                        if (field.getName().equals(name)) {
+                            field.setAccessible(true);
+                            Object o = field.get(curr);
+                            Preconditions.checkArgument(o != null, "Path (or part of the path) %s is null. Entity: %s", property, curr.getMetadata().getName());
+                            if (i == pathParts.length - 1) {
+                                Preconditions.checkArgument(ComparableExpressionBase.class.isAssignableFrom(o.getClass()), "Property %s is not comparable. Entity: %s", property, curr.getMetadata().getName());
+                                return ((ComparableExpressionBase<?>) o);
+                            } else {
+                                curr = (Path<?>) o;
+                                break outer;
+                            }
+                        }
+                        if (field.getName().equals("_super"))
+                            superField = field;
                     }
-                    if (field.getName().equals("_super"))
-                        superField = field;
+                    if (superField == null)
+                        break;
+                    superField.setAccessible(true);
+                    curr = (Path<?>) superField.get(curr);
+                } catch (IllegalAccessException e) {
+                    throw new IllegalStateException(e);
                 }
-                if (superField == null)
-                    break;
-                superField.setAccessible(true);
-                curr = (Path<?>) superField.get(curr);
-            } catch (IllegalAccessException e) {
-                throw new IllegalStateException(e);
-            }
-        } while (true);
-        throw new IllegalArgumentException("Property " + name + " not found. Entity: " + path.getMetadata().getName());
+            } while (true);
+        }
+        throw new IllegalArgumentException("Property " + property + " not found. Entity: " + path.getMetadata().getName());
     }
 
     private static class EnrichedSeekRequestItem {

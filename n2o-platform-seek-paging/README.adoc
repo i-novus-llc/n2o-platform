@@ -1,0 +1,29 @@
+= Возможность seek-пагинации используя QueryDSL (по ключу, без офсетов и count-запросов)
+
+== Как использовать:
+1) Добавьте зависимость
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-seek-paging</artifactId>
+</dependency>
+----
+2) В своем приложении укажите
+[source,java]
+----
+@EnableJpaRepositories(repositoryFactoryBeanClass = SeekableJpaRepositoryFactoryBean.class)
+----
+3) Репозитории, которые должны поддерживать seek-пагинацию, наследуйте от SeekableRepository.
+
+== SeekableRepository
+Данный интерфейс сам наследует QueryDslPredicateExecutor, поэтому все его методы доступны.
+
+== Какие ограничения
+Есть ограничения на NULL-значения (они не будут работать, seek-пагинация их пропустит).
+
+Для решения этой проблемы, если возможно, нужно переделать структуру БД, добавить ограничения на NULL и т.п.
+
+Можно завести некую запись, которое будет NULL-значением в контексте этой таблицы.
+
+Если ничего из этого сделать не удается -- придется отказаться от seek-пагинации.

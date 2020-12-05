@@ -1,7 +1,7 @@
 package net.n2oapp.platform.seek;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -9,8 +9,8 @@ import java.util.Objects;
 public class Animal {
 
     @Id
-    @SequenceGenerator(name = "seq", sequenceName = "animal_seq")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq")
+    @SequenceGenerator(name = "seq1", sequenceName = "animal_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq1")
     private Integer id;
 
     @Column
@@ -24,24 +24,20 @@ public class Animal {
     private Animal parent;
 
     @Column
-    private BigDecimal weight;
-
-    @Column
-    private BigDecimal height;
+    private BigInteger height;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "favorite_id")
+    @JoinColumn(name = "favorite_food_id")
     private Food favoriteFood;
 
     protected Animal() {
     }
 
-    public Animal(Integer id, String name, LocalDate birthDate, Animal parent, BigDecimal weight, BigDecimal height, Food favoriteFood) {
+    public Animal(Integer id, String name, LocalDate birthDate, Animal parent, BigInteger height, Food favoriteFood) {
         this.id = id;
         this.name = name;
         this.birthDate = birthDate;
         this.parent = parent;
-        this.weight = weight;
         this.height = height;
         this.favoriteFood = favoriteFood;
     }
@@ -78,19 +74,11 @@ public class Animal {
         this.parent = parent;
     }
 
-    public BigDecimal getWeight() {
-        return weight;
-    }
-
-    public void setWeight(BigDecimal weight) {
-        this.weight = weight;
-    }
-
-    public BigDecimal getHeight() {
+    public BigInteger getHeight() {
         return height;
     }
 
-    public void setHeight(BigDecimal height) {
+    public void setHeight(BigInteger height) {
         this.height = height;
     }
 
@@ -122,7 +110,6 @@ public class Animal {
             ", name='" + name + '\'' +
             ", birthDate=" + birthDate +
             ", parentId=" + parent.getId() +
-            ", weight=" + weight +
             ", height=" + height +
             ", favoriteFood=" + favoriteFood +
             '}';

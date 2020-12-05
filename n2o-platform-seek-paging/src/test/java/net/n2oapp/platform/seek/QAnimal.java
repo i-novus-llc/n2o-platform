@@ -20,15 +20,13 @@ public class QAnimal extends EntityPathBase<Animal> {
 
     public final QFood favoriteFood;
 
-    public final NumberPath<java.math.BigDecimal> height = createNumber("height", java.math.BigDecimal.class);
+    public final NumberPath<java.math.BigInteger> height = createNumber("height", java.math.BigInteger.class);
 
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
     public final StringPath name = createString("name");
 
     public final QAnimal parent;
-
-    public final NumberPath<java.math.BigDecimal> weight = createNumber("weight", java.math.BigDecimal.class);
 
     public QAnimal(String variable) {
         this(Animal.class, forVariable(variable), INITS);

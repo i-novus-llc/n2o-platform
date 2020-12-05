@@ -22,7 +22,7 @@ public abstract class SeekPagingTest {
     protected LocalDate randomLocalDate() {
         return LocalDate.ofYearDay(
             2020,
-            ThreadLocalRandom.current().nextInt(1, 365)
+            ThreadLocalRandom.current().nextInt(1, 30)
         );
     }
 
