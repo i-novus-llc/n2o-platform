@@ -1,5 +1,8 @@
 package net.n2oapp.platform.seek;
 
+import net.n2oapp.platform.jaxrs.seek.SeekPivot;
+import net.n2oapp.platform.jaxrs.seek.SeekableCriteria;
+import net.n2oapp.platform.jaxrs.seek.SeekedPage;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +58,7 @@ public class SeekableRepositoryTest extends SeekPagingTest {
         SeekableCriteria criteria = new SeekableCriteria();
         criteria.setSize(10);
         criteria.setOrders(List.of(Sort.Order.desc("birthDate"), Sort.Order.asc("id")));
-        criteria.setPivots(List.of(new SeekPivot("id", "0"), new SeekPivot("birthDate", "2077-01-01")));
+        criteria.setPivots(List.of(SeekPivot.of("id", "0"), SeekPivot.of("birthDate", "2077-01-01")));
         Integer prevId = null;
         LocalDate prevBirthDate = null;
         while (true) {
@@ -84,14 +87,14 @@ public class SeekableRepositoryTest extends SeekPagingTest {
             }
             pageSequence.add(page);
             prevPage = page;
-            criteria.setPivots(List.of(new SeekPivot("id", prevId.toString()), new SeekPivot("birthDate", prevBirthDate.toString())));
+            criteria.setPivots(List.of(SeekPivot.of("id", prevId.toString()), SeekPivot.of("birthDate", prevBirthDate.toString())));
         }
         assertTrue(animals.isEmpty());
         prevPage = pageSequence.remove(pageSequence.size() - 1);
         animals.addAll(prevPage.getContent());
         prevId = prevPage.getContent().get(0).getId();
         prevBirthDate = prevPage.getContent().get(0).getBirthDate();
-        criteria.setPivots(List.of(new SeekPivot("id", prevId.toString()), new SeekPivot("birthDate", prevBirthDate.toString())));
+        criteria.setPivots(List.of(SeekPivot.of("id", prevId.toString()), SeekPivot.of("birthDate", prevBirthDate.toString())));
         criteria.setPrev(true);
         while (true) {
             SeekedPage<Animal> page = repository.findAll(criteria);
@@ -116,7 +119,7 @@ public class SeekableRepositoryTest extends SeekPagingTest {
                 assertFalse(page.hasPrev());
                 break;
             }
-            criteria.setPivots(List.of(new SeekPivot("id", prevId.toString()), new SeekPivot("birthDate", prevBirthDate.toString())));
+            criteria.setPivots(List.of(SeekPivot.of("id", prevId.toString()), SeekPivot.of("birthDate", prevBirthDate.toString())));
         }
         assertEquals(n, animals.size());
     }

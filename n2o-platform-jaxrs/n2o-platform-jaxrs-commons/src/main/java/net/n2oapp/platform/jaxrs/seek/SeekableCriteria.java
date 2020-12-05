@@ -1,10 +1,11 @@
-package net.n2oapp.platform.seek;
+package net.n2oapp.platform.jaxrs.seek;
 
 import org.springframework.data.domain.Sort;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
 import java.util.List;
+import java.util.Objects;
 
 public class SeekableCriteria {
 
@@ -23,7 +24,7 @@ public class SeekableCriteria {
     @QueryParam("sort")
     private List<Sort.Order> orders;
 
-    @QueryParam("last")
+    @QueryParam("piv")
     private List<SeekPivot> pivots;
 
     public boolean getNext() {
@@ -66,6 +67,19 @@ public class SeekableCriteria {
 
     public void setPivots(List<SeekPivot> pivots) {
         this.pivots = pivots;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SeekableCriteria)) return false;
+        SeekableCriteria that = (SeekableCriteria) o;
+        return next == that.next && prev == that.prev && size == that.size && Objects.equals(orders, that.orders) && Objects.equals(pivots, that.pivots);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(next, prev, size, orders, pivots);
     }
 
 }

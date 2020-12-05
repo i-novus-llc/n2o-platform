@@ -1,8 +1,8 @@
-package net.n2oapp.platform.seek;
+package net.n2oapp.platform.jaxrs.seek;
 
-import javax.ws.rs.ext.ParamConverter;
+import net.n2oapp.platform.jaxrs.TypedParamConverter;
 
-public class SeekPivotParameterConverter implements ParamConverter<SeekPivot> {
+public class SeekPivotParameterConverter implements TypedParamConverter<SeekPivot> {
 
     @Override
     public SeekPivot fromString(String value) {
@@ -10,16 +10,13 @@ public class SeekPivotParameterConverter implements ParamConverter<SeekPivot> {
         int i = 0;
         while (i < value.length()) {
             char c = value.charAt(i);
-            if (c == '\\') {
+            if (c == ':') {
                 if (i + 1 < value.length() && value.charAt(i + 1) == ':') { // escaped colon
                     i += 2;
                     name.append(':');
                 } else {
-                    name.append('\\');
-                    i++;
+                    break;
                 }
-            } else if (c == ':') {
-                break;
             } else {
                 name.append(c);
                 i++;
@@ -28,12 +25,17 @@ public class SeekPivotParameterConverter implements ParamConverter<SeekPivot> {
         if (i >= value.length())
             throw new IllegalArgumentException("No name provided in " + value);
         String lastSeenValue = value.substring(i + 1);
-        return new SeekPivot(name.toString(), lastSeenValue);
+        return SeekPivot.of(name.toString(), lastSeenValue);
     }
 
     @Override
     public String toString(SeekPivot value) {
-        return value.getName().replace(":", "\\:") + ":" + value.getLastValue();
+        return value.getName().replace(":", "::") + ":" + value.getLastValue();
+    }
+
+    @Override
+    public Class<SeekPivot> getType() {
+        return SeekPivot.class;
     }
 
 }

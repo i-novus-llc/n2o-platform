@@ -1,6 +1,7 @@
-package net.n2oapp.platform.seek;
+package net.n2oapp.platform.jaxrs.seek;
 
-import com.google.common.base.Preconditions;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.lang.NonNull;
 
 import java.util.*;
@@ -13,8 +14,14 @@ public class SeekedPage<T> implements Iterable<T> {
     private final boolean hasNext;
     private final boolean hasPrev;
 
-    private SeekedPage(List<T> content, boolean hasNext, boolean hasPrev) {
-        this.content = Preconditions.checkNotNull(content);
+    private SeekedPage(
+        @JsonProperty("content") List<T> content,
+        @JsonProperty("hasNext") boolean hasNext,
+        @JsonProperty("hasPrev") boolean hasPrev
+    ) {
+        if (content == null)
+            throw new IllegalArgumentException("Content must not be null");
+        this.content = content;
         this.hasNext = hasNext;
         this.hasPrev = hasPrev;
     }
@@ -23,18 +30,22 @@ public class SeekedPage<T> implements Iterable<T> {
         return content;
     }
 
+    @JsonProperty("hasNext")
     public boolean hasNext() {
         return hasNext;
     }
 
+    @JsonProperty("hasPrev")
     public boolean hasPrev() {
         return hasPrev;
     }
 
+    @JsonIgnore
     public boolean isEmpty() {
         return content.isEmpty();
     }
 
+    @JsonIgnore
     public int size() {
         return content.size();
     }

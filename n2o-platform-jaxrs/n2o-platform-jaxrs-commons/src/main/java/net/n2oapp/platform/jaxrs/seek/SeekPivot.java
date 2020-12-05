@@ -1,4 +1,4 @@
-package net.n2oapp.platform.seek;
+package net.n2oapp.platform.jaxrs.seek;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -8,7 +8,7 @@ public class SeekPivot implements Serializable {
     private final String name;
     private final String lastValue;
 
-    public SeekPivot(String name, String lastValue) {
+    private SeekPivot(String name, String lastValue) {
         this.name = name;
         this.lastValue = lastValue;
     }
@@ -22,7 +22,7 @@ public class SeekPivot implements Serializable {
     }
 
     public SeekPivot copy() {
-        return new SeekPivot(name, lastValue);
+        return of(name, lastValue);
     }
 
     @Override
@@ -36,6 +36,10 @@ public class SeekPivot implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(getName(), getLastValue());
+    }
+
+    public static SeekPivot of(String name, String lastValue) {
+        return new SeekPivot(name, lastValue);
     }
 
 }
