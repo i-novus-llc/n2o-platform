@@ -2,27 +2,27 @@ package net.n2oapp.platform.jaxrs.seek;
 
 import org.springframework.data.domain.Sort;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
 import java.util.List;
 import java.util.Objects;
 
-import static java.util.stream.Collectors.toList;
-
 public class EmptySeekableCriteria implements SeekableCriteria {
 
-    @QueryParam("next")
-    @DefaultValue("true")
-    private boolean next = true;
+    @NotNull
+    @QueryParam("page")
+    @DefaultValue("FIRST")
+    private RequestedPageEnum page = RequestedPageEnum.FIRST;
 
-    @QueryParam("prev")
-    @DefaultValue("false")
-    private boolean prev;
-
+    @PositiveOrZero
     @QueryParam("size")
     @DefaultValue("10")
-    private int size = 10;
+    private Integer size = 10;
 
+    @NotEmpty
     @QueryParam("sort")
     private List<Sort.Order> orders;
 
@@ -30,34 +30,22 @@ public class EmptySeekableCriteria implements SeekableCriteria {
     private List<SeekPivot> pivots;
 
     @Override
-    public boolean getNext() {
-        return next;
+    public RequestedPageEnum getPage() {
+        return page;
     }
 
     @Override
-    public void setNext(boolean next) {
-        this.prev = !next;
-        this.next = next;
+    public void setPage(RequestedPageEnum page) {
+        this.page = page;
     }
 
     @Override
-    public boolean getPrev() {
-        return prev;
-    }
-
-    @Override
-    public void setPrev(boolean prev) {
-        this.next = !prev;
-        this.prev = prev;
-    }
-
-    @Override
-    public int getSize() {
+    public Integer getSize() {
         return size;
     }
 
     @Override
-    public void setSize(int size) {
+    public void setSize(Integer size) {
         this.size = size;
     }
 
@@ -82,27 +70,16 @@ public class EmptySeekableCriteria implements SeekableCriteria {
     }
 
     @Override
-    public SeekableCriteria copy() {
-        EmptySeekableCriteria copy = new EmptySeekableCriteria();
-        copy.setSize(size);
-        copy.setNext(next);
-        copy.setPrev(prev);
-        copy.setOrders(getOrders().stream().map(o -> new Sort.Order(o.getDirection(), o.getProperty(), o.getNullHandling())).collect(toList()));
-        copy.setPivots(getPivots().stream().map(SeekPivot::copy).collect(toList()));
-        return copy;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof EmptySeekableCriteria)) return false;
         EmptySeekableCriteria that = (EmptySeekableCriteria) o;
-        return next == that.next && prev == that.prev && size == that.size && Objects.equals(orders, that.orders) && Objects.equals(pivots, that.pivots);
+        return page == that.page && size.equals(that.size) && Objects.equals(orders, that.orders) && Objects.equals(pivots, that.pivots);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(next, prev, size, orders, pivots);
+        return Objects.hash(page, size, orders, pivots);
     }
 
 }

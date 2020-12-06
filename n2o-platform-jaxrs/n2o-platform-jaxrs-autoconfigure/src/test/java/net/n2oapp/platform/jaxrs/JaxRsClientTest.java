@@ -4,7 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.api.*;
 import net.n2oapp.platform.jaxrs.impl.SomeRestImpl;
-import net.n2oapp.platform.jaxrs.seek.SeekableCriteria;
+import net.n2oapp.platform.jaxrs.seek.EmptySeekableCriteria;
+import net.n2oapp.platform.jaxrs.seek.RequestedPageEnum;
 import net.n2oapp.platform.jaxrs.seek.SeekedPage;
 import org.junit.Assert;
 import org.junit.Test;
@@ -245,11 +246,11 @@ public class JaxRsClientTest {
     @Test
     public void testSeek() {
         forEachHeaderCombination(() -> {
-            SeekableCriteria criteria = new SeekableCriteria();
+            EmptySeekableCriteria criteria = new EmptySeekableCriteria();
             criteria.setPivots(SomeRestImpl.EXPECTED_PIVOTS);
-            criteria.setPrev(false);
-            criteria.setNext(true);
+            criteria.setPage(RequestedPageEnum.NEXT);
             criteria.setSize(2077);
+            criteria.setOrders(List.of(Sort.Order.asc("id")));
             SeekedPage<String> page = client.searchSeeking(criteria);
             assertThat(page.getContent(), is(List.of("ok!")));
             assertThat(page.hasNext(), is(true));

@@ -1,9 +1,6 @@
 package net.n2oapp.platform.seek;
 
-import net.n2oapp.platform.jaxrs.seek.EmptySeekableCriteria;
-import net.n2oapp.platform.jaxrs.seek.SeekPivot;
-import net.n2oapp.platform.jaxrs.seek.SeekableCriteria;
-import net.n2oapp.platform.jaxrs.seek.SeekedPage;
+import net.n2oapp.platform.jaxrs.seek.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +30,6 @@ public class SeekableRepositoryTest extends SeekPagingTest {
     private final Set<Animal> animals = new HashSet<>();
     private final List<Food> foods = new ArrayList<>();
     private final int n = 2500;
-    private String maxAnimalName;
 
     @Before
     public void setup() {
@@ -57,7 +53,6 @@ public class SeekableRepositoryTest extends SeekPagingTest {
             animal = repository.save(animal);
             animals.add(animal);
             animalsList.add(animal);
-            maxAnimalName = maxAnimalName == null ? animal.getName() : animal.getName().compareTo(maxAnimalName) > 0 ? animal.getName() : maxAnimalName;
         }
     }
 
@@ -65,13 +60,14 @@ public class SeekableRepositoryTest extends SeekPagingTest {
     public void testSeek() {
         LocalDate prevBirthDate = LocalDate.of(2077, 1, 1);
         String prevFavoriteFood = "";
-        String prevParentName = maxAnimalName;
+        String prevParentName = Character.toString(0x10FFFF);
         BigInteger prevHeight = BigInteger.ZERO;
         Integer prevId = 0;
         SeekedPage<Animal> prevPage = null;
         List<SeekedPage<Animal>> pageSequence = new ArrayList<>();
         SeekableCriteria criteria = new EmptySeekableCriteria();
-        criteria.setSize(10);
+        criteria.setPage(RequestedPageEnum.NEXT);
+        criteria.setSize(100);
         criteria.setOrders(List.of(
             Sort.Order.desc(BIRTH_DATE),
             Sort.Order.asc(FAV_FOOD),
@@ -115,7 +111,7 @@ public class SeekableRepositoryTest extends SeekPagingTest {
         prevHeight = animal.getHeight();
         prevId = animal.getId();
         setPivots(prevBirthDate, prevFavoriteFood, prevParentName, prevHeight, prevId, criteria);
-        criteria.setPrev(true);
+        criteria.setPage(RequestedPageEnum.PREV);
         while (true) {
             SeekedPage<Animal> page = repository.findAll(criteria);
             assertTrue(page.hasNext());
@@ -145,7 +141,48 @@ public class SeekableRepositoryTest extends SeekPagingTest {
             setPivots(prevBirthDate, prevFavoriteFood, prevParentName, prevHeight, prevId, criteria);
         }
         assertEquals(n, animals.size());
-        criteria.setNext(true);
+        criteria.setPage(RequestedPageEnum.FIRST);
+        SeekedPageIterator<Animal, SeekableCriteria> iter = SeekedPageIterator.from(
+            c -> repository.findAll(c),
+            this::getPivots,
+            criteria
+        );
+        iter.seekToFirst();
+        int count = 0;
+        Animal prev = null;
+        pageSequence.clear();
+        while (iter.hasNext()) {
+            SeekedPage<Animal> page = iter.next();
+            count += page.size();
+            assertTrue(page.size() > 0);
+            pageSequence.add(page);
+            for (Animal next : page) {
+                if (prev == null)
+                    prev = next;
+                else {
+                    checkSorted(prev.getBirthDate(), prev.getFavoriteFood().getName(), prev.getParent().getName(), prev.getHeight(), prev.getId(), next);
+                }
+            }
+        }
+        assertEquals(count, n);
+        try {
+            iter.next();
+            fail("Exception expected");
+        } catch (NoSuchElementException ignored) {}
+        criteria.setPage(RequestedPageEnum.LAST);
+        iter = SeekedPageIterator.from(
+            c -> repository.findAll(c),
+            this::getPivots,
+            criteria
+        );
+        iter.seekToLast();
+        count = 0;
+        while (iter.hasNext()) {
+            SeekedPage<Animal> next = iter.next();
+            assertEquals(pageSequence.remove(pageSequence.size() - 1), next);
+            count += next.size();
+        }
+        assertEquals(n, count);
     }
 
     private void checkSorted(LocalDate prevBirthDate, String prevFavoriteFood, String prevParentName, BigInteger prevHeight, Integer prevId, Animal animal) {
@@ -173,6 +210,10 @@ public class SeekableRepositoryTest extends SeekPagingTest {
 
     private void setPivots(LocalDate prevBirthDate, String prevFavoriteFood, String prevParentName, BigInteger prevHeight, Integer prevId, SeekableCriteria criteria) {
         criteria.setPivots(getPivots(prevBirthDate, prevFavoriteFood, prevParentName, prevHeight, prevId));
+    }
+
+    private List<SeekPivot> getPivots(Animal animal) {
+        return getPivots(animal.getBirthDate(), animal.getFavoriteFood().getName(), animal.getParent().getName(), animal.getHeight(), animal.getId());
     }
 
     private List<SeekPivot> getPivots(LocalDate prevBirthDate, String prevFavoriteFood, String prevParentName, BigInteger prevHeight, Integer prevId) {

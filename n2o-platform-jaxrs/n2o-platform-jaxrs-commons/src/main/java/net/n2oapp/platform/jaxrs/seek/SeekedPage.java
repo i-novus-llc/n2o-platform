@@ -72,12 +72,12 @@ public class SeekedPage<T> implements Iterable<T> {
         if (this == o) return true;
         if (!(o instanceof SeekedPage)) return false;
         SeekedPage<?> that = (SeekedPage<?>) o;
-        return hasNext == that.hasNext && content.equals(that.content);
+        return hasNext == that.hasNext && hasPrev == that.hasPrev && content.equals(that.content);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(content, hasNext);
+        return Objects.hash(content, hasNext, hasPrev);
     }
 
     @Override

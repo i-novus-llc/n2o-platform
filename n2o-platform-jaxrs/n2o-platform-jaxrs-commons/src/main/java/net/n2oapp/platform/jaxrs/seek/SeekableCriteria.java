@@ -6,21 +6,30 @@ import java.util.List;
 
 public interface SeekableCriteria {
 
-    boolean getNext();
-    void setNext(boolean next);
+    /**
+     * Запрашиваемая страница
+     */
+    RequestedPageEnum getPage();
+    void setPage(RequestedPageEnum page);
 
-    boolean getPrev();
-    void setPrev(boolean prev);
+    /**
+     * Требуемый размер страницы
+     */
+    Integer getSize();
+    void setSize(Integer size);
 
-    int getSize();
-    void setSize(int size);
-
+    /**
+     * Сортировка элементов (обязательна)
+     */
     List<Sort.Order> getOrders();
     void setOrders(List<Sort.Order> orders);
 
+    /**
+     * При запросе за следующей страницей -- список значений полей, указанных в {@link #getOrders()} последней записи текущей страницы.
+     * При запросе за предыдущей страницей -- список значений полей, указанных в {@link #getOrders()} первой записи текущей страницы.
+     * При запросе за первой/последней страницей данный список будет проигнорирован.
+     */
     List<SeekPivot> getPivots();
     void setPivots(List<SeekPivot> pivots);
-
-    SeekableCriteria copy();
 
 }
