@@ -136,7 +136,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     private List<T> fetch0(SeekableCriteria criteria, Predicate predicate, final boolean validate) {
         List<Order> orders = copyOrders(criteria);
         List<EnrichedSeekPivot> list = makeList(criteria, orders, copyPivots(criteria));
-        if (validate)
+        if (validate && criteria.getPage() != FIRST && criteria.getPage() != LAST)
             ensureNoDuplicates(list);
         Predicate seekPredicate = seek(list);
         JPQLQuery<?> query = getQuery(predicate, seekPredicate);

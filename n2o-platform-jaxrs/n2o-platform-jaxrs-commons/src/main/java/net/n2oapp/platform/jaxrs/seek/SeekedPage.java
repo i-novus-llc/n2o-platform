@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.lang.NonNull;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class SeekedPage<T> implements Iterable<T> {
 
@@ -65,6 +67,10 @@ public class SeekedPage<T> implements Iterable<T> {
 
     public ListIterator<T> listIterator(int idx) {
         return content.listIterator(idx);
+    }
+
+    public <E> SeekedPage<E> map(Function<? super T, ? extends E> mapper) {
+        return SeekedPage.of(content.stream().map(mapper).collect(Collectors.toList()), hasNext, hasPrev);
     }
 
     @Override
