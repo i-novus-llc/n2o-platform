@@ -31,7 +31,9 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static net.n2oapp.platform.jaxrs.seek.RequestedPageEnum.*;
+import static java.util.stream.Collectors.toList;
+import static net.n2oapp.platform.jaxrs.seek.RequestedPageEnum.LAST;
+import static net.n2oapp.platform.jaxrs.seek.RequestedPageEnum.PREV;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 import static org.springframework.data.domain.Sort.Order;
@@ -85,7 +87,10 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
 
     private SeekedPage<T> fetch(SeekableCriteria criteria, Predicate predicate) {
         checkCriteria(criteria);
-        List<T> fetch = fetch0(criteria, predicate, true);
+        List<Order> orders = copyOrders(criteria);
+        List<EnrichedSeekPivot> list = makeList(criteria, orders, copyPivots(criteria));
+        ensureNoDuplicates(list);
+        List<T> fetch = fetch0(list, orders, criteria.getSize() + 1, predicate, false);
         if (criteria.getPage() == PREV || criteria.getPage() == LAST)
             Collections.reverse(fetch);
         RequestedPageEnum savedPage = criteria.getPage();
@@ -94,18 +99,16 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         boolean hasPrev;
         switch (criteria.getPage()) {
             case NEXT:
-                SeekableCriteria inverted = invert(criteria);
                 hasNext = fetch.size() > savedSize;
                 if (hasNext)
                     fetch.remove(fetch.size() - 1);
-                hasPrev = !fetch0(inverted, predicate, false).isEmpty();
+                hasPrev = !fetch0(list, orders, 1, predicate, true).isEmpty();
                 break;
             case PREV:
-                inverted = invert(criteria);
                 hasPrev = fetch.size() > savedSize;
                 if (hasPrev)
                     fetch.remove(0);
-                hasNext = !fetch0(inverted, predicate, false).isEmpty();
+                hasNext = !fetch0(list, orders, 1, predicate, true).isEmpty();
                 break;
             case FIRST:
                 hasPrev = false;
@@ -127,20 +130,10 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         return SeekedPage.of(fetch, hasNext, hasPrev);
     }
 
-    private SeekableCriteria invert(SeekableCriteria criteria) {
-        criteria.setSize(0);
-        criteria.setPage(criteria.getPage() == RequestedPageEnum.NEXT ? PREV : NEXT);
-        return criteria;
-    }
-
-    private List<T> fetch0(SeekableCriteria criteria, Predicate predicate, final boolean validate) {
-        List<Order> orders = copyOrders(criteria);
-        List<EnrichedSeekPivot> list = makeList(criteria, orders, copyPivots(criteria));
-        if (validate && criteria.getPage() != FIRST && criteria.getPage() != LAST)
-            ensureNoDuplicates(list);
-        Predicate seekPredicate = seek(list);
+    private List<T> fetch0(List<EnrichedSeekPivot> list, List<Order> orders, int size, final Predicate predicate, final boolean reverse) {
+        Predicate seekPredicate = seek(list, reverse);
         JPQLQuery<?> query = getQuery(predicate, seekPredicate);
-        return fetch(query, criteria.getSize(), orders);
+        return fetch(query, size, orders, reverse);
     }
 
     private JPQLQuery<?> getQuery(Predicate predicate, Predicate seekPredicate) {
@@ -160,15 +153,15 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
             } else {
                 String min = "Min";
                 String max = "Max";
-                String desc;
-                if (order.getDirection() == ASC) {
+                String description;
+                if (order.getDirection().isAscending()) {
                     cast = provider.min(comparable);
-                    desc = min;
+                    description = min;
                 } else {
                     cast = provider.max(comparable);
-                    desc = max;
+                    description = max;
                 }
-                Preconditions.checkNotNull(cast, "%s value for property %s is not configured. Entity name: %s", desc, order.getProperty(), path.getMetadata().getName());
+                Preconditions.checkNotNull(cast, "%s value for property %s is not configured. Entity name: %s", description, order.getProperty(), path.getMetadata().getName());
             }
             EnrichedSeekPivot item = new EnrichedSeekPivot(cast, order, comparable);
             res.add(item);
@@ -192,7 +185,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         for (Order order : criteria.getOrders()) {
             String property = order.getProperty().startsWith(entityPrefix) ? order.getProperty().substring(entityPrefix.length() + 1) : order.getProperty();
             if (criteria.getPage() == PREV || criteria.getPage() == LAST) {
-                result.add(new Order(order.getDirection() == ASC ? DESC : ASC, property, order.getNullHandling()));
+                result.add(reverse(order, property));
             } else {
                 result.add(new Order(order.getDirection(), property, order.getNullHandling()));
             }
@@ -226,19 +219,24 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     }
 
     @SuppressWarnings("unchecked")
-    private List<T> fetch(JPQLQuery<?> query, long limit, List<Order> orders) {
-        query = limitAndSort(query, limit, orders);
+    private List<T> fetch(JPQLQuery<?> query, long limit, List<Order> orders, boolean reverse) {
+        query = query.limit(limit);
+        if (reverse)
+            orders = orders.stream().map(this::reverse).collect(toList());
+        query = querydsl.applySorting(by(orders), query);
         return (List<T>) query.fetch();
     }
 
-    private JPQLQuery<?> limitAndSort(JPQLQuery<?> query, long limit, List<Order> list) {
-        query = query.limit(limit + 1L);
-        query = querydsl.applySorting(by(list), query);
-        return query;
+    private Order reverse(Order order) {
+        return reverse(order, order.getProperty());
+    }
+
+    private Order reverse(Order order, String property) {
+        return new Order(order.getDirection().isAscending() ? DESC : ASC, property, order.getNullHandling());
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private Predicate seek(List<EnrichedSeekPivot> list) {
+    private Predicate seek(List<EnrichedSeekPivot> list, boolean reverse) {
         BooleanExpression res = null;
         for (int i = 0; i < list.size(); i++) {
             EnrichedSeekPivot item = list.get(i);
@@ -246,7 +244,10 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
             ComparableExpression exp = item.comparable;
             Comparable<?> cast = item.castedPivot;
             if (res == null) {
-                res = order.getDirection() == ASC ? exp.gt(cast) : exp.lt(cast);
+                if (reverse)
+                    res = order.isAscending() ? exp.lt(cast) : exp.gt(cast);
+                else
+                    res = order.getDirection().isAscending() ? exp.gt(cast) : exp.lt(cast);
             } else {
                 BooleanExpression temp = null;
                 for (int j = 0; j < i; j++) {
@@ -259,7 +260,10 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
                         temp = temp.and(tempExp.eq(tempCast));
                     }
                 }
-                temp = order.getDirection() == ASC ? temp.and(exp.gt(cast)) : temp.and(exp.lt(cast));
+                if (reverse)
+                    temp = order.getDirection().isAscending() ? temp.and(exp.lt(cast)) : temp.and(exp.gt(cast));
+                else
+                    temp = order.getDirection().isAscending() ? temp.and(exp.gt(cast)) : temp.and(exp.lt(cast));
                 res = res.or(temp);
             }
         }
