@@ -22,8 +22,6 @@ import java.util.Map;
 public class JaxRsJwtHeaderInterceptor extends AbstractPhaseInterceptor<Message> {
 
     @Autowired(required = false)
-    private OAuth2ClientContext oauth2ClientContext;
-    @Autowired(required = false)
     private OAuth2RestTemplate restTemplate;
 
     public JaxRsJwtHeaderInterceptor() {
@@ -33,8 +31,8 @@ public class JaxRsJwtHeaderInterceptor extends AbstractPhaseInterceptor<Message>
     @SuppressWarnings("unchecked")
     @Override
     public void handleMessage(Message message) {
-        if (oauth2ClientContext != null && oauth2ClientContext.getAccessToken() != null) {
-            OAuth2AccessToken accessToken = restTemplate.getAccessToken();
+        OAuth2AccessToken accessToken = restTemplate.getAccessToken();
+        if (accessToken != null) {
             String tokenType = accessToken.getTokenType();
             if (!StringUtils.hasText(tokenType)) {
                 tokenType = OAuth2AccessToken.BEARER_TYPE;
