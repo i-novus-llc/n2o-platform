@@ -31,15 +31,17 @@ public class JaxRsJwtHeaderInterceptor extends AbstractPhaseInterceptor<Message>
     @SuppressWarnings("unchecked")
     @Override
     public void handleMessage(Message message) {
-        OAuth2AccessToken accessToken = restTemplate.getAccessToken();
-        if (accessToken != null) {
-            String tokenType = accessToken.getTokenType();
-            if (!StringUtils.hasText(tokenType)) {
-                tokenType = OAuth2AccessToken.BEARER_TYPE;
+        if (restTemplate != null) {
+            OAuth2AccessToken accessToken = restTemplate.getAccessToken();
+            if (accessToken != null) {
+                String tokenType = accessToken.getTokenType();
+                if (!StringUtils.hasText(tokenType)) {
+                    tokenType = OAuth2AccessToken.BEARER_TYPE;
+                }
+                Map<String, List> headers = (Map<String, List>) message.get("org.apache.cxf.message.Message.PROTOCOL_HEADERS");
+                headers.put("Authorization", Collections.singletonList(String.format("%s %s", tokenType,
+                        accessToken.getValue())));
             }
-            Map<String, List> headers = (Map<String, List>) message.get("org.apache.cxf.message.Message.PROTOCOL_HEADERS");
-            headers.put("Authorization", Collections.singletonList(String.format("%s %s", tokenType,
-                    accessToken.getValue())));
         }
     }
 }
