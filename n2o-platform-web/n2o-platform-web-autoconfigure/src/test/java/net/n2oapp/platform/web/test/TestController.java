@@ -2,7 +2,6 @@ package net.n2oapp.platform.web.test;
 
 import net.n2oapp.criteria.dataset.DataSet;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
-import org.springframework.security.oauth2.common.DefaultOAuth2RefreshToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,7 +13,7 @@ import java.util.Collections;
 import java.util.Map;
 
 @RestController
-public class EndpointController {
+public class TestController {
 
     @GetMapping(value = "/protectedResource", produces = MediaType.APPLICATION_JSON)
     public DataSet protectedResource(HttpServletRequest request) {
@@ -24,7 +23,6 @@ public class EndpointController {
     @PostMapping(value = "/token", produces = MediaType.APPLICATION_JSON)
     public OAuth2AccessToken tokenEndpoint() {
         DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken(JwtForwardingTest.refreshedToken);
-        token.setRefreshToken(new DefaultOAuth2RefreshToken(JwtForwardingTest.refreshedToken));
         token.setTokenType("Bearer");
         return token;
     }
