@@ -97,36 +97,39 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         int savedSize = criteria.getSize();
         boolean hasNext;
         boolean hasPrev;
-        switch (criteria.getPage()) {
-            case NEXT:
-                hasNext = fetch.size() > savedSize;
-                if (hasNext)
-                    fetch.remove(fetch.size() - 1);
-                hasPrev = !fetch0(list, orders, 1, predicate, true).isEmpty();
-                break;
-            case PREV:
-                hasPrev = fetch.size() > savedSize;
-                if (hasPrev)
-                    fetch.remove(0);
-                hasNext = !fetch0(list, orders, 1, predicate, true).isEmpty();
-                break;
-            case FIRST:
-                hasPrev = false;
-                hasNext = fetch.size() > savedSize;
-                if (hasNext)
-                    fetch.remove(fetch.size() - 1);
-                break;
-            case LAST:
-                hasNext = false;
-                hasPrev = fetch.size() > savedSize;
-                if (hasPrev)
-                    fetch.remove(0);
-                break;
-            default:
-                throw new IllegalStateException("Unexpected requested page: " + criteria.getPage());
+        try {
+            switch (criteria.getPage()) {
+                case NEXT:
+                    hasNext = fetch.size() > savedSize;
+                    if (hasNext)
+                        fetch.remove(fetch.size() - 1);
+                    hasPrev = !fetch0(list, orders, 1, predicate, true).isEmpty();
+                    break;
+                case PREV:
+                    hasPrev = fetch.size() > savedSize;
+                    if (hasPrev)
+                        fetch.remove(0);
+                    hasNext = !fetch0(list, orders, 1, predicate, true).isEmpty();
+                    break;
+                case FIRST:
+                    hasPrev = false;
+                    hasNext = fetch.size() > savedSize;
+                    if (hasNext)
+                        fetch.remove(fetch.size() - 1);
+                    break;
+                case LAST:
+                    hasNext = false;
+                    hasPrev = fetch.size() > savedSize;
+                    if (hasPrev)
+                        fetch.remove(0);
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected requested page: " + criteria.getPage());
+            }
+        } finally {
+            criteria.setPage(savedPage);
+            criteria.setSize(savedSize);
         }
-        criteria.setPage(savedPage);
-        criteria.setSize(savedSize);
         return SeekedPage.of(fetch, hasNext, hasPrev);
     }
 
@@ -154,7 +157,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
                 String min = "Min";
                 String max = "Max";
                 String description;
-                if (order.getDirection().isAscending()) {
+                if (order.isAscending()) {
                     cast = provider.min(comparable);
                     description = min;
                 } else {
@@ -232,7 +235,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     }
 
     private Order reverse(Order order, String property) {
-        return new Order(order.getDirection().isAscending() ? DESC : ASC, property, order.getNullHandling());
+        return new Order(order.isAscending() ? DESC : ASC, property, order.getNullHandling());
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -247,7 +250,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
                 if (reverse)
                     res = order.isAscending() ? exp.lt(cast) : exp.gt(cast);
                 else
-                    res = order.getDirection().isAscending() ? exp.gt(cast) : exp.lt(cast);
+                    res = order.isAscending() ? exp.gt(cast) : exp.lt(cast);
             } else {
                 BooleanExpression temp = null;
                 for (int j = 0; j < i; j++) {
@@ -261,9 +264,9 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
                     }
                 }
                 if (reverse)
-                    temp = order.getDirection().isAscending() ? temp.and(exp.lt(cast)) : temp.and(exp.gt(cast));
+                    temp = order.isAscending() ? temp.and(exp.lt(cast)) : temp.and(exp.gt(cast));
                 else
-                    temp = order.getDirection().isAscending() ? temp.and(exp.gt(cast)) : temp.and(exp.lt(cast));
+                    temp = order.isAscending() ? temp.and(exp.gt(cast)) : temp.and(exp.lt(cast));
                 res = res.or(temp);
             }
         }

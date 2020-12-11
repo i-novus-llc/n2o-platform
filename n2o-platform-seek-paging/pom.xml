@@ -13,6 +13,10 @@
     <artifactId>n2o-platform-seek-paging</artifactId>
     <packaging>jar</packaging>
 
+    <properties>
+        <jacoco.skip>false</jacoco.skip>
+    </properties>
+
     <dependencies>
 
         <dependency>
