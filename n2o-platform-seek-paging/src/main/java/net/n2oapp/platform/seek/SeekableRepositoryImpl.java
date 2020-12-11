@@ -242,35 +242,46 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     private Predicate seek(List<EnrichedSeekPivot> list, boolean reverse) {
         BooleanExpression res = null;
         for (int i = 0; i < list.size(); i++) {
-            EnrichedSeekPivot item = list.get(i);
-            Order order = item.order;
-            ComparableExpression exp = item.comparable;
-            Comparable<?> cast = item.castedPivot;
+            EnrichedSeekPivot next = list.get(i);
+            Order order = next.order;
+            ComparableExpression exp = next.comparable;
+            Comparable<?> cast = next.castedPivot;
             if (res == null) {
-                if (reverse)
-                    res = order.isAscending() ? exp.lt(cast) : exp.gt(cast);
-                else
-                    res = order.isAscending() ? exp.gt(cast) : exp.lt(cast);
+                res = compare(exp.lt(cast), exp.gt(cast), order, reverse);
             } else {
-                BooleanExpression temp = null;
-                for (int j = 0; j < i; j++) {
-                    EnrichedSeekPivot tempItem = list.get(j);
-                    ComparableExpression tempExp = tempItem.comparable;
-                    Comparable<?> tempCast = tempItem.castedPivot;
-                    if (temp == null) {
-                        temp = tempExp.eq(tempCast);
-                    } else {
-                        temp = temp.and(tempExp.eq(tempCast));
-                    }
+                BooleanExpression accum = equalize(null, list.get(0));
+                for (int j = 1; j < i; j++) {
+                    accum = equalize(accum, list.get(j));
                 }
-                if (reverse)
-                    temp = order.isAscending() ? temp.and(exp.lt(cast)) : temp.and(exp.gt(cast));
-                else
-                    temp = order.isAscending() ? temp.and(exp.gt(cast)) : temp.and(exp.lt(cast));
-                res = res.or(temp);
+                accum = compare(accum.and(exp.lt(cast)), accum.and(exp.gt(cast)), order, reverse);
+                res = res.or(accum);
             }
         }
         return res;
+    }
+
+    private BooleanExpression compare(
+        BooleanExpression lessThan,
+        BooleanExpression greaterThan,
+        Order order,
+        boolean reverse
+    ) {
+        if (reverse)
+            return order.isAscending() ? lessThan : greaterThan;
+        else
+            return order.isAscending() ? greaterThan : lessThan;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private BooleanExpression equalize(BooleanExpression accum, EnrichedSeekPivot piv) {
+        ComparableExpression exp = piv.comparable;
+        Comparable<?> cast = piv.castedPivot;
+        if (accum == null) {
+            accum = exp.eq(cast);
+        } else {
+            accum = accum.and(exp.eq(cast));
+        }
+        return accum;
     }
 
     private Comparable<?> cast(String name, String lastValue, ComparableExpression<?> target) {
