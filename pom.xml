@@ -5,7 +5,7 @@
     <groupId>net.n2oapp.platform</groupId>
     <artifactId>n2o-boot-platform</artifactId>
     <packaging>pom</packaging>
-    <version>4.2.3-SNAPSHOT</version>
+    <version>4.2.5-SNAPSHOT</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -95,6 +95,7 @@
                         <configuration>
                             <serverId>ossrh</serverId>
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
                             <stagingProgressTimeoutMinutes>15</stagingProgressTimeoutMinutes>
                         </configuration>
                     </plugin>

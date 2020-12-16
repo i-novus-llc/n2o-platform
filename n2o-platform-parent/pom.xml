@@ -8,7 +8,7 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-boot-dependencies</artifactId>
-        <version>4.2.3-SNAPSHOT</version>
+        <version>4.2.5-SNAPSHOT</version>
         <relativePath>../n2o-platform-dependencies</relativePath>
     </parent>
 
@@ -81,7 +81,15 @@
                         <execution>
                             <goals>
                                 <goal>repackage</goal>
+                                <goal>build-info</goal>
                             </goals>
+                            <configuration>
+                                <additionalProperties>
+                                    <java.source>${maven.compiler.source}</java.source>
+                                    <java.target>${maven.compiler.target}</java.target>
+                                    <config.server.enable>${config.server.enable}</config.server.enable>
+                                </additionalProperties>
+                            </configuration>
                         </execution>
                     </executions>
                     <configuration>
