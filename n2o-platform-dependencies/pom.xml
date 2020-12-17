@@ -12,7 +12,7 @@
     </parent>
 
     <properties>
-        <n2o.version>7.9.8</n2o.version>
+        <n2o.version>7.12.0</n2o.version>
         <cxf.version>3.4.0</cxf.version>
         <swagger.version>3.30.0</swagger.version>
         <swagger-annotations.version>1.6.2</swagger-annotations.version>
