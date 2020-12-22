@@ -2,7 +2,7 @@ package net.n2oapp.platform.selection.core.model;
 
 import java.util.List;
 
-public abstract class Animal {
+public abstract class Animal<F extends AnimalFeature<? extends F>> {
 
     private String name;
     private double height;
@@ -10,6 +10,8 @@ public abstract class Animal {
     private String father;
     private List<String> siblings;
     private List<Food> favoriteFood;
+
+    private List<? extends F> features;
 
     public String getName() {
         return name;
@@ -57,6 +59,14 @@ public abstract class Animal {
 
     public void setFavoriteFood(List<Food> favoriteFood) {
         this.favoriteFood = favoriteFood;
+    }
+
+    public List<? extends F> getFeatures() {
+        return features;
+    }
+
+    public void setFeatures(List<F> features) {
+        this.features = features;
     }
 
 }

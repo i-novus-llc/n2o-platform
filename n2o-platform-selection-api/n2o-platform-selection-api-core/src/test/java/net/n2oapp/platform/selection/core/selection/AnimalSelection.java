@@ -4,9 +4,10 @@ import net.n2oapp.platform.selection.core.Selection;
 import net.n2oapp.platform.selection.core.SelectionEnum;
 import net.n2oapp.platform.selection.core.SelectionKey;
 import net.n2oapp.platform.selection.core.model.Animal;
+import net.n2oapp.platform.selection.core.model.AnimalFeature;
 import net.n2oapp.platform.selection.core.model.Food;
 
-public interface AnimalSelection<E extends Animal> extends Selection<E> {
+public interface AnimalSelection<E extends Animal<F>, F extends AnimalFeature<? extends F>> extends Selection<E> {
 
     @SelectionKey("name")
     SelectionEnum selectName();
@@ -28,5 +29,11 @@ public interface AnimalSelection<E extends Animal> extends Selection<E> {
 
     @SelectionKey("favoriteFood")
     Selection<? extends Food> favoriteFoodSelection();
+
+    @SelectionKey("features")
+    SelectionEnum selectFeatures();
+
+    @SelectionKey("features")
+    Selection<? extends F> featuresSelection();
 
 }

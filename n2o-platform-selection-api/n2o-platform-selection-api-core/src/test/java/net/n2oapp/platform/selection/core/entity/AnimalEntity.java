@@ -1,15 +1,16 @@
 package net.n2oapp.platform.selection.core.entity;
 
+import net.n2oapp.platform.selection.core.Mapper;
 import net.n2oapp.platform.selection.core.mapper.AnimalMapper;
-import net.n2oapp.platform.selection.core.mapper.FoodMapper;
 import net.n2oapp.platform.selection.core.model.Animal;
+import net.n2oapp.platform.selection.core.model.AnimalFeature;
 import net.n2oapp.platform.selection.core.model.Food;
 
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
-public abstract class AnimalEntity<T extends AnimalEntity<T, M>, M extends Animal> implements AnimalMapper<M> {
+public abstract class AnimalEntity<T extends AnimalEntity<T, M, F>, M extends Animal<F>, F extends AnimalFeature<? extends F>> implements AnimalMapper<M, F> {
 
     private final String name;
     private final double height;
@@ -74,7 +75,7 @@ public abstract class AnimalEntity<T extends AnimalEntity<T, M>, M extends Anima
     }
 
     @Override
-    public List<? extends FoodMapper<?>> foodMappers() {
+    public List<? extends Mapper<? extends Food>> foodMappers() {
         return favoriteFoods;
     }
 

@@ -1,6 +1,6 @@
 package net.n2oapp.platform.selection.core.model;
 
-public class Cat extends Animal {
+public class Cat extends Animal<CatFeature<?>> {
 
     private Dog enemy;
 
