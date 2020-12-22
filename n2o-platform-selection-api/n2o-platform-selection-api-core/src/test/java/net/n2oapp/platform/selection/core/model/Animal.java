@@ -2,14 +2,14 @@ package net.n2oapp.platform.selection.core.model;
 
 import java.util.List;
 
-public abstract class Animal<T extends Animal<T>> {
+public abstract class Animal {
 
     private String name;
     private double height;
-    private T mother;
-    private T father;
-    private List<T> siblings;
-    private Animal<?> enemy;
+    private String mother;
+    private String father;
+    private List<String> siblings;
+    private List<Food> favoriteFood;
 
     public String getName() {
         return name;
@@ -27,36 +27,36 @@ public abstract class Animal<T extends Animal<T>> {
         this.height = height;
     }
 
-    public T getMother() {
+    public String getMother() {
         return mother;
     }
 
-    public void setMother(T mother) {
+    public void setMother(String mother) {
         this.mother = mother;
     }
 
-    public T getFather() {
+    public String getFather() {
         return father;
     }
 
-    public void setFather(T father) {
+    public void setFather(String father) {
         this.father = father;
     }
 
-    public List<T> getSiblings() {
+    public List<String> getSiblings() {
         return siblings;
     }
 
-    public void setSiblings(List<T> siblings) {
+    public void setSiblings(List<String> siblings) {
         this.siblings = siblings;
     }
 
-    public Animal<?> getEnemy() {
-        return enemy;
+    public List<Food> getFavoriteFood() {
+        return favoriteFood;
     }
 
-    public void setEnemy(Animal<?> enemy) {
-        this.enemy = enemy;
+    public void setFavoriteFood(List<Food> favoriteFood) {
+        this.favoriteFood = favoriteFood;
     }
 
 }
