@@ -5,9 +5,17 @@ import net.n2oapp.platform.selection.core.SelectionEnum;
 import net.n2oapp.platform.selection.core.SelectionKey;
 import net.n2oapp.platform.selection.core.model.TailLengthDogFeature;
 
-public interface TailLengthDogFeatureSelection extends Selection<TailLengthDogFeature> {
+public class TailLengthDogFeatureSelection implements Selection<TailLengthDogFeature> {
 
     @SelectionKey("length")
-    SelectionEnum selectLength();
+    SelectionEnum selectLength;
+
+    public SelectionEnum getSelectLength() {
+        return selectLength;
+    }
+
+    public void setSelectLength(SelectionEnum selectLength) {
+        this.selectLength = selectLength;
+    }
 
 }

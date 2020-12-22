@@ -6,6 +6,7 @@ import net.n2oapp.platform.selection.core.model.Animal;
 import net.n2oapp.platform.selection.core.model.AnimalFeature;
 import net.n2oapp.platform.selection.core.model.Food;
 
+import java.io.Serializable;
 import java.util.List;
 
 public interface AnimalMapper<E extends Animal<F>, F extends AnimalFeature<? extends F>> extends Mapper<E> {
@@ -34,6 +35,17 @@ public interface AnimalMapper<E extends Animal<F>, F extends AnimalFeature<? ext
     @SelectionKey("features")
     List<? extends Mapper<? extends F>> featuresMapper();
 
+    @SelectionKey("features")
     void setFeatures(E model, List<F> features);
+
+    @SelectionKey("integers")
+    default <I extends Integer & Serializable> List<? super Mapper<? extends I>> integers() {
+        return null;
+    }
+
+    @SelectionKey("integers")
+    default void setIntegers(E model, List<Integer> integers) {
+
+    }
 
 }

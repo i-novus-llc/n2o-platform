@@ -1,6 +1,9 @@
 package net.n2oapp.platform.selection.core;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * One to one mapping between {@link Selection} fields and {@link Mapper} methods.
@@ -51,7 +54,6 @@ import java.lang.annotation.*;
  */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Inherited
 public @interface SelectionKey {
     String value();
 }

@@ -8,20 +8,18 @@ import net.n2oapp.platform.selection.core.model.Food;
 
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
-
-public abstract class AnimalEntity<T extends AnimalEntity<T, M, F>, M extends Animal<F>, F extends AnimalFeature<? extends F>> implements AnimalMapper<M, F> {
+public abstract class AnimalEntity<M extends Animal<F>, F extends AnimalFeature<? extends F>> implements AnimalMapper<M, F> {
 
     private final String name;
     private final double height;
 
-    private final T mother;
-    private final T father;
-    private final List<T> siblings;
+    private final String mother;
+    private final String father;
+    private final List<String> siblings;
 
-    private List<? extends FoodEntity<?>> favoriteFoods;
+    private List<FoodEntity<?>> favoriteFoods;
 
-    protected AnimalEntity(String name, double height, T mother, T father, List<T> siblings) {
+    protected AnimalEntity(String name, double height, String mother, String father, List<String> siblings) {
         this.name = name;
         this.height = height;
         this.mother = mother;
@@ -37,41 +35,41 @@ public abstract class AnimalEntity<T extends AnimalEntity<T, M, F>, M extends An
         return name;
     }
 
-    public T mother() {
+    public String mother() {
         return mother;
     }
 
-    public T father() {
+    public String father() {
         return father;
     }
 
-    public List<T> siblings() {
+    public List<String> siblings() {
         return siblings;
     }
 
     @Override
-    public void setHeight(M model) {
-        model.setHeight(height);
+    public void setName(M m) {
+        m.setName(name);
     }
 
     @Override
-    public void setName(M model) {
-        model.setName(name);
+    public void setHeight(M m) {
+        m.setHeight(height);
     }
 
     @Override
-    public void setMother(M model) {
-        model.setMother(mother.name());
+    public void setMother(M m) {
+        m.setMother(mother);
     }
 
     @Override
-    public void setFather(M model) {
-        model.setFather(father.name());
+    public void setFather(M m) {
+        m.setFather(father);
     }
 
     @Override
-    public void setSiblings(M model) {
-        model.setSiblings(siblings.stream().map(AnimalEntity::name).collect(toList()));
+    public void setSiblings(M m) {
+        m.setSiblings(siblings);
     }
 
     @Override
@@ -82,6 +80,11 @@ public abstract class AnimalEntity<T extends AnimalEntity<T, M, F>, M extends An
     @Override
     public void setFavoriteFood(M m, List<Food> favoriteFood) {
         m.setFavoriteFood(favoriteFood);
+    }
+
+    @Override
+    public void setFeatures(M model, List<F> features) {
+        model.setFeatures(features);
     }
 
 }

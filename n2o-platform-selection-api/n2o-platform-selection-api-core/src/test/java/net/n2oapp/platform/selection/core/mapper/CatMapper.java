@@ -6,7 +6,7 @@ import net.n2oapp.platform.selection.core.model.Cat;
 import net.n2oapp.platform.selection.core.model.CatFeature;
 import net.n2oapp.platform.selection.core.model.Dog;
 
-public interface CatMapper extends AnimalMapper<Cat, CatFeature<?>> {
+public interface CatMapper<E extends Cat> extends AnimalMapper<E, CatFeature<?>> {
 
     @SelectionKey("enemy")
     Mapper<Dog> dogMapper();

@@ -53,7 +53,7 @@ public abstract class Animal<F extends AnimalFeature<? extends F>> {
         this.siblings = siblings;
     }
 
-    public List<Food> getFavoriteFood() {
+    public List<? extends Food> getFavoriteFood() {
         return favoriteFood;
     }
 

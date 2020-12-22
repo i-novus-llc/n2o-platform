@@ -11,13 +11,13 @@ import net.n2oapp.platform.selection.core.model.EyeColorCatFeature;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CatEntity extends AnimalEntity<CatEntity, Cat, CatFeature<?>> implements CatMapper {
+public class CatEntity extends AnimalEntity<Cat, CatFeature<?>> implements CatMapper<Cat> {
 
     private final List<CatFeature<?>> features;
 
     private final DogEntity enemy;
 
-    public CatEntity(String name, double height, CatEntity mother, CatEntity father, List<CatEntity> siblings, List<CatFeature<?>> features, DogEntity enemy) {
+    public CatEntity(String name, double height, String mother, String father, List<String> siblings, List<CatFeature<?>> features, DogEntity enemy) {
         super(name, height, mother, father, siblings);
         this.features = features;
         this.enemy = enemy;
