@@ -1,6 +1,6 @@
 package net.n2oapp.platform.selection.core.model;
 
-public class EyeColorCatFeature implements CatFeature<EyeColorCatFeature> {
+public class EyeColorCatFeature implements CatFeature {
 
     private ColorEnum color;
 

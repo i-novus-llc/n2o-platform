@@ -8,7 +8,7 @@ import net.n2oapp.platform.selection.core.model.Food;
 
 import java.util.List;
 
-public abstract class AnimalEntity<M extends Animal<F>, F extends AnimalFeature<? extends F>> implements AnimalMapper<M, F> {
+public abstract class AnimalEntity<M extends Animal<F>, F extends AnimalFeature> implements AnimalMapper<M, F> {
 
     private final String name;
     private final double height;
@@ -75,6 +75,10 @@ public abstract class AnimalEntity<M extends Animal<F>, F extends AnimalFeature<
     @Override
     public List<? extends Mapper<? extends Food>> foodMappers() {
         return favoriteFoods;
+    }
+
+    public void setFavoriteFoods(List<FoodEntity<?>> favoriteFoods) {
+        this.favoriteFoods = favoriteFoods;
     }
 
     @Override

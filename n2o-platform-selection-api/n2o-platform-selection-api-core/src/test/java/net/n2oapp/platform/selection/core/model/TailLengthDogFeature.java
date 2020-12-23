@@ -1,6 +1,6 @@
 package net.n2oapp.platform.selection.core.model;
 
-public class TailLengthDogFeature implements DogFeature<TailLengthDogFeature> {
+public class TailLengthDogFeature implements DogFeature {
 
     private int length;
 

@@ -1,18 +1,19 @@
 package net.n2oapp.platform.selection.core.selection;
 
+import net.n2oapp.platform.selection.core.Selection;
 import net.n2oapp.platform.selection.core.SelectionEnum;
 import net.n2oapp.platform.selection.core.SelectionKey;
 import net.n2oapp.platform.selection.core.model.Cat;
 import net.n2oapp.platform.selection.core.model.CatFeature;
 import net.n2oapp.platform.selection.core.model.Dog;
 
-public class CatSelection<E extends Cat> extends AnimalSelection<E, CatFeature<?>> {
+public class CatSelection extends AnimalSelection<Cat, CatFeature> {
 
     @SelectionKey("enemy")
     SelectionEnum selectEnemy;
 
     @SelectionKey("enemy")
-    DogSelection<Dog> dogSelection;
+    Selection<Dog> enemySelection;
 
     public SelectionEnum getSelectEnemy() {
         return selectEnemy;
@@ -22,12 +23,12 @@ public class CatSelection<E extends Cat> extends AnimalSelection<E, CatFeature<?
         this.selectEnemy = selectEnemy;
     }
 
-    public DogSelection<Dog> getDogSelection() {
-        return dogSelection;
+    public Selection<Dog> getEnemySelection() {
+        return enemySelection;
     }
 
-    public void setDogSelection(DogSelection<Dog> dogSelection) {
-        this.dogSelection = dogSelection;
+    public void setEnemySelection(Selection<Dog> dogSelection) {
+        this.enemySelection = dogSelection;
     }
 
 }

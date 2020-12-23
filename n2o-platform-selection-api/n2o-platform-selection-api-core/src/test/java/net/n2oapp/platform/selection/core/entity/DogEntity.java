@@ -10,11 +10,11 @@ import net.n2oapp.platform.selection.core.model.TailLengthDogFeature;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DogEntity extends AnimalEntity<Dog, DogFeature<?>> implements DogMapper<Dog> {
+public class DogEntity extends AnimalEntity<Dog, DogFeature> implements DogMapper {
 
-    private final List<? extends DogFeature<?>> features;
+    private final List<? extends DogFeature> features;
 
-    public DogEntity(String name, double height, String mother, String father, List<String> siblings, List<? extends DogFeature<?>> features) {
+    public DogEntity(String name, double height, String mother, String father, List<String> siblings, List<? extends DogFeature> features) {
         super(name, height, mother, father, siblings);
         this.features = features;
     }
@@ -25,7 +25,7 @@ public class DogEntity extends AnimalEntity<Dog, DogFeature<?>> implements DogMa
     }
 
     @Override
-    public List<? extends Mapper<? extends DogFeature<?>>> featuresMapper() {
+    public List<? extends Mapper<? extends DogFeature>> featuresMapper() {
         return features.stream().map(feature -> new TailLengthDogFeatureMapperImpl((TailLengthDogFeature) feature)).collect(Collectors.toList());
     }
 

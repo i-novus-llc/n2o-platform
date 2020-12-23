@@ -5,7 +5,7 @@ import net.n2oapp.platform.selection.core.SelectionEnum;
 import net.n2oapp.platform.selection.core.SelectionKey;
 import net.n2oapp.platform.selection.core.model.Food;
 
-public abstract class FoodSelection<E extends Food> implements Selection<Food> {
+public abstract class FoodSelection<E extends Food> implements Selection<E> {
 
     @SelectionKey("name")
     SelectionEnum selectName;

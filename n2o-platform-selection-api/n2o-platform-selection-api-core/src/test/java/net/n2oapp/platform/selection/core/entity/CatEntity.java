@@ -11,13 +11,13 @@ import net.n2oapp.platform.selection.core.model.EyeColorCatFeature;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class CatEntity extends AnimalEntity<Cat, CatFeature<?>> implements CatMapper<Cat> {
+public class CatEntity extends AnimalEntity<Cat, CatFeature> implements CatMapper {
 
-    private final List<CatFeature<?>> features;
+    private final List<CatFeature> features;
 
     private final DogEntity enemy;
 
-    public CatEntity(String name, double height, String mother, String father, List<String> siblings, List<CatFeature<?>> features, DogEntity enemy) {
+    public CatEntity(String name, double height, String mother, String father, List<String> siblings, List<CatFeature> features, DogEntity enemy) {
         super(name, height, mother, father, siblings);
         this.features = features;
         this.enemy = enemy;
@@ -39,12 +39,12 @@ public class CatEntity extends AnimalEntity<Cat, CatFeature<?>> implements CatMa
     }
 
     @Override
-    public List<? extends Mapper<? extends CatFeature<?>>> featuresMapper() {
+    public List<? extends Mapper<? extends CatFeature>> featuresMapper() {
         return features.stream().map(feature -> new EyeColorCatFeatureMapperImpl((EyeColorCatFeature) feature)).collect(Collectors.toList());
     }
 
     @Override
-    public void setFeatures(Cat model, List<CatFeature<?>> features) {
+    public void setFeatures(Cat model, List<CatFeature> features) {
         model.setFeatures(features);
     }
 

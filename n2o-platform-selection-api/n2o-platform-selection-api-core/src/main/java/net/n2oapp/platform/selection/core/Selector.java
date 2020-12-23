@@ -2,6 +2,8 @@ package net.n2oapp.platform.selection.core;
 
 import com.google.common.base.Preconditions;
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.ResolvableType;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 
 import java.beans.PropertyDescriptor;
@@ -13,33 +15,42 @@ import java.util.concurrent.ConcurrentMap;
 
 public final class Selector {
 
+    private static final ResolvableType MAPPER_RAW = ResolvableType.forRawClass(Mapper.class);
+    private static final ResolvableType SELECTION_RAW = ResolvableType.forRawClass(Selection.class);
+    private static final ResolvableType COLLECTION_RAW = ResolvableType.forRawClass(Collection.class);
+
     private Selector() {
     }
 
     @SuppressWarnings("rawtypes")
-    private static final ConcurrentMap<Class<? extends Mapper>, Map<String, MapperAccessor>> MAPPER_ACCESSORS = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<? extends Mapper>, MapperDescriptor> MAPPER_DESCRIPTORS = new ConcurrentHashMap<>();
 
     @SuppressWarnings("rawtypes")
-    private static final ConcurrentMap<Class<? extends Selection>, List<SelectionAccessor>> SELECTION_ACCESSORS = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<? extends Selection>, SelectionDescriptor> SELECTION_DESCRIPTORS = new ConcurrentHashMap<>();
 
+    @SuppressWarnings("unchecked")
     public static <E> E resolve(Mapper<? extends E> mapper, Selection<E> selection) {
         if (mapper == null || selection == null)
             return null;
+        SelectionDescriptor selectionDescriptor = getSelectionDescriptor(selection);
+        MapperDescriptor mapperDescriptor = getMapperDescriptor(mapper);
+        Preconditions.checkArgument(
+            selectionDescriptor.type.isAssignableFrom(mapperDescriptor.type),
+            "Selection %s target type is not assignable from mapper %s target type",
+            selection.getClass(),
+            mapper.getClass()
+        );
         E model = mapper.create();
         if (model == null)
             return null;
-        assertClass(mapper.getClass());
-        assertClass(selection.getClass());
-        List<SelectionAccessor> selectionAccessors = getSelectionAccessors(selection);
-        Map<String, MapperAccessor> mapperAccessors = getMapperAccessors(model.getClass(), mapper);
-        for (SelectionAccessor selectionAccessor : selectionAccessors) {
+        for (SelectionDescriptor.SelectionAccessor selectionAccessor : selectionDescriptor.accessors) {
             SelectionEnum select = (SelectionEnum) invoke(selectionAccessor.selectionEnumAccessor, selection);
             if (select == null || !select.asBoolean())
                 continue;
-            MapperAccessor mapperAccessor = mapperAccessors.get(selectionAccessor.selectionKey);
+            MapperDescriptor.MapperAccessor mapperAccessor = mapperDescriptor.accessors.get(selectionAccessor.selectionKey);
             Preconditions.checkNotNull(
                 mapperAccessor,
-                "Property %s defined in selection of type %s, but could not be found in mapper of type %s",
+                "Property %s defined in selection, but mapper is not aware of it. Selection: %s. Mapper: %s",
                 selectionAccessor.selectionKey,
                 selection.getClass(),
                 mapper.getClass()
@@ -47,89 +58,125 @@ public final class Selector {
             if (mapperAccessor.nestedMapperAccessor != null) {
                 Preconditions.checkArgument(
                     selectionAccessor.nestedSelectionAccessor != null,
-                    "Property %s has nested mapper accessor, but nested selection could not be found. Selection of type %s, mapper of type %s",
+                    "Property %s has nested mapper accessor, but selection is not aware of it. Selection of type %s, mapper of type %s",
                     selectionAccessor.selectionKey,
                     selection.getClass(),
                     mapper.getClass()
                 );
                 Selection nestedSelection = (Selection) invoke(selectionAccessor.nestedSelectionAccessor, selection);
-                if (mapperAccessor.collectionMapper) {
+                if (mapperAccessor.isCollectionMapper) {
                     Collection<Mapper> collection = (Collection) invoke(mapperAccessor.nestedMapperAccessor, mapper);
+                    if (CollectionUtils.isEmpty(collection))
+                        continue;
+                    Collection result;
+                    if (collection instanceof List)
+                        result = new ArrayList(collection.size());
+                    else if (collection instanceof Set)
+                        result = new HashSet(collection.size());
+                    else
+                        throw new IllegalStateException("Unexpected collection of type " + collection.getClass() + " provided");
                     for (Mapper nestedMapper : collection) {
-
+                        result.add(resolve(nestedMapper, nestedSelection));
                     }
+                    invoke(mapperAccessor.selectMethod, mapper, model, result);
                 } else {
-
+                    Mapper nestedMapper = (Mapper) invoke(mapperAccessor.nestedMapperAccessor, mapper);
+                    Object resolve = resolve(nestedMapper, nestedSelection);
+                    invoke(mapperAccessor.selectMethod, mapper, model, resolve);
                 }
             } else {
+                Preconditions.checkArgument(
+                    selectionAccessor.nestedSelectionAccessor == null,
+                    "Property %s has nested selection, but mapper is not aware of it. Selection of type %s, mapper of type %s",
+                    select.getClass(),
+                    mapper.getClass()
+                );
                 invoke(mapperAccessor.selectMethod, mapper, model);
             }
         }
         return model;
     }
 
-    private static void assertClass(Class<?> c) {
-        Preconditions.checkArgument(!c.isInterface(), "No interface expected. Got: %s", c);
+    private static Method getMethod(Class<?> clazz, String name) {
+        try {
+            return clazz.getMethod(name);
+        } catch (NoSuchMethodException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
-    private static Map<String, MapperAccessor> getMapperAccessors(Class<?> modelClass, Mapper<?> mapper) {
-        return MAPPER_ACCESSORS.computeIfAbsent(mapper.getClass(), clazz -> {
-            Map<String, List<Method>> methodsRelatedToKey = new HashMap<>();
-            doWithMethods(clazz, method -> {
-                SelectionKey key = method.getAnnotation(SelectionKey.class);
-                if (key == null)
-                    return;
-                methodsRelatedToKey.compute(key.value(), (s, list) -> ensureNoDuplicates(method, s, list));
-            });
-            Map<String, MapperAccessor> result = new HashMap<>(methodsRelatedToKey.size());
-            for (Map.Entry<String, List<Method>> entry : methodsRelatedToKey.entrySet()) {
+    private static MapperDescriptor getMapperDescriptor(Mapper<?> mapper) {
+        return MAPPER_DESCRIPTORS.computeIfAbsent(mapper.getClass(), clazz -> {
+            ResolvableType type = ResolvableType.forMethodReturnType(getMethod(clazz, "create"));
+            Map<String, List<Method>> methods = groupBySelectionKey(clazz);
+            Map<String, MapperDescriptor.MapperAccessor> result = new HashMap<>(methods.size());
+            for (Map.Entry<String, List<Method>> entry : methods.entrySet()) {
                 List<Method> list = entry.getValue();
                 Method selectMethod = list.get(0);
                 if (list.size() == 2) {
                     Method nestedMapperAccessor = list.get(1);
-                    if (!Mapper.class.isAssignableFrom(nestedMapperAccessor.getReturnType()) && !Collection.class.isAssignableFrom(nestedMapperAccessor.getReturnType())) {
+                    ResolvableType nestedReturnType = ResolvableType.forMethodReturnType(nestedMapperAccessor);
+                    if (
+                        !MAPPER_RAW.isAssignableFrom(nestedReturnType) &&
+                        !COLLECTION_RAW.isAssignableFrom(nestedReturnType)
+                    ) {
                         Method temp = selectMethod;
                         selectMethod = nestedMapperAccessor;
                         nestedMapperAccessor = temp;
                         list.set(0, selectMethod);
                         list.set(1, nestedMapperAccessor);
                     }
+                    nestedReturnType = ResolvableType.forMethodReturnType(nestedMapperAccessor);
                     Preconditions.checkArgument(
                         selectMethod.getParameterCount() == 2,
-                        "Mapper's methods annotated with @SelectionKey with nested mapper accessor must have 2 parameters. Violation in %s",
+                        "Mapper's nested mapper accessor must have 2 parameters. Violation in %s",
                         selectMethod
                     );
-                    checkSelectMethodFirstParam(modelClass, selectMethod);
-                    if (!Collection.class.isAssignableFrom(nestedMapperAccessor.getReturnType())) {
-                        Preconditions.checkArgument(
-                            Mapper.class.isAssignableFrom(nestedMapperAccessor.getReturnType()),
-                            "Mapper's nested mapper accessor must return instance of Mapper class. Violation in %s",
-                            nestedMapperAccessor
-                        );
+                    ResolvableType secondParam = ResolvableType.forMethodParameter(selectMethod, 1);
+                    if (!COLLECTION_RAW.isAssignableFrom(nestedReturnType)) {
+                        assertReturnsMapper(nestedMapperAccessor, nestedReturnType);
+                    } else {
+                        nestedReturnType = nestedReturnType.getGeneric(0);
+                        secondParam = secondParam.getGeneric(0);
                     }
+                    Class<?> generic = nestedReturnType.resolveGeneric(0);
+                    Preconditions.checkArgument(
+                        secondParam.isAssignableFrom(generic),
+                        "Mapper's nested mapper accessor return type not assignable to select method second param. Violation in %s",
+                        nestedMapperAccessor
+                    );
                     Preconditions.checkArgument(nestedMapperAccessor.getParameterCount() == 0, "Nested mapper accessor must have zero args. Violation in %s", nestedMapperAccessor);
                 } else {
-                    checkSelectMethodFirstParam(modelClass, selectMethod);
                     Preconditions.checkArgument(
                         selectMethod.getParameterCount() == 1,
-                        "Mapper's methods annotated with @SelectionKey with no nested mapper accessor must have 1 parameter. Violation in %s",
+                        "Mapper property with no nested mapper accessor must have 1 parameter. Violation in %s",
                         selectMethod
                     );
                 }
+                checkSelectMethodFirstParam(type, selectMethod);
             }
-            for (Map.Entry<String, List<Method>> entry : methodsRelatedToKey.entrySet()) {
+            for (Map.Entry<String, List<Method>> entry : methods.entrySet()) {
                 List<Method> list = entry.getValue();
                 Method nestedMapperAccessor = list.size() > 1 ? list.get(1) : null;
                 boolean collectionMapper = nestedMapperAccessor != null && Collection.class.isAssignableFrom(nestedMapperAccessor.getReturnType());
-                result.put(entry.getKey(), new MapperAccessor(entry.getKey(), list.get(0), nestedMapperAccessor, collectionMapper));
+                result.put(entry.getKey(), new MapperDescriptor.MapperAccessor(entry.getKey(), list.get(0), nestedMapperAccessor, collectionMapper));
             }
-            return result;
+            return new MapperDescriptor(type, result);
         });
     }
 
-    private static void checkSelectMethodFirstParam(Class<?> modelClass, Method selectMethod) {
+    private static void assertReturnsMapper(Method nestedMapperAccessor, ResolvableType returnType) {
         Preconditions.checkArgument(
-            selectMethod.getParameterTypes()[0].isAssignableFrom(modelClass),
+            MAPPER_RAW.isAssignableFrom(returnType),
+            "Mapper's nested mapper accessor must return instance of Mapper class. Violation in %s",
+            nestedMapperAccessor
+        );
+    }
+
+    private static void checkSelectMethodFirstParam(ResolvableType mapperType, Method selectMethod) {
+        ResolvableType selectMethodFirstArg = ResolvableType.forMethodParameter(selectMethod, 0);
+        Preconditions.checkArgument(
+            selectMethodFirstArg.isAssignableFrom(mapperType),
             "Mapper's select method first argument must be the same or subtype of type returned by 'create' method. Violation in %s",
             selectMethod
         );
@@ -144,27 +191,33 @@ public final class Selector {
         }
     }
 
-    private static <E> List<SelectionAccessor> getSelectionAccessors(Selection<? super E> selection) {
-        return SELECTION_ACCESSORS.computeIfAbsent(selection.getClass(), clazz -> {
-            Map<String, List<Method>> methodsRelatedToKey = new HashMap<>();
-            doWithMethods(clazz, method -> {
-                SelectionKey key = method.getAnnotation(SelectionKey.class);
-                if (key == null)
-                    return;
-                methodsRelatedToKey.compute(key.value(), (s, list) -> ensureNoDuplicates(method, s, list));
-            });
-            ReflectionUtils.doWithFields(clazz, field -> getFromField(clazz, methodsRelatedToKey, field));
-            List<SelectionAccessor> result = new ArrayList<>(methodsRelatedToKey.size());
-            checkSelectionParamsAndReturnTypes(clazz, methodsRelatedToKey);
-            for (Map.Entry<String, List<Method>> entry : methodsRelatedToKey.entrySet()) {
+    private static SelectionDescriptor getSelectionDescriptor(Selection<?> selection) {
+        return SELECTION_DESCRIPTORS.computeIfAbsent(selection.getClass(), clazz -> {
+            Map<String, List<Method>> methods = groupBySelectionKey(clazz);
+            ReflectionUtils.doWithFields(clazz, field -> getFromField(clazz, methods, field));
+            List<SelectionDescriptor.SelectionAccessor> result = new ArrayList<>(methods.size());
+            checkSelection(clazz, methods);
+            for (Map.Entry<String, List<Method>> entry : methods.entrySet()) {
                 List<Method> list = entry.getValue();
-                result.add(new SelectionAccessor(entry.getKey(), list.get(0), list.size() > 1 ? list.get(1) : null));
+                result.add(new SelectionDescriptor.SelectionAccessor(entry.getKey(), list.get(0), list.size() > 1 ? list.get(1) : null));
             }
-            return result;
+            ResolvableType type = ResolvableType.forMethodReturnType(getMethod(clazz, "marker"));
+            return new SelectionDescriptor(type, result);
         });
     }
 
-    private static void getFromField(Class<? extends Selection> clazz, Map<String, List<Method>> methodsRelatedToKey, java.lang.reflect.Field field) {
+    private static Map<String, List<Method>> groupBySelectionKey(Class<?> clazz) {
+        Map<String, List<Method>> methodsRelatedToKey = new HashMap<>();
+        doWithMethods(clazz, method -> {
+            SelectionKey key = method.getAnnotation(SelectionKey.class);
+            if (key == null)
+                return;
+            methodsRelatedToKey.compute(key.value(), (s, list) -> ensureNoDuplicates(method, s, list));
+        });
+        return methodsRelatedToKey;
+    }
+
+    private static void getFromField(Class<?> clazz, Map<String, List<Method>> methodsRelatedToKey, java.lang.reflect.Field field) {
         SelectionKey key = field.getAnnotation(SelectionKey.class);
         if (key != null) {
             PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(clazz, field.getName());
@@ -174,7 +227,7 @@ public final class Selector {
         }
     }
 
-    private static void checkSelectionParamsAndReturnTypes(Class<? extends Selection> clazz, Map<String, List<Method>> methodsRelatedToKey) {
+    private static void checkSelection(Class<?> clazz, Map<String, List<Method>> methodsRelatedToKey) {
         for (Map.Entry<String, List<Method>> entry : methodsRelatedToKey.entrySet()) {
             List<Method> list = entry.getValue();
             Method selectionEnumAccessor = list.get(0);
@@ -188,28 +241,28 @@ public final class Selector {
                     list.set(1, nestedSelectionAccessor);
                 }
                 assertSelectionMethodZeroParams(nestedSelectionAccessor);
-                assertReturnsNestedSelection(clazz, entry, nestedSelectionAccessor);
+                assertReturnsSelection(clazz, entry, nestedSelectionAccessor);
             }
             assertReturnsSelectionEnum(clazz, entry, selectionEnumAccessor);
             assertSelectionMethodZeroParams(selectionEnumAccessor);
         }
     }
 
-    private static void assertReturnsNestedSelection(Class<? extends Selection> clazz, Map.Entry<String, List<Method>> entry, Method nestedSelectionAccessor) {
+    private static void assertReturnsSelection(Class<?> clazz, Map.Entry<String, List<Method>> entry, Method nestedSelectionAccessor) {
         Preconditions.checkArgument(
-                Selection.class.isAssignableFrom(nestedSelectionAccessor.getReturnType()),
-                "No nested selection accessor specified for property %s for type %s",
-                entry.getKey(),
-                clazz
+            SELECTION_RAW.isAssignableFrom(ResolvableType.forMethodReturnType(nestedSelectionAccessor)),
+            "No nested selection accessor specified for property %s for type %s",
+            entry.getKey(),
+            clazz
         );
     }
 
-    private static void assertReturnsSelectionEnum(Class<? extends Selection> clazz, Map.Entry<String, List<Method>> entry, Method selectionEnumAccessor) {
+    private static void assertReturnsSelectionEnum(Class<?> clazz, Map.Entry<String, List<Method>> entry, Method selectionEnumAccessor) {
         Preconditions.checkArgument(
             selectionEnumAccessor.getReturnType() == SelectionEnum.class,
             "No SelectionEnum accessor found for property %s in selection of type %s",
             entry.getKey(),
-                clazz
+            clazz
         );
     }
 
@@ -246,36 +299,6 @@ public final class Selector {
         for (Class<?> ifc : clazz.getInterfaces()) {
             doWithMethods(ifc, callback);
         }
-    }
-
-    private static class SelectionAccessor {
-
-        final String selectionKey;
-        final Method selectionEnumAccessor;
-        final Method nestedSelectionAccessor;
-
-        SelectionAccessor(String selectionKey, Method selectionEnumAccessor, Method nestedSelectionAccessor) {
-            this.selectionKey = selectionKey;
-            this.selectionEnumAccessor = selectionEnumAccessor;
-            this.nestedSelectionAccessor = nestedSelectionAccessor;
-        }
-
-    }
-
-    private static class MapperAccessor {
-
-        final String selectionKey;
-        final Method selectMethod;
-        final Method nestedMapperAccessor;
-        final boolean collectionMapper;
-
-        private MapperAccessor(String selectionKey, Method selectMethod, Method nestedMapperAccessor, boolean collectionMapper) {
-            this.selectionKey = selectionKey;
-            this.selectMethod = selectMethod;
-            this.nestedMapperAccessor = nestedMapperAccessor;
-            this.collectionMapper = collectionMapper;
-        }
-
     }
 
 }

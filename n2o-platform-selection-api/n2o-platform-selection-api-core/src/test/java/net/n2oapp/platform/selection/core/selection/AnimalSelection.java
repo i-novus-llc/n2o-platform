@@ -7,7 +7,7 @@ import net.n2oapp.platform.selection.core.model.Animal;
 import net.n2oapp.platform.selection.core.model.AnimalFeature;
 import net.n2oapp.platform.selection.core.model.Food;
 
-public abstract class AnimalSelection<E extends Animal<F>, F extends AnimalFeature<? extends F>> implements Selection<E> {
+public abstract class AnimalSelection<E extends Animal<F>, F extends AnimalFeature> implements Selection<E> {
 
     @SelectionKey("name")
     SelectionEnum selectName;
