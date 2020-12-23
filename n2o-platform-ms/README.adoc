@@ -18,3 +18,10 @@
   <artifactId>n2o-platform-starter-ms</artifactId>
 </dependency>
 ----
+
+= Настройки
+----
+logging.inline=true
+Включает однострочный формат логгирования
+
+----
