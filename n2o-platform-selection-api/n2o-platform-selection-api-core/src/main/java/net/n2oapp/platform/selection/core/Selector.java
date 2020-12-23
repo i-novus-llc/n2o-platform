@@ -129,7 +129,8 @@ public final class Selector {
                     nestedReturnType = ResolvableType.forMethodReturnType(nestedMapperAccessor);
                     Preconditions.checkArgument(
                         selectMethod.getParameterCount() == 2,
-                        "Mapper's nested mapper accessor must have 2 parameters. Violation in %s",
+                        "Mapper's select method must have 2 parameters when nested mapper accessor is present. " +
+                        "Violation in %s",
                         selectMethod
                     );
                     ResolvableType secondParam = ResolvableType.forMethodParameter(selectMethod, 1);
@@ -142,10 +143,15 @@ public final class Selector {
                     Class<?> generic = nestedReturnType.resolveGeneric(0);
                     Preconditions.checkArgument(
                         secondParam.isAssignableFrom(generic),
-                        "Mapper's nested mapper accessor return type not assignable to select method second param. Violation in %s",
+                        "Mapper's nested mapper accessor return type not assignable to select method second param. " +
+                        "Violation in %s",
                         nestedMapperAccessor
                     );
-                    Preconditions.checkArgument(nestedMapperAccessor.getParameterCount() == 0, "Nested mapper accessor must have zero args. Violation in %s", nestedMapperAccessor);
+                    Preconditions.checkArgument(
+                        nestedMapperAccessor.getParameterCount() == 0,
+                        "Nested mapper accessor must have zero args. Violation in %s",
+                        nestedMapperAccessor
+                    );
                 } else {
                     Preconditions.checkArgument(
                         selectMethod.getParameterCount() == 1,
@@ -177,7 +183,8 @@ public final class Selector {
         ResolvableType selectMethodFirstArg = ResolvableType.forMethodParameter(selectMethod, 0);
         Preconditions.checkArgument(
             selectMethodFirstArg.isAssignableFrom(mapperType),
-            "Mapper's select method first argument must be the same or subtype of type returned by 'create' method. Violation in %s",
+            "Mapper's select method first argument must be the same or a subtype of type returned by 'create' method. " +
+            "Violation in %s",
             selectMethod
         );
     }
@@ -201,7 +208,7 @@ public final class Selector {
                 List<Method> list = entry.getValue();
                 result.add(new SelectionDescriptor.SelectionAccessor(entry.getKey(), list.get(0), list.size() > 1 ? list.get(1) : null));
             }
-            ResolvableType type = ResolvableType.forMethodReturnType(getMethod(clazz, "marker"));
+            ResolvableType type = ResolvableType.forMethodReturnType(getMethod(clazz, "typeMarker"));
             return new SelectionDescriptor(type, result);
         });
     }
@@ -217,13 +224,17 @@ public final class Selector {
         return methodsRelatedToKey;
     }
 
-    private static void getFromField(Class<?> clazz, Map<String, List<Method>> methodsRelatedToKey, java.lang.reflect.Field field) {
+    private static void getFromField(Class<?> clazz, Map<String, List<Method>> methods, java.lang.reflect.Field field) {
         SelectionKey key = field.getAnnotation(SelectionKey.class);
         if (key != null) {
             PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(clazz, field.getName());
-            Preconditions.checkArgument(descriptor != null && descriptor.getReadMethod() != null, "Field " + field + " annotated with @SelectionKey must have read method (getter) without arguments.");
+            Preconditions.checkArgument(
+                descriptor != null && descriptor.getReadMethod() != null,
+                "Field %s annotated with @SelectionKey must have read method (getter) without arguments.",
+                field
+            );
             Method method = descriptor.getReadMethod();
-            methodsRelatedToKey.compute(key.value(), (s, list) -> ensureNoDuplicates(method, s, list));
+            methods.compute(key.value(), (s, list) -> ensureNoDuplicates(method, s, list));
         }
     }
 
