@@ -134,23 +134,20 @@ public final class Selector {
                         selectMethod
                     );
                     ResolvableType secondParam = ResolvableType.forMethodParameter(selectMethod, 1);
+                    ResolvableType generic;
                     if (!COLLECTION_RAW.isAssignableFrom(nestedReturnType)) {
                         assertReturnsMapper(nestedMapperAccessor, nestedReturnType);
+                        generic = nestedReturnType.getGeneric(0);
                     } else {
-                        nestedReturnType = nestedReturnType.getGeneric(0);
+                        assertReturnsMapper(nestedMapperAccessor, nestedReturnType.getGeneric(0));
                         secondParam = secondParam.getGeneric(0);
+                        generic = nestedReturnType.getGeneric(0, 0);
                     }
-                    Class<?> generic = nestedReturnType.resolveGeneric(0);
                     Preconditions.checkArgument(
-                        secondParam.isAssignableFrom(generic),
-                        "Mapper's nested mapper accessor return type not assignable to select method second param. " +
-                        "Violation in %s",
-                        nestedMapperAccessor
-                    );
-                    Preconditions.checkArgument(
-                        nestedMapperAccessor.getParameterCount() == 0,
-                        "Nested mapper accessor must have zero args. Violation in %s",
-                        nestedMapperAccessor
+                            generic.isAssignableFrom(secondParam),
+                            "Mapper's nested mapper accessor return type not assignable to select method second param. " +
+                                    "Violation in %s",
+                            nestedMapperAccessor
                     );
                 } else {
                     Preconditions.checkArgument(
