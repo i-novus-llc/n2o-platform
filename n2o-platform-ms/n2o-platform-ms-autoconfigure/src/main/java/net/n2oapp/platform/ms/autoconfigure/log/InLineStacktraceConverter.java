@@ -28,6 +28,7 @@ public class InLineStacktraceConverter extends ThrowableHandlingConverter {
 
     int errorCount = 0;
 
+    @Override
     @SuppressWarnings("unchecked")
     public void start() {
 
@@ -84,6 +85,7 @@ public class InLineStacktraceConverter extends ThrowableHandlingConverter {
         ignoredStackTraceLines.add(ignoredStackTraceLine);
     }
 
+    @Override
     public void stop() {
         evaluatorList = null;
         super.stop();
