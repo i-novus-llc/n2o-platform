@@ -18,14 +18,12 @@ class GenericSignatureExtractor extends SimpleTypeVisitor9<GenericSignature, Gen
 
     @Override
     public GenericSignature visitDeclared(DeclaredType t, GenericSignature signature) {
-        if (signature.isImportsOnly()) {
+        if (signature.isMarkOnly()) {
             if (types.isSameType(types.erasure(t), types.erasure(signature.getOwner().asType()))) {
                 signature.markLastSame();
-            } else {
-                signature.appendImport(t.asElement().toString());
             }
         } else {
-            signature.setImportsOnly();
+            signature.setMarkOnly();
             if (!t.getTypeArguments().isEmpty()) {
                 for (TypeMirror arg : t.getTypeArguments()) {
                     TypeVariable var = (TypeVariable) arg;

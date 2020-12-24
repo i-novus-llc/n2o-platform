@@ -8,27 +8,20 @@ import java.util.List;
 
 class GenericSignature {
 
-    private final List<String> imports;
     private final List<String> typeVariables;
     private final List<String[]> upperBounds;
     private final List<Integer> sameAsOwnerPositions;
     private final TypeElement owner;
 
-    private boolean importsOnly;
+    private boolean markOnly;
     private String selfVariable;
 
     GenericSignature(TypeElement owner) {
         this.owner = owner;
-        this.imports = new ArrayList<>(0);
         this.typeVariables = new ArrayList<>(0);
         this.upperBounds = new ArrayList<>(0);
         this.sameAsOwnerPositions = new ArrayList<>(0);
-        this.importsOnly = false;
-    }
-
-    void appendImport(String imp) {
-        if (!imp.startsWith("java.lang."))
-            this.imports.add(imp);
+        this.markOnly = false;
     }
 
     void addTypeVariable(String var, String upperBound) {
@@ -36,12 +29,16 @@ class GenericSignature {
         this.upperBounds.add(Arrays.stream(upperBound.split("&")).filter(s -> !s.equals("java.lang.Object")).toArray(String[]::new));
     }
 
-    void setImportsOnly() {
-        this.importsOnly = true;
+    boolean isEmpty() {
+        return typeVariables.isEmpty();
     }
 
-    boolean isImportsOnly() {
-        return importsOnly;
+    void setMarkOnly() {
+        this.markOnly = true;
+    }
+
+    boolean isMarkOnly() {
+        return markOnly;
     }
 
     Element getOwner() {
@@ -50,10 +47,6 @@ class GenericSignature {
 
     String getSelfVariable() {
         return selfVariable;
-    }
-
-    List<String> getImports() {
-        return imports;
     }
 
     void createSelfVariable() {

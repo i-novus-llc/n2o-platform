@@ -53,11 +53,19 @@ public class Test2 extends Test1<Integer, String> {
     }
 
     @NeedSelection
-    static class Test9 extends Test1 {
+    static class Test9<C extends Integer, E extends String> {
     }
 
-    static class Test9Selection<E extends Test1<Object, Object>> extends Test1Selection<E, Object, Object> {
+    static class Test9Selection<E extends Test9<C, I>, C extends Integer, I extends String> implements Selection<E> {
+    }
+
+    static class Test10<C extends Integer, E extends String> extends Test9<C, E> {
+    }
+
+    static class Test10Selection<C extends Integer, E extends String> extends Test9Selection<Test10<C, E>, C, E> {
 
     }
+
+
 
 }

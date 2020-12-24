@@ -4,6 +4,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ class SelectionMeta {
     private final List<String> imports;
     private final GenericSignature genericSignature;
     private final String extendsSignature;
-
 
     SelectionMeta(TypeElement target, SelectionMeta parent, GenericSignature genericSignature, Types types) {
         this.target = target;
@@ -38,13 +38,17 @@ class SelectionMeta {
                 return genericSignature.getSelfVariable();
             }
         } else {
-            TypeMirror extendsType = getExtendsType(types);
-            GenericSignature genericSignature = parent.genericSignature;
+            if (parent.genericSignature.isEmpty())
+                return "";
+            DeclaredType extendsType = getExtendsType(types);
+            if (extendsType.getTypeArguments().isEmpty())
+                return "";
+            System.out.println(1);
         }
         return null;
     }
 
-    private TypeMirror getExtendsType(Types types) {
+    private DeclaredType getExtendsType(Types types) {
         TypeMirror parentType = null;
         TypeMirror parentErasure = types.erasure(parent.target.asType());
         for (TypeMirror mirror : types.directSupertypes(target.asType())) {
@@ -53,7 +57,7 @@ class SelectionMeta {
                 break;
             }
         }
-        return parentType;
+        return (DeclaredType) parentType;
     }
 
     Name getTargetPackage() {
