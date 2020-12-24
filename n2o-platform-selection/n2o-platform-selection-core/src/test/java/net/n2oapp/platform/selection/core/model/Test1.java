@@ -11,7 +11,6 @@ public abstract class Test1<C, M> {
     }
 
     static abstract class Test1Mapper<E extends Test1<C, M>, C, M> implements Mapper<E> {
-
     }
 
 }

@@ -47,7 +47,14 @@ public class SelectionProcessor extends AbstractProcessor {
             if (process(metalist, types, element))
                 return false;
         }
+        for (SelectionMeta meta : metalist) {
+            serialize(meta);
+        }
         return false;
+    }
+
+    private void serialize(SelectionMeta meta) {
+//      TODO
     }
 
     private void toposort(List<? extends Element> elements, Types types) {
