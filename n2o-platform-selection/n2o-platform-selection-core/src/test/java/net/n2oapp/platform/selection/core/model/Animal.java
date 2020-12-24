@@ -1,10 +1,8 @@
 package net.n2oapp.platform.selection.core.model;
 
-import net.n2oapp.platform.selection.api.NeedSelection;
-
 import java.util.List;
 
-@NeedSelection
+
 public abstract class Animal<F extends AnimalFeature> {
 
     private String name;

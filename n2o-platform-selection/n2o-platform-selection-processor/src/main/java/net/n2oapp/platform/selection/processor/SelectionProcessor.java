@@ -1,9 +1,6 @@
 package net.n2oapp.platform.selection.processor;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
+import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -22,6 +19,14 @@ import java.util.Set;
 @SupportedAnnotationTypes("net.n2oapp.platform.selection.api.NeedSelection")
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class SelectionProcessor extends AbstractProcessor {
+
+    private GenericSignatureExtractor genericSignatureExtractor;
+
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
+        this.genericSignatureExtractor = new GenericSignatureExtractor(processingEnv.getTypeUtils());
+    }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -46,7 +51,7 @@ public class SelectionProcessor extends AbstractProcessor {
                 return false;
             }
             TypeMirror superclass = typeElement.getSuperclass();
-            Element parent = null;
+            TypeElement parent = null;
             if (!(superclass instanceof NoType)) {
                 Element declaredType = ((DeclaredType) superclass).asElement();
                 TypeMirror erasure = types.erasure(superclass);
@@ -59,10 +64,11 @@ public class SelectionProcessor extends AbstractProcessor {
                         processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Superclass is missing @NeedSelection annotation", element);
                         return false;
                     }
-                    parent = opt.get();
+                    parent = (TypeElement) opt.get();
                 }
             }
-            SelectionMeta selectionMeta = new SelectionMeta(element, parent);
+            GenericSignature genericSignature = genericSignatureExtractor.visit(typeElement.asType(), new GenericSignature(typeElement));
+            SelectionMeta selectionMeta = new SelectionMeta(typeElement, parent, genericSignature);
             metalist.add(selectionMeta);
         }
         return false;
