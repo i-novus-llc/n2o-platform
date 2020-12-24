@@ -4,6 +4,8 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,8 +16,10 @@ class SelectionMeta {
     private final boolean isAbstract;
     private final List<String> imports;
     private final GenericSignature genericSignature;
+    private final String extendsSignature;
 
-    SelectionMeta(TypeElement target, SelectionMeta parent, GenericSignature genericSignature) {
+
+    SelectionMeta(TypeElement target, SelectionMeta parent, GenericSignature genericSignature, Types types) {
         this.target = target;
         this.parent = parent;
         this.genericSignature = genericSignature;
@@ -23,6 +27,33 @@ class SelectionMeta {
         this.isAbstract = target.getModifiers().stream().anyMatch(Modifier.ABSTRACT::equals);
         if (isAbstract)
             genericSignature.createSelfVariable();
+        this.extendsSignature = resolveExtendsSignature(types);
+    }
+
+    private String resolveExtendsSignature(Types types) {
+        if (parent == null) {
+            if (!isAbstract)
+                return target.getQualifiedName().toString();
+            else {
+                return genericSignature.getSelfVariable();
+            }
+        } else {
+            TypeMirror extendsType = getExtendsType(types);
+            GenericSignature genericSignature = parent.genericSignature;
+        }
+        return null;
+    }
+
+    private TypeMirror getExtendsType(Types types) {
+        TypeMirror parentType = null;
+        TypeMirror parentErasure = types.erasure(parent.target.asType());
+        for (TypeMirror mirror : types.directSupertypes(target.asType())) {
+            if (types.isSameType(types.erasure(mirror), parentErasure)) {
+                parentType = mirror;
+                break;
+            }
+        }
+        return parentType;
     }
 
     Name getTargetPackage() {

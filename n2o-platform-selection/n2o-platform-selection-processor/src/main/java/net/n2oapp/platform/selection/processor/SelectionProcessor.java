@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static net.n2oapp.platform.selection.processor.ProcessorUtil.toposort;
+
 @SupportedAnnotationTypes("net.n2oapp.platform.selection.api.NeedSelection")
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class SelectionProcessor extends AbstractProcessor {
@@ -42,7 +44,7 @@ public class SelectionProcessor extends AbstractProcessor {
             if (!valid(element))
                 return false;
         }
-        toposort(elements, types);
+        elements = toposort(elements);
         for (Element element : elements) {
             if (process(metalist, types, element))
                 return false;
@@ -55,20 +57,6 @@ public class SelectionProcessor extends AbstractProcessor {
 
     private void serialize(SelectionMeta meta) {
 //      TODO
-    }
-
-    private void toposort(List<? extends Element> elements, Types types) {
-        elements.sort((elem1, elem2) -> {
-            TypeMirror erasure1 = types.erasure(elem1.asType());
-            TypeMirror erasure2 = types.erasure(elem2.asType());
-            boolean assignable = types.isAssignable(erasure1, erasure2);
-            if (assignable)
-                return 1;
-            assignable = types.isAssignable(erasure2, erasure1);
-            if (assignable)
-                return -1;
-            return 0;
-        });
     }
 
     private boolean process(List<SelectionMeta> metalist, Types types, Element element) {
@@ -91,7 +79,7 @@ public class SelectionProcessor extends AbstractProcessor {
             }
         }
         GenericSignature genericSignature = genericSignatureExtractor.visit(typeElement.asType(), new GenericSignature(typeElement));
-        SelectionMeta selectionMeta = new SelectionMeta(typeElement, parent, genericSignature);
+        SelectionMeta selectionMeta = new SelectionMeta(typeElement, parent, genericSignature, types);
         metalist.add(selectionMeta);
         return false;
     }
