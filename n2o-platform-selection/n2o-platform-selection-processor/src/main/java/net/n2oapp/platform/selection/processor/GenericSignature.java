@@ -11,18 +11,14 @@ class GenericSignature {
 
     private final List<String> typeVariables;
     private final List<String[]> upperBounds;
-    private final List<Integer> sameAsOwnerPositions;
     private final TypeElement owner;
 
-    private boolean markOnly;
     private String selfVariable;
 
     GenericSignature(TypeElement owner) {
         this.owner = owner;
         this.typeVariables = new ArrayList<>(0);
         this.upperBounds = new ArrayList<>(0);
-        this.sameAsOwnerPositions = new ArrayList<>(0);
-        this.markOnly = false;
     }
 
     void addTypeVariable(String var, String upperBound) {
@@ -32,14 +28,6 @@ class GenericSignature {
 
     boolean isEmpty() {
         return typeVariables.isEmpty();
-    }
-
-    void setMarkOnly() {
-        this.markOnly = true;
-    }
-
-    boolean isMarkOnly() {
-        return markOnly;
     }
 
     Element getOwner() {
@@ -67,14 +55,6 @@ class GenericSignature {
         typeVariables.add(0, var);
         upperBounds.add(0, new String[] {builder.toString()});
         this.selfVariable = var;
-        for (int idx : sameAsOwnerPositions) {
-            String[] bounds = upperBounds.get(idx);
-            for (int i = 0; i < bounds.length; i++) {
-                if (bounds[i].startsWith(owner.getQualifiedName().toString()) && bounds[i].endsWith(">")) {
-                    bounds[i] = bounds[i].substring(0, bounds[i].length() - 1) + ", " + var + ">";
-                }
-            }
-        }
     }
 
     @Override
@@ -116,10 +96,6 @@ class GenericSignature {
             if (!typeVariables.contains(temp))
                 return var;
         }
-    }
-
-    void markLastSame() {
-        this.sameAsOwnerPositions.add(typeVariables.size() - 1);
     }
 
     int sizeWithoutSelfVariable() {
