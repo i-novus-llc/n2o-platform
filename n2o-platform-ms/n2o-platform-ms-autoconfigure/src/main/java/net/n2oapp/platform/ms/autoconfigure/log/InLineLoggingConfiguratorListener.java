@@ -26,7 +26,7 @@ public class InLineLoggingConfiguratorListener implements ApplicationListener<Ap
     @Override
     public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
         ConfigurableEnvironment environment = event.getEnvironment();
-        String inlineLogging = environment.getProperty("n2o-boot-platform.logging.inline.enabled");
+        String inlineLogging = environment.getProperty("n2o-boot-platform.logging.oneline.enabled");
         if (Boolean.FALSE.equals(Boolean.valueOf(inlineLogging)))
             return;
 
