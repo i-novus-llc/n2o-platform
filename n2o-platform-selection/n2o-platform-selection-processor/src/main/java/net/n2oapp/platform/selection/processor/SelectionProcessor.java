@@ -33,47 +33,78 @@ public class SelectionProcessor extends AbstractProcessor {
         if (annotations.isEmpty())
             return false;
         TypeElement needSelection = annotations.iterator().next();
-        Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(needSelection);
+        List<? extends Element> elements = new ArrayList<>(roundEnv.getElementsAnnotatedWith(needSelection));
         if (elements.isEmpty())
             return false;
         List<SelectionMeta> metalist = new ArrayList<>(elements.size());
         Types types = processingEnv.getTypeUtils();
         for (Element element : elements) {
-            ElementKind kind = element.getKind();
-            if (kind != ElementKind.CLASS) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@NeedSelection must be placed only on class", element);
+            if (!valid(element))
                 return false;
-            }
-            TypeElement typeElement = (TypeElement) element;
-            NestingKind nesting = typeElement.getNestingKind();
-            if (nesting != NestingKind.TOP_LEVEL && nesting != NestingKind.MEMBER) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@NeedSelection must be placed either on TOP_LEVEL class or INNER class", element);
+        }
+        toposort(elements, types);
+        for (Element element : elements) {
+            if (process(elements, metalist, types, element))
                 return false;
-            }
-            TypeMirror superclass = typeElement.getSuperclass();
-            TypeElement parent = null;
-            if (!(superclass instanceof NoType)) {
-                Element declaredType = ((DeclaredType) superclass).asElement();
-                TypeMirror erasure = types.erasure(superclass);
-                if (
-                    declaredType.getKind() == ElementKind.CLASS &&
-                    !((TypeElement) declaredType).getQualifiedName().toString().equals("java.lang.Object")
-                ) {
-                    Optional<? extends Element> opt = elements.stream().filter(elem -> types.isSameType(erasure, types.erasure(elem.asType()))).findAny();
-                    if (opt.isEmpty()) {
-                        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Superclass is missing @NeedSelection annotation", element);
-                        return false;
-                    }
-                    parent = (TypeElement) opt.get();
-                }
-            }
-            GenericSignature genericSignature = genericSignatureExtractor.visit(typeElement.asType(), new GenericSignature(typeElement));
-            SelectionMeta selectionMeta = new SelectionMeta(typeElement, parent, genericSignature);
-            metalist.add(selectionMeta);
         }
         return false;
     }
 
+    private void toposort(List<? extends Element> elements, Types types) {
+        elements.sort((elem1, elem2) -> {
+            TypeMirror erasure1 = types.erasure(elem1.asType());
+            TypeMirror erasure2 = types.erasure(elem2.asType());
+            boolean assignable = types.isAssignable(erasure1, erasure2);
+            if (assignable)
+                return 1;
+            assignable = types.isAssignable(erasure2, erasure1);
+            if (assignable)
+                return -1;
+            return 0;
+        });
+    }
+
+    private boolean process(List<? extends Element> elements, List<SelectionMeta> metalist, Types types, Element element) {
+        TypeElement typeElement = (TypeElement) element;
+        TypeMirror superclass = typeElement.getSuperclass();
+        TypeElement parent = null;
+        if (!(superclass instanceof NoType)) {
+            Element declaredType = ((DeclaredType) superclass).asElement();
+            TypeMirror erasure = types.erasure(superclass);
+            if (
+                declaredType.getKind() == ElementKind.CLASS &&
+                !((TypeElement) declaredType).getQualifiedName().toString().equals("java.lang.Object")
+            ) {
+                Optional<? extends Element> opt = elements.stream().filter(elem -> types.isSameType(erasure, types.erasure(elem.asType()))).findAny();
+                if (opt.isEmpty()) {
+                    processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Superclass is missing @NeedSelection annotation", element);
+                    return true;
+                }
+                parent = (TypeElement) opt.get();
+            }
+        }
+        GenericSignature genericSignature = genericSignatureExtractor.visit(typeElement.asType(), new GenericSignature(typeElement));
+        SelectionMeta selectionMeta = new SelectionMeta(typeElement, parent, genericSignature);
+        metalist.add(selectionMeta);
+        return false;
+    }
+
+    private boolean valid(Element element) {
+        boolean result = true;
+        ElementKind kind = element.getKind();
+        if (kind != ElementKind.CLASS) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@NeedSelection must be placed only on class", element);
+            result = false;
+        } else {
+            TypeElement typeElement = (TypeElement) element;
+            NestingKind nesting = typeElement.getNestingKind();
+            if (nesting != NestingKind.TOP_LEVEL && nesting != NestingKind.MEMBER) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@NeedSelection must be placed either on TOP_LEVEL class or INNER class", element);
+                result = false;
+            }
+        }
+        return result;
+    }
 
 
 }
