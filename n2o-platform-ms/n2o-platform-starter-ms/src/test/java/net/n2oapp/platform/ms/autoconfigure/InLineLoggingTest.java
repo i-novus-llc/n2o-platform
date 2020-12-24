@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = InLineLoggingTest.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@TestPropertySource(properties = {"platform.starter-ms.logging.inline.enabled=true"})
+@TestPropertySource(properties = {"n2o-boot-platform.logging.inline.enabled=true"})
 @EnableAutoConfiguration
 public class InLineLoggingTest {
 

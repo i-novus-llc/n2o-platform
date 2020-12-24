@@ -22,6 +22,6 @@
 = Настройки
 ----
 #Включает однострочный формат логгирования
-platform.starter-ms.logging.inline.enabled=true
+n2o-boot-platform.logging.inline.enabled=true
 ----
 Не использовать, если вы хотите задействовать кастомную конфигурацию LogBack.

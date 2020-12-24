@@ -21,12 +21,12 @@ public class InLineLoggingConfiguratorListener implements ApplicationListener<Ap
     /**
      * Need to launch {@link InLineLoggingConfiguratorListener this} before {@link LoggingApplicationListener}.
      */
-    public static final int positionBeforeLoggingApplicationListener = LoggingApplicationListener.DEFAULT_ORDER - 1;
+    private static final int POSITION_BEFORE_LOGGING_APPLICATION_LISTENER = LoggingApplicationListener.DEFAULT_ORDER - 1;
 
     @Override
     public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
         ConfigurableEnvironment environment = event.getEnvironment();
-        String inlineLogging = environment.getProperty("platform.starter-ms.logging.inline.enabled");
+        String inlineLogging = environment.getProperty("n2o-boot-platform.logging.inline.enabled");
         if (Boolean.FALSE.equals(Boolean.valueOf(inlineLogging)))
             return;
 
@@ -37,6 +37,6 @@ public class InLineLoggingConfiguratorListener implements ApplicationListener<Ap
 
     @Override
     public int getOrder() {
-        return positionBeforeLoggingApplicationListener;
+        return POSITION_BEFORE_LOGGING_APPLICATION_LISTENER;
     }
 }

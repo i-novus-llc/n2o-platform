@@ -14,7 +14,7 @@ public class InLineStacktraceConverter extends ThrowableHandlingConverter {
 
     protected static final int BUILDER_CAPACITY = 2048;
 
-    private static int lengthOption = Integer.MAX_VALUE;
+    private static final int lengthOption = Integer.MAX_VALUE;
 
     @Override
     @SuppressWarnings("unchecked")
