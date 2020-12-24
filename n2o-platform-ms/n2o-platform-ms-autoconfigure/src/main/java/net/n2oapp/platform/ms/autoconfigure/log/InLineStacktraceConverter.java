@@ -14,7 +14,7 @@ public class InLineStacktraceConverter extends ThrowableHandlingConverter {
 
     protected static final int BUILDER_CAPACITY = 2048;
 
-    private static final int lengthOption = Integer.MAX_VALUE;
+    private static final int LENGTH_OPTION = Integer.MAX_VALUE;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -69,9 +69,9 @@ public class InLineStacktraceConverter extends ThrowableHandlingConverter {
         StackTraceElementProxy[] stepArray = tp.getStackTraceElementProxyArray();
         int commonFrames = tp.getCommonFrames();
 
-        boolean unrestrictedPrinting = lengthOption > stepArray.length;
+        boolean unrestrictedPrinting = LENGTH_OPTION > stepArray.length;
 
-        int maxIndex = (unrestrictedPrinting) ? stepArray.length : lengthOption;
+        int maxIndex = (unrestrictedPrinting) ? stepArray.length : LENGTH_OPTION;
         if (commonFrames > 0 && unrestrictedPrinting) {
             maxIndex -= commonFrames;
         }
