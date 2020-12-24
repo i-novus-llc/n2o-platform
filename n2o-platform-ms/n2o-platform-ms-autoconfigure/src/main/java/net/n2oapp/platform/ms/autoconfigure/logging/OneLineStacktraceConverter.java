@@ -1,4 +1,4 @@
-package net.n2oapp.platform.ms.autoconfigure.log;
+package net.n2oapp.platform.ms.autoconfigure.logging;
 
 import ch.qos.logback.classic.pattern.ThrowableHandlingConverter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -8,9 +8,9 @@ import ch.qos.logback.classic.spi.ThrowableProxyUtil;
 import ch.qos.logback.core.CoreConstants;
 
 /**
- * Add a inline stack trace in case the event contains a Throwable.
+ * Add a one-line stack trace in case the event contains a Throwable.
  */
-public class InLineStacktraceConverter extends ThrowableHandlingConverter {
+public class OneLineStacktraceConverter extends ThrowableHandlingConverter {
 
     protected static final int BUILDER_CAPACITY = 2048;
 
