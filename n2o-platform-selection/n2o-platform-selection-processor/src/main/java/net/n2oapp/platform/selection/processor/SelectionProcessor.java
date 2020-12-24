@@ -44,7 +44,7 @@ public class SelectionProcessor extends AbstractProcessor {
         }
         toposort(elements, types);
         for (Element element : elements) {
-            if (process(elements, metalist, types, element))
+            if (process(metalist, types, element))
                 return false;
         }
         return false;
@@ -64,10 +64,10 @@ public class SelectionProcessor extends AbstractProcessor {
         });
     }
 
-    private boolean process(List<? extends Element> elements, List<SelectionMeta> metalist, Types types, Element element) {
+    private boolean process(List<SelectionMeta> metalist, Types types, Element element) {
         TypeElement typeElement = (TypeElement) element;
         TypeMirror superclass = typeElement.getSuperclass();
-        TypeElement parent = null;
+        SelectionMeta parent = null;
         if (!(superclass instanceof NoType)) {
             Element declaredType = ((DeclaredType) superclass).asElement();
             TypeMirror erasure = types.erasure(superclass);
@@ -75,12 +75,12 @@ public class SelectionProcessor extends AbstractProcessor {
                 declaredType.getKind() == ElementKind.CLASS &&
                 !((TypeElement) declaredType).getQualifiedName().toString().equals("java.lang.Object")
             ) {
-                Optional<? extends Element> opt = elements.stream().filter(elem -> types.isSameType(erasure, types.erasure(elem.asType()))).findAny();
+                Optional<SelectionMeta> opt = metalist.stream().filter(meta -> types.isSameType(erasure, types.erasure(meta.getTarget().asType()))).findAny();
                 if (opt.isEmpty()) {
                     processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Superclass is missing @NeedSelection annotation", element);
                     return true;
                 }
-                parent = (TypeElement) opt.get();
+                parent = opt.get();
             }
         }
         GenericSignature genericSignature = genericSignatureExtractor.visit(typeElement.asType(), new GenericSignature(typeElement));

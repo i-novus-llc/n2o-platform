@@ -10,12 +10,12 @@ import java.util.List;
 class SelectionMeta {
 
     private final TypeElement target;
-    private final TypeElement parent;
+    private final SelectionMeta parent;
     private final boolean isAbstract;
     private final List<String> imports;
     private final GenericSignature genericSignature;
 
-    SelectionMeta(TypeElement target, TypeElement parent, GenericSignature genericSignature) {
+    SelectionMeta(TypeElement target, SelectionMeta parent, GenericSignature genericSignature) {
         this.target = target;
         this.parent = parent;
         this.genericSignature = genericSignature;
@@ -31,6 +31,10 @@ class SelectionMeta {
 
     List<String> getImports() {
         return imports;
+    }
+
+    TypeElement getTarget() {
+        return target;
     }
 
 }

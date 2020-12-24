@@ -26,7 +26,8 @@ class GenericSignature {
     }
 
     void appendImport(String imp) {
-        this.imports.add(imp);
+        if (!imp.startsWith("java.lang."))
+            this.imports.add(imp);
     }
 
     void addTypeVariable(String var, String upperBound) {
