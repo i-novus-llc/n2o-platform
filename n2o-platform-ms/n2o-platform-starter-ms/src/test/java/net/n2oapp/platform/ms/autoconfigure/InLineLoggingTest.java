@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = InLineLoggingTest.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@TestPropertySource(properties = {"logging.inline=true"})
+@TestPropertySource(properties = {"platform.starter-ms.logging.inline.enabled=true"})
 @EnableAutoConfiguration
 public class InLineLoggingTest {
 
@@ -31,6 +31,8 @@ public class InLineLoggingTest {
     public static void configure() {
         System.setOut(new PrintStream(outputStream));
     }
+
+    static PrintStream output = System.out;
 
     @Test
     public void testInlineLogging() {

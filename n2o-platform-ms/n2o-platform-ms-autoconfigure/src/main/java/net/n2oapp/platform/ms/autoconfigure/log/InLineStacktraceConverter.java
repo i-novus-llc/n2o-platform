@@ -5,131 +5,28 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.StackTraceElementProxy;
 import ch.qos.logback.classic.spi.ThrowableProxyUtil;
-import ch.qos.logback.core.Context;
 import ch.qos.logback.core.CoreConstants;
-import ch.qos.logback.core.boolex.EvaluationException;
-import ch.qos.logback.core.boolex.EventEvaluator;
-import ch.qos.logback.core.status.ErrorStatus;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
- * Add a stack trace in case the event contains a Throwable.
+ * Add a inline stack trace in case the event contains a Throwable.
  */
 public class InLineStacktraceConverter extends ThrowableHandlingConverter {
 
     protected static final int BUILDER_CAPACITY = 2048;
 
-    int lengthOption;
-    List<EventEvaluator<ILoggingEvent>> evaluatorList = null;
-    List<String> ignoredStackTraceLines = null;
-
-    int errorCount = 0;
+    private static int lengthOption = Integer.MAX_VALUE;
 
     @Override
     @SuppressWarnings("unchecked")
     public void start() {
-
-        String lengthStr = getFirstOption();
-
-        if (lengthStr == null) {
-            lengthOption = Integer.MAX_VALUE;
-        } else {
-            lengthStr = lengthStr.toLowerCase();
-            if ("full".equals(lengthStr)) {
-                lengthOption = Integer.MAX_VALUE;
-            } else if ("short".equals(lengthStr)) {
-                lengthOption = 1;
-            } else {
-                try {
-                    lengthOption = Integer.parseInt(lengthStr);
-                } catch (NumberFormatException nfe) {
-                    addError("Could not parse [" + lengthStr + "] as an integer");
-                    lengthOption = Integer.MAX_VALUE;
-                }
-            }
-        }
-
-        final List<String> optionList = getOptionList();
-
-        if (optionList != null && optionList.size() > 1) {
-            final int optionListSize = optionList.size();
-            for (int i = 1; i < optionListSize; i++) {
-                String evaluatorOrIgnoredStackTraceLine = optionList.get(i);
-                Context context = getContext();
-                Map<String, EventEvaluator<?>> evaluatorMap = (Map<String, EventEvaluator<?>>) context.getObject(CoreConstants.EVALUATOR_MAP);
-                EventEvaluator<ILoggingEvent> ee = (EventEvaluator<ILoggingEvent>) evaluatorMap.get(evaluatorOrIgnoredStackTraceLine);
-                if (ee != null) {
-                    addEvaluator(ee);
-                } else {
-                    addIgnoreStackTraceLine(evaluatorOrIgnoredStackTraceLine);
-                }
-            }
-        }
         super.start();
     }
 
-    private void addEvaluator(EventEvaluator<ILoggingEvent> ee) {
-        if (evaluatorList == null) {
-            evaluatorList = new ArrayList<>();
-        }
-        evaluatorList.add(ee);
-    }
-
-    private void addIgnoreStackTraceLine(String ignoredStackTraceLine) {
-        if (ignoredStackTraceLines == null) {
-            ignoredStackTraceLines = new ArrayList<>();
-        }
-        ignoredStackTraceLines.add(ignoredStackTraceLine);
-    }
-
-    @Override
-    public void stop() {
-        evaluatorList = null;
-        super.stop();
-    }
-
-    protected void extraData(StringBuilder builder, StackTraceElementProxy step) {
-        // nop
-    }
-
     public String convert(ILoggingEvent event) {
-
         IThrowableProxy tp = event.getThrowableProxy();
         if (tp == null) {
             return CoreConstants.EMPTY_STRING;
         }
-
-        // an evaluator match will cause stack printing to be skipped
-        if (evaluatorList != null) {
-            boolean printStack = true;
-            for (int i = 0; i < evaluatorList.size(); i++) {
-                EventEvaluator<ILoggingEvent> ee = evaluatorList.get(i);
-                try {
-                    if (ee.evaluate(event)) {
-                        printStack = false;
-                        break;
-                    }
-                } catch (EvaluationException eex) {
-                    errorCount++;
-                    if (errorCount < CoreConstants.MAX_ERROR_COUNT) {
-                        addError("Exception thrown for evaluator named [" + ee.getName() + "]", eex);
-                    } else if (errorCount == CoreConstants.MAX_ERROR_COUNT) {
-                        ErrorStatus errorStatus = new ErrorStatus("Exception thrown for evaluator named [" + ee.getName() + "].", this, eex);
-                        errorStatus.add(new ErrorStatus("This was the last warning about this evaluator's errors."
-                                + "We don't want the StatusManager to get flooded.", this));
-                        addStatus(errorStatus);
-                    }
-                }
-            }
-
-            if (!printStack) {
-                return CoreConstants.EMPTY_STRING;
-            }
-        }
-
         return throwableProxyToString(tp);
     }
 
@@ -179,23 +76,10 @@ public class InLineStacktraceConverter extends ThrowableHandlingConverter {
             maxIndex -= commonFrames;
         }
 
-        int ignoredCount = 0;
         for (int i = 0; i < maxIndex; i++) {
             StackTraceElementProxy element = stepArray[i];
-            if (!isIgnoredStackTraceLine(element.toString())) {
-                ThrowableProxyUtil.indent(buf, indent);
-                printStackLine(buf, ignoredCount, element);
-                ignoredCount = 0;
-                buf.append(" ");
-            } else {
-                ++ignoredCount;
-                if (maxIndex < stepArray.length) {
-                    ++maxIndex;
-                }
-            }
-        }
-        if (ignoredCount > 0) {
-            printIgnoredCount(buf, ignoredCount);
+            ThrowableProxyUtil.indent(buf, indent);
+            printStackLine(buf, element);
             buf.append(" ");
         }
 
@@ -205,26 +89,8 @@ public class InLineStacktraceConverter extends ThrowableHandlingConverter {
         }
     }
 
-    private void printStackLine(StringBuilder buf, int ignoredCount, StackTraceElementProxy element) {
+    private void printStackLine(StringBuilder buf, StackTraceElementProxy element) {
         buf.append(element);
-        extraData(buf, element); // allow other data to be added
-        if (ignoredCount > 0) {
-            printIgnoredCount(buf, ignoredCount);
-        }
     }
 
-    private void printIgnoredCount(StringBuilder buf, int ignoredCount) {
-        buf.append(" [").append(ignoredCount).append(" skipped]");
-    }
-
-    private boolean isIgnoredStackTraceLine(String line) {
-        if (ignoredStackTraceLines != null) {
-            for (String ignoredStackTraceLine : ignoredStackTraceLines) {
-                if (line.contains(ignoredStackTraceLine)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 }
