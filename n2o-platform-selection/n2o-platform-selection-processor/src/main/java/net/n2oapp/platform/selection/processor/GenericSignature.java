@@ -4,6 +4,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 class GenericSignature {
@@ -53,11 +54,16 @@ class GenericSignature {
         String var = allocateVar();
         StringBuilder builder = new StringBuilder();
         builder.append(owner.getQualifiedName());
-        builder.append("<").append(var);
-        for (String otherVar : typeVariables) {
-            builder.append(", ").append(otherVar);
+        if (!typeVariables.isEmpty()) {
+            builder.append("<");
+            for (Iterator<String> iter = typeVariables.iterator(); iter.hasNext(); ) {
+                String otherVar = iter.next();
+                builder.append(otherVar);
+                if (iter.hasNext())
+                    builder.append(',');
+            }
+            builder.append(">");
         }
-        builder.append(">");
         typeVariables.add(0, var);
         upperBounds.add(0, new String[] {builder.toString()});
         this.selfVariable = var;
@@ -114,6 +120,12 @@ class GenericSignature {
 
     void markLastSame() {
         this.sameAsOwnerPositions.add(typeVariables.size() - 1);
+    }
+
+    int sizeWithoutSelfVariable() {
+        if (selfVariable == null)
+            return typeVariables.size();
+        return typeVariables.size() - 1;
     }
 
 }

@@ -11,10 +11,7 @@ import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static net.n2oapp.platform.selection.processor.ProcessorUtil.toposort;
 
@@ -44,8 +41,8 @@ public class SelectionProcessor extends AbstractProcessor {
             if (!valid(element))
                 return false;
         }
-        elements = toposort(elements);
-        for (Element element : elements) {
+        List<Map.Entry<? extends Element, Boolean>> toposort = toposort(elements);
+        for (Map.Entry<? extends Element, Boolean> element : toposort) {
             if (process(metalist, types, element))
                 return false;
         }
@@ -59,8 +56,8 @@ public class SelectionProcessor extends AbstractProcessor {
 //      TODO
     }
 
-    private boolean process(List<SelectionMeta> metalist, Types types, Element element) {
-        TypeElement typeElement = (TypeElement) element;
+    private boolean process(List<SelectionMeta> metalist, Types types, Map.Entry<? extends Element, Boolean> element) {
+        TypeElement typeElement = (TypeElement) element.getKey();
         TypeMirror superclass = typeElement.getSuperclass();
         SelectionMeta parent = null;
         if (!(superclass instanceof NoType)) {
@@ -72,14 +69,14 @@ public class SelectionProcessor extends AbstractProcessor {
             ) {
                 Optional<SelectionMeta> opt = metalist.stream().filter(meta -> types.isSameType(erasure, types.erasure(meta.getTarget().asType()))).findAny();
                 if (opt.isEmpty()) {
-                    processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Superclass is missing @NeedSelection annotation", element);
+                    processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Superclass is missing @NeedSelection annotation", element.getKey());
                     return true;
                 }
                 parent = opt.get();
             }
         }
         GenericSignature genericSignature = genericSignatureExtractor.visit(typeElement.asType(), new GenericSignature(typeElement));
-        SelectionMeta selectionMeta = new SelectionMeta(typeElement, parent, genericSignature, types);
+        SelectionMeta selectionMeta = new SelectionMeta(typeElement, parent, element.getValue(), genericSignature, types);
         metalist.add(selectionMeta);
         return false;
     }

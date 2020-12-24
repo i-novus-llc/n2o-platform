@@ -6,21 +6,28 @@ import net.n2oapp.platform.selection.api.Selection;
 @NeedSelection
 public class Test2 extends Test1<Integer, String> {
 
-    static class Test2Selection extends Test1Selection<Test2, Integer, String> {
+    static class Test2Selection<E extends Test2> extends Test1Selection<E, Integer, String> {
     }
 
     @NeedSelection
-    static class Test3<C, E> extends Test2 {
+    static class Test3<C, E, Z> extends Test2 {
     }
 
-    static class Test3Selection<C, E> extends Test2Selection {
+    static class Test3Selection<T extends Test3<C, E, Z>, C, E, Z> extends Test2Selection<T> {
+    }
+
+    @NeedSelection
+    static class Test999 extends Test3<Integer, Integer, Integer> {
+    }
+
+    static class Test999Selection extends Test3Selection<Test999, Integer, Integer, Integer> {
     }
 
     @NeedSelection
     static class Test4 {
     }
 
-    static class Test4Selection implements Selection<Test4> {
+    static class Test4Selection<E extends Test4> implements Selection<E> {
     }
 
     @NeedSelection
@@ -41,14 +48,14 @@ public class Test2 extends Test1<Integer, String> {
     static class Test7 extends Test4 {
     }
 
-    static class Test7Selection extends Test4Selection {
+    static class Test7Selection<E extends Test7> extends Test4Selection<E> {
     }
 
     @NeedSelection
     static abstract class Test8<C, M> extends Test7 {
     }
 
-    static abstract class Test8Selection<E extends Test8<C, M>, C, M> extends Test7Selection {
+    static abstract class Test8Selection<E extends Test8<C, M>, C, M> extends Test7Selection<E> {
 
     }
 
@@ -59,13 +66,25 @@ public class Test2 extends Test1<Integer, String> {
     static class Test9Selection<E extends Test9<C, I>, C extends Integer, I extends String> implements Selection<E> {
     }
 
+    @NeedSelection
     static class Test10<C extends Integer, E extends String> extends Test9<C, E> {
     }
 
     static class Test10Selection<C extends Integer, E extends String> extends Test9Selection<Test10<C, E>, C, E> {
-
     }
 
+    @NeedSelection
+    static class Test11 extends Test9 {
+    }
 
+    static class Test11Selection extends Test9Selection {
+    }
+
+    @NeedSelection
+    static class Test12 extends Test11 {
+    }
+
+    static class Test12Selection {
+    }
 
 }

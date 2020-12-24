@@ -13,7 +13,7 @@ final class ProcessorUtil {
     private ProcessorUtil() {
     }
 
-    static List<? extends Element> toposort(List<? extends Element> elements) {
+    static List<Map.Entry<? extends Element, Boolean>> toposort(List<? extends Element> elements) {
         Map<Element, List<Element>> graph = new HashMap<>();
         for (Element elem : elements) {
             TypeElement typeElement = (TypeElement) elem;
@@ -33,9 +33,9 @@ final class ProcessorUtil {
         return topologicalSort(graph);
     }
 
-    private static List<Element> topologicalSort(Map<Element, List<Element>> graph) {
+    private static List<Map.Entry<? extends Element, Boolean>> topologicalSort(Map<Element, List<Element>> graph) {
         Set<Element> visited = new HashSet<>();
-        LinkedList<Element> stack = new LinkedList<>();
+        LinkedList<Map.Entry<? extends Element, Boolean>> stack = new LinkedList<>();
         for (Map.Entry<Element, List<Element>> e : graph.entrySet()) {
             if (!visited.contains(e.getKey())) {
                 topologicalSort0(stack, visited, graph, e.getKey());
@@ -44,7 +44,7 @@ final class ProcessorUtil {
         return stack;
     }
 
-    private static void topologicalSort0(LinkedList<Element> stack, Set<Element> visited, Map<Element, List<Element>> graph, Element elem) {
+    private static void topologicalSort0(LinkedList<Map.Entry<? extends Element, Boolean>> stack, Set<Element> visited, Map<Element, List<Element>> graph, Element elem) {
         visited.add(elem);
         List<Element> childs = graph.get(elem);
         if (childs != null) {
@@ -53,7 +53,7 @@ final class ProcessorUtil {
                     topologicalSort0(stack, visited, graph, e);
             }
         }
-        stack.push(elem);
+        stack.push(Map.entry(elem, childs != null));
     }
 
 }
