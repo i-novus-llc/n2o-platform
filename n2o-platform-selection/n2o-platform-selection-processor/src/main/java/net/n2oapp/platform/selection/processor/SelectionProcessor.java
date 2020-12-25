@@ -67,19 +67,21 @@ public class SelectionProcessor extends AbstractProcessor {
         Element target = meta.getTarget();
         for (Element member : target.getEnclosedElements()) {
             if (member.getKind() == ElementKind.FIELD) {
-                TypeMirror fieldType = types.erasure(member.asType());
+                TypeMirror origType = member.asType();
+                TypeMirror erased = types.erasure(origType);
                 SelectionMeta nested = null;
-                if (!types.isAssignable(fieldType, collection)) {
-                    nested = findNestedSelection(metalist, fieldType);
+                if (!types.isAssignable(erased, collection)) {
+                    nested = findNestedSelection(metalist, erased);
                 } else {
                     DeclaredType declaredType = (DeclaredType) member.asType();
                     List<? extends TypeMirror> args = declaredType.getTypeArguments();
                     if (!args.isEmpty()) {
                         TypeMirror arg = args.get(0);
                         nested = findNestedSelection(metalist, types.erasure(arg));
+                        origType = arg;
                     }
                 }
-                meta.addProperty(member, nested);
+                meta.addProperty(member.getSimpleName().toString(), origType, nested);
             }
         }
     }

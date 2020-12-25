@@ -1,9 +1,10 @@
 package net.n2oapp.platform.selection.processor;
 
-import javax.lang.model.element.*;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.*;
 import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +52,7 @@ class SelectionMeta {
                 else {
                     if (this.genericSignature.sizeWithoutSelfVariable() == 0) { // no type variables declared on this class
                         String var = this.genericSignature.getSelfVariable();
-                        String temp = getExtendsSignature();
+                        String temp = getGenerics(extendsType);
                         if (var == null) { // no children and not abstract class
                             return target.getQualifiedName().toString() + ", " + temp;
                         } else {
@@ -60,7 +61,7 @@ class SelectionMeta {
                     } else {
                         String var = this.genericSignature.getSelfVariable();
                         String temp = var == null ? target.getQualifiedName().toString() + genericSignature.varsToString() : var;
-                        return temp + ", " + getExtendsSignature();
+                        return temp + ", " + getGenerics(extendsType);
                     }
                 }
             } else { // parent's generic signature contains either no type variables or only self variable
@@ -82,8 +83,8 @@ class SelectionMeta {
         }
     }
 
-    private String getExtendsSignature() {
-        String res = extendsType.toString();
+    private String getGenerics(TypeMirror type) {
+        String res = type.toString();
         int i = res.indexOf('<');
         return res.substring(i + 1, res.length() - 1);
     }
@@ -110,12 +111,36 @@ class SelectionMeta {
         return target;
     }
 
-    public void addProperty(Element member, SelectionMeta nested) {
-        String key = member.getSimpleName().toString();
+    public void addProperty(String key, TypeMirror type, SelectionMeta nested) {
         if (nested == null)
             properties.add(new SelectionProperty(key));
         else {
+            String fieldTypeSignature = null;
+            if (type instanceof WildcardType) {
+                type = ((WildcardType) type).getExtendsBound();
+            }
+            if (type instanceof TypeVariable) {
 
+            } else {
+                if (nested.genericSignature.sizeWithoutSelfVariable() == 0) {
+                    if (nested.genericSignature.getSelfVariable() != null)
+                        fieldTypeSignature = "? extends " + nested.target.getQualifiedName().toString();
+                    else
+                        fieldTypeSignature = "";
+                } else {
+                    DeclaredType declaredType = (DeclaredType) type;
+                    if (declaredType.getTypeArguments().isEmpty())
+                        fieldTypeSignature = ""; // raw use
+                    else {
+                        if (nested.genericSignature.getSelfVariable() != null) {
+                            fieldTypeSignature = "? extends " + type.toString() + ", " + getGenerics(type);
+                        } else {
+                            fieldTypeSignature = getGenerics(type);
+                        }
+                    }
+                }
+            }
+            properties.add(new SelectionProperty(key, fieldTypeSignature, nested));
         }
     }
 
