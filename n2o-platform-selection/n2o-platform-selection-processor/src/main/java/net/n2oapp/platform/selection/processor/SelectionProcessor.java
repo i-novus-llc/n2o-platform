@@ -1,16 +1,12 @@
 package net.n2oapp.platform.selection.processor;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
+import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
@@ -23,6 +19,16 @@ import static net.n2oapp.platform.selection.processor.ProcessorUtil.toposort;
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class SelectionProcessor extends AbstractProcessor {
 
+    private Types types;
+    private TypeMirror collection;
+
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
+        this.types = processingEnv.getTypeUtils();
+        this.collection = types.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Collection").asType());
+    }
+
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if (annotations.isEmpty())
@@ -32,15 +38,17 @@ public class SelectionProcessor extends AbstractProcessor {
         if (elements.isEmpty())
             return false;
         List<SelectionMeta> metalist = new ArrayList<>(elements.size());
-        Types types = processingEnv.getTypeUtils();
         for (Element element : elements) {
             if (!valid(element))
                 return false;
         }
         List<Map.Entry<? extends Element, Boolean>> toposort = toposort(elements);
-        for (Map.Entry<? extends Element, Boolean> element : toposort) {
-            if (process(metalist, types, element))
+        for (Map.Entry<? extends Element, Boolean> entry : toposort) {
+            if (init(metalist, entry))
                 return false;
+        }
+        for (SelectionMeta entry : metalist) {
+            processFields(metalist, entry);
         }
         for (SelectionMeta meta : metalist) {
             serialize(meta);
@@ -48,32 +56,58 @@ public class SelectionProcessor extends AbstractProcessor {
         return false;
     }
 
+    private void processFields(List<SelectionMeta> metalist, SelectionMeta entry) {
+        Element target = entry.getTarget();
+        for (Element member : target.getEnclosedElements()) {
+            if (member.getKind() == ElementKind.FIELD) {
+                TypeMirror fieldType = member.asType();
+                if (!types.isAssignable(fieldType, collection)) {
+                    SelectionMeta assignableType = findMostSpecificAssignableType(metalist, fieldType);
+                }
+            }
+        }
+    }
+
+    private SelectionMeta findMostSpecificAssignableType(List<SelectionMeta> metalist, TypeMirror type) {
+        String str = type.toString();
+        if (str.startsWith("java.") || str.startsWith("javax."))
+            return null;
+        SelectionMeta result = null;
+        for (SelectionMeta meta : metalist) {
+            TypeMirror mirror = meta.getTarget().asType();
+            if (!types.isAssignable(type, mirror))
+                continue;
+            if (result == null || !types.isAssignable(mirror, result.getTarget().asType())) {
+                result = meta;
+            }
+        }
+        return result;
+    }
+
     private void serialize(SelectionMeta meta) {
 //      TODO
     }
 
-    private boolean process(List<SelectionMeta> metalist, Types types, Map.Entry<? extends Element, Boolean> element) {
-        TypeElement typeElement = (TypeElement) element.getKey();
-        TypeMirror superclass = typeElement.getSuperclass();
+    private boolean init(List<SelectionMeta> metalist, Map.Entry<? extends Element, Boolean> entry) {
+        TypeElement element = (TypeElement) entry.getKey();
+        TypeMirror superclass = element.getSuperclass();
         SelectionMeta parent = null;
-        if (!(superclass instanceof NoType)) {
-            Element declaredType = ((DeclaredType) superclass).asElement();
-            TypeMirror erasure = types.erasure(superclass);
-            if (
-                declaredType.getKind() == ElementKind.CLASS &&
-                !((TypeElement) declaredType).getQualifiedName().toString().equals("java.lang.Object")
-            ) {
-                Optional<SelectionMeta> opt = metalist.stream().filter(meta -> types.isSameType(erasure, types.erasure(meta.getTarget().asType()))).findAny();
-                if (opt.isEmpty()) {
-                    processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Superclass is missing @NeedSelection annotation", element.getKey());
-                    return true;
-                }
-                parent = opt.get();
+        Element superType = ((DeclaredType) superclass).asElement();
+        TypeMirror superErasure = types.erasure(superclass);
+        if (
+            superType.getKind() == ElementKind.CLASS &&
+            !((TypeElement) superType).getQualifiedName().toString().equals("java.lang.Object")
+        ) {
+            Optional<SelectionMeta> opt = metalist.stream().filter(meta -> types.isSameType(superErasure, types.erasure(meta.getTarget().asType()))).findAny();
+            if (opt.isEmpty()) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Superclass is missing @NeedSelection annotation", entry.getKey());
+                return true;
             }
+            parent = opt.get();
         }
-        GenericSignature genericSignature = getGenericSignature(typeElement, (DeclaredType) typeElement.asType());
-        SelectionMeta selectionMeta = new SelectionMeta(typeElement, parent, element.getValue(), genericSignature, types);
-        metalist.add(selectionMeta);
+        GenericSignature signature = getGenericSignature(element, (DeclaredType) element.asType());
+        SelectionMeta result = new SelectionMeta(element, parent, entry.getValue(), signature, types);
+        metalist.add(result);
         return false;
     }
 
@@ -91,15 +125,14 @@ public class SelectionProcessor extends AbstractProcessor {
 
     private boolean valid(Element element) {
         boolean result = true;
-        ElementKind kind = element.getKind();
-        if (kind != ElementKind.CLASS) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@NeedSelection must be placed only on class", element);
+        if (element.getKind() != ElementKind.CLASS) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@NeedSelection must be placed only on DTO class", element);
             result = false;
         } else {
             TypeElement typeElement = (TypeElement) element;
             NestingKind nesting = typeElement.getNestingKind();
             if (nesting != NestingKind.TOP_LEVEL && nesting != NestingKind.MEMBER) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@NeedSelection must be placed either on TOP_LEVEL class or INNER class", element);
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@NeedSelection must be placed either on top level class or inner DTO class", element);
                 result = false;
             }
         }
