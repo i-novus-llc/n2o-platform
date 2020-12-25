@@ -4,7 +4,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 class GenericSignature {
@@ -42,16 +41,8 @@ class GenericSignature {
         String var = allocateVar();
         StringBuilder builder = new StringBuilder();
         builder.append(owner.getQualifiedName());
-        if (!typeVariables.isEmpty()) {
-            builder.append("<");
-            for (Iterator<String> iter = typeVariables.iterator(); iter.hasNext(); ) {
-                String otherVar = iter.next();
-                builder.append(otherVar);
-                if (iter.hasNext())
-                    builder.append(',');
-            }
-            builder.append(">");
-        }
+        if (!typeVariables.isEmpty())
+            builder.append("<").append(String.join(", ", typeVariables)).append(">");
         typeVariables.add(0, var);
         upperBounds.add(0, new String[] {builder.toString()});
         this.selfVariable = var;
@@ -82,6 +73,12 @@ class GenericSignature {
         }
         builder.append(">");
         return builder.toString();
+    }
+
+    String varsToString() {
+        if (typeVariables.isEmpty())
+            return "";
+        return "<" + String.join(", ", typeVariables) + ">";
     }
 
     private String allocateVar() {

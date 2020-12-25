@@ -72,7 +72,7 @@ class SelectionMeta {
                     } else {
                         String var = this.genericSignature.getSelfVariable();
                         if (var == null) { // no child and not abstract
-                            return target.getQualifiedName().toString() + genericSignature.toString();
+                            return target.getQualifiedName().toString() + genericSignature.varsToString();
                         } else { // has child or abstract
                             return var;
                         }
