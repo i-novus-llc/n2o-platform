@@ -11,6 +11,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
+import java.io.IOException;
 import java.util.*;
 
 import static net.n2oapp.platform.selection.processor.ProcessorUtil.toposort;
@@ -23,6 +24,9 @@ public class SelectionProcessor extends AbstractProcessor {
 
     private Types types;
     private TypeMirror collection;
+
+    private final SelectionSerializer selectionSerializer = new SelectionSerializer();
+    private final MapperSerializer mapperSerializer = new MapperSerializer();
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -99,7 +103,14 @@ public class SelectionProcessor extends AbstractProcessor {
     }
 
     private void serialize(SelectionMeta meta) {
-//      TODO
+        Filer filer = processingEnv.getFiler();
+        try {
+            selectionSerializer.serialize(meta, filer);
+            mapperSerializer.serialize(meta, filer);
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage());
+        }
     }
 
     private boolean init(List<SelectionMeta> metalist, Map.Entry<? extends Element, Boolean> entry) {

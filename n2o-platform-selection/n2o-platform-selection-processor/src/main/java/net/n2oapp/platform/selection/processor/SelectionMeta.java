@@ -1,7 +1,7 @@
 package net.n2oapp.platform.selection.processor;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.*;
@@ -17,6 +17,7 @@ class SelectionMeta {
     private final TypeMirror extendsType;
     private final String extendsSignature;
     private final List<SelectionProperty> properties;
+    private final String mapperTargetSignature;
 
     SelectionMeta(TypeElement target, SelectionMeta parent, boolean hasChildren, GenericSignature genericSignature, Types types) {
         this.target = target;
@@ -34,6 +35,13 @@ class SelectionMeta {
             genericSignature.createSelfVariable();
         }
         this.extendsSignature = resolveExtendsSignature();
+        this.mapperTargetSignature = resolveMapperTargetSignature();
+    }
+
+    private String resolveMapperTargetSignature() {
+        if (genericSignature.getSelfVariable() != null)
+            return genericSignature.getSelfVariable();
+        return target.getQualifiedName().toString() + genericSignature.varsToString();
     }
 
     private boolean extendsTypeEmpty() {
@@ -103,8 +111,12 @@ class SelectionMeta {
         return parentType;
     }
 
-    Name getTargetPackage() {
-        return ((PackageElement) target.getEnclosingElement()).getQualifiedName();
+    PackageElement getTargetPackage() {
+        Element temp = target;
+        while (!(temp.getEnclosingElement() instanceof PackageElement)) {
+            temp = temp.getEnclosingElement();
+        }
+        return (PackageElement) temp.getEnclosingElement();
     }
 
     TypeElement getTarget() {
@@ -142,6 +154,10 @@ class SelectionMeta {
             }
             properties.add(new SelectionProperty(key, fieldTypeSignature, nested));
         }
+    }
+
+    GenericSignature getGenericSignature() {
+        return genericSignature;
     }
 
 }
