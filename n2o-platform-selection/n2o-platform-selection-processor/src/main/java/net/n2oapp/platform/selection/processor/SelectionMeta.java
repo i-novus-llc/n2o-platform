@@ -12,7 +12,6 @@ class SelectionMeta {
 
     private final TypeElement target;
     private final SelectionMeta parent;
-    private final boolean isAbstract;
     private final GenericSignature genericSignature;
     private final TypeMirror extendsType;
     private final String extendsSignature;
@@ -23,12 +22,12 @@ class SelectionMeta {
         this.parent = parent;
         this.genericSignature = genericSignature;
         this.properties = new ArrayList<>(0);
-        this.isAbstract = target.getModifiers().stream().anyMatch(Modifier.ABSTRACT::equals);
+        boolean isAbstract = target.getModifiers().stream().anyMatch(Modifier.ABSTRACT::equals);
         this.extendsType = getExtendsType(types);
         if (
             (isAbstract || hasChildren) && (
                 parent == null ||
-                (parent.genericSignature.getSelfVariable() != null && parent.genericSignature.sizeWithoutSelfVariable() == 0 || !extendsTypeEmpty())
+                (parent.genericSignature.getSelfVariable() != null && (parent.genericSignature.sizeWithoutSelfVariable() == 0 || !extendsTypeEmpty()))
             )
         ) {
             genericSignature.createSelfVariable();
@@ -52,16 +51,16 @@ class SelectionMeta {
                 else {
                     if (this.genericSignature.sizeWithoutSelfVariable() == 0) { // no type variables declared on this class
                         String var = this.genericSignature.getSelfVariable();
-                        String res = extendsType.toString();
-                        int i = res.indexOf('<');
-                        String s = res.substring(i + 1, res.length() - 1);
+                        String temp = getExtendsSignature();
                         if (var == null) { // no children and not abstract class
-                            return target.getQualifiedName().toString() + ", " + s;
+                            return target.getQualifiedName().toString() + ", " + temp;
                         } else {
-                            return var + ", " + s;
+                            return var + ", " + temp;
                         }
                     } else {
-
+                        String var = this.genericSignature.getSelfVariable();
+                        String temp = var == null ? target.getQualifiedName().toString() + genericSignature.varsToString() : var;
+                        return temp + ", " + getExtendsSignature();
                     }
                 }
             } else { // parent's generic signature contains either no type variables or only self variable
@@ -81,7 +80,12 @@ class SelectionMeta {
                 }
             }
         }
-        return null;
+    }
+
+    private String getExtendsSignature() {
+        String res = extendsType.toString();
+        int i = res.indexOf('<');
+        return res.substring(i + 1, res.length() - 1);
     }
 
     private TypeMirror getExtendsType(Types types) {

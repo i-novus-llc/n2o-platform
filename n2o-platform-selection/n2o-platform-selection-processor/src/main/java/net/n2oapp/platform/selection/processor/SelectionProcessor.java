@@ -15,9 +15,11 @@ import java.util.*;
 
 import static net.n2oapp.platform.selection.processor.ProcessorUtil.toposort;
 
-@SupportedAnnotationTypes("net.n2oapp.platform.selection.api.NeedSelection")
+@SupportedAnnotationTypes("net.n2oapp.platform.selection.api.Selective")
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class SelectionProcessor extends AbstractProcessor {
+
+    private static final Set<String> SUPPORTED_OPTIONS = Set.of();
 
     private Types types;
     private TypeMirror collection;
@@ -27,6 +29,11 @@ public class SelectionProcessor extends AbstractProcessor {
         super.init(processingEnv);
         this.types = processingEnv.getTypeUtils();
         this.collection = types.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Collection").asType());
+    }
+
+    @Override
+    public Set<String> getSupportedOptions() {
+        return SUPPORTED_OPTIONS;
     }
 
     @Override
