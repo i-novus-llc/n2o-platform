@@ -60,28 +60,24 @@ public class SelectionProcessor extends AbstractProcessor {
         Element target = entry.getTarget();
         for (Element member : target.getEnclosedElements()) {
             if (member.getKind() == ElementKind.FIELD) {
-                TypeMirror fieldType = member.asType();
+                TypeMirror fieldType = types.erasure(member.asType());
                 if (!types.isAssignable(fieldType, collection)) {
-                    SelectionMeta assignableType = findMostSpecificAssignableType(metalist, fieldType);
+                    SelectionMeta assignableType = findType(metalist, fieldType);
                 }
             }
         }
     }
 
-    private SelectionMeta findMostSpecificAssignableType(List<SelectionMeta> metalist, TypeMirror type) {
+    private SelectionMeta findType(List<SelectionMeta> metalist, TypeMirror type) {
         String str = type.toString();
         if (str.startsWith("java.") || str.startsWith("javax."))
             return null;
-        SelectionMeta result = null;
         for (SelectionMeta meta : metalist) {
             TypeMirror mirror = meta.getTarget().asType();
-            if (!types.isAssignable(type, mirror))
-                continue;
-            if (result == null || !types.isAssignable(mirror, result.getTarget().asType())) {
-                result = meta;
-            }
+            if (types.isSameType(types.erasure(mirror), type))
+                return meta;
         }
-        return result;
+        return null;
     }
 
     private void serialize(SelectionMeta meta) {
