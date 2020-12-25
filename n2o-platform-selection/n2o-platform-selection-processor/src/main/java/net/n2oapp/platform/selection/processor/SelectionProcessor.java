@@ -56,19 +56,28 @@ public class SelectionProcessor extends AbstractProcessor {
         return false;
     }
 
-    private void processFields(List<SelectionMeta> metalist, SelectionMeta entry) {
-        Element target = entry.getTarget();
+    private void processFields(List<SelectionMeta> metalist, SelectionMeta meta) {
+        Element target = meta.getTarget();
         for (Element member : target.getEnclosedElements()) {
             if (member.getKind() == ElementKind.FIELD) {
                 TypeMirror fieldType = types.erasure(member.asType());
+                SelectionMeta nested = null;
                 if (!types.isAssignable(fieldType, collection)) {
-                    SelectionMeta assignableType = findType(metalist, fieldType);
+                    nested = findNestedSelection(metalist, fieldType);
+                } else {
+                    DeclaredType declaredType = (DeclaredType) member.asType();
+                    List<? extends TypeMirror> args = declaredType.getTypeArguments();
+                    if (!args.isEmpty()) {
+                        TypeMirror arg = args.get(0);
+                        nested = findNestedSelection(metalist, types.erasure(arg));
+                    }
                 }
+                meta.addProperty(member, nested);
             }
         }
     }
 
-    private SelectionMeta findType(List<SelectionMeta> metalist, TypeMirror type) {
+    private SelectionMeta findNestedSelection(List<SelectionMeta> metalist, TypeMirror type) {
         String str = type.toString();
         if (str.startsWith("java.") || str.startsWith("javax."))
             return null;

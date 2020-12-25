@@ -1,13 +1,12 @@
 package net.n2oapp.platform.selection.processor;
 
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import java.util.ArrayList;
+import java.util.List;
 
 class SelectionMeta {
 
@@ -17,11 +16,13 @@ class SelectionMeta {
     private final GenericSignature genericSignature;
     private final TypeMirror extendsType;
     private final String extendsSignature;
+    private final List<SelectionProperty> properties;
 
     SelectionMeta(TypeElement target, SelectionMeta parent, boolean hasChildren, GenericSignature genericSignature, Types types) {
         this.target = target;
         this.parent = parent;
         this.genericSignature = genericSignature;
+        this.properties = new ArrayList<>(0);
         this.isAbstract = target.getModifiers().stream().anyMatch(Modifier.ABSTRACT::equals);
         this.extendsType = getExtendsType(types);
         if (
@@ -103,6 +104,15 @@ class SelectionMeta {
 
     TypeElement getTarget() {
         return target;
+    }
+
+    public void addProperty(Element member, SelectionMeta nested) {
+        String key = member.getSimpleName().toString();
+        if (nested == null)
+            properties.add(new SelectionProperty(key));
+        else {
+
+        }
     }
 
 }

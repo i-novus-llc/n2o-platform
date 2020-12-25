@@ -1,6 +1,6 @@
 package net.n2oapp.platform.selection.processor;
 
-import net.n2oapp.platform.selection.api.NeedSelection;
+import net.n2oapp.platform.selection.api.Selective;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -19,7 +19,7 @@ final class ProcessorUtil {
             TypeElement asTypeElem = (TypeElement) elem;
             DeclaredType superclass = (DeclaredType) asTypeElem.getSuperclass();
             Element superelem = superclass.asElement();
-            if (superelem.getAnnotation(NeedSelection.class) != null) {
+            if (superelem.getAnnotation(Selective.class) != null) {
                 graph.compute(superelem, (ignored, list) -> {
                     if (list == null)
                         return new ArrayList<>(Collections.singletonList(elem));
