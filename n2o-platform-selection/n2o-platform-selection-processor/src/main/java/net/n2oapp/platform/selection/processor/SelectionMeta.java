@@ -17,7 +17,7 @@ class SelectionMeta {
     private final TypeMirror extendsType;
     private final String extendsSignature;
     private final List<SelectionProperty> properties;
-    private final String mapperTargetSignature;
+    private final String mapperTarget;
 
     SelectionMeta(TypeElement target, SelectionMeta parent, boolean hasChildren, GenericSignature genericSignature, Types types) {
         this.target = target;
@@ -35,13 +35,13 @@ class SelectionMeta {
             genericSignature.createSelfVariable();
         }
         this.extendsSignature = resolveExtendsSignature();
-        this.mapperTargetSignature = resolveMapperTargetSignature();
+        this.mapperTarget = resolveMapperTarget();
     }
 
-    private String resolveMapperTargetSignature() {
+    private String resolveMapperTarget() {
         if (genericSignature.getSelfVariable() != null)
             return genericSignature.getSelfVariable();
-        return target.getQualifiedName().toString() + genericSignature.varsToString();
+        return target.getQualifiedName().toString() + genericSignature.varsToString(false);
     }
 
     private boolean extendsTypeEmpty() {
@@ -68,7 +68,7 @@ class SelectionMeta {
                         }
                     } else {
                         String var = this.genericSignature.getSelfVariable();
-                        String temp = var == null ? target.getQualifiedName().toString() + genericSignature.varsToString() : var;
+                        String temp = var == null ? target.getQualifiedName().toString() + genericSignature.varsToString(true) : var;
                         return temp + ", " + getGenerics(extendsType);
                     }
                 }
@@ -81,7 +81,7 @@ class SelectionMeta {
                     } else {
                         String var = this.genericSignature.getSelfVariable();
                         if (var == null) { // no children and not abstract
-                            return target.getQualifiedName().toString() + genericSignature.varsToString();
+                            return target.getQualifiedName().toString() + genericSignature.varsToString(true);
                         } else { // has children or abstract
                             return var;
                         }
@@ -127,37 +127,55 @@ class SelectionMeta {
         if (nested == null)
             properties.add(new SelectionProperty(key));
         else {
-            String fieldTypeSignature = null;
+            String nestedGenericSignature;
             if (type instanceof WildcardType) {
                 type = ((WildcardType) type).getExtendsBound();
             }
             if (type instanceof TypeVariable) {
-
+                nestedGenericSignature = ""; // TODO
             } else {
                 if (nested.genericSignature.sizeWithoutSelfVariable() == 0) {
                     if (nested.genericSignature.getSelfVariable() != null)
-                        fieldTypeSignature = "? extends " + nested.target.getQualifiedName().toString();
+                        nestedGenericSignature = "? extends " + nested.target.getQualifiedName().toString();
                     else
-                        fieldTypeSignature = "";
+                        nestedGenericSignature = "";
                 } else {
                     DeclaredType declaredType = (DeclaredType) type;
                     if (declaredType.getTypeArguments().isEmpty())
-                        fieldTypeSignature = ""; // raw use
+                        nestedGenericSignature = ""; // raw use
                     else {
                         if (nested.genericSignature.getSelfVariable() != null) {
-                            fieldTypeSignature = "? extends " + type.toString() + ", " + getGenerics(type);
+                            nestedGenericSignature = "? extends " + type.toString() + ", " + getGenerics(type);
                         } else {
-                            fieldTypeSignature = getGenerics(type);
+                            nestedGenericSignature = getGenerics(type);
                         }
                     }
                 }
             }
-            properties.add(new SelectionProperty(key, fieldTypeSignature, nested));
+            properties.add(new SelectionProperty(key, nestedGenericSignature, nested));
         }
     }
 
     GenericSignature getGenericSignature() {
         return genericSignature;
+    }
+
+    Iterable<SelectionProperty> getProperties() {
+        return properties;
+    }
+
+    SelectionMeta getParent() {
+        return parent;
+    }
+
+    String getExtendsSignature() {
+        if (extendsSignature.isEmpty())
+            return "";
+        return "<" + extendsSignature + ">";
+    }
+
+    String getMapperTarget() {
+        return mapperTarget;
     }
 
 }

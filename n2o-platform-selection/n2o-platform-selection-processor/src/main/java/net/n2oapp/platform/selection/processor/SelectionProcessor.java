@@ -9,6 +9,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import java.io.IOException;
@@ -23,16 +24,24 @@ public class SelectionProcessor extends AbstractProcessor {
     private static final Set<String> SUPPORTED_OPTIONS = Set.of();
 
     private Types types;
+    private Elements elements;
     private TypeMirror collection;
 
-    private final SelectionSerializer selectionSerializer = new SelectionSerializer();
-    private final MapperSerializer mapperSerializer = new MapperSerializer();
+    private SelectionSerializer selectionSerializer;
+    private MapperSerializer mapperSerializer;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         this.types = processingEnv.getTypeUtils();
-        this.collection = types.erasure(processingEnv.getElementUtils().getTypeElement("java.util.Collection").asType());
+        this.elements = processingEnv.getElementUtils();
+        this.collection = types.erasure(elements.getTypeElement("java.util.Collection").asType());
+        TypeMirror selectionKey = elements.getTypeElement("net.n2oapp.platform.selection.api.SelectionKey").asType();
+        TypeMirror selectionInterface = types.erasure(elements.getTypeElement("net.n2oapp.platform.selection.api.Selection").asType());
+        TypeMirror mapperInterface = types.erasure(elements.getTypeElement("net.n2oapp.platform.selection.api.Mapper").asType());
+        TypeMirror selectionEnum = elements.getTypeElement("net.n2oapp.platform.selection.api.SelectionEnum").asType();
+        this.selectionSerializer = new SelectionSerializer(selectionKey, selectionEnum, selectionInterface);
+        this.mapperSerializer = new MapperSerializer(selectionKey, mapperInterface);
     }
 
     @Override
@@ -53,8 +62,8 @@ public class SelectionProcessor extends AbstractProcessor {
             if (!valid(element))
                 return false;
         }
-        List<Map.Entry<? extends Element, Boolean>> toposort = toposort(elements);
-        for (Map.Entry<? extends Element, Boolean> entry : toposort) {
+        List<Map.Entry<Element, Boolean>> toposort = toposort(elements);
+        for (Map.Entry<Element, Boolean> entry : toposort) {
             if (init(metalist, entry))
                 return false;
         }

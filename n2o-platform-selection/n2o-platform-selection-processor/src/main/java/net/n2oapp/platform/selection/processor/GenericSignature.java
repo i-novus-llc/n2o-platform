@@ -75,10 +75,12 @@ class GenericSignature {
         return builder.toString();
     }
 
-    String varsToString() {
+    String varsToString(boolean includeSelfVariable) {
         if (typeVariables.isEmpty())
             return "";
-        return "<" + String.join(", ", typeVariables) + ">";
+        if (includeSelfVariable || selfVariable == null)
+            return "<" + String.join(", ", typeVariables) + ">";
+        return "<" + String.join(", ", typeVariables.subList(1, typeVariables.size())) + ">";
     }
 
     private String allocateVar() {

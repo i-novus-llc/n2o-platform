@@ -9,6 +9,8 @@ public class TestModel {
     @Selective
     static class Test1<E extends Number, C> {
         Test2<?> test2;
+        int i;
+        int j;
     }
 
     @Selective

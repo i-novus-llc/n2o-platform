@@ -6,8 +6,7 @@ public class SelectorTest {
 
     @Test
     public void testResolve() {
-        Test2Selection selection = null;
-        System.out.println(selection);
+
     }
 
 }
