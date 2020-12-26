@@ -21,6 +21,8 @@ import static net.n2oapp.platform.selection.processor.ProcessorUtil.toposort;
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class SelectionProcessor extends AbstractProcessor {
 
+    private static final String SELECTIVE_ANNOTATION = "@Selective";
+
     private static final Set<String> SUPPORTED_OPTIONS = Set.of();
 
     private Types types;
@@ -52,8 +54,8 @@ public class SelectionProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if (annotations.isEmpty())
             return false;
-        TypeElement needSelection = annotations.iterator().next();
-        List<? extends Element> elements = new ArrayList<>(roundEnv.getElementsAnnotatedWith(needSelection));
+        TypeElement selective = annotations.iterator().next();
+        List<? extends Element> elements = new ArrayList<>(roundEnv.getElementsAnnotatedWith(selective));
         if (elements.isEmpty())
             return false;
         List<SelectionMeta> metalist = new ArrayList<>(elements.size());
@@ -135,7 +137,7 @@ public class SelectionProcessor extends AbstractProcessor {
         ) {
             Optional<SelectionMeta> opt = metalist.stream().filter(meta -> types.isSameType(superErasure, types.erasure(meta.getTarget().asType()))).findAny();
             if (opt.isEmpty()) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Superclass is missing @NeedSelection annotation", entry.getKey());
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Superclass is missing " + SELECTIVE_ANNOTATION + " annotation", entry.getKey());
                 return true;
             }
             parent = opt.get();
@@ -161,13 +163,13 @@ public class SelectionProcessor extends AbstractProcessor {
     private boolean valid(Element element) {
         boolean result = true;
         if (element.getKind() != ElementKind.CLASS) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@NeedSelection must be placed only on DTO class", element);
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, SELECTIVE_ANNOTATION + " must be placed only on DTO class", element);
             result = false;
         } else {
             TypeElement typeElement = (TypeElement) element;
             NestingKind nesting = typeElement.getNestingKind();
             if (nesting != NestingKind.TOP_LEVEL && nesting != NestingKind.MEMBER) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@NeedSelection must be placed either on top level class or inner DTO class", element);
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, SELECTIVE_ANNOTATION + " must be placed either on top level class or inner DTO class", element);
                 result = false;
             }
         }
