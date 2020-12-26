@@ -97,10 +97,18 @@ class GenericSignature {
         }
     }
 
-    int sizeWithoutSelfVariable() {
+    boolean noGenericsDeclared() {
         if (selfVariable == null)
-            return typeVariables.size();
-        return typeVariables.size() - 1;
+            return typeVariables.isEmpty();
+        return typeVariables.size() - 1 == 0;
+    }
+
+    String[] getVariableBounds(String var) {
+        for (int i = 0; i < typeVariables.size(); i++) {
+            if (typeVariables.get(i).equals(var))
+                return upperBounds.get(i);
+        }
+        return new String[0];
     }
 
 }

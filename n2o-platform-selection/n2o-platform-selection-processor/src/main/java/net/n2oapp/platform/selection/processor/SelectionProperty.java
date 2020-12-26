@@ -1,19 +1,23 @@
 package net.n2oapp.platform.selection.processor;
 
+import javax.lang.model.type.TypeMirror;
+
 class SelectionProperty {
 
     private final String key;
-    private final String nestedGenericSignature; // null if property is not nested selection
+    private final String nestedGenericSignature;
     private final SelectionMeta nestedSelection;
+    private final TypeMirror collectionType;
 
     SelectionProperty(String key) {
-        this(key, null, null);
+        this(key, null, null, null);
     }
 
-    SelectionProperty(String key, String nestedGenericSignature, SelectionMeta nestedSelection) {
+    SelectionProperty(String key, String nestedGenericSignature, SelectionMeta nestedSelection, TypeMirror collectionType) {
         this.key = key;
         this.nestedGenericSignature = nestedGenericSignature;
         this.nestedSelection = nestedSelection;
+        this.collectionType = collectionType;
     }
 
     String getKey() {
@@ -24,6 +28,10 @@ class SelectionProperty {
         if (nestedGenericSignature.isEmpty())
             return "";
         return "<" + nestedGenericSignature + ">";
+    }
+
+    TypeMirror getCollectionType() {
+        return collectionType;
     }
 
     SelectionMeta getNestedSelection() {

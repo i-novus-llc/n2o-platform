@@ -7,6 +7,7 @@ import net.n2oapp.platform.selection.api.SelectionEnum;
 import net.n2oapp.platform.selection.api.SelectionKey;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.ResolvableType;
+import org.springframework.data.domain.Page;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 
@@ -18,6 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public final class Selector {
+
+    public static final String VIOLATION = "Violation in %s";
 
     private static final ResolvableType MAPPER_RAW = ResolvableType.forRawClass(Mapper.class);
     private static final ResolvableType SELECTION_RAW = ResolvableType.forRawClass(Selection.class);
@@ -32,8 +35,12 @@ public final class Selector {
     @SuppressWarnings("rawtypes")
     private static final ConcurrentMap<Class<? extends Selection>, SelectionDescriptor> SELECTION_DESCRIPTORS = new ConcurrentHashMap<>();
 
+    public static <E> Page<E> resolvePage(Page<? extends Mapper<? extends E>> srcPage, Selection<? extends E> selection) {
+        return srcPage.map(mapper -> resolve(mapper, selection));
+    }
+
     @SuppressWarnings("unchecked")
-    public static <E> E resolve(Mapper<? extends E> mapper, Selection<E> selection) {
+    public static <E> E resolve(Mapper<? extends E> mapper, Selection<? extends E> selection) {
         if (mapper == null || selection == null)
             return null;
         SelectionDescriptor selectionDescriptor = getSelectionDescriptor(selection);
@@ -134,7 +141,7 @@ public final class Selector {
                     Preconditions.checkArgument(
                         selectMethod.getParameterCount() == 2,
                         "Mapper's select method must have 2 parameters when nested mapper accessor is present. " +
-                        "Violation in %s",
+                        VIOLATION,
                         selectMethod
                     );
                     ResolvableType secondParam = ResolvableType.forMethodParameter(selectMethod, 1);
@@ -150,7 +157,7 @@ public final class Selector {
                     Preconditions.checkArgument(
                             generic.isAssignableFrom(secondParam),
                             "Mapper's nested mapper accessor return type not assignable to select method second param. " +
-                                    "Violation in %s",
+                            VIOLATION,
                             nestedMapperAccessor
                     );
                 } else {
@@ -185,7 +192,7 @@ public final class Selector {
         Preconditions.checkArgument(
             selectMethodFirstArg.isAssignableFrom(mapperType),
             "Mapper's select method first argument must be the same or a subtype of type returned by 'create' method. " +
-            "Violation in %s",
+            VIOLATION,
             selectMethod
         );
     }

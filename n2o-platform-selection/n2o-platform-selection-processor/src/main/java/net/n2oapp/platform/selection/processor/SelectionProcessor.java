@@ -24,7 +24,6 @@ public class SelectionProcessor extends AbstractProcessor {
     private static final Set<String> SUPPORTED_OPTIONS = Set.of();
 
     private Types types;
-    private Elements elements;
     private TypeMirror collection;
 
     private SelectionSerializer selectionSerializer;
@@ -34,7 +33,7 @@ public class SelectionProcessor extends AbstractProcessor {
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         this.types = processingEnv.getTypeUtils();
-        this.elements = processingEnv.getElementUtils();
+        Elements elements = processingEnv.getElementUtils();
         this.collection = types.erasure(elements.getTypeElement("java.util.Collection").asType());
         TypeMirror selectionKey = elements.getTypeElement("net.n2oapp.platform.selection.api.SelectionKey").asType();
         TypeMirror selectionInterface = types.erasure(elements.getTypeElement("net.n2oapp.platform.selection.api.Selection").asType());
@@ -80,8 +79,9 @@ public class SelectionProcessor extends AbstractProcessor {
         Element target = meta.getTarget();
         for (Element member : target.getEnclosedElements()) {
             if (member.getKind() == ElementKind.FIELD) {
-                TypeMirror origType = member.asType();
-                TypeMirror erased = types.erasure(origType);
+                TypeMirror collectionType = null;
+                TypeMirror type = member.asType();
+                TypeMirror erased = types.erasure(type);
                 SelectionMeta nested = null;
                 if (!types.isAssignable(erased, collection)) {
                     nested = findNestedSelection(metalist, erased);
@@ -91,10 +91,11 @@ public class SelectionProcessor extends AbstractProcessor {
                     if (!args.isEmpty()) {
                         TypeMirror arg = args.get(0);
                         nested = findNestedSelection(metalist, types.erasure(arg));
-                        origType = arg;
+                        type = arg;
+                        collectionType = erased;
                     }
                 }
-                meta.addProperty(member.getSimpleName().toString(), origType, nested);
+                meta.addProperty(member.getSimpleName().toString(), type, nested, collectionType);
             }
         }
     }
