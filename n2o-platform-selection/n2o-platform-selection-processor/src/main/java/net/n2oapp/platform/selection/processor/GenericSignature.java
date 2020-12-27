@@ -111,4 +111,8 @@ class GenericSignature {
         return new String[0];
     }
 
+    int size() {
+        return typeVariables.size();
+    }
+
 }

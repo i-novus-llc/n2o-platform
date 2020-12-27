@@ -8,6 +8,8 @@ import javax.lang.model.type.*;
 import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 class SelectionMeta {
 
@@ -97,6 +99,8 @@ class SelectionMeta {
         if (type.isBlank())
             return "";
         int i = type.indexOf('<');
+        if (i == -1)
+            return "";
         return type.substring(i + 1, type.length() - 1);
     }
 
@@ -126,7 +130,7 @@ class SelectionMeta {
         return target;
     }
 
-    void addProperty(String key, TypeMirror type, SelectionMeta nested, TypeMirror collectionType) {
+    void addProperty(String key, TypeMirror originalType, TypeMirror type, SelectionMeta nested, TypeMirror collectionRawType) {
         if (nested == null)
             properties.add(new SelectionProperty(key));
         else {
@@ -140,7 +144,7 @@ class SelectionMeta {
                 String var = type.toString();
                 if (nested.genericSignature.noGenericsDeclared()) {
                     if (nested.genericSignature.getSelfVariable() != null)
-                        nestedGenericSignature = (wildcard || collectionType == null ? EXTENDS : "") + var;
+                        nestedGenericSignature = (wildcard || collectionRawType == null ? EXTENDS : "") + var;
                     else
                         nestedGenericSignature = "";
                 } else {
@@ -148,13 +152,15 @@ class SelectionMeta {
                     if (nested.genericSignature.getSelfVariable() == null) {
                         nestedGenericSignature = generics;
                     } else {
-                        nestedGenericSignature = (wildcard || collectionType == null ? EXTENDS : "") + var + ", " + generics;
+                        if (generics.isEmpty()) // raw use, fallback to wildcards
+                            generics = IntStream.range(0, nested.genericSignature.size() - 1).mapToObj(i -> "?").collect(Collectors.joining(", "));
+                        nestedGenericSignature = (wildcard || collectionRawType == null ? EXTENDS : "") + var + ", " + generics;
                     }
                 }
             } else {
                 if (nested.genericSignature.noGenericsDeclared()) {
                     if (nested.genericSignature.getSelfVariable() != null)
-                        nestedGenericSignature = (wildcard || collectionType == null ? EXTENDS : "") + nested.target.getQualifiedName().toString();
+                        nestedGenericSignature = (wildcard || collectionRawType == null ? EXTENDS : "") + nested.target.getQualifiedName().toString();
                     else
                         nestedGenericSignature = "";
                 } else {
@@ -163,14 +169,14 @@ class SelectionMeta {
                         nestedGenericSignature = ""; // raw use
                     else {
                         if (nested.genericSignature.getSelfVariable() != null) {
-                            nestedGenericSignature = (wildcard || collectionType == null ? EXTENDS : "") + type.toString() + ", " + getGenerics(type.toString());
+                            nestedGenericSignature = (wildcard || collectionRawType == null ? EXTENDS : "") + type.toString() + ", " + getGenerics(type.toString());
                         } else {
                             nestedGenericSignature = getGenerics(type.toString());
                         }
                     }
                 }
             }
-            properties.add(new SelectionProperty(key, nestedGenericSignature, nested, collectionType));
+            properties.add(new SelectionProperty(key, nestedGenericSignature, nested, originalType, collectionRawType));
         }
     }
 
