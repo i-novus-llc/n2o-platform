@@ -56,7 +56,7 @@ public final class Selector {
             return null;
         for (SelectionDescriptor.SelectionAccessor selectionAccessor : selectionDescriptor.accessors) {
             SelectionEnum select = (SelectionEnum) invoke(selectionAccessor.selectionEnumAccessor, selection);
-            if (select == null || !select.asBoolean())
+            if (!selection.selectAll() && (select == null || !select.asBoolean()))
                 continue;
             MapperDescriptor.MapperAccessor mapperAccessor = mapperDescriptor.accessors.get(selectionAccessor.selectionKey);
             Preconditions.checkNotNull(
