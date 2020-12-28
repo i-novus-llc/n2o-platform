@@ -8,7 +8,7 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-boot-dependencies</artifactId>
-        <version>4.2.5-SNAPSHOT</version>
+        <version>4.2.6-SNAPSHOT</version>
         <relativePath>../n2o-platform-dependencies</relativePath>
     </parent>
 
@@ -32,6 +32,14 @@
         <jacoco.aggregate.report.path>${project.basedir}/../target/site/jacoco-aggregate</jacoco.aggregate.report.path> <!-- By default use parent directory of module for multimodule projects. -->
 
         <config.server.enable>false</config.server.enable> <!-- Disable configuration server by default. To enable it use `consul` profile. -->
+
+        <sonar.sources>.</sonar.sources>
+        <sonar.inclusions>
+            src/main/resources/db/**,
+            src/main/resources/**/*.yml,
+            src/main/java/**
+        </sonar.inclusions>
+        <sonar.test.exclusions>src/test/**</sonar.test.exclusions>
     </properties>
 
     <dependencies>
