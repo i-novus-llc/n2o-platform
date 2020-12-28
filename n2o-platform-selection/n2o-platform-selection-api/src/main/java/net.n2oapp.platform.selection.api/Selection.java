@@ -5,17 +5,18 @@ package net.n2oapp.platform.selection.api;
  */
 public interface Selection<E> {
 
+    /**
+     * Marker method to ensure type-safety
+     */
     default E typeMarker() {
         return null;
     }
 
     /**
-     * @return
-     *  Whether selection should be entirely disabled (i.e., corresponding mapper will select all fields of {@link E})
-     *  Return value will not propagate through nested selections.
+     * @see SelectionPropagationEnum
      */
-    default boolean selectAll() {
-        return true;
+    default SelectionPropagationEnum propagation() {
+        return SelectionPropagationEnum.NORMAL;
     }
 
 }
