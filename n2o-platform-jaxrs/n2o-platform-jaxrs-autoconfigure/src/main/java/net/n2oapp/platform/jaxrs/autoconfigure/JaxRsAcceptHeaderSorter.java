@@ -6,8 +6,10 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 
-import javax.ws.rs.core.MediaType;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
 
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static org.apache.cxf.message.Message.PROTOCOL_HEADERS;
@@ -16,7 +18,6 @@ import static org.apache.cxf.message.Message.PROTOCOL_HEADERS;
   Сортировка Accept заголовка, отдающая предпочтение json.
   Таким образом, если сервер получит запрос с "Accept=application/xml,application/json" (клиенту неважно,
   в каком формате он получит свои данные) -- сервер всегда выберет json.
-  Если Accept заголовка в запросе не будет -- по-умолчанию будет добавлен json.
  */
 @Provider(value = Provider.Type.InInterceptor)
 public class JaxRsAcceptHeaderSorter extends AbstractPhaseInterceptor<Message> {
@@ -34,38 +35,24 @@ public class JaxRsAcceptHeaderSorter extends AbstractPhaseInterceptor<Message> {
     @SuppressWarnings({"unchecked"})
     private void processProtocolHeaders(Message message) {
         Object protocolHeaders = message.get(PROTOCOL_HEADERS);
-        if (protocolHeaders != null && !(protocolHeaders instanceof Map))
+        if (!(protocolHeaders instanceof Map))
             return;
-        if (protocolHeaders == null) {
-            protocolHeaders = new HashMap<>();
-            message.put(PROTOCOL_HEADERS, protocolHeaders);
-        }
         Map<Object, Object> headers = (Map<Object, Object>) protocolHeaders;
         Object accept = headers.get(ACCEPT);
-        if (accept != null && !(accept instanceof List))
+        if (!(accept instanceof List))
             return;
         List<Object> list = (List<Object>) accept;
-        if (list == null) {
-            list = new ArrayList<>(1);
-            list.add(MediaType.APPLICATION_JSON);
-            headers.put(ACCEPT, list);
-        } else {
-            processListOfAcceptHeaders(list);
-        }
+        processListOfAcceptHeaders(list);
     }
 
     private void processListOfAcceptHeaders(List<Object> headers) {
-        if (headers.size() == 1 && wildcardOrNull(headers.get(0))) {
-            headers.set(0, MediaType.APPLICATION_JSON);
-        } else {
-            if (!headers.isEmpty()) {
-                ListIterator<Object> iterator = headers.listIterator();
-                while (iterator.hasNext()) {
-                    Object next = iterator.next();
-                    if (next instanceof String) {
-                        String s = sort((String) next);
-                        iterator.set(s);
-                    }
+        if (!headers.isEmpty()) {
+            ListIterator<Object> iterator = headers.listIterator();
+            while (iterator.hasNext()) {
+                Object next = iterator.next();
+                if (next instanceof String) {
+                    String s = sort((String) next);
+                    iterator.set(s);
                 }
             }
         }
@@ -73,14 +60,9 @@ public class JaxRsAcceptHeaderSorter extends AbstractPhaseInterceptor<Message> {
 
     private void processAcceptHeader(Message message) {
         Object o = message.get(ACCEPT);
-        if (wildcardOrNull(o))
-            message.put(ACCEPT, MediaType.APPLICATION_JSON);
-        else
+        if (o instanceof String && !((String) o).isBlank()) {
             message.put(ACCEPT, sort((String) o));
-    }
-
-    private boolean wildcardOrNull(Object header) {
-        return header == null || header.equals(MediaType.WILDCARD);
+        }
     }
 
     private String sort(String accept) {
