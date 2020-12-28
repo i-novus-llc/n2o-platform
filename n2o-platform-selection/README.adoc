@@ -1,0 +1,228 @@
+= Selection API
+
+== Для чего это
+
+REST-сервисы страдают тем свойством, что зачастую отдают данных клиенту намного больше,
+чем ему на самом деле нужно. Это приводит к неоптимальному использованию пропускной
+способности сети, а так же усугубляют проблемы, связанные с БД и ORM - фреймворками,
+такими, как `N + 1`.
+
+Например в привычной архитектуре сервиса есть сущности, мапперы и DTO.
+Сущности являются ядром сервиса, которые знают свою предметную область.
+DTO -- это мост между сервисом и остальным миром,
+а маппер -- это мост между сущностью и DTO, которые отображает поля сущности на поля DTO.
+
+В большинстве сервисов так же есть некая центральная сущность (или несколько),
+которые содержат в себе много полей и другие (дочерние) сущности. Например, в `JIRA`
+такой сущностью является `issue`, то есть задача или проблема.
+
+Проблема маппера в том, что он производит отображение безусловно,
+в независимости от того, нужны ли клиенту сервиса эти данные или нет.
+
+К примеру если клиентом сервиса выступает веб-модуль и он хочет отобразить в таблице
+краткую сводку по центральной сущности приложения -- для этого ему нужно какое — то небольшое
+кол — во ключевых полей. Но если клиент не может указать, какие поля ему нужны --
+сервис будет каждый раз проделывать много бесполезной работы,
+и что важнее -- сеть будет использоваться неоптимально.
+
+== Как использовать
+
+API и логика по выборочному отображению находятся в двух зависимостях:
+[source,xml]
+----
+<dependencies>
+    <dependency>
+        <groupId>net.n2oapp.platform</groupId>
+        <artifactId>n2o-platform-selection-api</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>net.n2oapp.platform</groupId>
+        <artifactId>n2o-platform-selection-core</artifactId>
+    </dependency>
+</dependencies>
+----
+
+В API описаны два интерфейса `Selection<E>` и `Mapper<E>`.
+
+В первом перечисляются поля, необходимые клиенту.
+Делается это через метод, возвращающий `SelectionEnum` (в котором есть всего два значения,
+`T` и `F` от `true` и `false` соответственно) без аргументов.
+Данный метод так же должен быть помечен аннотацией `@SelectionKey("key")`.
+Переменная типа `E` -- это тип данных, для которого предназначен этот `Selection`.
+
+Например, для `issue` `REST API JIRA` реализация данного интерфейса может выглядеть так:
+
+[source,java]
+----
+public class IssueSelection implements Selection<Issue> {
+
+    private SelectionEnum selectKey; // Номер задачи
+    private SelectionEnum selectAssignee; // Исполнитель
+    private Selection<Assignee> assigneeSelection; // Вложенная выборка полей исполнителя
+    private SelectionEnum selectStatus; // Статус
+    private SelectionEnum selectProject; // Проект
+//  ...
+
+    @SelectionKey("key")
+    public SelectionEnum getSelectKey() {
+        return selectKey;
+    }
+
+    @SelectionKey("assignee")
+    public SelectionEnum getSelectAssignee() {
+        return selectAssignee;
+    }
+
+    @SelectionKey("assignee")
+    public Selection<Assignee> getAssigneeSelection() {
+        return assigneeSelection;
+    }
+
+    @SelectionKey("status")
+    public SelectionEnum getSelectStatus() {
+        return selectStatus;
+    }
+
+    @SelectionKey("project")
+    public SelectionEnum getSelectProject() {
+        return selectProject;
+    }
+
+//  ...
+
+}
+----
+
+Аннотацию `@SelectionKey` можно так же указывать над соответствующим полем, но тогда надо убедиться,
+что у этого поля есть стандартный геттер, который будет распознан методом
+`org.springframework.beans.BeanUtils.getPropertyDescriptor`.
+
+В приведенной выше выборке так же есть вложенная выборка `Selection<Assignee>`.
+То есть поле `selectAssignee` говорит о том, что клиенту нужен исполнитель.
+А поле `assigneeSelection` говорит о том, какие поля исполнителя нужны клиенту.
+Заметьте, что у них должен быть совпадающий `@SelectionKey`.
+
+Для данной выборки так же должная быть реализация интерфейса `Mapper`.
+[source,java]
+----
+public class IssueMapper implements Mapper<Issue> {
+
+    /**
+    * Персистентная сущность
+    */
+    private final IssueEntity issue;
+
+    public IssueMapper(IssueEntity issue) {
+        this.issue = issue;
+    }
+
+    /**
+    * @return Пустая модель DTO
+    */
+    @Override
+    public Issue create() {
+        return new Issue();
+    }
+
+    @SelectionKey("key")
+    public void selectKey(Issue dto) {
+        dto.setKey(issue.getKey());
+    }
+
+    @SelectionKey("assignee")
+    public void selectAssignee(Issue dto, User assignee) {
+        dto.setAssignee(assignee);
+    }
+
+    @SelectionKey("assignee")
+    public Mapper<Assignee> assigneeMapper() {
+        return new AssigneeMapper(issue.getAssignee());
+    }
+
+    @SelectionKey("status")
+    public void selectStatus(Issue dto) {
+        dto.setStatus(issue.getStatus());
+    }
+
+    @SelectionKey("project")
+    public void setProject(Issue dto) {
+        dto.setProject(issue.getProject());
+    }
+
+}
+----
+
+Здесь есть несколько ключевых моментов:
+
+* Маппер возвращает пустую модель DTO (метод `create`). Это значит, что DTO не должна быть неизменяемой.
+
+*   У маппера есть методы следующих видов:
+
+**  Метод, который принимает модель DTO и кладет туда соответствующие данному `@SelectionKey` данные.
+    Этим методам обычно соответствуют единичные поля сущности, например `key`.
+
+**  А так парные методы:
+***     без аргументов, возвращающий вложенный `Mapper<X>`
+***     и связанный с ним через `@SelectionKey` метод, принимающий DTO и `X`, который кладет в DTO `X`.
+
+Как видно реализации `Selection` и `Mapper` достаточно похожи по структуре.
+
+Имея данные реализации их можно использовать через метод `net.n2oapp.platform.selection.core.Selector.resolve(Mapper<E>, Selector<E>)`.
+
+Данный метод в начале проверит, что переменную типа `E` интерфейса `Selection<E>` можно присвоить переменной типа `E` интерфейса `Mapper<E>`.
+
+Так же он проверит все парные методы маппера на типобезопасность (с учетом дженериков).
+Если где - то будет несоответствие -- будет брошено исключение.
+
+Так же если в `Selection` указан `@SelectionKey`, о котором неизвестно мапперу -- будет брошено исключение.
+
+Так же если у `Mapper`-а (или у `Selection`-а) будет вложенный `Mapper` (или `Selection`), но у соответствующего по
+`@SelectionKey` `Selection`-а (или `Mapper`-а) не будет вложенного `Selection`-а (или `Mapper`-а) -- будет брошено исключение.
+
+После этого будет произведена выборка полей. Для вложенных полей данный метод будет вызван рекурсивно.
+
+== Генерация интерфейсов `Mapper` и `Selection` по `DTO`
+
+В `n2o-platform-selection-api` есть аннотация `@Selective`.
+Она указывается над классом `DTO` и говорит о том, что выборка полей данного `DTO` происходит выборочно,
+то есть через механизм, описанный выше.
+
+Генератор кода распознает
+
+Добавьте зависимость
+[source,xml]
+----
+<dependency>
+    <groupId>net.n2oapp.platform</groupId>
+    <artifactId>n2o-platform-selection-processor</artifactId>
+    <scope>compile</scope>
+</dependency>
+----
+
+И укажите
+[source,xml]
+----
+<build>
+    <plugins>
+        <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>generate-sources</id>
+                    <phase>generate-sources</phase>
+                    <goals>
+                        <goal>compile</goal>
+                    </goals>
+                    <configuration>
+                        <proc>only</proc>
+                        <annotationProcessors>
+                            <annotationProcessor>net.n2oapp.platform.selection.processor.SelectionProcessor</annotationProcessor>
+                        </annotationProcessors>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+----
+

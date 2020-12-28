@@ -61,7 +61,7 @@ public final class Selector {
             MapperDescriptor.MapperAccessor mapperAccessor = mapperDescriptor.accessors.get(selectionAccessor.selectionKey);
             Preconditions.checkNotNull(
                 mapperAccessor,
-                "Property %s defined in selection, but mapper is not aware of it. Selection: %s. Mapper: %s",
+                "Property %s defined in selection, but mapper is unaware of it. Selection: %s. Mapper: %s",
                 selectionAccessor.selectionKey,
                 selection.getClass(),
                 mapper.getClass()
@@ -69,7 +69,7 @@ public final class Selector {
             if (mapperAccessor.nestedMapperAccessor != null) {
                 Preconditions.checkArgument(
                     selectionAccessor.nestedSelectionAccessor != null,
-                    "Property %s has nested mapper accessor, but selection is not aware of it. Selection of type %s, mapper of type %s",
+                    "Property %s has nested mapper accessor, but selection is unaware of it. Selection of type %s, mapper of type %s",
                     selectionAccessor.selectionKey,
                     selection.getClass(),
                     mapper.getClass()
@@ -98,7 +98,7 @@ public final class Selector {
             } else {
                 Preconditions.checkArgument(
                     selectionAccessor.nestedSelectionAccessor == null,
-                    "Property %s has nested selection, but mapper is not aware of it. Selection of type %s, mapper of type %s",
+                    "Property %s has nested selection, but mapper is unaware of it. Selection of type %s, mapper of type %s",
                     select.getClass(),
                     mapper.getClass()
                 );
@@ -191,7 +191,7 @@ public final class Selector {
         ResolvableType selectMethodFirstArg = ResolvableType.forMethodParameter(selectMethod, 0);
         Preconditions.checkArgument(
             selectMethodFirstArg.isAssignableFrom(mapperType),
-            "Mapper's select method first argument must be the same or a subtype of type returned by 'create' method. " +
+            "Mapper's select method first argument must be the same, or a subtype of type returned by 'create' method. " +
             VIOLATION,
             selectMethod
         );
