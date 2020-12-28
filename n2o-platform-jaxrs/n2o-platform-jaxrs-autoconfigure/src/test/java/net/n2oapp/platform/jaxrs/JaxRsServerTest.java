@@ -242,12 +242,6 @@ public class JaxRsServerTest {
         Response response = client.path("example").path("{id}", 50).get();
         String contentType = response.getHeaderString(HttpHeaders.CONTENT_TYPE);
         assertEquals(MediaType.APPLICATION_JSON, contentType);
-        client = WebClient.create("http://localhost:" + port, List.of(jsonProvider, xmlProvider))
-                .type(MediaType.APPLICATION_JSON)
-                .path("api");
-        response = client.path("example").path("{id}", 50).get();
-        contentType = response.getHeaderString(HttpHeaders.CONTENT_TYPE);
-        assertEquals(MediaType.APPLICATION_JSON, contentType);
     }
 
     private void forEachClient(Consumer<WebClient> clientConsumer) {
