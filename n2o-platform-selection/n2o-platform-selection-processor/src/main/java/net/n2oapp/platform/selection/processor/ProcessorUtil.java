@@ -7,12 +7,14 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import java.util.*;
 
+import static java.util.Collections.emptyList;
+
 final class ProcessorUtil {
 
     private ProcessorUtil() {
     }
 
-    static List<Map.Entry<Element, Boolean>> toposort(List<? extends Element> elements) {
+    static LinkedList<Map.Entry<Element, List<Element>>> toposort(List<? extends Element> elements) {
         Map<Element, List<Element>> graph = new HashMap<>();
         for (Element elem : elements) {
             graph.putIfAbsent(elem, null);
@@ -28,30 +30,30 @@ final class ProcessorUtil {
                 });
             }
         }
-        return topologicalSort(graph);
+        return toposort(graph);
     }
 
-    private static List<Map.Entry<Element, Boolean>> topologicalSort(Map<Element, List<Element>> graph) {
+    private static LinkedList<Map.Entry<Element, List<Element>>> toposort(Map<Element, List<Element>> graph) {
         Set<Element> visited = new HashSet<>();
-        LinkedList<Map.Entry<Element, Boolean>> stack = new LinkedList<>();
+        LinkedList<Map.Entry<Element, List<Element>>> stack = new LinkedList<>();
         for (Map.Entry<Element, List<Element>> e : graph.entrySet()) {
             if (!visited.contains(e.getKey())) {
-                topologicalSort0(stack, visited, graph, e.getKey());
+                toposort(stack, visited, graph, e.getKey());
             }
         }
         return stack;
     }
 
-    private static void topologicalSort0(LinkedList<Map.Entry<Element, Boolean>> stack, Set<Element> visited, Map<Element, List<Element>> graph, Element elem) {
+    private static void toposort(LinkedList<Map.Entry<Element, List<Element>>> stack, Set<Element> visited, Map<Element, List<Element>> graph, Element elem) {
         visited.add(elem);
         List<Element> children = graph.get(elem);
         if (children != null) {
             for (Element e : graph.get(elem)) {
                 if (!visited.contains(e))
-                    topologicalSort0(stack, visited, graph, e);
+                    toposort(stack, visited, graph, e);
             }
         }
-        stack.push(Map.entry(elem, children != null && !children.isEmpty()));
+        stack.push(Map.entry(elem, children == null ? emptyList() : children));
     }
 
 }

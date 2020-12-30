@@ -15,6 +15,7 @@ import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.util.*;
 
+import static java.util.stream.Collectors.toList;
 import static net.n2oapp.platform.selection.processor.ProcessorUtil.toposort;
 
 @SupportedAnnotationTypes("net.n2oapp.platform.selection.api.Selective")
@@ -23,10 +24,18 @@ public class SelectionProcessor extends AbstractProcessor {
 
     private static final String SELECTIVE_ANNOTATION = "@Selective";
 
-    private static final Set<String> SUPPORTED_OPTIONS = Set.of();
+    private static final String ADD_JACKSON_TYPING = "net.n2oapp.platform.selection.addJacksonTyping";
+    private static final String ADD_JAXRS_ANNOTATIONS = "net.n2oapp.platform.selection.addJaxRsAnnotations";
+
+    private static final Set<String> SUPPORTED_OPTIONS = Set.of(
+        ADD_JACKSON_TYPING,
+        ADD_JAXRS_ANNOTATIONS
+    );
 
     private Types types;
     private TypeMirror collection;
+
+    private boolean addJacksonTyping;
 
     private SelectionSerializer selectionSerializer;
     private MapperSerializer mapperSerializer;
@@ -39,9 +48,14 @@ public class SelectionProcessor extends AbstractProcessor {
         this.collection = types.erasure(elements.getTypeElement("java.util.Collection").asType());
         TypeMirror selectionKey = elements.getTypeElement("net.n2oapp.platform.selection.api.SelectionKey").asType();
         TypeMirror selectionInterface = types.erasure(elements.getTypeElement("net.n2oapp.platform.selection.api.Selection").asType());
+        TypeMirror selectionPropagation = elements.getTypeElement("net.n2oapp.platform.selection.api.SelectionPropagationEnum").asType();
         TypeMirror mapperInterface = types.erasure(elements.getTypeElement("net.n2oapp.platform.selection.api.Mapper").asType());
         TypeMirror selectionEnum = elements.getTypeElement("net.n2oapp.platform.selection.api.SelectionEnum").asType();
-        this.selectionSerializer = new SelectionSerializer(selectionKey, selectionEnum, selectionInterface);
+        TypeElement jsonTypeInfo = elements.getTypeElement("com.fasterxml.jackson.annotation.JsonTypeInfo");
+        TypeElement jsonSubTypes = elements.getTypeElement("com.fasterxml.jackson.annotation.JsonSubTypes");
+        this.addJacksonTyping = Boolean.parseBoolean(processingEnv.getOptions().getOrDefault(ADD_JACKSON_TYPING, Boolean.toString(jsonTypeInfo != null)));
+        boolean addJaxRsAnnotations = Boolean.parseBoolean(processingEnv.getOptions().getOrDefault(ADD_JAXRS_ANNOTATIONS, "true"));
+        this.selectionSerializer = new SelectionSerializer(selectionKey, selectionEnum, selectionInterface, selectionPropagation, addJacksonTyping, addJaxRsAnnotations, jsonTypeInfo, jsonSubTypes);
         this.mapperSerializer = new MapperSerializer(selectionKey, mapperInterface);
     }
 
@@ -63,13 +77,24 @@ public class SelectionProcessor extends AbstractProcessor {
             if (!valid(element))
                 return false;
         }
-        List<Map.Entry<Element, Boolean>> toposort = toposort(elements);
-        for (Map.Entry<Element, Boolean> entry : toposort) {
+        LinkedList<Map.Entry<Element, List<Element>>> toposort = toposort(elements);
+        for (Map.Entry<Element, List<Element>> entry : toposort) {
             if (init(metalist, entry))
                 return false;
         }
-        for (SelectionMeta entry : metalist) {
-            processFields(metalist, entry);
+        for (SelectionMeta meta : metalist) {
+            List<Element> children = toposort.stream().filter(elem -> elem.getKey().equals(meta.getTarget())).findFirst().orElseThrow().getValue();
+            meta.setChildren(metalist.stream().filter(other -> children.contains(other.getTarget())).collect(toList()));
+        }
+        for (SelectionMeta meta : metalist) {
+            processFields(metalist, meta);
+        }
+        if (addJacksonTyping) {
+            for (SelectionMeta meta : metalist) {
+                if (!meta.getChildren().isEmpty()) {
+                    meta.addJacksonTyping();
+                }
+            }
         }
         for (SelectionMeta meta : metalist) {
             serialize(meta);
@@ -126,7 +151,7 @@ public class SelectionProcessor extends AbstractProcessor {
         }
     }
 
-    private boolean init(List<SelectionMeta> metalist, Map.Entry<? extends Element, Boolean> entry) {
+    private boolean init(List<SelectionMeta> metalist, Map.Entry<Element, List<Element>> entry) {
         TypeElement element = (TypeElement) entry.getKey();
         TypeMirror superclass = element.getSuperclass();
         SelectionMeta parent = null;
@@ -144,7 +169,7 @@ public class SelectionProcessor extends AbstractProcessor {
             parent = opt.get();
         }
         GenericSignature signature = getGenericSignature(element, (DeclaredType) element.asType());
-        SelectionMeta result = new SelectionMeta(element, parent, entry.getValue(), signature, types);
+        SelectionMeta result = new SelectionMeta(element, parent, !entry.getValue().isEmpty(), signature, types);
         metalist.add(result);
         return false;
     }

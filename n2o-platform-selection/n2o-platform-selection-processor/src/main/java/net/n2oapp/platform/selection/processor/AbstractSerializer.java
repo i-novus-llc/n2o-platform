@@ -21,12 +21,11 @@ abstract class AbstractSerializer {
 
     void serialize(SelectionMeta meta, Filer filer) throws IOException {
         PackageElement targetPackage = meta.getTargetPackage();
-        String name = getQualifiedName(meta, targetPackage);
-        String className = meta.getTarget().getSimpleName() + getSuffix();
-        JavaFileObject file = filer.createSourceFile(name, targetPackage);
+        String interfaceName = meta.getTarget().getSimpleName() + getSuffix();
+        JavaFileObject file = filer.createSourceFile(getQualifiedName(meta, targetPackage), targetPackage);
         try (Writer out = file.openWriter()) {
-            out.append("package ").append(targetPackage.getQualifiedName()).append(';').append("\n\n");
-            out.append("public interface ").append(className).append(meta.getGenericSignature().toString());
+            appendPackage(targetPackage, out);
+            out.append("public interface ").append(interfaceName).append(meta.getGenericSignature().toString());
             out.append(" extends ");
             if (meta.getParent() != null) {
                 out.append(getQualifiedName(meta.getParent(), meta.getParent().getTargetPackage()));
@@ -46,8 +45,16 @@ abstract class AbstractSerializer {
         }
     }
 
+    protected Writer appendPackage(PackageElement targetPackage, Writer out) throws IOException {
+        return out.append("package ").append(targetPackage.getQualifiedName()).append(';').append("\n\n");
+    }
+
     String getQualifiedName(SelectionMeta meta, PackageElement targetPackage) {
-        return targetPackage + "." + meta.getTarget().getSimpleName().toString() + getSuffix();
+        return getQualifiedName(meta, targetPackage, "");
+    }
+
+    String getQualifiedName(SelectionMeta meta, PackageElement targetPackage, String prefix) {
+        return targetPackage + "." + prefix + meta.getTarget().getSimpleName().toString() + getSuffix();
     }
 
     String capitalize(String key) {

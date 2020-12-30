@@ -6,7 +6,6 @@ public class SelectorTest {
 
     @Test
     public void testResolve() {
-
     }
 
 }

@@ -17,18 +17,22 @@ class SelectionMeta {
 
     private final TypeElement target;
     private final SelectionMeta parent;
+    private List<SelectionMeta> children;
     private final GenericSignature genericSignature;
     private final TypeMirror extendsType;
     private final String extendsSignature;
     private final List<SelectionProperty> properties;
     private final String mapperTarget;
+    private final boolean isAbstract;
+
+    private String jacksonTypeTag;
 
     SelectionMeta(TypeElement target, SelectionMeta parent, boolean hasChildren, GenericSignature genericSignature, Types types) {
         this.target = target;
         this.parent = parent;
         this.genericSignature = genericSignature;
         this.properties = new ArrayList<>(0);
-        boolean isAbstract = target.getModifiers().stream().anyMatch(Modifier.ABSTRACT::equals);
+        this.isAbstract = target.getModifiers().stream().anyMatch(Modifier.ABSTRACT::equals);
         this.extendsType = getExtendsType(types);
         if (
             (isAbstract || hasChildren) && (
@@ -118,6 +122,14 @@ class SelectionMeta {
         return parentType;
     }
 
+    List<SelectionMeta> getChildren() {
+        return children;
+    }
+
+    void setChildren(List<SelectionMeta> children) {
+        this.children = children;
+    }
+
     PackageElement getTargetPackage() {
         Element temp = target;
         while (!(temp.getEnclosingElement() instanceof PackageElement)) {
@@ -200,6 +212,34 @@ class SelectionMeta {
 
     String getMapperTarget() {
         return mapperTarget;
+    }
+
+    String getJacksonTypeTag() {
+        return jacksonTypeTag;
+    }
+
+    void addJacksonTyping() {
+        if (jacksonTypeTag == null) {
+            if (parent != null)
+                parent.addJacksonTyping();
+            else {
+                spreadJacksonTyping(0);
+            }
+        }
+    }
+
+    private int spreadJacksonTyping(int typeId) {
+        if (!isAbstract) {
+            this.jacksonTypeTag = Integer.toString(typeId++);
+        }
+        for (SelectionMeta meta : children) {
+            typeId = meta.spreadJacksonTyping(typeId);
+        }
+        return typeId;
+    }
+
+    boolean isAbstract() {
+        return isAbstract;
     }
 
 }
