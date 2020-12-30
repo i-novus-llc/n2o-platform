@@ -1,6 +1,5 @@
 package net.n2oapp.platform.seek;
 
-import com.google.common.base.Preconditions;
 import net.n2oapp.platform.jaxrs.seek.SeekPivot;
 import net.n2oapp.platform.jaxrs.seek.SeekableCriteria;
 import net.n2oapp.platform.jaxrs.seek.SeekedPage;
@@ -31,24 +30,6 @@ public class SeekedPageIterator<T, C extends SeekableCriteria> implements Iterat
         this.pivotsMaker = pivotsMaker;
         this.criteria = criteria;
         this.forward = criteria.getPage() == NEXT || criteria.getPage() == FIRST;
-    }
-
-    /**
-     * Устанавливает курсор на первую страницу
-     */
-    public void seekToFirst() {
-        Preconditions.checkState(forward, "This iterator goes only forwards");
-        criteria.setPage(FIRST);
-        hasNextCalled = false;
-    }
-
-    /**
-     * Устанавливает курсор на последнюю страницу
-     */
-    public void seekToLast() {
-        Preconditions.checkState(!forward, "This iterator goes only backwards");
-        criteria.setPage(LAST);
-        hasNextCalled = false;
     }
 
     @Override

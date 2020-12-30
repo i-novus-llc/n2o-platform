@@ -31,9 +31,9 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static net.n2oapp.platform.jaxrs.seek.RequestedPageEnum.LAST;
-import static net.n2oapp.platform.jaxrs.seek.RequestedPageEnum.PREV;
+import static net.n2oapp.platform.jaxrs.seek.RequestedPageEnum.*;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 import static org.springframework.data.domain.Sort.Order;
@@ -90,51 +90,44 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         List<Order> orders = copyOrders(criteria);
         List<EnrichedSeekPivot> list = makeList(criteria, orders, copyPivots(criteria));
         ensureNoDuplicates(list);
-        List<T> fetch = fetch0(list, orders, criteria.getSize() + 1, predicate, false);
+        List<T> fetch = fetch0(list, orders, criteria.getSize() + 1, predicate, false, criteria.getPage());
         if (criteria.getPage() == PREV || criteria.getPage() == LAST)
             Collections.reverse(fetch);
-        RequestedPageEnum savedPage = criteria.getPage();
-        int savedSize = criteria.getSize();
         boolean hasNext;
         boolean hasPrev;
-        try {
-            switch (criteria.getPage()) {
-                case NEXT:
-                    hasNext = fetch.size() > savedSize;
-                    if (hasNext)
-                        fetch.remove(fetch.size() - 1);
-                    hasPrev = !fetch0(list, orders, 1, predicate, true).isEmpty();
-                    break;
-                case PREV:
-                    hasPrev = fetch.size() > savedSize;
-                    if (hasPrev)
-                        fetch.remove(0);
-                    hasNext = !fetch0(list, orders, 1, predicate, true).isEmpty();
-                    break;
-                case FIRST:
-                    hasPrev = false;
-                    hasNext = fetch.size() > savedSize;
-                    if (hasNext)
-                        fetch.remove(fetch.size() - 1);
-                    break;
-                case LAST:
-                    hasNext = false;
-                    hasPrev = fetch.size() > savedSize;
-                    if (hasPrev)
-                        fetch.remove(0);
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected requested page: " + criteria.getPage());
-            }
-        } finally {
-            criteria.setPage(savedPage);
-            criteria.setSize(savedSize);
+        switch (criteria.getPage()) {
+            case NEXT:
+                hasNext = fetch.size() > criteria.getSize();
+                if (hasNext)
+                    fetch.remove(fetch.size() - 1);
+                hasPrev = !fetch0(list, orders, 1, predicate, true, PREV).isEmpty();
+                break;
+            case PREV:
+                hasPrev = fetch.size() > criteria.getSize();
+                if (hasPrev)
+                    fetch.remove(0);
+                hasNext = !fetch0(list, orders, 1, predicate, true, NEXT).isEmpty();
+                break;
+            case FIRST:
+                hasPrev = false;
+                hasNext = fetch.size() > criteria.getSize();
+                if (hasNext)
+                    fetch.remove(fetch.size() - 1);
+                break;
+            case LAST:
+                hasNext = false;
+                hasPrev = fetch.size() > criteria.getSize();
+                if (hasPrev)
+                    fetch.remove(0);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected requested page: " + criteria.getPage());
         }
         return SeekedPage.of(fetch, hasNext, hasPrev);
     }
 
-    private List<T> fetch0(List<EnrichedSeekPivot> list, List<Order> orders, int size, final Predicate predicate, final boolean reverse) {
-        Predicate seekPredicate = seek(list, reverse);
+    private List<T> fetch0(List<EnrichedSeekPivot> list, List<Order> orders, int size, final Predicate predicate, final boolean reverse, RequestedPageEnum page) {
+        Predicate seekPredicate = seek(list, reverse, page);
         JPQLQuery<?> query = getQuery(predicate, seekPredicate);
         return fetch(query, size, orders, reverse);
     }
@@ -147,7 +140,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         List<EnrichedSeekPivot> res = new ArrayList<>(orders.size());
         for (Order order : orders) {
             ComparableExpression<?> comparable = resolvedProperties.computeIfAbsent(order.getProperty(), this::findProperty);
-            Comparable<?> cast;
+            ComparableExpressionBase<?> cast;
             if (criteria.getPage().isPivotsNecessary()) {
                 SeekPivot pivot = pivots.stream().filter(piv -> piv.getName().equals(order.getProperty())).findAny().orElseThrow(() -> {
                     throw new IllegalArgumentException(order.getProperty() + " is not found in pivots list.");
@@ -197,6 +190,8 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     }
 
     private List<SeekPivot> copyPivots(SeekableCriteria criteria) {
+        if (criteria.getPivots() == null)
+            return emptyList();
         List<SeekPivot> pivots = new ArrayList<>(criteria.getPivots().size());
         for (SeekPivot pivot : criteria.getPivots()) {
             if (!pivot.getName().startsWith(entityPrefix))
@@ -238,44 +233,61 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         return new Order(order.isAscending() ? DESC : ASC, property, order.getNullHandling());
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private Predicate seek(List<EnrichedSeekPivot> list, boolean reverse) {
+    @SuppressWarnings({"rawtypes"})
+    private Predicate seek(List<EnrichedSeekPivot> list, boolean reverse, RequestedPageEnum page) {
         BooleanExpression res = null;
         for (int i = 0; i < list.size(); i++) {
             EnrichedSeekPivot next = list.get(i);
             Order order = next.order;
             ComparableExpression exp = next.comparable;
-            Comparable<?> cast = next.castedPivot;
+            ComparableExpressionBase<?> cast = next.castedPivot;
+            boolean lastPivot = i == list.size() - 1;
             if (res == null) {
-                res = compare(exp.lt(cast), exp.gt(cast), order, reverse);
+                res = compare(exp, cast, order, reverse, page, lastPivot);
             } else {
                 BooleanExpression accum = equalize(null, list.get(0));
                 for (int j = 1; j < i; j++) {
                     accum = equalize(accum, list.get(j));
                 }
-                accum = compare(accum.and(exp.lt(cast)), accum.and(exp.gt(cast)), order, reverse);
+                accum = accum.and(compare(exp, cast, order, reverse, page, lastPivot));
                 res = res.or(accum);
             }
         }
         return res;
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private BooleanExpression compare(
-        BooleanExpression lessThan,
-        BooleanExpression greaterThan,
-        Order order,
-        boolean reverse
+            ComparableExpression exp,
+            ComparableExpressionBase castedPivot,
+            Order order,
+            boolean reverse,
+            RequestedPageEnum page,
+            boolean lastPivot
     ) {
-        if (reverse)
-            return order.isAscending() ? lessThan : greaterThan;
-        else
-            return order.isAscending() ? greaterThan : lessThan;
+//      При запросе за первой или последней страницей, мы должны применить нестрогое неравенство (<= или >=) к последнему
+//      (которое должно являться уникальным) полю, чтобы не пропустить записи, у которых это поле равно минимальному/максимальному значению.
+//      Во всех остальных случаях можно использовать строгое неравенство
+        boolean equalize = (page == FIRST || page == LAST) && lastPivot;
+        if (reverse) {
+            if (order.isAscending()) {
+                return equalize ? exp.loe(castedPivot) : exp.lt(castedPivot);
+            } else {
+                return equalize ? exp.goe(castedPivot) : exp.gt(castedPivot);
+            }
+        } else {
+            if (order.isAscending()) {
+                return equalize ? exp.goe(castedPivot) : exp.gt(castedPivot);
+            } else {
+                return equalize ? exp.loe(castedPivot) : exp.lt(castedPivot);
+            }
+        }
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private BooleanExpression equalize(BooleanExpression accum, EnrichedSeekPivot piv) {
         ComparableExpression exp = piv.comparable;
-        Comparable<?> cast = piv.castedPivot;
+        ComparableExpressionBase<?> cast = piv.castedPivot;
         if (accum == null) {
             accum = exp.eq(cast);
         } else {
@@ -284,9 +296,9 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         return accum;
     }
 
-    private Comparable<?> cast(String name, String lastValue, ComparableExpression<?> target) {
+    private ComparableExpressionBase<?> cast(String name, String lastValue, ComparableExpression<?> target) {
         try {
-            return StringConvert.INSTANCE.convertFromString(target.getType(), lastValue);
+            return Expressions.asComparable(StringConvert.INSTANCE.convertFromString(target.getType(), lastValue));
         } catch (RuntimeException exception) {
             throw new IllegalArgumentException(
                 "Unable to convert from string '" + lastValue + "' to target type: " + target.getType().getSimpleName() + ". " +
@@ -336,11 +348,11 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
 
     private static class EnrichedSeekPivot {
 
-        private final Comparable<?> castedPivot;
+        private final ComparableExpressionBase<?> castedPivot;
         private final Order order;
-        private final ComparableExpression comparable;
+        private final ComparableExpression<?> comparable;
 
-        private EnrichedSeekPivot(Comparable<?> castedPivot, Order order, ComparableExpression comparable) {
+        private EnrichedSeekPivot(ComparableExpressionBase<?> castedPivot, Order order, ComparableExpression<?> comparable) {
             this.castedPivot = castedPivot;
             this.order = order;
             this.comparable = comparable;

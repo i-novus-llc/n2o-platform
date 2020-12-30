@@ -10,6 +10,7 @@ import org.springframework.lang.NonNull;
 
 import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
+import java.util.Optional;
 
 public class SeekableRepositoryFactory extends JpaRepositoryFactory {
 
@@ -22,15 +23,16 @@ public class SeekableRepositoryFactory extends JpaRepositoryFactory {
 
     @Override
     protected @NonNull RepositoryComposition.RepositoryFragments getRepositoryFragments(@NonNull RepositoryMetadata metadata) {
-        final RepositoryComposition.RepositoryFragments[] modifiedFragments = {RepositoryComposition.RepositoryFragments.empty()};
         RepositoryComposition.RepositoryFragments fragments = super.getRepositoryFragments(metadata);
-        fragments.stream().forEach(
-            f -> {
-                if (f.getImplementation().isPresent()) {
-                    boolean isSeekable = SeekableRepository.class.isAssignableFrom(metadata.getRepositoryInterface());
-                    if (isSeekable) {
-                        Object querydsl = f.getImplementation().get();
-                        modifiedFragments[0] = modifiedFragments[0].append(
+        RepositoryComposition.RepositoryFragments modifiedFragment = RepositoryComposition.RepositoryFragments.empty();
+        for (RepositoryFragment<?> fragment : fragments) {
+            if (fragment.getImplementation().isPresent()) {
+                boolean isSeekable = SeekableRepository.class.isAssignableFrom(metadata.getRepositoryInterface());
+                if (isSeekable) {
+                    Optional<?> impl = fragment.getImplementation();
+                    if (impl.isPresent()) {
+                        Object querydsl = impl.get();
+                        modifiedFragment = modifiedFragment.append(
                             RepositoryFragment.implemented(
                                 new SeekableRepositoryImpl<>(
                                     getEntityInformation(metadata.getDomainType()),
@@ -42,12 +44,12 @@ public class SeekableRepositoryFactory extends JpaRepositoryFactory {
                             )
                         );
                     }
-                } else {
-                    modifiedFragments[0].append(f);
                 }
+            } else {
+                modifiedFragment.append(fragment);
             }
-        );
-        return modifiedFragments[0];
+        }
+        return modifiedFragment;
     }
 
     private Object getField(Object obj, String field) {
