@@ -41,8 +41,12 @@ abstract class AbstractSerializer {
                 serializeProperty(meta, property, out);
             }
             out.append('\n');
+            postSerialize(meta, out);
             out.append("}");
         }
+    }
+
+    void postSerialize(SelectionMeta meta, Writer out) throws IOException {
     }
 
     protected Writer appendPackage(PackageElement targetPackage, Writer out) throws IOException {
