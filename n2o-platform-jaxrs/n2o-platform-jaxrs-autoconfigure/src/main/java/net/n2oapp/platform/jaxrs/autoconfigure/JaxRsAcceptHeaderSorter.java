@@ -28,24 +28,40 @@ public class JaxRsAcceptHeaderSorter extends AbstractPhaseInterceptor<Message> {
 
     @Override
     public void handleMessage(Message message) {
-        if (message.containsKey(ACCEPT)) {
-            Object o = message.get(ACCEPT);
-            if (o.getClass() == String.class) {
-                message.put(ACCEPT, sort((String) o));
-            }
-        }
-        if (message.containsKey(PROTOCOL_HEADERS)) {
-            Map<String, List<String>> headers = (Map<String, List<String>>) message.get(PROTOCOL_HEADERS);
-            if (headers.containsKey(ACCEPT)) {
-                List<String> accept = headers.get(ACCEPT);
-                if (!accept.isEmpty()) {
-                    ListIterator<String> iterator = accept.listIterator();
-                    while (iterator.hasNext()) {
-                        String s = sort(iterator.next());
-                        iterator.set(s);
-                    }
+        processAcceptHeader(message);
+        processProtocolHeaders(message);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    private void processProtocolHeaders(Message message) {
+        Object protocolHeaders = message.get(PROTOCOL_HEADERS);
+        if (!(protocolHeaders instanceof Map))
+            return;
+        Map<Object, Object> headers = (Map<Object, Object>) protocolHeaders;
+        Object accept = headers.get(ACCEPT);
+        if (!(accept instanceof List))
+            return;
+        List<Object> list = (List<Object>) accept;
+        processListOfAcceptHeaders(list);
+    }
+
+    private void processListOfAcceptHeaders(List<Object> headers) {
+        if (!headers.isEmpty()) {
+            ListIterator<Object> iterator = headers.listIterator();
+            while (iterator.hasNext()) {
+                Object next = iterator.next();
+                if (next instanceof String) {
+                    String s = sort((String) next);
+                    iterator.set(s);
                 }
             }
+        }
+    }
+
+    private void processAcceptHeader(Message message) {
+        Object o = message.get(ACCEPT);
+        if (o instanceof String && !((String) o).isBlank()) {
+            message.put(ACCEPT, sort((String) o));
         }
     }
 
