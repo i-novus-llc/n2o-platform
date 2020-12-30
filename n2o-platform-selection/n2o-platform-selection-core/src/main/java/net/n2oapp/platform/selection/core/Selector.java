@@ -1,10 +1,7 @@
 package net.n2oapp.platform.selection.core;
 
 import com.google.common.base.Preconditions;
-import net.n2oapp.platform.selection.api.Mapper;
-import net.n2oapp.platform.selection.api.Selection;
-import net.n2oapp.platform.selection.api.SelectionEnum;
-import net.n2oapp.platform.selection.api.SelectionKey;
+import net.n2oapp.platform.selection.api.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Page;
@@ -17,6 +14,8 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static net.n2oapp.platform.selection.api.SelectionPropagationEnum.*;
 
 public final class Selector {
 
@@ -36,11 +35,15 @@ public final class Selector {
     private static final ConcurrentMap<Class<? extends Selection>, SelectionDescriptor> SELECTION_DESCRIPTORS = new ConcurrentHashMap<>();
 
     public static <E> Page<E> resolvePage(Page<? extends Mapper<? extends E>> srcPage, Selection<? extends E> selection) {
-        return srcPage.map(mapper -> resolve(mapper, selection));
+        return srcPage.map(mapper -> resolve(mapper, selection, NORMAL));
+    }
+
+    public static <E> E resolve(Mapper<? extends E> mapper, Selection<? extends E> selection) {
+        return resolve(mapper, selection, NORMAL);
     }
 
     @SuppressWarnings("unchecked")
-    public static <E> E resolve(Mapper<? extends E> mapper, Selection<? extends E> selection) {
+    private static <E> E resolve(Mapper<? extends E> mapper, Selection<? extends E> selection, SelectionPropagationEnum propagation) {
         if (mapper == null || selection == null)
             return null;
         SelectionDescriptor selectionDescriptor = getSelectionDescriptor(selection);
@@ -54,10 +57,17 @@ public final class Selector {
         E model = mapper.create();
         if (model == null)
             return null;
+        if (propagation == NORMAL && selection.propagation() != null)
+            propagation = selection.propagation();
+        SelectionPropagationEnum nestedPropagation = propagation == NESTED ? NESTED : NORMAL;
         for (SelectionDescriptor.SelectionAccessor selectionAccessor : selectionDescriptor.accessors) {
             SelectionEnum select = (SelectionEnum) invoke(selectionAccessor.selectionEnumAccessor, selection);
-            if (!selection.selectAll() && (select == null || !select.asBoolean()))
+            if (
+                (propagation != ALL && propagation != NESTED) &&
+                (select == null || !select.asBoolean())
+            ) {
                 continue;
+            }
             MapperDescriptor.MapperAccessor mapperAccessor = mapperDescriptor.accessors.get(selectionAccessor.selectionKey);
             Preconditions.checkNotNull(
                 mapperAccessor,
@@ -87,12 +97,12 @@ public final class Selector {
                     else
                         throw new IllegalStateException("Unexpected collection of type " + collection.getClass() + " provided");
                     for (Mapper nestedMapper : collection) {
-                        result.add(resolve(nestedMapper, nestedSelection));
+                        result.add(resolve(nestedMapper, nestedSelection, nestedPropagation));
                     }
                     invoke(mapperAccessor.selectMethod, mapper, model, result);
                 } else {
                     Mapper nestedMapper = (Mapper) invoke(mapperAccessor.nestedMapperAccessor, mapper);
-                    Object resolve = resolve(nestedMapper, nestedSelection);
+                    Object resolve = resolve(nestedMapper, nestedSelection, nestedPropagation);
                     invoke(mapperAccessor.selectMethod, mapper, model, resolve);
                 }
             } else {
