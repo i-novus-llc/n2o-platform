@@ -50,7 +50,11 @@ abstract class AbstractSerializer {
     }
 
     protected Writer appendPackage(PackageElement targetPackage, Writer out) throws IOException {
-        return out.append("package ").append(targetPackage.getQualifiedName()).append(';').append("\n\n");
+        out.append("package ");
+        out.append(targetPackage.getQualifiedName());
+        out.append(';');
+        out.append("\n\n");
+        return out;
     }
 
     String getQualifiedName(SelectionMeta meta, PackageElement targetPackage) {
@@ -69,7 +73,11 @@ abstract class AbstractSerializer {
     }
 
     void appendSelectionKey(Writer out, String key) throws IOException {
-        out.append("@").append(selectionKey.toString()).append("(\"").append(key).append("\")");
+        out.append("@");
+        out.append(selectionKey.toString());
+        out.append("(\"");
+        out.append(key);
+        out.append("\")");
     }
 
 }

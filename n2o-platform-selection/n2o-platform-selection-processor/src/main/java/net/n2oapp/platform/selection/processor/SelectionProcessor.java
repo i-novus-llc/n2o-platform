@@ -1,5 +1,7 @@
 package net.n2oapp.platform.selection.processor;
 
+import net.n2oapp.platform.selection.api.Selective;
+
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
@@ -50,9 +52,11 @@ public class SelectionProcessor extends AbstractProcessor {
         TypeMirror selectionEnum = elements.getTypeElement("net.n2oapp.platform.selection.api.SelectionEnum").asType();
         TypeElement jsonTypeInfo = elements.getTypeElement("com.fasterxml.jackson.annotation.JsonTypeInfo");
         TypeElement jsonSubTypes = elements.getTypeElement("com.fasterxml.jackson.annotation.JsonSubTypes");
+        TypeElement requestParam = elements.getTypeElement("javax.ws.rs.QueryParam");
+        TypeElement beanParam = elements.getTypeElement("javax.ws.rs.BeanParam");
         this.addJacksonTyping = Boolean.parseBoolean(processingEnv.getOptions().getOrDefault(ADD_JACKSON_TYPING, Boolean.toString(jsonTypeInfo != null)));
-        boolean addJaxRsAnnotations = Boolean.parseBoolean(processingEnv.getOptions().getOrDefault(ADD_JAXRS_ANNOTATIONS, "true"));
-        this.selectionSerializer = new SelectionSerializer(selectionKey, selectionEnum, selectionInterface, selectionPropagation, addJacksonTyping, addJaxRsAnnotations, jsonTypeInfo, jsonSubTypes);
+        boolean addJaxRsAnnotations = Boolean.parseBoolean(processingEnv.getOptions().getOrDefault(ADD_JAXRS_ANNOTATIONS, Boolean.toString(requestParam != null)));
+        this.selectionSerializer = new SelectionSerializer(selectionKey, selectionEnum, selectionInterface, selectionPropagation, addJacksonTyping, addJaxRsAnnotations, jsonTypeInfo, jsonSubTypes, requestParam, beanParam);
         this.mapperSerializer = new MapperSerializer(selectionKey, mapperInterface);
     }
 
@@ -166,7 +170,7 @@ public class SelectionProcessor extends AbstractProcessor {
             parent = opt.get();
         }
         GenericSignature signature = getGenericSignature(element, (DeclaredType) element.asType());
-        SelectionMeta result = new SelectionMeta(element, parent, !entry.getValue().isEmpty(), signature, types);
+        SelectionMeta result = new SelectionMeta(element, parent, !entry.getValue().isEmpty(), signature, types, element.getAnnotation(Selective.class).prefix());
         metalist.add(result);
         return false;
     }

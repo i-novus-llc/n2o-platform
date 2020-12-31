@@ -120,7 +120,9 @@ public final class Selector {
 
     private static Method getMethod(Class<?> clazz, String name) {
         try {
-            return clazz.getMethod(name);
+            Method method = clazz.getMethod(name);
+            method.setAccessible(true);
+            return method;
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException(e);
         }
@@ -318,6 +320,7 @@ public final class Selector {
         for (Method method : methods) {
             try {
                 callback.doWith(method);
+                method.setAccessible(true);
             } catch (IllegalAccessException e) {
                 throw new IllegalStateException(e);
             }

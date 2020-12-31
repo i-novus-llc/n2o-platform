@@ -63,7 +63,6 @@
                             <goal>testCompile</goal>
                         </goals>
                         <configuration>
-                            <proc>only</proc>
                             <annotationProcessors>
                                 <annotationProcessor>net.n2oapp.platform.selection.processor.SelectionProcessor</annotationProcessor>
                             </annotationProcessors>

@@ -24,13 +24,15 @@ class SelectionMeta {
     private final List<SelectionProperty> properties;
     private final String mapperTarget;
     private final boolean isAbstract;
+    private final String prefix;
 
     private String jacksonTypeTag;
 
-    SelectionMeta(TypeElement target, SelectionMeta parent, boolean hasChildren, GenericSignature genericSignature, Types types) {
+    SelectionMeta(TypeElement target, SelectionMeta parent, boolean hasChildren, GenericSignature genericSignature, Types types, String prefix) {
         this.target = target;
         this.parent = parent;
         this.genericSignature = genericSignature;
+        this.prefix = prefix;
         this.properties = new ArrayList<>(0);
         this.isAbstract = target.getModifiers().stream().anyMatch(Modifier.ABSTRACT::equals);
         this.extendsType = getExtendsType(types);
@@ -44,6 +46,10 @@ class SelectionMeta {
         }
         this.extendsSignature = resolveExtendsSignature();
         this.mapperTarget = resolveMapperTarget();
+    }
+
+    String getPrefix() {
+        return prefix;
     }
 
     private String resolveMapperTarget() {
