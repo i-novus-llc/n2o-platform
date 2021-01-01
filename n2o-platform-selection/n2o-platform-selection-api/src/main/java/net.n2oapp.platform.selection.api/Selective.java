@@ -11,5 +11,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Selective {
+
+    /**
+     * Prefix to be used in conjunction with {@link javax.ws.rs.QueryParam} to prevent name collisions.
+     * If not specified -- defaults to {@code camelCaseClassName}
+     */
     String prefix() default "";
+
 }

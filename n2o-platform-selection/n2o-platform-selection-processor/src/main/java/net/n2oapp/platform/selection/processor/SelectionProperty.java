@@ -7,7 +7,7 @@ class SelectionProperty {
     private final String key;
     private final String nestedGenericSignature;
     private final SelectionMeta nestedSelection;
-    private final TypeMirror originalType;
+    private final String originalType;
     private final TypeMirror collectionRawType;
 
     SelectionProperty(String key) {
@@ -18,8 +18,31 @@ class SelectionProperty {
         this.key = key;
         this.nestedGenericSignature = nestedGenericSignature;
         this.nestedSelection = nestedSelection;
-        this.originalType = originalType;
+        if (originalType != null) {
+            this.originalType = stripAnnotations(originalType);
+        } else
+            this.originalType = null;
         this.collectionRawType = collectionRawType;
+    }
+
+    private String stripAnnotations(TypeMirror originalType) {
+        String type = originalType.toString();
+        StringBuilder builder = new StringBuilder();
+        boolean anno = false;
+        for (int i = 0; i < type.length(); i++) {
+            char c = type.charAt(i);
+            if (anno) {
+                if (c == ',' || Character.isWhitespace(c))
+                    anno = false;
+            } else {
+                if (c == '@')
+                    anno = true;
+                else {
+                    builder.append(c);
+                }
+            }
+        }
+        return builder.toString();
     }
 
     String getKey() {
@@ -40,7 +63,7 @@ class SelectionProperty {
         return nestedSelection;
     }
 
-    TypeMirror getOriginalType() {
+    String getOriginalType() {
         return originalType;
     }
 

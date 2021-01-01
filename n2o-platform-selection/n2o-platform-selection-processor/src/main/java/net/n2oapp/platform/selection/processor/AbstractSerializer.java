@@ -25,14 +25,16 @@ abstract class AbstractSerializer {
         JavaFileObject file = filer.createSourceFile(getQualifiedName(meta, targetPackage), targetPackage);
         try (Writer out = file.openWriter()) {
             appendPackage(targetPackage, out);
-            out.append("public interface ").append(interfaceName).append(meta.getGenericSignature().toString());
+            out.append("public interface ");
+            out.append(interfaceName);
+            out.append(meta.getGenericSignature().toString());
             out.append(" extends ");
             if (meta.getParent() != null) {
                 out.append(getQualifiedName(meta.getParent(), meta.getParent().getTargetPackage()));
-                out.append(meta.getExtendsSignature());
             } else {
-                out.append(getInterfaceRaw().toString()).append(meta.getExtendsSignature());
+                out.append(getInterfaceRaw().toString());
             }
+            out.append(meta.getExtendsSignature());
             out.append(" {");
             for (SelectionProperty property : meta.getProperties()) {
                 out.append("\n\t");

@@ -32,6 +32,9 @@ class SelectionSerializer extends AbstractSerializer {
     private static final String ASSIGNMENT = " = ";
     private static final String STATEMENT_END = ";\n";
     private static final String PROPAGATION = "propagation";
+    private static final String GETTER = "get";
+    private static final String SETTER = "set";
+    private static final String VOID = "void";
 
     private final TypeMirror selectionEnum;
     private final TypeMirror selectionInterface;
@@ -92,8 +95,12 @@ class SelectionSerializer extends AbstractSerializer {
             out.append("\n\t");
             SelectionMeta nestedSelection = property.getNestedSelection();
             out.append(getQualifiedName(nestedSelection, nestedSelection.getTargetPackage()));
-            out.append(property.getNestedGenericSignature()).append(' ');
-            out.append("get").append(capitalizedProperty).append(getSuffix()).append("();");
+            out.append(property.getNestedGenericSignature());
+            out.append(' ');
+            out.append(GETTER);
+            out.append(capitalizedProperty);
+            out.append(getSuffix());
+            out.append("();");
         }
     }
 
@@ -162,9 +169,15 @@ class SelectionSerializer extends AbstractSerializer {
             out.append(getQualifiedName(meta, targetPackage));
             out.append(meta.getGenericSignature().varsToString(true));
             out.append("{\n\n");
+            String prefix = meta.getPrefix();
             if (meta.getParent() == null) {
                 if (addJaxRsAnnotations) {
-                    out.append("\t@").append(requestParam.toString()).append("(\"").append(PROPAGATION).append("\")\n");
+                    out.append("\t@");
+                    out.append(requestParam.toString());
+                    out.append("(\"");
+                    out.append(prefix);
+                    out.append(PROPAGATION);
+                    out.append("\")\n");
                 }
                 out.append("\tprotected ");
                 out.append(selectionPropagation.toString());
@@ -173,11 +186,6 @@ class SelectionSerializer extends AbstractSerializer {
                 out.append(FIELD_END);
             }
             overridePropagation(self, out);
-            String prefix = meta.getPrefix();
-            if (prefix == null || prefix.isBlank()) {
-                String str = meta.getTarget().getSimpleName().toString();
-                prefix = Character.toLowerCase(str.charAt(0)) + str.substring(1);
-            }
             for (SelectionProperty property : meta.getProperties()) {
                 String capitalizedKey = capitalize(property.getKey());
                 fieldForSelectionEnum(out, prefix, capitalizedKey);
@@ -275,7 +283,7 @@ class SelectionSerializer extends AbstractSerializer {
 
     private void setterForSelectionEnum(Writer out, String capitalizedKey) throws IOException {
         out.append(METHOD_START);
-        out.append("void");
+        out.append(VOID);
         out.append(' ');
         out.append(SETTER_PREFIX);
         out.append(capitalizedKey);
@@ -317,7 +325,8 @@ class SelectionSerializer extends AbstractSerializer {
         out.append(METHOD_START);
         out.append(nestedQualified);
         out.append(property.getNestedGenericSignature());
-        out.append(' ').append("get");
+        out.append(' ');
+        out.append(GETTER);
         out.append(capitalizedKey);
         out.append(getSuffix());
         out.append(NO_ARG_METHOD_BODY_START);
@@ -331,9 +340,9 @@ class SelectionSerializer extends AbstractSerializer {
 
     private void setterForNestedSelection(Writer out, SelectionProperty property, String capitalizedKey, String nestedQualified) throws IOException {
         out.append(METHOD_START);
-        out.append("void");
+        out.append(VOID);
         out.append(' ');
-        out.append("set");
+        out.append(SETTER);
         out.append(capitalizedKey);
         out.append(getSuffix());
         out.append("(");

@@ -32,6 +32,10 @@ class SelectionMeta {
         this.target = target;
         this.parent = parent;
         this.genericSignature = genericSignature;
+        if (prefix == null || prefix.isBlank()) {
+            String str = target.getSimpleName().toString();
+            prefix = Character.toLowerCase(str.charAt(0)) + str.substring(1);
+        }
         this.prefix = prefix;
         this.properties = new ArrayList<>(0);
         this.isAbstract = target.getModifiers().stream().anyMatch(Modifier.ABSTRACT::equals);

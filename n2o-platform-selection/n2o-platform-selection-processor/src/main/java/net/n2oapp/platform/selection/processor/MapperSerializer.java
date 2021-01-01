@@ -20,11 +20,17 @@ class MapperSerializer extends AbstractSerializer {
 
     @Override
     void serializeProperty(SelectionMeta meta, SelectionProperty property, Writer out) throws IOException {
-        out.append("void ").append("select").append(capitalize(property.getKey())).append("(");
-        out.append(meta.getMapperTarget()).append(" ").append("model");
+        out.append("void ");
+        out.append("select");
+        out.append(capitalize(property.getKey()));
+        out.append("(");
+        out.append(meta.getMapperTarget());
+        out.append(" ");
+        out.append("model");
         if (property.getNestedSelection() != null) {
             out.append(", ");
-            out.append(property.getOriginalType().toString()).append(' ');
+            out.append(property.getOriginalType());
+            out.append(' ');
             out.append(property.getKey());
         }
         out.append(");");
@@ -40,7 +46,10 @@ class MapperSerializer extends AbstractSerializer {
             out.append(property.getNestedGenericSignature());
             if (property.getCollectionRawType() != null)
                 out.append('>');
-            out.append(' ').append(property.getKey()).append(getSuffix()).append("();");
+            out.append(' ');
+            out.append(property.getKey());
+            out.append(getSuffix());
+            out.append("();");
         }
     }
 

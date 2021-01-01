@@ -183,14 +183,6 @@ public class IssueMapper implements Mapper<Issue> {
 
 == Генерация интерфейсов `Mapper` и `Selection` по `DTO`
 
-В `n2o-platform-selection-api` есть аннотация `@Selective`.
-Она указывается над классом `DTO` и говорит о том, что выборка полей данного `DTO` происходит выборочно,
-то есть через механизм, описанный выше.
-
-Генератор кода распознает данную аннотацию и сгенерирует интерфейсы `Selection` и `Mapper` для каждого `DTO`.
-
-Главное преимущество в использовании генератора кода -- типобезопасность.
-
 Добавьте зависимость
 [source,xml]
 ----
@@ -216,10 +208,13 @@ public class IssueMapper implements Mapper<Issue> {
                         <goal>compile</goal>
                     </goals>
                     <configuration>
-                        <proc>only</proc>
                         <annotationProcessors>
                             <annotationProcessor>net.n2oapp.platform.selection.processor.SelectionProcessor</annotationProcessor>
                         </annotationProcessors>
+                        <compilerArgs>
+                            <arg>-Anet.n2oapp.platform.selection.addJacksonTyping=?</arg>
+                            <arg>-Anet.n2oapp.platform.selection.addJaxRsAnnotations=?</arg>
+                        </compilerArgs>
                     </configuration>
                 </execution>
             </executions>
@@ -227,4 +222,97 @@ public class IssueMapper implements Mapper<Issue> {
     </plugins>
 </build>
 ----
+
+В `n2o-platform-selection-api` есть аннотация `@Selective`.
+Она указывается над классом `DTO` и говорит о том, что выборка полей данного `DTO` происходит выборочно,
+то есть через механизм, описанный выше.
+
+Генератор кода распознает данную аннотацию и сгенерирует интерфейсы `Selection` и `Mapper` для каждого `DTO`.
+
+Также он сгенерирует дефолтную реализацию для каждого интерфейса `Selection`.
+
+У генератора кода есть две опции `net.n2oapp.platform.selection.addJacksonTyping` и `net.n2oapp.platform.selection.addJaxRsAnnotations`.
+Первая добавляет типизацию для Jackson-а, вторая -- аннотации JAX-RS (позволяет передавать `Selection`-ы в параметрах запроса HTTP).
+
+Главное преимущество в использовании генератора кода -- типобезопасность.
+
+== Ограничения
+
+Чтобы соответствовать HTTP соглашениям по поводу получения данных и в то же время эффективно использовать данный API --
+нужно проектировать свою модель правильно.
+
+По соглашениям получение данных должно осуществляться через GET запрос.
+Тело может присутствовать в запросе, но оно не должно влиять на результат, он полностью определяется
+URI и параметрами (QueryParam) запроса. Так как параметры запроса имеют плоскую модель
+(по сути это отображение `ключ` -> `список значений`) -- очень сложно описать в них иерархическую модель (подобную JSON).
+
+Например, допустим у нас есть класс `Organisation`, в котором есть два поля типа `Address`, юридический и фактический адреса.
+[source,java]
+----
+@Selective
+public class Organisation {
+
+    Address legal; // Юридический адрес
+    Address factual; // Фактический адрес
+
+    @Selective
+    public static class Address {
+        String postcode; // Почтовый код
+        String region; // Регион
+//      ...
+    }
+
+}
+----
+Выборки из обоих полей описываются одним и тем же `AddressSelection`:
+[source,java]
+----
+public class OrganisationSelection {
+
+    @QueryParam("selectLegal")
+    SelectionEnum selectLegal;
+
+    @QueryParam("selectLegal")
+    SelectionEnum selectFactual;
+
+    @BeanParam
+    AddressSelection legalSelection; // Вложенная выборка
+
+    @BeanParam
+    AddressSelection factualSelection; // Вложенная выборка
+
+    public static class AddressSelection {
+
+        @QueryParam("selectPostcode")
+        SelectionEnum selectPostcode;
+
+        @QueryParam("selectRegion")
+        SelectionEnum selectRegion;
+
+//      ...
+    }
+
+}
+----
+
+Невозможно через параметры запроса указать (по крайней мере в JAX-RS),
+что из юридического адреса нам нужен почтовый код, а из фактического регион, так как
+в строке запроса это выглядит так:
+`http://rest-api/organisations?selectLegal=T&selectFactual=T&selectPostcode=T&selectRegion=T`
+
+В итоге сервис отдаст оба адреса, с заполненными почтовым кодом и регионом.
+
+Это лишь один пример того, что нужно иметь в виду при проектировании модели данных.
+В общем случае нужно делать так, чтобы ваши `DTO` были максимально плоскими.
+Так же не используйте наследование, используйте композицию.
+
+Если ничего из этого не удается, единственный выход -- нарушить соглашения по построению REST-сервисов и отдавать
+данные по POST запросу с Body. Так вы можете описать произвольно сложную выборку в формате JSON.
+Примеры известных систем, использующих подобный подход:
+
+* GraphQL
+* ElasticSearch
+* JIRA REST API
+
+== Почему не GraphQL
 
