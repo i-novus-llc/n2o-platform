@@ -41,10 +41,7 @@ class SelectionMeta {
         this.isAbstract = target.getModifiers().stream().anyMatch(Modifier.ABSTRACT::equals);
         this.extendsType = getExtendsType(types);
         if (
-            (isAbstract || hasChildren) && (
-                parent == null ||
-                (parent.genericSignature.getSelfVariable() != null && (parent.genericSignature.noGenericsDeclared() || !extendsTypeEmpty()))
-            )
+            (isAbstract || hasChildren)
         ) {
             genericSignature.createSelfVariable();
         }
@@ -73,8 +70,9 @@ class SelectionMeta {
             return target.getQualifiedName().toString(); // no children and not abstract class
         } else {
             if (!parent.genericSignature.noGenericsDeclared()) { // parent's generic signature contains self variable and at least one type variable
-                if (extendsTypeEmpty()) // raw use
+                if (extendsTypeEmpty()) { // raw use
                     return "";
+                }
                 else {
                     if (this.genericSignature.noGenericsDeclared()) { // no type variables declared on this class
                         String var = this.genericSignature.getSelfVariable();

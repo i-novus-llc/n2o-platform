@@ -295,7 +295,7 @@ public class OrganisationSelection {
 }
 ----
 
-Невозможно через параметры запроса указать (по крайней мере в JAX-RS),
+Невозможно через параметры запроса указать (по крайней мере в JAX-RS, через `@BeanParam`),
 что из юридического адреса нам нужен почтовый код, а из фактического регион, так как
 в строке запроса это выглядит так:
 `http://rest-api/organisations?selectLegal=T&selectFactual=T&selectPostcode=T&selectRegion=T`
@@ -306,13 +306,82 @@ public class OrganisationSelection {
 В общем случае нужно делать так, чтобы ваши `DTO` были максимально плоскими.
 Так же не используйте наследование, используйте композицию.
 
-Если ничего из этого не удается, единственный выход -- нарушить соглашения по построению REST-сервисов и отдавать
-данные по POST запросу с Body. Так вы можете описать произвольно сложную выборку в формате JSON.
+Но можно избежать этих трудностей, если передавать выборку в параметре запроса в формате JSON.
+
+Если же описания выборок становятся очень большими, единственный выход -- нарушить соглашения по построению REST-сервисов и отдавать
+данные по POST запросу с Body. Так вы можете описать произвольно сложную и большую выборку в формате JSON.
 Примеры известных систем, использующих подобный подход:
 
 * GraphQL
 * ElasticSearch
 * JIRA REST API
+
+Но нужно понимать, что оверхед на передачу выборки не должен превышать профит от ее использования. Иначе вам не стоит
+использовать данный API.
+
+В целом у вас есть 3 опции:
+
+* Описывать выборку параметрами запроса, например так:
+[source,java]
+----
+public class SomeCriteria extends RestCriteria {
+
+    @BeanParam
+    private SomeSelection selection;
+
+//  Фильтры опущены
+
+}
+----
+
+Это самый правильный и чистый подход
+
+* Описывать выборку в JSON и передавать ее в параметре запроса:
+[source,java]
+----
+public class SomeCriteria extends RestCriteria {
+
+    @QueryParam("selection")
+    private String selection;
+
+    public String getSelection() {
+        return selection;
+    }
+
+    public void setSelection(String selection) {
+        this.selection = selection;
+    }
+
+    public void setSelection(SomeSelection selection) {
+        this.selection = Selection.toString(selection);
+    }
+
+    public SomeSelection selection() {
+        return Selection.parse(selection, SomeSelection.class);
+    }
+
+}
+----
+Вам следует использовать статические методы `net.n2oapp.platform.selection.api.Selection.toString` и
+`net.n2oapp.platform.selection.api.Selection.parse` для этого.
+
+* Передавать выборку в теле запроса:
+[source,java]
+----
+@Path("/example")
+public class SomeService {
+    @Path("/search")
+    Page<SomeModel> search(@BeanParam SomeCriteria criteria, SomeSelection selection); // Второй параметр -- это тело запроса
+}
+----
+
+В начале стоит использовать первый подход.
+
+Если его начинает не хватать по гибкости -- перейти на второй.
+
+И только если выборка становится настолько большой, что не умещается в параметре запроса
+(и профит от ее использования не превышает оверхед на ее передачу) --
+нужно использовать третий.
 
 == Почему не GraphQL
 

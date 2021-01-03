@@ -24,6 +24,7 @@ public final class Selector {
     private static final ResolvableType MAPPER_RAW = ResolvableType.forRawClass(Mapper.class);
     private static final ResolvableType SELECTION_RAW = ResolvableType.forRawClass(Selection.class);
     private static final ResolvableType COLLECTION_RAW = ResolvableType.forRawClass(Collection.class);
+    public static final String CREATE_METHOD = "create";
 
     private Selector() {
     }
@@ -124,13 +125,13 @@ public final class Selector {
             method.setAccessible(true);
             return method;
         } catch (NoSuchMethodException e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException("Method '" + name + "' cannot be found on " + clazz);
         }
     }
 
     private static MapperDescriptor getMapperDescriptor(Mapper<?> mapper) {
         return MAPPER_DESCRIPTORS.computeIfAbsent(mapper.getClass(), clazz -> {
-            ResolvableType type = ResolvableType.forMethodReturnType(getMethod(clazz, "create"));
+            ResolvableType type = ResolvableType.forMethodReturnType(getMethod(clazz, CREATE_METHOD));
             Map<String, List<Method>> methods = groupBySelectionKey(clazz);
             Map<String, MapperDescriptor.MapperAccessor> result = new HashMap<>(methods.size());
             for (Map.Entry<String, List<Method>> entry : methods.entrySet()) {
@@ -160,11 +161,12 @@ public final class Selector {
                     ResolvableType generic;
                     if (!COLLECTION_RAW.isAssignableFrom(nestedReturnType)) {
                         assertReturnsMapper(nestedMapperAccessor, nestedReturnType);
-                        generic = nestedReturnType.getGeneric(0);
+                        generic = ResolvableType.forMethodReturnType(getMethod(nestedReturnType.resolve(Object.class), CREATE_METHOD));
                     } else {
                         assertReturnsMapper(nestedMapperAccessor, nestedReturnType.getGeneric(0));
+                        assertCollection(secondParam, selectMethod);
                         secondParam = secondParam.getGeneric(0);
-                        generic = nestedReturnType.getGeneric(0, 0);
+                        generic = ResolvableType.forMethodReturnType(getMethod(nestedReturnType.getGeneric(0).resolve(Object.class), CREATE_METHOD));
                     }
                     Preconditions.checkArgument(
                             generic.isAssignableFrom(secondParam),
@@ -189,6 +191,14 @@ public final class Selector {
             }
             return new MapperDescriptor(type, result);
         });
+    }
+
+    private static void assertCollection(ResolvableType param, Method selectMethod) {
+        Preconditions.checkArgument(COLLECTION_RAW.isAssignableFrom(param),
+            "Second param of select method must be of collection type when nested mapper accessor is present" +
+            VIOLATION,
+            selectMethod
+        );
     }
 
     private static void assertReturnsMapper(Method nestedMapperAccessor, ResolvableType returnType) {

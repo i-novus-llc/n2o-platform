@@ -1,6 +1,5 @@
 package net.n2oapp.platform.selection.processor;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,10 +26,6 @@ class GenericSignature {
 
     boolean isEmpty() {
         return typeVariables.isEmpty();
-    }
-
-    Element getOwner() {
-        return owner;
     }
 
     String getSelfVariable() {
@@ -108,7 +103,7 @@ class GenericSignature {
             if (typeVariables.get(i).equals(var))
                 return upperBounds.get(i);
         }
-        return new String[0];
+        return null;
     }
 
     int size() {
