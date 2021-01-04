@@ -331,6 +331,16 @@ public class SomeCriteria extends RestCriteria {
 
 //  Фильтры опущены
 
+    public class SomeSelection implements Selection<SomeModel> {
+
+        @QueryParam("selectField1")
+        private SelectionEnum selectField1;
+
+        @QueryParam("selectField2")
+        private SelectionEnum selectField2;
+//      ...
+    }
+
 }
 ----
 
@@ -342,7 +352,7 @@ public class SomeCriteria extends RestCriteria {
 public class SomeCriteria extends RestCriteria {
 
     @QueryParam("selection")
-    private String selection;
+    private String selection; // Здесь лежит JSON
 
     public String getSelection() {
         return selection;
@@ -362,14 +372,15 @@ public class SomeCriteria extends RestCriteria {
 
 }
 ----
-Вам следует использовать статические методы `net.n2oapp.platform.selection.api.Selection.toString` и
-`net.n2oapp.platform.selection.api.Selection.parse` для этого.
+Вам следует использовать статические методы `net.n2oapp.platform.selection.api.Selection.toString` и `net.n2oapp.platform.selection.api.Selection.parse` для этого (они `null-safe`).
+Так же стоит иметь в виду, что спец-символы JSON при передаче по сети будут кодироваться процентами.
 
 * Передавать выборку в теле запроса:
 [source,java]
 ----
 @Path("/example")
 public class SomeService {
+    @POST
     @Path("/search")
     Page<SomeModel> search(@BeanParam SomeCriteria criteria, SomeSelection selection); // Второй параметр -- это тело запроса
 }
@@ -383,5 +394,16 @@ public class SomeService {
 (и профит от ее использования не превышает оверхед на ее передачу) --
 нужно использовать третий.
 
+Иначе не стоит использовать данный API.
+
 == Почему не GraphQL
 
+GraphQL -- это мощный фреймворк, созданный для тех же целей. Почему бы не использовать его?
+
+На самом деле причин не использовать его немного. Просто данный API дает возможность сохранить привычную модель REST-сервисов, в котором есть множество эндпоинтов, каждый из которых имеет свою ограниченную зону ответственности. В GraphQL же на все приходится один POST-эндпоинт, отвечающий за все.
+
+Также данный API более удобен для Java-разработчика, потому что достаточно лишь описать свои POJO модели. В GraphQL же нужно в начале описать схему (помимо той, что уже есть в БД) и после этого воспользоваться генератором кода для создания POJO моделей и интерфейсов.
+
+В существующие сервисы можно легко встроить данный API, в то время как с GraphQL потребуется достаточно глобальный рефакторинг.
+
+Ну и в последних выразительная сила GraphQL выходит далеко за рамки того, чтобы просто указать, что "мне нужны такие — то поля". По сути это целый язык запросов. И использование его лишь для описания полей в выборке кому — то может показать большим оверхедом.
