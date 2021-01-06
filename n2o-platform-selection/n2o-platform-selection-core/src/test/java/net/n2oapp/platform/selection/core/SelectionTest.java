@@ -29,17 +29,16 @@ public class SelectionTest {
     @Test
     public void name() {
         EmployeeCriteria criteria = new EmployeeCriteria();
-        criteria.setSelection(
-            (DefaultEmployeeSelection) EmployeeSelection.create().contacts(
-                ContactSelection.create().phone()
-            ).name().organisation(
-                OrganisationSelection.create().factualAddress(
-                    AddressSelection.create().postcode()
-                ).legalAddress(
-                    AddressSelection.create().region()
-                )
-            ).id()
-        );
+        DefaultEmployeeSelection selection = (DefaultEmployeeSelection) EmployeeSelection.create().contacts(
+            ContactSelection.create().phone()
+        ).name().organisation(
+            OrganisationSelection.create().factualAddress(
+                AddressSelection.create().postcode()
+            ).legalAddress(
+                AddressSelection.create().region()
+            )
+        ).id();
+        criteria.setSelection(selection);
         Page<Employee> page = client.search(criteria);
         for (Employee employee : page) {
             assertNotNull(employee.getId());
@@ -60,6 +59,10 @@ public class SelectionTest {
             assertNull(employee.getOrganisation().getLegalAddress().getPostcode());
             assertNotNull(employee.getOrganisation().getLegalAddress().getRegion());
         }
+        criteria.setSelection(selection.unselectContacts());
+        page = client.search(criteria);
+        for (Employee employee : page)
+            assertNull(employee.getContacts());
     }
 
 }
