@@ -247,6 +247,7 @@ class SelectionSerializer extends AbstractSerializer {
                     assignments[0][1] = "null";
                 appendSelect(self, out, property.getKey(), UNSELECT_PREFIX, SelectionEnum.F, "", assignments);
             }
+            override(meta, out, self);
             out.append("\n}");
         }
     }
@@ -384,6 +385,70 @@ class SelectionSerializer extends AbstractSerializer {
 
     private String getNestedAsMethodArg(SelectionProperty property) {
         return getQualifiedName(property.getNestedSelection(), property.getNestedSelection().getTargetPackage(), CLASS_PREFIX) + property.getNestedGenericSignature() + " " + SELECTION_ARG;
+    }
+
+    private void override(SelectionMeta meta, Writer out, String self) throws IOException {
+        SelectionMeta curr = meta;
+        SelectionMeta parent = meta.getParent();
+        while (parent != null) {
+            if (curr.isRawUse())
+                break;
+            for (SelectionProperty property : parent.getProperties()) {
+                String nestedSelectionArg = "";
+                if (property.getNestedSelection() != null) {
+                    String generics = property.resolveGenerics(meta);
+                    if (!generics.isEmpty())
+                        generics = "<" + generics + ">";
+                    nestedSelectionArg = getQualifiedName(property.getNestedSelection(), property.getNestedSelection().getTargetPackage(), CLASS_PREFIX) + generics + " " + SELECTION_ARG;
+                }
+                String capitalizedKey = capitalize(property.getKey());
+                appendOverride(out);
+                out.append(METHOD_START);
+                out.append(self);
+                out.append(' ').append(property.getKey());
+                if (!nestedSelectionArg.isEmpty()) {
+                    out.append("(");
+                    out.append(nestedSelectionArg);
+                    out.append(WITH_ARG_METHOD_BODY_START);
+                } else
+                    out.append(NO_ARG_METHOD_BODY_START);
+                out.append(METHOD_BODY_STATEMENT_START);
+                out.append(RETURN_STATEMENT);
+                out.append("(");
+                out.append(self);
+                out.append(") ");
+                out.append("super.");
+                out.append(property.getKey());
+                if (nestedSelectionArg.isEmpty())
+                    out.append(NO_ARG_METHOD_CALL);
+                else {
+                    out.append("(");
+                    out.append(SELECTION_ARG);
+                    out.append(")");
+                    out.append(STATEMENT_END);
+                }
+                out.append(METHOD_END);
+                appendOverride(out);
+                out.append(METHOD_START);
+                out.append(self);
+                out.append(' ');
+                out.append(UNSELECT_PREFIX);
+                out.append(capitalizedKey);
+                out.append(NO_ARG_METHOD_BODY_START);
+                out.append(METHOD_BODY_STATEMENT_START);
+                out.append(RETURN_STATEMENT);
+                out.append("(");
+                out.append(self);
+                out.append(") ");
+                out.append("super.");
+                out.append(UNSELECT_PREFIX);
+                out.append(capitalizedKey);
+                out.append(NO_ARG_METHOD_CALL);
+                out.append(METHOD_END);
+            }
+            curr = parent;
+            parent = parent.getParent();
+        }
     }
 
     private void appendSelect(String self, Writer out, String key, String methodPrefix, SelectionEnum value, String args, String[][] assignments) throws IOException {

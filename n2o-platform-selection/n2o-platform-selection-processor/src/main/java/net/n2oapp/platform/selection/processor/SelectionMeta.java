@@ -26,6 +26,8 @@ class SelectionMeta {
     private final boolean isAbstract;
     private final String prefix;
 
+    private boolean rawUse;
+
     private String jacksonTypeTag;
 
     SelectionMeta(TypeElement target, SelectionMeta parent, boolean hasChildren, GenericSignature genericSignature, Types types, String prefix) {
@@ -56,6 +58,10 @@ class SelectionMeta {
         return prefix;
     }
 
+    boolean isRawUse() {
+        return rawUse;
+    }
+
     private String resolveMapperTarget() {
         if (genericSignature.getSelfVariable() != null)
             return genericSignature.getSelfVariable();
@@ -74,6 +80,7 @@ class SelectionMeta {
         } else {
             if (!parent.genericSignature.noGenericsDeclared()) { // parent's generic signature contains self variable and at least one type variable
                 if (extendsTypeEmpty()) { // raw use
+                    rawUse = true;
                     return "";
                 } else {
                     if (this.genericSignature.noGenericsDeclared()) { // no type variables declared on this class
@@ -198,7 +205,7 @@ class SelectionMeta {
                     }
                 }
             }
-            properties.add(new SelectionProperty(key, nestedGenericSignature, nested, originalType, collectionRawType));
+            properties.add(new SelectionProperty(key, nestedGenericSignature, nested, originalType, collectionRawType, this));
         }
     }
 
@@ -212,6 +219,10 @@ class SelectionMeta {
 
     SelectionMeta getParent() {
         return parent;
+    }
+
+    String getExtendsSignatureNoBrackets() {
+        return extendsSignature;
     }
 
     String getExtendsSignature() {

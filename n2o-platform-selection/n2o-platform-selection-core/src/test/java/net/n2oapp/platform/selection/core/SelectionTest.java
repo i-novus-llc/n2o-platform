@@ -29,15 +29,15 @@ public class SelectionTest {
     @Test
     public void name() {
         EmployeeCriteria criteria = new EmployeeCriteria();
-        DefaultEmployeeSelection selection = (DefaultEmployeeSelection) EmployeeSelection.create().contacts(
+        DefaultEmployeeSelection selection = EmployeeSelection.create().id().name().contacts(
             ContactSelection.create().phone()
-        ).name().organisation(
+        ).organisation(
             OrganisationSelection.create().factualAddress(
                 AddressSelection.create().postcode()
             ).legalAddress(
                 AddressSelection.create().region()
             )
-        ).id();
+        );
         criteria.setSelection(selection);
         Page<Employee> page = client.search(criteria);
         for (Employee employee : page) {

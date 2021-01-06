@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static java.util.Collections.emptyList;
+
 class GenericSignature {
 
     private final List<String> typeVariables;
@@ -108,6 +110,16 @@ class GenericSignature {
 
     int size() {
         return typeVariables.size();
+    }
+
+    Iterable<String> getVars(boolean includeSelf) {
+        if (includeSelf)
+            return typeVariables;
+        return isEmpty() ? emptyList() : typeVariables.subList(1, typeVariables.size());
+    }
+
+    boolean containsTypeVariable(String var) {
+        return typeVariables.stream().anyMatch(var::equals);
     }
 
 }
