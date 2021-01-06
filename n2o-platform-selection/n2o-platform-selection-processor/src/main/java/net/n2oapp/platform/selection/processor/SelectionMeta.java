@@ -41,7 +41,10 @@ class SelectionMeta {
         this.isAbstract = target.getModifiers().stream().anyMatch(Modifier.ABSTRACT::equals);
         this.extendsType = getExtendsType(types);
         if (
-            (isAbstract || hasChildren)
+            (isAbstract || hasChildren) && (
+                parent == null ||
+                (parent.genericSignature.getSelfVariable() != null && (parent.genericSignature.noGenericsDeclared() || !extendsTypeEmpty()))
+            )
         ) {
             genericSignature.createSelfVariable();
         }
@@ -72,20 +75,19 @@ class SelectionMeta {
             if (!parent.genericSignature.noGenericsDeclared()) { // parent's generic signature contains self variable and at least one type variable
                 if (extendsTypeEmpty()) { // raw use
                     return "";
-                }
-                else {
+                } else {
                     if (this.genericSignature.noGenericsDeclared()) { // no type variables declared on this class
                         String var = this.genericSignature.getSelfVariable();
                         String temp = getGenerics(extendsType.toString());
                         if (var == null) { // no children and not abstract class
-                            return target.getQualifiedName().toString() + ", " + temp;
+                            return (parent.genericSignature.getSelfVariable() == null ? "" : target.getQualifiedName().toString() + ", ") + temp;
                         } else {
                             return var + ", " + temp;
                         }
                     } else {
                         String var = this.genericSignature.getSelfVariable();
                         String temp = var == null ? target.getQualifiedName().toString() + genericSignature.varsToString(true) : var;
-                        return temp + ", " + getGenerics(extendsType.toString());
+                        return (parent.genericSignature.getSelfVariable() == null ? "" : temp + ", ") + getGenerics(extendsType.toString());
                     }
                 }
             } else { // parent's generic signature contains either no type variables or only self variable
