@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static java.util.Collections.emptyList;
-
 class GenericSignature {
 
     private final List<String> typeVariables;
@@ -112,14 +110,25 @@ class GenericSignature {
         return typeVariables.size();
     }
 
-    Iterable<String> getVars(boolean includeSelf) {
-        if (includeSelf)
-            return typeVariables;
-        return isEmpty() ? emptyList() : typeVariables.subList(1, typeVariables.size());
+    public boolean containsTypeVariable(StringBuilder token) {
+        return typeVariables.stream().anyMatch(s -> {
+            if (s.length() == token.length()) {
+                for (int i = 0; i < s.length(); i++) {
+                    if (s.charAt(i) != token.charAt(i))
+                        return false;
+                }
+                return true;
+            }
+            return false;
+        });
     }
 
-    boolean containsTypeVariable(String var) {
-        return typeVariables.stream().anyMatch(var::equals);
+    public int indexOf(String var) {
+        for (int i = 0; i < typeVariables.size(); i++) {
+            if (typeVariables.get(i).equals(var))
+                return i;
+        }
+        throw new IllegalStateException();
     }
 
 }

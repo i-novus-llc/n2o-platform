@@ -5,6 +5,9 @@ import net.n2oapp.platform.selection.api.Selective;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * To test the compilation of the generated code
+ */
 public class TestModel {
 
     @Selective
@@ -36,9 +39,6 @@ public class TestModel {
     static class Test5<B extends Test4<Test6<C, C, ?>>, C extends Integer> extends Test4<Test6<C, C, ?>> {
         B b1;
         List<B> bs;
-
-        void b(B b) {}
-
     }
 
     @Selective
@@ -54,9 +54,9 @@ public class TestModel {
     }
 
     @Selective
-    static class Test6<C extends Integer, I extends C, D extends Test7<I>> extends Test4<Test6<C, I, D>> {
+    static class Test6<C extends Integer, I extends C, E extends Test7<I>> extends Test4<Test6<C, I, E>> {
         Test4 fsdfdsffsdf;
-        D sdfsdfsdf546;
+        E sdfsdfsdf546;
         Test7<I> sdfsdfsf321;
     }
 
@@ -69,13 +69,12 @@ public class TestModel {
     }
 
     @Selective
-    static class Test14<E extends Test15<I, I>, I extends Integer> {
-        Test14<E, I> e1;
+    static class Test14<C extends Integer, I extends C, E extends Test15<I, E>> {
+        Test15<I, E> test15;
     }
 
     @Selective
-    static class Test15<I extends E, E extends Integer> extends Test14<Test15<I, I>, I> {
-        Test14<Test15<I, I>, I> e2;
+    static class Test15<E extends Integer, I extends Test15<E, I>> extends Test14<E, E, I> {
     }
 
 }

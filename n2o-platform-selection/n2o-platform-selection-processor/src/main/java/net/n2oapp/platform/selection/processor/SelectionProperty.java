@@ -78,37 +78,31 @@ class SelectionProperty {
         return resolveTypeVariables(owner, against, nestedGenericSignature);
     }
 
-    private String resolveTypeVariables(SelectionMeta from, SelectionMeta against, String resolved) {
-        if (from == against || resolved.isEmpty() || from.getGenericSignature().isEmpty())
-            return resolved;
+    private String resolveTypeVariables(SelectionMeta from, SelectionMeta against, String generics) {
+        if (from == against || generics.isEmpty() || from.getGenericSignature().isEmpty())
+            return generics;
         Map<String, String> resolvedVariables = new HashMap<>(0);
-        int index = 0;
-        for (String var : from.getGenericSignature().getVars(true)) {
-            int i = 0;
-            int j;
-            do {
-                i = resolved.indexOf(var, i);
-                if (i == -1)
-                    break;
-                j = i + var.length();
-                if (shouldSkip(resolved, i, j)) {
-                    i = j;
-                    continue;
-                }
-                final int finalIndex = index;
+        StringBuilder temp = new StringBuilder();
+        StringBuilder resolved = new StringBuilder();
+        GenericSignature signature = from.getGenericSignature();
+        for (int i = 0; i < generics.length(); i++) {
+            char c = generics.charAt(i);
+            temp.append(c);
+            if (signature.containsTypeVariable(temp) && !shouldSkip(generics, i)) {
+                String var = temp.toString();
                 String bounds = resolvedVariables.computeIfAbsent(var, variable ->
-                    findTypeVariableBounds(from, against, finalIndex)
+                    findTypeVariableBounds(from, against, signature.indexOf(var))
                 );
-                if (!bounds.equals(var)) {
-                    String left = i > 0 ? resolved.substring(0, i) : "";
-                    String right = j < resolved.length() ? resolved.substring(j) : "";
-                    resolved = left + bounds + right;
-                }
-                i = j + bounds.length() - 1;
-            } while (true);
-            index++;
+                resolved.append(bounds);
+                temp.setLength(0);
+            } else if (GENERIC_DELIMITER.contains(c)) {
+                resolved.append(temp);
+                temp.setLength(0);
+            }
         }
-        return resolved;
+        if (temp.length() > 0)
+            resolved.append(temp);
+        return resolved.toString();
     }
 
     private String findTypeVariableBounds(SelectionMeta from, SelectionMeta against, int index) {
@@ -140,18 +134,11 @@ class SelectionProperty {
         return signature.substring(prev);
     }
 
-    private boolean shouldSkip(String resolved, int i, int j) {
-        boolean skip = false;
-        if (i == 0) {
-            if (j < resolved.length()) {
-                skip = !GENERIC_DELIMITER.contains(resolved.charAt(j));
-            }
-        } else {
-            skip = !GENERIC_DELIMITER.contains(resolved.charAt(i - 1));
-            if (j < resolved.length())
-                skip |= !GENERIC_DELIMITER.contains(resolved.charAt(j));
+    private boolean shouldSkip(String signature, int i) {
+        if (i < signature.length() - 1) {
+            return !GENERIC_DELIMITER.contains(signature.charAt(i + 1));
         }
-        return skip;
+        return false;
     }
 
 }
