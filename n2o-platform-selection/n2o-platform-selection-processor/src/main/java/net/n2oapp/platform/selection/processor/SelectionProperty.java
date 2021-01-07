@@ -2,7 +2,6 @@ package net.n2oapp.platform.selection.processor;
 
 import javax.lang.model.type.TypeMirror;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -75,16 +74,16 @@ class SelectionProperty {
         return originalType;
     }
 
-    String resolveGenerics(SelectionMeta against) {
-        if (nestedGenericSignature.isEmpty())
-            return "";
-        GenericSignature signature = owner.getGenericSignature();
-        if (signature.isEmpty())
-            return nestedGenericSignature;
-        String resolved = nestedGenericSignature;
+    String resolveTypeVariables(SelectionMeta against) {
+        return resolveTypeVariables(owner, against, nestedGenericSignature);
+    }
+
+    private String resolveTypeVariables(SelectionMeta from, SelectionMeta against, String resolved) {
+        if (from == against || resolved.isEmpty() || from.getGenericSignature().isEmpty())
+            return resolved;
         Map<String, String> resolvedVariables = new HashMap<>(0);
         int index = 0;
-        for (String var : signature.getVars(true)) {
+        for (String var : from.getGenericSignature().getVars(true)) {
             int i = 0;
             int j;
             do {
@@ -92,49 +91,67 @@ class SelectionProperty {
                 if (i == -1)
                     break;
                 j = i + var.length();
-                boolean skip = false;
-                if (i == 0) {
-                    if (j < resolved.length()) {
-                        skip = !GENERIC_DELIMITER.contains(resolved.charAt(j));
-                    }
-                } else {
-                    skip = !GENERIC_DELIMITER.contains(resolved.charAt(i - 1));
-                    if (j < resolved.length())
-                        skip |= !GENERIC_DELIMITER.contains(resolved.charAt(j));
-                }
-                if (skip) {
+                if (shouldSkip(resolved, i, j)) {
                     i = j;
                     continue;
                 }
-                int finalIndex = index;
-                String bounds = resolvedVariables.computeIfAbsent(var, variable -> {
-                    LinkedList<SelectionMeta> stack = new LinkedList<>();
-                    SelectionMeta curr = against;
-                    do {
-                        stack.push(curr);
-                        if (curr.getParent() == owner)
-                            break;
-                        curr = curr.getParent();
-                    } while (true);
-                    String res = null;
-                    while (!stack.isEmpty()) {
-                        curr = stack.pop();
-                        String extendsSignature = curr.getExtendsSignatureNoBrackets();
-                        String[] split = extendsSignature.split(",");
-                        res = split[finalIndex].strip();
-                        if (!curr.getGenericSignature().containsTypeVariable(res))
-                            break;
-                    }
-                    return res;
-                });
-                String left = i > 0 ? resolved.substring(0, i) : "";
-                String right = j < resolved.length() ? resolved.substring(j) : "";
-                resolved = left + bounds + right;
-                i = j;
+                final int finalIndex = index;
+                String bounds = resolvedVariables.computeIfAbsent(var, variable ->
+                    findTypeVariableBounds(from, against, finalIndex)
+                );
+                if (!bounds.equals(var)) {
+                    String left = i > 0 ? resolved.substring(0, i) : "";
+                    String right = j < resolved.length() ? resolved.substring(j) : "";
+                    resolved = left + bounds + right;
+                }
+                i = j + bounds.length() - 1;
             } while (true);
             index++;
         }
         return resolved;
+    }
+
+    private String findTypeVariableBounds(SelectionMeta from, SelectionMeta against, int index) {
+        SelectionMeta curr = against;
+        do {
+            if (curr.getParent() == from)
+                return resolveTypeVariables(curr, against, getExtendsBounds(curr.getExtendsSignatureNoBrackets(), index).strip());
+            curr = curr.getParent();
+        } while (true);
+    }
+
+    private String getExtendsBounds(String signature, int index) {
+        int numBrackets = 0;
+        int currIndex = 0;
+        int prev = 0;
+        for (int i = 0; i < signature.length(); i++) {
+            char c = signature.charAt(i);
+            if (c == ',' && numBrackets == 0) {
+                if (currIndex == index) {
+                    return signature.substring(prev, i);
+                }
+                currIndex++;
+                prev = i + 1;
+            } else if (c == '<') {
+                numBrackets++;
+            } else if (c == '>')
+                numBrackets--;
+        }
+        return signature.substring(prev);
+    }
+
+    private boolean shouldSkip(String resolved, int i, int j) {
+        boolean skip = false;
+        if (i == 0) {
+            if (j < resolved.length()) {
+                skip = !GENERIC_DELIMITER.contains(resolved.charAt(j));
+            }
+        } else {
+            skip = !GENERIC_DELIMITER.contains(resolved.charAt(i - 1));
+            if (j < resolved.length())
+                skip |= !GENERIC_DELIMITER.contains(resolved.charAt(j));
+        }
+        return skip;
     }
 
 }

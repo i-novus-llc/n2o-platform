@@ -43,6 +43,7 @@ class SelectionSerializer extends AbstractSerializer {
 
     private final boolean addJacksonTyping;
     private final boolean addJaxRsAnnotations;
+    private final boolean overrideSelectionKeys;
 
     SelectionSerializer(
         TypeMirror selectionKey,
@@ -51,6 +52,7 @@ class SelectionSerializer extends AbstractSerializer {
         TypeMirror selectionPropagation,
         boolean addJacksonTyping,
         boolean addJaxRsAnnotations,
+        boolean overrideSelectionKeys,
         TypeElement jsonTypeInfo,
         TypeElement jsonSubTypes,
         TypeElement requestParam,
@@ -62,6 +64,7 @@ class SelectionSerializer extends AbstractSerializer {
         this.selectionPropagation = selectionPropagation;
         this.addJacksonTyping = addJacksonTyping;
         this.addJaxRsAnnotations = addJaxRsAnnotations;
+        this.overrideSelectionKeys = overrideSelectionKeys;
         this.requestParam = requestParam;
         this.beanParam = beanParam;
         if (jsonTypeInfo != null) {
@@ -173,7 +176,7 @@ class SelectionSerializer extends AbstractSerializer {
                     out.append(requestParam.toString());
                     out.append("(\"");
                     out.append(prefix);
-                    out.append(PROPAGATION);
+                    out.append(PROPAGATION_CAPITALIZED);
                     out.append("\")\n");
                 }
                 out.append("\tprotected ");
@@ -247,7 +250,8 @@ class SelectionSerializer extends AbstractSerializer {
                     assignments[0][1] = "null";
                 appendSelect(self, out, property.getKey(), UNSELECT_PREFIX, SelectionEnum.F, "", assignments);
             }
-            override(meta, out, self);
+            if (overrideSelectionKeys)
+                override(meta, out, self);
             out.append("\n}");
         }
     }
@@ -396,10 +400,10 @@ class SelectionSerializer extends AbstractSerializer {
             for (SelectionProperty property : parent.getProperties()) {
                 String nestedSelectionArg = "";
                 if (property.getNestedSelection() != null) {
-                    String generics = property.resolveGenerics(meta);
-                    if (!generics.isEmpty())
-                        generics = "<" + generics + ">";
-                    nestedSelectionArg = getQualifiedName(property.getNestedSelection(), property.getNestedSelection().getTargetPackage(), CLASS_PREFIX) + generics + " " + SELECTION_ARG;
+                    String bounds = property.resolveTypeVariables(meta);
+                    if (!bounds.isEmpty())
+                        bounds = "<" + bounds + ">";
+                    nestedSelectionArg = getQualifiedName(property.getNestedSelection(), property.getNestedSelection().getTargetPackage(), CLASS_PREFIX) + bounds + " " + SELECTION_ARG;
                 }
                 String capitalizedKey = capitalize(property.getKey());
                 appendOverride(out);

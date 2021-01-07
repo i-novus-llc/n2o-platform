@@ -25,10 +25,12 @@ public class SelectionProcessor extends AbstractProcessor {
 
     private static final String ADD_JACKSON_TYPING = "net.n2oapp.platform.selection.addJacksonTyping";
     private static final String ADD_JAXRS_ANNOTATIONS = "net.n2oapp.platform.selection.addJaxRsAnnotations";
+    private static final String OVERRIDE_SELECTION_KEYS = "net.n2oapp.platform.selection.overrideSelectionKeys";
 
     private static final Set<String> SUPPORTED_OPTIONS = Set.of(
         ADD_JACKSON_TYPING,
-        ADD_JAXRS_ANNOTATIONS
+        ADD_JAXRS_ANNOTATIONS,
+        OVERRIDE_SELECTION_KEYS
     );
 
     private Types types;
@@ -56,7 +58,8 @@ public class SelectionProcessor extends AbstractProcessor {
         TypeElement beanParam = elements.getTypeElement("javax.ws.rs.BeanParam");
         this.addJacksonTyping = Boolean.parseBoolean(processingEnv.getOptions().getOrDefault(ADD_JACKSON_TYPING, Boolean.toString(jsonTypeInfo != null)));
         boolean addJaxRsAnnotations = Boolean.parseBoolean(processingEnv.getOptions().getOrDefault(ADD_JAXRS_ANNOTATIONS, Boolean.toString(requestParam != null)));
-        this.selectionSerializer = new SelectionSerializer(selectionKey, selectionEnum, selectionInterface, selectionPropagation, addJacksonTyping, addJaxRsAnnotations, jsonTypeInfo, jsonSubTypes, requestParam, beanParam);
+        boolean overrideSelectionKeys = Boolean.parseBoolean(processingEnv.getOptions().getOrDefault(OVERRIDE_SELECTION_KEYS, Boolean.toString(true)));
+        this.selectionSerializer = new SelectionSerializer(selectionKey, selectionEnum, selectionInterface, selectionPropagation, addJacksonTyping, addJaxRsAnnotations, overrideSelectionKeys, jsonTypeInfo, jsonSubTypes, requestParam, beanParam);
         this.mapperSerializer = new MapperSerializer(selectionKey, mapperInterface);
     }
 

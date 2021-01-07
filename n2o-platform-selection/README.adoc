@@ -214,6 +214,7 @@ public class IssueMapper implements Mapper<Issue> {
                         <compilerArgs>
                             <arg>-Anet.n2oapp.platform.selection.addJacksonTyping=?</arg>
                             <arg>-Anet.n2oapp.platform.selection.addJaxRsAnnotations=?</arg>
+                            <arg>-Anet.n2oapp.platform.selection.overrideSelectionKeys</arg>
                         </compilerArgs>
                     </configuration>
                 </execution>
@@ -231,8 +232,104 @@ public class IssueMapper implements Mapper<Issue> {
 
 Также он сгенерирует дефолтную реализацию для каждого интерфейса `Selection`.
 
-У генератора кода есть две опции `net.n2oapp.platform.selection.addJacksonTyping` и `net.n2oapp.platform.selection.addJaxRsAnnotations`.
+У генератора кода есть три опции `net.n2oapp.platform.selection.addJacksonTyping`, `net.n2oapp.platform.selection.addJaxRsAnnotations` и `net.n2oapp.platform.selection.overrideSelectionKeys`.
+
 Первая добавляет типизацию для Jackson-а, вторая -- аннотации JAX-RS (позволяет передавать `Selection`-ы в параметрах запроса HTTP).
+
+Последняя указывает, что в дефолтных реализациях `Selection` при наличии наследования между ними в подклассах следует переопределять методы. Например, если есть:
+[source,java]
+----
+public class BaseModel {
+    private Integer id;
+}
+----
+
+Для нее (помимо интерфейса) будет сгенерирован дефолтный `Selection`
+[source,java]
+----
+public class DefaultBaseModelSelection<A extends BaseModel> implements BaseModelSelection<A> {
+
+	@QueryParam("baseModelPropagation")
+	protected SelectionPropagationEnum propagation;
+
+	public SelectionPropagationEnum getPropagation() {
+		return propagation;
+	}
+
+	public void setPropagation(SelectionPropagationEnum propagation) {
+		this.propagation = propagation;
+	}
+
+	@Override
+	public SelectionPropagationEnum propagation() {
+		return propagation;
+	}
+
+	public DefaultBaseModelSelection<A> propagate(SelectionPropagationEnum propagation) {
+		this.propagation = propagation;
+		return this;
+	}
+
+	@QueryParam("baseModelId")
+	private SelectionEnum id;
+
+	@Override
+	public SelectionEnum getId() {
+		return id;
+	}
+
+	public void setId(SelectionEnum id) {
+		this.id = id;
+	}
+
+	public DefaultBaseModelSelection<A> id() {
+		this.id = SelectionEnum.T;
+		return this;
+	}
+
+	public DefaultBaseModelSelection<A> unselectId() {
+		this.id = SelectionEnum.F;
+		return this;
+	}
+
+}
+----
+
+Если у BaseModel есть наследник `SomeModel`, и указана опция `overrideSelectionKeys`, то для `SomeModel` дефолтная реализация будет такой:
+[source,java]
+----
+public class DefaultSomeModelSelection extends DefaultBaseModelSelection<SomeModel> implements SomeModelSelection {
+
+	public DefaultSomeModelSelection propagate(SelectionPropagationEnum propagation) {
+		this.propagation = propagation;
+		return this;
+	}
+
+	/**
+    * Переопределено из DefaultBaseModelSelection
+    */
+	@Override
+	public DefaultSomeModelSelection id() {
+		return (DefaultSomeModelSelection) super.id();
+	}
+
+
+	/**
+    * Переопределено из DefaultBaseModelSelection
+    */
+	@Override
+	public DefaultSomeModelSelection unselectId() {
+		return (DefaultSomeModelSelection) super.unselectId();
+	}
+
+}
+----
+
+Это позволяет использовать `call-chain` без кастов. Например:
+[source,java]
+----
+DefaultSomeModelSelection selection = SomeModelSelection.create().id(); // тут потребуется явный каст, если бы переопределения не было
+----
 
 Главное преимущество в использовании генератора кода -- типобезопасность.
 
