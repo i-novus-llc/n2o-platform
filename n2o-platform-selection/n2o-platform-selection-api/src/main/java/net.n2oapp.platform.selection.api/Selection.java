@@ -25,17 +25,18 @@ public interface Selection<E> {
         if (selection == null)
             return null;
         try {
-            return Util.MAPPER.writeValueAsString(selection);
+            String json = Util.MAPPER.writeValueAsString(selection);
+            return Util.encode(json);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         }
     }
 
-    static <E, S extends Selection<E>> S parse(String str, Class<S> target) {
-        if (str == null || str.isBlank())
+    static <E, S extends Selection<E>> S parse(String encodedJson, Class<S> target) {
+        if (encodedJson == null || encodedJson.isBlank())
             return null;
         try {
-            return Util.MAPPER.readValue(str, target);
+            return Util.MAPPER.readValue(Util.decode(encodedJson), target);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         }

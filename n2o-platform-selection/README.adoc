@@ -478,7 +478,7 @@ public class SomeCriteria extends RestCriteria {
 }
 ----
 Вам следует использовать статические методы `net.n2oapp.platform.selection.api.Selection.toString` и `net.n2oapp.platform.selection.api.Selection.parse` для этого (они `null-safe`).
-Так же стоит иметь в виду, что спец-символы JSON при передаче по сети будут кодироваться процентами.
+Они кодируют JSON таким образом, что это позволяет избежать кодирования процентами в строке запроса URI и сохраняет место (помните, что безопасным лимитом длины URI является 2048 символов).
 
 * Передавать выборку в теле запроса:
 [source,java]
