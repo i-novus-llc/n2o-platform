@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 final class Util {
 
+    private static final String MAGIC = "7";
+
     static final ObjectMapper MAPPER;
     static {
         MAPPER = new ObjectMapper();
@@ -26,6 +28,7 @@ final class Util {
         if (json == null)
             return null;
         StringBuilder builder = new StringBuilder();
+        builder.append(MAGIC);
         for (int i = 0; i < json.length(); i++) {
             char c = json.charAt(i);
             if (c == '{') {
@@ -43,11 +46,11 @@ final class Util {
     }
 
     static String decode(String encodedJson) {
-        if (encodedJson == null)
-            return null;
+        if (!encodedJson.startsWith(MAGIC))
+            return encodedJson;
         StringBuilder decodedJson = new StringBuilder();
         boolean identifier = false;
-        for (int i = 0; i < encodedJson.length(); i++) {
+        for (int i = MAGIC.length(); i < encodedJson.length(); i++) {
             char c = encodedJson.charAt(i);
             if (!identifier) {
                 if (c == LPAREN) {

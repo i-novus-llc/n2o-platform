@@ -21,7 +21,7 @@ public interface Selection<E> {
         return SelectionPropagationEnum.NORMAL;
     }
 
-    static <E> String toString(Selection<E> selection) {
+    static <E> String encode(Selection<E> selection) {
         if (selection == null)
             return null;
         try {
@@ -32,7 +32,7 @@ public interface Selection<E> {
         }
     }
 
-    static <E, S extends Selection<E>> S parse(String encodedJson, Class<S> target) {
+    static <E, S extends Selection<E>> S decode(String encodedJson, Class<S> target) {
         if (encodedJson == null || encodedJson.isBlank())
             return null;
         try {

@@ -21,11 +21,11 @@ public class EmployeeCriteria extends RestCriteria {
     }
 
     public void setSelection(DefaultEmployeeSelection selection) {
-        this.selection = Selection.toString(selection);
+        this.selection = Selection.encode(selection);
     }
 
     public DefaultEmployeeSelection selection() {
-        return Selection.parse(selection, DefaultEmployeeSelection.class);
+        return Selection.decode(selection, DefaultEmployeeSelection.class);
     }
 
     @Override
