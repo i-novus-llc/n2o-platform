@@ -103,24 +103,15 @@ class GenericSignature {
             if (typeVariables.get(i).equals(var))
                 return upperBounds.get(i);
         }
-        return null;
+        throw new IllegalStateException("Type variable " + var + " not found");
     }
 
     int size() {
         return typeVariables.size();
     }
 
-    public boolean containsTypeVariable(StringBuilder token) {
-        return typeVariables.stream().anyMatch(s -> {
-            if (s.length() == token.length()) {
-                for (int i = 0; i < s.length(); i++) {
-                    if (s.charAt(i) != token.charAt(i))
-                        return false;
-                }
-                return true;
-            }
-            return false;
-        });
+    public boolean containsTypeVariable(CharSequence seq) {
+        return typeVariables.stream().anyMatch(s -> s.contentEquals(seq));
     }
 
     public int indexOf(String var) {
@@ -128,7 +119,7 @@ class GenericSignature {
             if (typeVariables.get(i).equals(var))
                 return i;
         }
-        throw new IllegalStateException();
+        throw new IllegalStateException("Type variable " + var + " not found");
     }
 
 }
