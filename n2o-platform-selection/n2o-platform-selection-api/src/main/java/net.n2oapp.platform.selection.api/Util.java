@@ -19,6 +19,7 @@ final class Util {
     private static final char RPAREN    = '1';
     private static final char QUOTE     = '-';
     private static final char COLON     = '3';
+    private static final char COMMA     = '4';
 
     private Util() {
         throw new UnsupportedOperationException();
@@ -39,6 +40,8 @@ final class Util {
                 builder.append(QUOTE);
             } else if (c == ':') {
                 builder.append(COLON);
+            } else if (c == ',') {
+                builder.append(COMMA);
             } else
                 builder.append(c);
         }
@@ -62,6 +65,8 @@ final class Util {
                     decodedJson.append('"');
                 } else if (c == COLON) {
                     decodedJson.append(':');
+                } else if (c == COMMA) {
+                    decodedJson.append(',');
                 } else
                     decodedJson.append(c);
             } else {

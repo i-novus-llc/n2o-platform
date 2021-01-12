@@ -477,8 +477,8 @@ public class SomeCriteria extends RestCriteria {
 
 }
 ----
-Вам следует использовать статические методы `net.n2oapp.platform.selection.api.Selection.toString` и `net.n2oapp.platform.selection.api.Selection.parse` для этого (они `null-safe`).
-Они кодируют JSON таким образом, что это позволяет избежать кодирования процентами в строке запроса URI и сохраняет место (помните, что безопасным лимитом длины URI является 2048 символов).
+Вам следует использовать статические методы `net.n2oapp.platform.selection.api.Selection.encode` и `net.n2oapp.platform.selection.api.Selection.decode` для этого (они `null-safe`).
+Они кодируют JSON так, чтобы избежать кодирования процентами в строке запроса URI и экономят место (помните, что безопасным лимитом длины URI является 2048 символов). Метод `decode` так же может работать и с не кодированным JSON (для не Java-клиентов).
 
 * Передавать выборку в теле запроса:
 [source,java]
