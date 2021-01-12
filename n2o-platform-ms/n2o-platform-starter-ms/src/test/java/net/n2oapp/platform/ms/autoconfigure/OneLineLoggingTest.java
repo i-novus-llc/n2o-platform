@@ -18,10 +18,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = InLineLoggingTest.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest(classes = OneLineLoggingTest.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @TestPropertySource(properties = {"n2o-boot-platform.logging.oneline.enabled=true"})
 @EnableAutoConfiguration
-public class InLineLoggingTest {
+public class OneLineLoggingTest {
 
     private static final Logger logger = LoggerFactory.getLogger("ROOT");
     private static final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -35,7 +35,7 @@ public class InLineLoggingTest {
     static PrintStream output = System.out;
 
     @Test
-    public void testInlineLogging() {
+    public void testOnelineLogging() {
         outputStream.reset();
         logger.info(messageWithLineSeparator);
         String loggedMessage = outputStream.toString();
