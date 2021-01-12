@@ -18,3 +18,10 @@
   <artifactId>n2o-platform-starter-ms</artifactId>
 </dependency>
 ----
+
+= Настройки
+----
+#Включает однострочный формат логгирования
+logging.config=classpath:logback-oneline.xml
+----
+Не использовать, если вы хотите задействовать кастомную конфигурацию LogBack.
