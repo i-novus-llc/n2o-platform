@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.BiFunction;
 
 import static net.n2oapp.platform.selection.api.SelectionPropagationEnum.*;
 
@@ -36,15 +37,11 @@ public final class Selector {
     private static final ConcurrentMap<Class<? extends Selection>, SelectionDescriptor> SELECTION_DESCRIPTORS = new ConcurrentHashMap<>();
 
     public static <E> Page<E> resolvePage(Page<? extends Mapper<? extends E>> srcPage, Selection<? extends E> selection) {
-        return srcPage.map(mapper -> resolve(mapper, selection, NORMAL));
+        return srcPage.map(mapper -> resolve(mapper, selection));
     }
 
+    @SuppressWarnings("rawtypes")
     public static <E> E resolve(Mapper<? extends E> mapper, Selection<? extends E> selection) {
-        return resolve(mapper, selection, NORMAL);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E> E resolve(Mapper<? extends E> mapper, Selection<? extends E> selection, SelectionPropagationEnum propagation) {
         if (mapper == null || selection == null)
             return null;
         SelectionDescriptor selectionDescriptor = getSelectionDescriptor(selection);
@@ -55,65 +52,91 @@ public final class Selector {
             selection.getClass(),
             mapper.getClass()
         );
+        SelectionPropagationEnum propagation = NORMAL;
+        if (selection.propagation() != null)
+            propagation = selection.propagation();
+        if (propagation == NESTED) {
+            return selectAll(mapper, mapperDescriptor);
+        } else {
+            E model = mapper.create();
+            if (model == null)
+                return null;
+            for (SelectionDescriptor.SelectionAccessor selectionAccessor : selectionDescriptor.accessors) {
+                SelectionEnum select = (SelectionEnum) invoke(selectionAccessor.selectionEnumAccessor, selection);
+                if (propagation != ALL && (select == null || !select.asBoolean()))
+                    continue;
+                MapperDescriptor.MapperAccessor mapperAccessor = mapperDescriptor.accessors.get(selectionAccessor.selectionKey);
+                Preconditions.checkNotNull(
+                        mapperAccessor,
+                        "Property %s defined in selection, but mapper is unaware of it. Selection: %s. Mapper: %s",
+                        selectionAccessor.selectionKey,
+                        selection.getClass(),
+                        mapper.getClass()
+                );
+                if (mapperAccessor.nestedMapperAccessor != null) {
+                    Preconditions.checkArgument(
+                            selectionAccessor.nestedSelectionAccessor != null,
+                            "Property %s has nested mapper accessor, but selection is unaware of it. Selection of type %s, mapper of type %s",
+                            selectionAccessor.selectionKey,
+                            selection.getClass(),
+                            mapper.getClass()
+                    );
+                    Selection nestedSelection = (Selection) invoke(selectionAccessor.nestedSelectionAccessor, selection);
+                    nestedSelection(mapper, model, mapperAccessor, nestedSelection, Selector::resolve);
+                } else {
+                    Preconditions.checkArgument(
+                            selectionAccessor.nestedSelectionAccessor == null,
+                            "Property %s has nested selection, but mapper is unaware of it. Selection of type %s, mapper of type %s",
+                            selection.getClass(),
+                            mapper.getClass()
+                    );
+                    invoke(mapperAccessor.selectMethod, mapper, model);
+                }
+            }
+            return model;
+        }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static <E> void nestedSelection(
+            Mapper<? extends E> mapper,
+            E model,
+            MapperDescriptor.MapperAccessor mapperAccessor,
+            Selection nestedSelection,
+            BiFunction<Mapper<? extends E>, Selection, Object> nestedResolve
+    ) {
+        if (mapperAccessor.isCollectionMapper) {
+            Collection<Mapper> collection = (Collection) invoke(mapperAccessor.nestedMapperAccessor, mapper);
+            if (CollectionUtils.isEmpty(collection))
+                return;
+            Collection result;
+            if (collection instanceof List)
+                result = new ArrayList(collection.size());
+            else if (collection instanceof Set)
+                result = new HashSet(collection.size());
+            else
+                throw new IllegalStateException("Unexpected collection of type " + collection.getClass() + " provided");
+            for (Mapper nestedMapper : collection) {
+                result.add(nestedResolve.apply(nestedMapper, nestedSelection));
+            }
+            invoke(mapperAccessor.selectMethod, mapper, model, result);
+        } else {
+            Mapper nestedMapper = (Mapper) invoke(mapperAccessor.nestedMapperAccessor, mapper);
+            Object resolve = nestedResolve.apply(nestedMapper, nestedSelection);
+            invoke(mapperAccessor.selectMethod, mapper, model, resolve);
+        }
+    }
+
+    private static <E> E selectAll(Mapper<? extends E> mapper, MapperDescriptor mapperDescriptor) {
         E model = mapper.create();
         if (model == null)
             return null;
-        if (propagation == NORMAL && selection.propagation() != null)
-            propagation = selection.propagation();
-        SelectionPropagationEnum nestedPropagation = propagation == NESTED ? NESTED : NORMAL;
-        for (SelectionDescriptor.SelectionAccessor selectionAccessor : selectionDescriptor.accessors) {
-            SelectionEnum select = (SelectionEnum) invoke(selectionAccessor.selectionEnumAccessor, selection);
-            if (
-                (propagation != ALL && propagation != NESTED) &&
-                (select == null || !select.asBoolean())
-            ) {
-                continue;
-            }
-            MapperDescriptor.MapperAccessor mapperAccessor = mapperDescriptor.accessors.get(selectionAccessor.selectionKey);
-            Preconditions.checkNotNull(
-                mapperAccessor,
-                "Property %s defined in selection, but mapper is unaware of it. Selection: %s. Mapper: %s",
-                selectionAccessor.selectionKey,
-                selection.getClass(),
-                mapper.getClass()
-            );
-            if (mapperAccessor.nestedMapperAccessor != null) {
-                Preconditions.checkArgument(
-                    selectionAccessor.nestedSelectionAccessor != null,
-                    "Property %s has nested mapper accessor, but selection is unaware of it. Selection of type %s, mapper of type %s",
-                    selectionAccessor.selectionKey,
-                    selection.getClass(),
-                    mapper.getClass()
-                );
-                Selection nestedSelection = (Selection) invoke(selectionAccessor.nestedSelectionAccessor, selection);
-                if (mapperAccessor.isCollectionMapper) {
-                    Collection<Mapper> collection = (Collection) invoke(mapperAccessor.nestedMapperAccessor, mapper);
-                    if (CollectionUtils.isEmpty(collection))
-                        continue;
-                    Collection result;
-                    if (collection instanceof List)
-                        result = new ArrayList(collection.size());
-                    else if (collection instanceof Set)
-                        result = new HashSet(collection.size());
-                    else
-                        throw new IllegalStateException("Unexpected collection of type " + collection.getClass() + " provided");
-                    for (Mapper nestedMapper : collection) {
-                        result.add(resolve(nestedMapper, nestedSelection, nestedPropagation));
-                    }
-                    invoke(mapperAccessor.selectMethod, mapper, model, result);
-                } else {
-                    Mapper nestedMapper = (Mapper) invoke(mapperAccessor.nestedMapperAccessor, mapper);
-                    Object resolve = resolve(nestedMapper, nestedSelection, nestedPropagation);
-                    invoke(mapperAccessor.selectMethod, mapper, model, resolve);
-                }
-            } else {
-                Preconditions.checkArgument(
-                    selectionAccessor.nestedSelectionAccessor == null,
-                    "Property %s has nested selection, but mapper is unaware of it. Selection of type %s, mapper of type %s",
-                    select.getClass(),
-                    mapper.getClass()
-                );
+        for (Map.Entry<String, MapperDescriptor.MapperAccessor> entry : mapperDescriptor.accessors.entrySet()) {
+            MapperDescriptor.MapperAccessor mapperAccessor = entry.getValue();
+            if (mapperAccessor.nestedMapperAccessor == null)
                 invoke(mapperAccessor.selectMethod, mapper, model);
+            else {
+                nestedSelection(mapper, model, mapperAccessor, null, (nestedMapper, unused) -> selectAll(nestedMapper, getMapperDescriptor(nestedMapper)));
             }
         }
         return model;
