@@ -123,11 +123,14 @@ public final class Selector {
         } else {
             Mapper nestedMapper = (Mapper) invoke(mapperAccessor.nestedMapperAccessor, mapper);
             Object resolve = nestedResolve.apply(nestedMapper, nestedSelection);
-            invoke(mapperAccessor.selectMethod, mapper, model, resolve);
+            if (resolve != null)
+                invoke(mapperAccessor.selectMethod, mapper, model, resolve);
         }
     }
 
     private static <E> E selectAll(Mapper<? extends E> mapper, MapperDescriptor mapperDescriptor) {
+        if (mapper == null)
+            return null;
         E model = mapper.create();
         if (model == null)
             return null;
