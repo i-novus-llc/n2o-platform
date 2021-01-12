@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = OneLineLoggingTest.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@TestPropertySource(properties = {"n2o-boot-platform.logging.oneline.enabled=true"})
+@TestPropertySource(properties = {"logging.config=classpath:logback-oneline.xml"})
 @EnableAutoConfiguration
 public class OneLineLoggingTest {
 
