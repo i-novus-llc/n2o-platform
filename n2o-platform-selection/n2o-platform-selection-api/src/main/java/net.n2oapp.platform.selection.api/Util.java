@@ -4,22 +4,37 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * Кодирование спец. символов JSON для передачи в параметрах запроса без кодирования процентами (url-encoding).
+ */
 final class Util {
 
+    /**
+     * Закодированный JSON начинается с этой строки
+     */
     private static final String MAGIC = "7";
 
     static final ObjectMapper MAPPER;
     static {
         MAPPER = new ObjectMapper();
         MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        MAPPER.enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY); // Ensures consistent json view of equal selections
+//      Сортировка полей дает нам постоянное (то есть не меняющееся от реализации к реализации)
+//      представление JSON у двух логически одинаковых выборок.
+//      Это позволяет сохранить правильную работу web-cache-ей.
+        MAPPER.enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
     }
 
-    private static final char LPAREN    = '0';
-    private static final char RPAREN    = '1';
-    private static final char QUOTE     = '-';
-    private static final char COLON     = '3';
-    private static final char COMMA     = '4';
+//  Данные символы необязательно кодировать процентами.
+    private static final char LPAREN    = '0'; // Символ '{'
+    private static final char RPAREN    = '1'; // Символ '}'
+    /**
+     * Так как дефис не может присутствовать в валидном Java идентификаторе (в отличие от цифр) --
+     * его можно использовать для кодирования двойных кавычек в JSON.
+     */
+    private static final char QUOTE     = '-'; // Символ '"'
+    private static final char COLON     = '3'; // Символ ':'
+    private static final char COMMA     = '4'; // Символ ','
+//  ----------------------------------------------------
 
     private Util() {
         throw new UnsupportedOperationException();

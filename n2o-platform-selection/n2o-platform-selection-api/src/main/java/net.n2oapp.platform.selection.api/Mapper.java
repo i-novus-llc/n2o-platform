@@ -1,12 +1,15 @@
 package net.n2oapp.platform.selection.api;
 
 /**
- * @param <E> Type for this mapper
+ * Основной интерфейс, который знает, как отобразить некую сущность в DTO типа {@code <E>}.
+ * Сущностью может выступать что угодно, будь то сущность JPA или самая обычная {@code Map}.
+ *
+ * @param <E> Тип DTO
  */
 public interface Mapper<E> {
 
     /**
-     * @return Empty model (DTO), whose fields will be selectively mapped according to {@link Selection<E>}
+     * @return Пустой DTO, чьи поля будут выборочно отображены в соответствии с {@link Selection<E>}
      */
     E create();
 

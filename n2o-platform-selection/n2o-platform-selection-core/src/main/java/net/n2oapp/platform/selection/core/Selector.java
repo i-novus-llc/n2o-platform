@@ -18,24 +18,39 @@ import java.util.function.BiFunction;
 
 import static net.n2oapp.platform.selection.api.SelectionPropagationEnum.*;
 
+/**
+ * Основная логика по выборочному отображению.
+ */
 public final class Selector {
 
-    public static final String VIOLATION = "Violation in %s";
+    private static final String VIOLATION = "Violation in %s";
 
     private static final ResolvableType MAPPER_RAW = ResolvableType.forRawClass(Mapper.class);
     private static final ResolvableType SELECTION_RAW = ResolvableType.forRawClass(Selection.class);
     private static final ResolvableType COLLECTION_RAW = ResolvableType.forRawClass(Collection.class);
-    public static final String CREATE_METHOD = "create";
+    private static final String CREATE_METHOD = "create";
 
     private Selector() {
     }
 
+    /**
+     * Кешированные дескрипторы мапперов
+     */
     @SuppressWarnings("rawtypes")
     private static final ConcurrentMap<Class<? extends Mapper>, MapperDescriptor> MAPPER_DESCRIPTORS = new ConcurrentHashMap<>();
 
+    /**
+     * Кешированные дескрипторы выборок
+     */
     @SuppressWarnings("rawtypes")
     private static final ConcurrentMap<Class<? extends Selection>, SelectionDescriptor> SELECTION_DESCRIPTORS = new ConcurrentHashMap<>();
 
+    /**
+     * @param srcPage Page мапперов
+     * @param selection Выборка
+     * @param <E> Тип DTO
+     * @return Page DTO, чьи поля выборочно заполнены в соответствии с {@code selection}
+     */
     public static <E> Page<E> resolvePage(Page<? extends Mapper<? extends E>> srcPage, Selection<? extends E> selection) {
         return srcPage.map(mapper -> resolve(mapper, selection));
     }
@@ -139,7 +154,11 @@ public final class Selector {
             if (mapperAccessor.nestedMapperAccessor == null)
                 invoke(mapperAccessor.selectMethod, mapper, model);
             else {
-                nestedSelection(mapper, model, mapperAccessor, null, (nestedMapper, unused) -> selectAll(nestedMapper, getMapperDescriptor(nestedMapper)));
+                nestedSelection(mapper, model, mapperAccessor, null, (nestedMapper, unused) -> {
+                    if (nestedMapper == null)
+                        return null;
+                    return selectAll(nestedMapper, getMapperDescriptor(nestedMapper));
+                });
             }
         }
         return model;

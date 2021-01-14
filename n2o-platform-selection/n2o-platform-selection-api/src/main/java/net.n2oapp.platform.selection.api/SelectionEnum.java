@@ -1,8 +1,8 @@
 package net.n2oapp.platform.selection.api;
 
 /**
- * Just true/false, but with one character per value.
- * Used in http query-parameters instead of usual 'true' / 'false' to save some space in URI string.
+ * Просто (true / false), но с одним символом на значение.
+ * Используется в http параметрах запроса вместо обычных (true / false), чтобы сэкономить место в строке URI.
  */
 public enum SelectionEnum {
 

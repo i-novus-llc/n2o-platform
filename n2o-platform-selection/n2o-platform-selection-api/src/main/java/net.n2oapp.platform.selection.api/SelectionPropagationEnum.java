@@ -1,22 +1,26 @@
 package net.n2oapp.platform.selection.api;
 
+/**
+ * Задает как на определенном уровне вложенности будут выбраны поля для отображения.
+ */
 public enum SelectionPropagationEnum {
 
     /**
-     * Selection is entirely defined by {@link SelectionEnum} values.
-     * This is the default value.
+     * Выборка поля полностью определяется значениями {@link SelectionEnum}.
+     * Это дефолтное поведение.
      */
     NORMAL,
 
     /**
-     * Selection is disabled at this particular level of nesting,
-     * i.e., corresponding mapper will select all fields.
-     * This will not propagate through nested selections.
+     * Выборка всех полей (то есть игнорирование значений {@link SelectionEnum})
+     * на этом (и только на этом) уровне вложенности.
      */
     ALL,
 
     /**
-     * Selection is entirely disabled at this and any nested selection.
+     * Полное игнорирование всех {@link SelectionEnum} на этом уровне,
+     * а так же на любом вложенном уровне.
+     * То есть будет выбран каждый {@link SelectionKey}.
      */
     NESTED
 

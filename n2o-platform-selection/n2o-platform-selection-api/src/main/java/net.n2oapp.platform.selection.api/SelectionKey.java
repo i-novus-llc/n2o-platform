@@ -6,9 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * One to one mapping between {@link Selection} fields and {@link Mapper} methods.
+ * Связывает методы {@link Selection} и {@link Mapper} один к одному.
  * <br><br>
- * For example, if we have such entity:
+ * Например, если у нас есть сущность EmployeeEntity:
  *
  *      <br><pre>
  *      EmployeeEntity {
@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  *      }
  *      </pre>
  *
- *      And such model (DTO) for this entity:
+ *      И есть DTO для нее:
  *      <br><pre>
  *      Employee {
  *          String name;
@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  *      }
  *      </pre>
  *
- *      Then selection would look like:
+ *      Тогда выборка будет такой:
  *      <br><pre>
  *      EmployeeSelection implements Selection<Employee> {
  *
@@ -38,7 +38,7 @@ import java.lang.annotation.Target;
  *      }
  *      </pre>
  *
- *      And mapper should look like:
+ *      А маппер:
  *      <br><pre>
  *      EmployeeMapper implements Mapper<Employee> {
  *
@@ -55,5 +55,16 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SelectionKey {
+
+    /**
+     * @return Строковое представление ключа, по которому связывается {@link Selection} и {@link Mapper}
+     *
+     * В общем случае данный ключ должен присутствовать и в реализации маппера и в реализации выборки.
+     * Однако при наличии ключа у маппера и отсутствии его в выборке логического противоречия не возникает
+     * (клиент мог указать выборку для некоторого типа, а маппер отображает его дочерний тип),
+     * поэтому такой вариант тоже возможен.
+     * Но присутствие ключа в маппере и отсутствие его в выборке -- это ошибка.
+     */
     String value();
+
 }

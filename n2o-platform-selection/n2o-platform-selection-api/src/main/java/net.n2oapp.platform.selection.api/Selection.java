@@ -3,12 +3,14 @@ package net.n2oapp.platform.selection.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
- * @param <E> Type for this selection
+ * Основной интерфейс, определяющий какие именно поля будут отображены {@link Mapper<E>}-ом
+ *
+ * @param <E> Тип DTO для этой выборки
  */
 public interface Selection<E> {
 
     /**
-     * Marker method to ensure type-safety
+     * Метод-маркер для вывода типа {@code <E>} в runtime
      */
     default E typeMarker() {
         return null;
@@ -21,7 +23,14 @@ public interface Selection<E> {
         return SelectionPropagationEnum.NORMAL;
     }
 
-    static <E> String encode(Selection<E> selection) {
+    /**
+     * Данный метод нужен, чтобы уменьшить кол-во символов, необходимых для передачи выборки в формате JSON,
+     * через параметры запроса URL.
+     *
+     * @param selection Выборка
+     * @return Закодированный специальным образом JSON, который не будет закодирован процентами (url-encoded).
+     */
+    static String encode(Selection<?> selection) {
         if (selection == null)
             return null;
         try {
@@ -32,7 +41,15 @@ public interface Selection<E> {
         }
     }
 
-    static <E, S extends Selection<E>> S decode(String encodedJson, Class<S> target) {
+    /**
+     * Данный метод может работать и не с кодированной через {@link Selection#encode(Selection)} выборкой
+     * (то есть он может работать и с обычным JSON).
+     *
+     * @param encodedJson Выборка в обыкновенном формате JSON, или закодированном через {@link Selection#encode(Selection)}
+     * @param target Тип выборки
+     * @return Выборка типа {@code <S>}
+     */
+    static <S extends Selection<?>> S decode(String encodedJson, Class<S> target) {
         if (encodedJson == null || encodedJson.isBlank())
             return null;
         try {

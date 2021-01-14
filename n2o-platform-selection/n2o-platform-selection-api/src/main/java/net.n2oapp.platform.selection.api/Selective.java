@@ -6,15 +6,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks Java bean as target for selection
+ * Помечает DTO как тип, поля которого можно выборочно отобразить.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Selective {
 
     /**
-     * Prefix to be used in conjunction with {@link javax.ws.rs.QueryParam} to prevent name collisions.
-     * If not specified -- defaults to {@code camelCaseClassName}
+     * Префикс, который используется в сочетании с {@link javax.ws.rs.QueryParam}
+     * для предотвращения коллизий имен.
+     * Если не указан -- по-умолчанию будет вида {@code camelCaseClassName}
      */
     String prefix() default "";
 
