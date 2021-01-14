@@ -1,4 +1,4 @@
-package net.n2oapp.platform.selection.core;
+package net.n2oapp.platform.selection.processor;
 
 import net.n2oapp.platform.selection.api.Selective;
 
@@ -42,7 +42,7 @@ public class TestModel {
     }
 
     @Selective
-    static class Test10<B extends Test6<Integer, Integer, Test7<Integer>>> {
+    static class Test9<B extends Test6<Integer, Integer, Test7<Integer>>> {
         Test4<Test6<Integer, Integer, Test7<Integer>>> test4;
         Test4<B> integerTest4;
         List<B> l;
@@ -50,7 +50,7 @@ public class TestModel {
     }
 
     @Selective
-    static class Test9 extends Test10<Test6<Integer, Integer, Test7<Integer>>> {
+    static class Test8 extends Test9<Test6<Integer, Integer, Test7<Integer>>> {
     }
 
     @Selective
@@ -65,16 +65,16 @@ public class TestModel {
     }
 
     @Selective
-    static class Test13 extends Test7<Integer> {
+    static class Test10 extends Test7<Integer> {
     }
 
     @Selective
-    static class Test14<C extends Integer, I extends C, E extends Test15<I, E>> {
-        Test15<I, E> test15;
+    static class Test11<C extends Integer, I extends C, E extends Test12<I, E>> {
+        Test12<I, E> test12;
     }
 
     @Selective
-    static class Test15<E extends Integer, I extends Test15<E, I>> extends Test14<E, E, I> {
+    static class Test12<E extends Integer, I extends Test12<E, I>> extends Test11<E, E, I> {
     }
 
 }
