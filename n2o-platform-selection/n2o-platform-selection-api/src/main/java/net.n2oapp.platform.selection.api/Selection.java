@@ -3,8 +3,19 @@ package net.n2oapp.platform.selection.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
+ * <pre>
  * Основной интерфейс, определяющий какие именно поля будут отображены {@link Mapper<E>}-ом
  *
+ * Методы, которые определяют выборку полей типа {@code E} должны быть помечены аннотацией {@link SelectionKey}
+ * и могут быть двух видов:
+ *
+ * 1) Метод возвращающий {@link SelectionEnum}. Таким методам обычно соответствуют примитивные поля сущности (числа, даты, строки и т.д).
+ *
+ * 2) А так же парные методы:
+ *      а) Метод возвращающий {@link SelectionEnum}.
+ *      б) И связанный с ним через {@code selectionKey} метод, возвращающий вложенный {@code Selection<X>}
+ *
+ * </pre>
  * @param <E> Тип DTO для этой выборки
  */
 public interface Selection<E> {

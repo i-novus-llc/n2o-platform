@@ -55,6 +55,19 @@ public final class Selector {
         return srcPage.map(mapper -> resolve(mapper, selection));
     }
 
+    /**
+     * @param mapper Маппер
+     * @param selection Выборка
+     * @param <E> Тип DTO
+     * @return Выборочное отображение E в соответствии с {@code selection}
+     * @throws IllegalArgumentException если целевой тип DTO {@code mapper}-а нельзя присвоить целевому типу DTO {@code selection}-а,
+     * @throws IllegalArgumentException если в {@code selection} присутствует selectionKey и отсутствует в {@code mapper}-е.
+     * @throws IllegalArgumentException если в {@code mapper}-е некоторый selectionKey является вложенным, но в {@code selection}-е нет (и наоборот)
+     * @throws IllegalStateException если {@code selectionKey} {@code mapper} - а вернул коллекцию мапперов неподдерживаемого типа
+     * @throws IllegalArgumentException
+     *              если переданные реализации {@code mapper} и {@code selection} не соответствуют контрактам,
+     *              описанным в {@link net.n2oapp.platform.selection.api.Mapper} и {@link net.n2oapp.platform.selection.api.Selection} соответственно
+     */
     @SuppressWarnings("rawtypes")
     public static <E> E resolve(Mapper<? extends E> mapper, Selection<? extends E> selection) {
         if (mapper == null || selection == null)
@@ -81,8 +94,8 @@ public final class Selector {
                 if (propagation != ALL && (select == null || !select.asBoolean()))
                     continue;
                 MapperDescriptor.MapperAccessor mapperAccessor = mapperDescriptor.accessors.get(selectionAccessor.selectionKey);
-                Preconditions.checkNotNull(
-                        mapperAccessor,
+                Preconditions.checkArgument(
+                        mapperAccessor != null,
                         "Property %s defined in selection, but mapper is unaware of it. Selection: %s. Mapper: %s",
                         selectionAccessor.selectionKey,
                         selection.getClass(),
