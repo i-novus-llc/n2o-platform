@@ -48,13 +48,21 @@ class MapperDescriptor {
          * {@code true} -- если {@link MapperDescriptor.MapperAccessor#nestedMapperAccessor}
          * возвращает коллекцию мапперов
          */
-        final boolean isCollectionMapper;
+        private final boolean isCollectionMapper;
 
         MapperAccessor(String selectionKey, Method selectMethod, Method nestedMapperAccessor, boolean isCollectionMapper) {
             this.selectionKey = selectionKey;
             this.selectMethod = selectMethod;
             this.nestedMapperAccessor = nestedMapperAccessor;
             this.isCollectionMapper = isCollectionMapper;
+        }
+
+        boolean isNested() {
+            return nestedMapperAccessor != null;
+        }
+
+        boolean isCollectionMapper() {
+            return isCollectionMapper;
         }
 
     }

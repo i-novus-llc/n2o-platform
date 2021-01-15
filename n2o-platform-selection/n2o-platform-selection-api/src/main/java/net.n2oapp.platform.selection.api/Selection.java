@@ -15,6 +15,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
  *      а) Метод возвращающий {@link SelectionEnum}.
  *      б) И связанный с ним через {@code selectionKey} метод, возвращающий вложенный {@code Selection<X>}
  *
+ * Аннотацией {@link SelectionKey} могут быть так же помечены поля типа {@link SelectionEnum}.
+ * В таком случае у него должен быть стандартный геттер.
+ *
  * </pre>
  * @param <E> Тип DTO для этой выборки
  */

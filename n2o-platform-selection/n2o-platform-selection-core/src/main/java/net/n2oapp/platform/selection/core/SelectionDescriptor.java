@@ -48,6 +48,10 @@ class SelectionDescriptor {
             this.nestedSelectionAccessor = nestedSelectionAccessor;
         }
 
+        boolean isNested() {
+            return nestedSelectionAccessor != null;
+        }
+
     }
 
 }
