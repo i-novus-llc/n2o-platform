@@ -44,8 +44,4 @@ public abstract class SeekPagingTest {
         return list.get(ThreadLocalRandom.current().nextInt(list.size()));
     }
 
-    protected int randInt(int bound) {
-        return ThreadLocalRandom.current().nextInt(bound);
-    }
-
 }

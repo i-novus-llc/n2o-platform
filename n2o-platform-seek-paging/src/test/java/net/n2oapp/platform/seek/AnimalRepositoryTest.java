@@ -189,7 +189,6 @@ public class AnimalRepositoryTest extends SeekPagingTest {
         criteria.setOrders(List.of(Sort.Order.asc(ID)));
         criteria.setPage(RequestedPageEnum.FIRST);
         criteria.setSize(7);
-        Function<Animal, List<SeekPivot>> pivotsMaker = animal -> List.of(SeekPivot.of(ID, animal.getId().toString()));
         Function<SeekableCriteria, SeekedPage<Animal>> pageSource = c -> repository.findAll(c);
         SeekedPageIterator<Animal, SeekableCriteria> iter = SeekedPageIterator.from(pageSource, criteria);
         long total = 0;
