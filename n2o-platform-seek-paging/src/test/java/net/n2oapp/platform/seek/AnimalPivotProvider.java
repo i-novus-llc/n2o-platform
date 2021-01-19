@@ -9,13 +9,13 @@ import java.util.Map;
 public class AnimalPivotProvider extends DefaultPivotProvider {
 
     private static final Map<ComparableExpressionBase<?>, ComparableExpressionBase<?>> MIN = Map.of(
-        QAnimal.animalEntity.id, Expressions.asComparable(JPAExpressions.select(QAnimal.animalEntity.id.min()).from(QAnimal.animalEntity)),
-        QAnimal.animalEntity.height, Expressions.asComparable(JPAExpressions.select(QAnimal.animalEntity.height.min()).from(QAnimal.animalEntity))
+        QAnimal.animal.id, Expressions.asComparable(JPAExpressions.select(QAnimal.animal.id.min()).from(QAnimal.animal)),
+        QAnimal.animal.height, Expressions.asComparable(JPAExpressions.select(QAnimal.animal.height.min()).from(QAnimal.animal))
     );
 
     private static final Map<ComparableExpressionBase<?>, ComparableExpressionBase<?>> MAX = Map.of(
-        QAnimal.animalEntity.id, Expressions.asComparable(JPAExpressions.select(QAnimal.animalEntity.id.max()).from(QAnimal.animalEntity)),
-        QAnimal.animalEntity.height, Expressions.asComparable(JPAExpressions.select(QAnimal.animalEntity.height.max()).from(QAnimal.animalEntity))
+        QAnimal.animal.id, Expressions.asComparable(JPAExpressions.select(QAnimal.animal.id.max()).from(QAnimal.animal)),
+        QAnimal.animal.height, Expressions.asComparable(JPAExpressions.select(QAnimal.animal.height.max()).from(QAnimal.animal))
     );
 
     @Override

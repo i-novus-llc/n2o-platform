@@ -32,7 +32,7 @@ public class SomeRestImpl implements SomeRest {
         SeekPivot.of("id", "543"),
         SeekPivot.of("date", "1970-01-01"),
         SeekPivot.of("plain-text", "ABRACA:::::DAB:::::RA\\Хыхыхы"),
-        SeekPivot.of("::triple::six::", "異体字")
+        SeekPivot.of("triplesix", "異体字")
     );
 
     @Override
@@ -92,14 +92,12 @@ public class SomeRestImpl implements SomeRest {
         throw new UserException(messages);
     }
 
-    @SuppressWarnings("all")
     @Override
     public String timeoutSuccess() throws InterruptedException {
         Thread.sleep(500);
         return "timeout success";
     }
 
-    @SuppressWarnings("all")
     @Override
     public String timeoutFailure() throws InterruptedException {
         Thread.sleep(1500);

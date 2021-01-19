@@ -1,10 +1,10 @@
 package net.n2oapp.platform.seek;
 
 import com.google.common.base.Preconditions;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.ComparableExpression;
 import com.querydsl.core.types.dsl.ComparableExpressionBase;
 import com.querydsl.core.types.dsl.Expressions;
@@ -126,7 +126,14 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         return SeekedPage.of(fetch, hasNext, hasPrev);
     }
 
-    private List<T> fetch0(List<EnrichedSeekPivot> list, List<Order> orders, int size, final Predicate predicate, final boolean reverse, RequestedPageEnum page) {
+    private List<T> fetch0(
+            List<EnrichedSeekPivot> list,
+            List<Order> orders,
+            int size,
+            final Predicate predicate,
+            final boolean reverse,
+            RequestedPageEnum page
+    ) {
         Predicate seekPredicate = seek(list, reverse, page);
         JPQLQuery<?> query = getQuery(predicate, seekPredicate);
         return fetch(query, size, orders, reverse);
@@ -233,31 +240,34 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         return new Order(order.isAscending() ? DESC : ASC, property, order.getNullHandling());
     }
 
-    @SuppressWarnings({"rawtypes"})
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private Predicate seek(List<EnrichedSeekPivot> list, boolean reverse, RequestedPageEnum page) {
-        BooleanExpression res = null;
+        BooleanBuilder res = new BooleanBuilder();
         for (int i = 0; i < list.size(); i++) {
             EnrichedSeekPivot next = list.get(i);
             Order order = next.order;
             ComparableExpression exp = next.comparable;
             ComparableExpressionBase<?> cast = next.castedPivot;
             boolean lastPivot = i == list.size() - 1;
-            if (res == null) {
-                res = compare(exp, cast, order, reverse, page, lastPivot);
-            } else {
-                BooleanExpression accum = equalize(null, list.get(0));
-                for (int j = 1; j < i; j++) {
-                    accum = equalize(accum, list.get(j));
+            BooleanBuilder accum = new BooleanBuilder();
+            if (!reverse) {
+                for (int j = 0; j < i; j++) {
+                    EnrichedSeekPivot piv = list.get(j);
+                    accum.and(piv.comparable.eq(piv.castedPivot));
                 }
-                accum = accum.and(compare(exp, cast, order, reverse, page, lastPivot));
-                res = res.or(accum);
             }
+            compare(accum, exp, cast, order, reverse, page, lastPivot);
+            if (!reverse)
+                res.or(accum);
+            else
+                res.and(accum);
         }
         return res;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private BooleanExpression compare(
+    private void compare(
+            BooleanBuilder accum,
             ComparableExpression exp,
             ComparableExpressionBase castedPivot,
             Order order,
@@ -265,40 +275,37 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
             RequestedPageEnum page,
             boolean lastPivot
     ) {
-//      При запросе за первой или последней страницей, мы должны применить нестрогое неравенство (<= или >=) к последнему
-//      (которое должно являться уникальным) полю, чтобы не пропустить записи, у которых это поле равно минимальному/максимальному значению.
-//      Во всех остальных случаях можно использовать строгое неравенство
-        boolean equalize = (page == FIRST || page == LAST) && lastPivot;
         if (reverse) {
             if (order.isAscending()) {
-                return equalize ? exp.loe(castedPivot) : exp.lt(castedPivot);
+                accum.and(exp.loe(castedPivot));
             } else {
-                return equalize ? exp.goe(castedPivot) : exp.gt(castedPivot);
+                accum.and(exp.goe(castedPivot));
             }
         } else {
+//          При запросе за первой или последней страницей, мы должны применить нестрогое неравенство (<= или >=) к последнему полю,
+//          чтобы не пропустить записи, у которых это поле равно минимальному/максимальному значению.
+//          Во всех остальных случаях можно использовать строгое неравенство
+            boolean equalize = (page == FIRST || page == LAST) && lastPivot;
             if (order.isAscending()) {
-                return equalize ? exp.goe(castedPivot) : exp.gt(castedPivot);
+                if (equalize) {
+                    accum.and(exp.goe(castedPivot));
+                } else {
+                    accum.and(exp.gt(castedPivot));
+                }
             } else {
-                return equalize ? exp.loe(castedPivot) : exp.lt(castedPivot);
+                if (equalize) {
+                    accum.and(exp.loe(castedPivot));
+                } else {
+                    accum.and(exp.lt(castedPivot));
+                }
             }
         }
-    }
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private BooleanExpression equalize(BooleanExpression accum, EnrichedSeekPivot piv) {
-        ComparableExpression exp = piv.comparable;
-        ComparableExpressionBase<?> cast = piv.castedPivot;
-        if (accum == null) {
-            accum = exp.eq(cast);
-        } else {
-            accum = accum.and(exp.eq(cast));
-        }
-        return accum;
     }
 
     private ComparableExpressionBase<?> cast(String name, String lastValue, ComparableExpression<?> target) {
+        Comparable<?> casted;
         try {
-            return Expressions.asComparable(StringConvert.INSTANCE.convertFromString(target.getType(), lastValue));
+            casted = StringConvert.INSTANCE.convertFromString(target.getType(), lastValue);
         } catch (RuntimeException exception) {
             throw new IllegalArgumentException(
                 "Unable to convert from string '" + lastValue + "' to target type: " + target.getType().getSimpleName() + ". " +
@@ -307,6 +314,8 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
                 exception
             );
         }
+        Preconditions.checkNotNull(casted, "Seeking over null values not supported. Entity name: %s, Property: %s", path.getMetadata().getName(), name);
+        return Expressions.asComparable(casted);
     }
 
     private ComparableExpression<?> findProperty(String property) {
@@ -348,9 +357,9 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
 
     private static class EnrichedSeekPivot {
 
-        private final ComparableExpressionBase<?> castedPivot;
+        private final ComparableExpressionBase castedPivot;
         private final Order order;
-        private final ComparableExpression<?> comparable;
+        private final ComparableExpression comparable;
 
         private EnrichedSeekPivot(ComparableExpressionBase<?> castedPivot, Order order, ComparableExpression<?> comparable) {
             this.castedPivot = castedPivot;

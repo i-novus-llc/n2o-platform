@@ -10,6 +10,9 @@ import javax.ws.rs.QueryParam;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Базовая реализация интерфейса {@link SeekableCriteria}
+ */
 public class EmptySeekableCriteria implements SeekableCriteria {
 
     @NotNull

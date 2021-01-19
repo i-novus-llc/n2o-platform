@@ -8,6 +8,10 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Страница данных, полученная путем seek-пагинации
+ * @param <T> Тип элементов
+ */
 public class SeekedPage<T> implements Iterable<T> {
 
     private static final SeekedPage<?> EMPTY = new SeekedPage<>(Collections.emptyList(), false, false);
@@ -28,15 +32,25 @@ public class SeekedPage<T> implements Iterable<T> {
         this.hasPrev = hasPrev;
     }
 
+    /**
+     * @return Список данных, отсортированный в соответствии с {@link SeekableCriteria#getOrders()}.
+     * Любые изменения на списке отображаются и на странице.
+     */
     public List<T> getContent() {
         return content;
     }
 
+    /**
+     * Есть ли страницы после этой?
+     */
     @JsonProperty("hasNext")
     public boolean hasNext() {
         return hasNext;
     }
 
+    /**
+     * Есть ли страницы перед этой?
+     */
     @JsonProperty("hasPrev")
     public boolean hasPrev() {
         return hasPrev;
@@ -95,6 +109,9 @@ public class SeekedPage<T> implements Iterable<T> {
             '}';
     }
 
+    /**
+     * @return Пустая страница
+     */
     @SuppressWarnings("unchecked")
     public static <T> SeekedPage<T> empty() {
         return (SeekedPage<T>) EMPTY;

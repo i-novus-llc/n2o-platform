@@ -20,9 +20,9 @@ public interface PivotProvider {
      *                  заданного в сортировке {@link net.n2oapp.platform.jaxrs.seek.SeekableCriteria}
      *                  Например для сущности Animal с полем height это будет QAnimal.animal.height
      * @return
-     *                  Выражение QueryDSL, представляющее собой минимальное значение в контексте {@code property}.
+     *                  Выражение QueryDSL, представляющее собой максимальное значение в контексте {@code property}.
      *                  Это может быть простой скаляр или что — то вроде:<br>
-     *                  {@code Expressions.asComparable(JPAExpressions.select(QAnimal.animal.height.min).from(QAnimal.animal))}
+     *                  {@code Expressions.asComparable(JPAExpressions.select(QAnimal.animal.height.max).from(QAnimal.animal))}
      */
     ComparableExpressionBase<?> max(ComparableExpressionBase<?> property);
 

@@ -6,31 +6,21 @@ public class SeekPivotParameterConverter implements TypedParamConverter<SeekPivo
 
     @Override
     public SeekPivot fromString(String value) {
-        StringBuilder name = new StringBuilder();
-        int i = 0;
-        while (i < value.length()) {
+        for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
             if (c == ':') {
-                if (i + 1 < value.length() && value.charAt(i + 1) == ':') { // escaped colon
-                    i += 2;
-                    name.append(':');
-                } else {
-                    break;
-                }
-            } else {
-                name.append(c);
-                i++;
+                return SeekPivot.of(value.substring(0, i), value.substring(i + 1));
             }
         }
-        if (i >= value.length())
-            throw new IllegalArgumentException("No name provided in " + value);
-        String lastSeenValue = value.substring(i + 1);
-        return SeekPivot.of(name.toString(), lastSeenValue);
+        throw new IllegalArgumentException("No ':' can be found on '" + value + "'");
     }
 
+    /**
+     * Так как в валидном java-identifier не может присутствовать ':' -- его можно использовать в качестве разделителя
+     */
     @Override
     public String toString(SeekPivot value) {
-        return value.getName().replace(":", "::") + ":" + value.getLastValue();
+        return value.getName() + ":" + value.getLastValue();
     }
 
     @Override

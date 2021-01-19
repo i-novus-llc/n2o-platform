@@ -12,6 +12,10 @@ import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
 import java.util.Optional;
 
+/**
+ * Данный класс сохраняет полную совместимость с {@link JpaRepositoryFactory},
+ * при этом добавляя поддержку {@link SeekableRepository}.
+ */
 public class SeekableRepositoryFactory extends JpaRepositoryFactory {
 
     private final EntityManager entityManager;

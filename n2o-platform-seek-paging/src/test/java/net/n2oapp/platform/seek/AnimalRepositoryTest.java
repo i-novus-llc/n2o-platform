@@ -14,15 +14,15 @@ import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SeekableRepositoryTest extends SeekPagingTest {
+public class AnimalRepositoryTest extends SeekPagingTest {
 
     private static final int N = 2500;
 
-    private static final String BIRTH_DATE = QAnimal.animalEntity.birthDate.toString();
-    private static final String FAV_FOOD = QAnimal.animalEntity.favoriteFood.name.toString();
-    private static final String PARENT = QAnimal.animalEntity.parent.name.toString();
-    private static final String HEIGHT = QAnimal.animalEntity.height.toString();
-    private static final String ID = QAnimal.animalEntity.id.toString();
+    private static final String BIRTH_DATE = QAnimal.animal.birthDate.toString();
+    private static final String FAV_FOOD = QAnimal.animal.favoriteFood.name.toString();
+    private static final String PARENT = QAnimal.animal.parent.name.toString();
+    private static final String HEIGHT = QAnimal.animal.height.toString();
+    private static final String ID = QAnimal.animal.id.toString();
 
     @Autowired
     AnimalRepository repository;
@@ -146,7 +146,6 @@ public class SeekableRepositoryTest extends SeekPagingTest {
         criteria.setPage(RequestedPageEnum.FIRST);
         SeekedPageIterator<Animal, SeekableCriteria> iter = SeekedPageIterator.from(
             c -> repository.findAll(c),
-            this::getPivots,
             criteria
         );
         int count = 0;
@@ -173,7 +172,6 @@ public class SeekableRepositoryTest extends SeekPagingTest {
         criteria.setPage(RequestedPageEnum.LAST);
         iter = SeekedPageIterator.from(
             c -> repository.findAll(c),
-            this::getPivots,
             criteria
         );
         count = 0;
@@ -193,7 +191,7 @@ public class SeekableRepositoryTest extends SeekPagingTest {
         criteria.setSize(7);
         Function<Animal, List<SeekPivot>> pivotsMaker = animal -> List.of(SeekPivot.of(ID, animal.getId().toString()));
         Function<SeekableCriteria, SeekedPage<Animal>> pageSource = c -> repository.findAll(c);
-        SeekedPageIterator<Animal, SeekableCriteria> iter = SeekedPageIterator.from(pageSource, pivotsMaker, criteria);
+        SeekedPageIterator<Animal, SeekableCriteria> iter = SeekedPageIterator.from(pageSource, criteria);
         long total = 0;
         while (iter.hasNext()) {
             SeekedPage<Animal> page = iter.next();
@@ -201,7 +199,7 @@ public class SeekableRepositoryTest extends SeekPagingTest {
         }
         assertEquals(N, total);
         criteria.setPage(RequestedPageEnum.LAST);
-        iter = SeekedPageIterator.from(pageSource, pivotsMaker, criteria);
+        iter = SeekedPageIterator.from(pageSource, criteria);
         total = 0;
         while (iter.hasNext()) {
             SeekedPage<Animal> page = iter.next();
@@ -235,10 +233,6 @@ public class SeekableRepositoryTest extends SeekPagingTest {
 
     private void setPivots(LocalDate prevBirthDate, String prevFavoriteFood, String prevParentName, BigInteger prevHeight, Integer prevId, SeekableCriteria criteria) {
         criteria.setPivots(getPivots(prevBirthDate, prevFavoriteFood, prevParentName, prevHeight, prevId));
-    }
-
-    private List<SeekPivot> getPivots(Animal animal) {
-        return getPivots(animal.getBirthDate(), animal.getFavoriteFood().getName(), animal.getParent().getName(), animal.getHeight(), animal.getId());
     }
 
     private List<SeekPivot> getPivots(LocalDate prevBirthDate, String prevFavoriteFood, String prevParentName, BigInteger prevHeight, Integer prevId) {

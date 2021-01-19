@@ -1,9 +1,13 @@
 package net.n2oapp.platform.jaxrs.seek;
 
-import java.io.Serializable;
+import org.springframework.data.domain.Sort;
+
 import java.util.Objects;
 
-public class SeekPivot implements Serializable {
+/**
+ * "Опорная точка" свойства с последней страницы, полученной клиентом.
+ */
+public class SeekPivot {
 
     private final String name;
     private final String lastValue;
@@ -13,10 +17,16 @@ public class SeekPivot implements Serializable {
         this.lastValue = lastValue;
     }
 
+    /**
+     * @return Имя свойства (по аналогии с {@link Sort.Order#getProperty()}).
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @return Строковое представление
+     */
     public String getLastValue() {
         return lastValue;
     }

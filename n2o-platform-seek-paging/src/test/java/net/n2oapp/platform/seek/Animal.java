@@ -106,7 +106,7 @@ public class Animal {
     @Override
     public String toString() {
         return "Animal{" +
-            "id=" + id +
+            "getId=" + id +
             ", name='" + name + '\'' +
             ", birthDate=" + birthDate +
             ", parentId=" + parent.getId() +

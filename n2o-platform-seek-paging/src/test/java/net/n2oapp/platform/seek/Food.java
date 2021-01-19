@@ -40,7 +40,7 @@ public class Food {
     @Override
     public String toString() {
         return "Food{" +
-            "id=" + id +
+            "getId=" + id +
             ", name='" + name + '\'' +
             '}';
     }
