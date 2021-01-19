@@ -92,7 +92,7 @@ public class SeekedPageIterator<T, C extends SeekableCriteria> implements Iterat
 
     /**
      * @param pageSource Источник данных
-     * @param criteria Критерия
+     * @param criteria Критерия (будет модифицирована)
      * @param <T> Тип элементов
      * @param <C> Тип критерии
      * @return  Итератор, который будет использовать {@link ReflectionPivotsMaker#INSTANCE} в качестве {@code pivotsMaker}-а.
@@ -107,6 +107,8 @@ public class SeekedPageIterator<T, C extends SeekableCriteria> implements Iterat
     }
 
     /**
+     * Метод для ситуаций, когда вызывающий не знает точно, какой порядок задан в передаваемой {@code criteria}.
+     *
      * @param pageSource Источник данных
      * @param pivotsMaker Функция, принимающая элемент типа {@code T} и список {@link Sort.Order} {@code orders}
      *                    и возвращающая список {@link SeekPivot}-ов в соответствии со списком {@code orders}.
@@ -130,7 +132,7 @@ public class SeekedPageIterator<T, C extends SeekableCriteria> implements Iterat
      * @param pivotsMaker Функция, принимающая элемент типа {@code T} и
      *                    возвращающая список {@link SeekPivot}-ов в
      *                    соответствии со списком {@link SeekableCriteria#getOrders()} в переданной критерии
-     * @param criteria Критерия
+     * @param criteria Критерия (будет модифицирована)
      * @param <T> Тип элементов
      * @param <C> Тип критерии
      */
