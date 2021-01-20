@@ -26,7 +26,7 @@ public class Animal {
     @Column
     private BigInteger height;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "favorite_food_id")
     private Food favoriteFood;
 
