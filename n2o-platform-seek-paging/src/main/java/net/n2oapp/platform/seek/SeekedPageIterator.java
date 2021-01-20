@@ -96,12 +96,12 @@ public class SeekedPageIterator<T, C extends SeekableCriteria> implements Iterat
      * @param <T> Тип элементов
      * @param <C> Тип критерии
      * @return  Итератор, который будет использовать {@link ReflectionPivotsMaker#INSTANCE} в качестве {@code pivotsMaker}-а.
-     *          Это удобно, но медленно и негибко.
+     *          Это удобно, но медленно, негибко и не всегда подходит.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static <T, C extends SeekableCriteria> SeekedPageIterator<T, C> from(
-            Function<? super C, SeekedPage<T>> pageSource,
-            C criteria
+        Function<? super C, SeekedPage<T>> pageSource,
+        C criteria
     ) {
         return from(pageSource, ((ReflectionPivotsMaker) ReflectionPivotsMaker.INSTANCE), criteria);
     }
@@ -137,9 +137,9 @@ public class SeekedPageIterator<T, C extends SeekableCriteria> implements Iterat
      * @param <C> Тип критерии
      */
     public static <T, C extends SeekableCriteria> SeekedPageIterator<T, C> from(
-            Function<? super C, SeekedPage<T>> pageSource,
-            Function<? super T, List<SeekPivot>> pivotsMaker,
-            C criteria
+        Function<? super C, SeekedPage<T>> pageSource,
+        Function<? super T, List<SeekPivot>> pivotsMaker,
+        C criteria
     ) {
         return from(pageSource, (t, unused) -> pivotsMaker.apply(t), criteria);
     }
@@ -185,16 +185,17 @@ public class SeekedPageIterator<T, C extends SeekableCriteria> implements Iterat
                 Preconditions.checkState(tokensIter.hasNext(), "Empty property for type %s", ClassUtil.classOf(t));
                 boolean firstCall = true;
                 do {
+                    if (currObj == null)
+                        break;
                     String next = tokensIter.next();
-                    notNull(t, property, currObj);
                     currDesc = BeanUtils.getPropertyDescriptor(currObj.getClass(), next);
                     if (currDesc == null && firstCall) {
-                        failIfNot(tokensIter.hasNext(), t, property);
+                        checkPropertyExists(tokensIter.hasNext(), t, property);
                         next = tokensIter.next();
                         currDesc = BeanUtils.getPropertyDescriptor(ClassUtil.classOf(t), next);
                     }
                     firstCall = false;
-                    failIfNot(currDesc != null, t, property);
+                    checkPropertyExists(currDesc != null, t, property);
                     Method method = currDesc.getReadMethod();
                     Preconditions.checkState(method != null, "Can't make pivots automatically via reflection. No property accessor can be found for path %s for type %s", property, ClassUtil.classOf(t));
                     try {
@@ -205,17 +206,13 @@ public class SeekedPageIterator<T, C extends SeekableCriteria> implements Iterat
                         throw new IllegalStateException("Exception in accessor method occurred for property " + property + " for type " + ClassUtil.classOf(t), e);
                     }
                 } while (tokensIter.hasNext());
-                notNull(t, property, currObj);
-                res.add(SeekPivot.of(property, String.valueOf(currObj)));
+                if (currObj != null)
+                    res.add(SeekPivot.of(property, String.valueOf(currObj)));
             }
             return res;
         }
 
-        private void notNull(T t, String property, Object currObj) {
-            Preconditions.checkState(currObj != null, "Can't seek over null values. Violation for property path %s in type %s", property, ClassUtil.classOf(t));
-        }
-
-        private void failIfNot(boolean condition, T t, String property) {
+        private void checkPropertyExists(boolean condition, T t, String property) {
             Preconditions.checkState(condition, "Can't make pivots automatically via reflection. No property can be found for path %s for type %s", property, ClassUtil.classOf(t));
         }
 

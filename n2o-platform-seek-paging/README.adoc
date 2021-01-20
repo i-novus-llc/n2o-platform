@@ -52,10 +52,9 @@
 
 [source,java]
 ----
-import net.n2oapp.platform.seek.PivotProvided;
+
 import net.n2oapp.platform.seek.SeekableRepository;
 
-@PivotProvided(by = CustomPivotProvider.class)
 public interface MyRepository extends SeekableRepository<...>
 ----
 

@@ -5,6 +5,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.ComparableExpression;
 import com.querydsl.core.types.dsl.ComparableExpressionBase;
 import com.querydsl.core.types.dsl.Expressions;
@@ -47,15 +48,13 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     private final EntityPath<?> path;
     private final ConcurrentMap<String, ComparableExpression<?>> resolvedProperties;
     private final String entityPrefix;
-    private final PivotProvider provider;
     private final EntityManager entityManager;
 
     public SeekableRepositoryImpl(
         JpaEntityInformation<T, ?> entityInformation,
         EntityManager entityManager,
         EntityPathResolver resolver,
-        CrudMethodMetadata metadata,
-        Class<?> repositoryInterface
+        CrudMethodMetadata metadata
     )  {
         super(entityInformation, entityManager, resolver, metadata);
         try {
@@ -65,11 +64,6 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
             pathField.setAccessible(true);
             this.querydsl = (Querydsl) querydslField.get(this);
             this.path = (EntityPath<?>) pathField.get(this);
-            PivotProvided ann = repositoryInterface.getAnnotation(PivotProvided.class);
-            if (ann != null)
-                this.provider = ann.by().getConstructor().newInstance();
-            else
-                this.provider = new DefaultPivotProvider();
         } catch (Exception e) {
             throw new BeanCreationException("Can't instantiate seekable repository", e);
         }
@@ -108,7 +102,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
                     result.remove(result.size() - 1);
             }
         } else {
-            List<EnrichedSeekPivot> pivots = makeList(criteria, orders, copyPivots(criteria));
+            List<EnrichedSeekPivot> pivots = makeList(orders, copyPivots(criteria));
             ensureNoDuplicates(pivots);
             result = fetchWithSeekPredicate(pivots, orders, criteria.getSize() + 1, predicate);
             RequestedPageEnum page = criteria.getPage();
@@ -116,13 +110,13 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
                 hasNext = result.size() > criteria.getSize();
                 if (hasNext)
                     result.remove(result.size() - 1);
-                hasPrev = !new JPAQuery<>(entityManager).select(Expressions.ONE).from(path).where(inverseSeekPredicate(pivots), predicate).limit(1).fetch().isEmpty();
+                hasPrev = !new JPAQuery<>(entityManager).select(Expressions.ONE).from(path).where(inverseSeekPredicate(pivots, false), predicate).limit(1).fetch().isEmpty();
             } else if (page == PREV) {
                 hasPrev = result.size() > criteria.getSize();
                 Collections.reverse(result);
                 if (hasPrev)
                     result.remove(0);
-                hasNext = !new JPAQuery<>(entityManager).select(Expressions.ONE).from(path).where(inverseSeekPredicate(pivots), predicate).limit(1).fetch().isEmpty();
+                hasNext = !new JPAQuery<>(entityManager).select(Expressions.ONE).from(path).where(inverseSeekPredicate(pivots, true), predicate).limit(1).fetch().isEmpty();
             } else {
                 throw new IllegalStateException("Unexpected page enum: " + criteria.getPage());
             }
@@ -131,16 +125,30 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private Predicate inverseSeekPredicate(List<EnrichedSeekPivot> pivots) {
+    private Predicate inverseSeekPredicate(List<EnrichedSeekPivot> pivots, boolean reverse) {
         BooleanBuilder res = new BooleanBuilder();
         for (EnrichedSeekPivot pivot : pivots) {
             Order order = pivot.order;
-            ComparableExpression exp = pivot.comparable;
-            ComparableExpressionBase castedPivot = pivot.castedPivot;
-            if (order.isAscending()) {
-                res.and(exp.loe(castedPivot));
+            ComparableExpression exp = pivot.property;
+            ComparableExpressionBase castedPivot = pivot.castedValue;
+            if (castedPivot == null) {
+                if (pivot.order.getNullHandling() == Sort.NullHandling.NULLS_FIRST) {
+                    if (reverse)
+                        res.and(pivot.property.isNotNull());
+                    else
+                        res.and(pivot.property.isNull());
+                } else {
+                    if (reverse)
+                        res.and(pivot.property.isNull());
+                    else
+                        res.and(pivot.property.isNotNull());
+                }
             } else {
-                res.and(exp.goe(castedPivot));
+                if (order.isAscending()) {
+                    res.and(exp.loe(castedPivot));
+                } else {
+                    res.and(exp.goe(castedPivot));
+                }
             }
         }
         return res;
@@ -152,10 +160,10 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     }
 
     private List<T> fetchWithSeekPredicate(
-            List<EnrichedSeekPivot> list,
-            List<Order> orders,
-            int size,
-            final Predicate predicate
+        List<EnrichedSeekPivot> list,
+        List<Order> orders,
+        int size,
+        final Predicate predicate
     ) {
         Predicate seekPredicate = seek(list);
         JPQLQuery<?> query = getQuery(predicate, seekPredicate);
@@ -166,50 +174,27 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         return predicate == null ? super.createQuery(seekPredicate) : super.createQuery(predicate, seekPredicate);
     }
 
-    private List<EnrichedSeekPivot> makeList(SeekableCriteria criteria, List<Order> orders, List<SeekPivot> pivots) {
+    private List<EnrichedSeekPivot> makeList(List<Order> orders, List<SeekPivot> pivots) {
         List<EnrichedSeekPivot> res = new ArrayList<>(orders.size());
         for (Order order : orders) {
             ComparableExpression<?> target = resolvedProperties.computeIfAbsent(order.getProperty(), this::findProperty);
             ComparableExpressionBase<?> cast;
-            if (criteria.getPage().isPivotsNecessary()) {
-                SeekPivot pivot = pivots.stream().filter(piv -> piv.getName().equals(order.getProperty())).findAny().orElseThrow(() -> {
-                    throw new IllegalArgumentException(order.getProperty() + " is not found in pivots list.");
-                });
+            SeekPivot pivot = pivots.stream().filter(piv -> piv.getName().equals(order.getProperty())).findAny().orElse(null);
+            if (pivot == null) {
+                cast = null;
+            } else
                 cast = cast(pivot.getName(), pivot.getLastValue(), target);
-            } else {
-                cast = getFromPivotProvider(order, target);
-            }
             EnrichedSeekPivot item = new EnrichedSeekPivot(cast, order, target);
             res.add(item);
         }
         return res;
     }
 
-    private ComparableExpressionBase<?> getFromPivotProvider(Order order, ComparableExpression<?> target) {
-        ComparableExpressionBase<?> cast;
-        String min = "Min";
-        String max = "Max";
-        String description;
-        if (order.isAscending()) {
-            cast = provider.min(target);
-            description = min;
-        } else {
-            cast = provider.max(target);
-            description = max;
-        }
-        Preconditions.checkNotNull(cast, "%s value for property %s is not configured. Entity name: %s", description, order.getProperty(), path.getMetadata().getName());
-        return cast;
-    }
-
     private void checkCriteria(SeekableCriteria criteria) {
         Preconditions.checkArgument(criteria != null, "Criteria must not be null");
         Preconditions.checkArgument(criteria.getSize() > 0, "Criteria size must be > 0");
-        Preconditions.checkArgument(criteria.getPage() != null, "Requested page must be specified");
+        Preconditions.checkArgument(criteria.getPage() != null, "A requested page must be specified");
         Preconditions.checkArgument(!CollectionUtils.isEmpty(criteria.getOrders()), "Sorting must be applied");
-        if (criteria.getPage().isPivotsNecessary()) {
-            Preconditions.checkArgument(!CollectionUtils.isEmpty(criteria.getPivots()), "Pivots (last seen values) must be specified");
-            Preconditions.checkArgument(criteria.getOrders().size() == criteria.getPivots().size(), "Num of pivots and sorting fields must be equal");
-        }
     }
 
     private List<Order> copyOrders(SeekableCriteria criteria) {
@@ -219,7 +204,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
             if (criteria.getPage() == PREV || criteria.getPage() == LAST) {
                 result.add(reverse(order, property));
             } else {
-                result.add(new Order(order.getDirection(), property, order.getNullHandling()));
+                result.add(new Order(order.getDirection(), property, getExplicitNullHandling(order, false)));
             }
         }
         return result;
@@ -260,54 +245,70 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     }
 
     private Order reverse(Order order, String property) {
-        return new Order(order.isAscending() ? DESC : ASC, property, order.getNullHandling());
+        return new Order(order.isAscending() ? DESC : ASC, property, getExplicitNullHandling(order, true));
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings("unchecked")
     private Predicate seek(List<EnrichedSeekPivot> list) {
         BooleanBuilder res = new BooleanBuilder();
         for (int i = 0; i < list.size(); i++) {
             EnrichedSeekPivot next = list.get(i);
-            Order order = next.order;
-            ComparableExpression exp = next.comparable;
-            ComparableExpressionBase<?> cast = next.castedPivot;
+            if (next.castedValue == null && next.order.getNullHandling() == Sort.NullHandling.NULLS_LAST)
+                continue;
             BooleanBuilder accum = new BooleanBuilder();
             for (int j = 0; j < i; j++) {
                 EnrichedSeekPivot piv = list.get(j);
-                accum.and(piv.comparable.eq(piv.castedPivot));
+                if (piv.castedValue == null)
+                    accum.and(piv.property.isNull());
+                else {
+                    BooleanExpression base = piv.property.eq(piv.castedValue);
+                    accum.and(base);
+                }
             }
-            compare(accum, exp, cast, order);
+            if (next.castedValue == null) {
+                accum.and(next.property.isNotNull());
+            } else {
+                BooleanExpression base = compare(next);
+                if (next.order.getNullHandling() == Sort.NullHandling.NULLS_LAST)
+                    base = base.or(next.property.isNull());
+                accum.and(base);
+            }
             res.or(accum);
         }
         return res;
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private void compare(
-            BooleanBuilder accum,
-            ComparableExpression exp,
-            ComparableExpressionBase castedPivot,
-            Order order
+    @SuppressWarnings("unchecked")
+    private BooleanExpression compare(
+        EnrichedSeekPivot piv
     ) {
-        if (order.isAscending()) {
-            accum.and(exp.gt(castedPivot));
+        if (piv.order.isAscending()) {
+            return piv.property.gt(piv.castedValue);
         } else {
-            accum.and(exp.lt(castedPivot));
+            return piv.property.lt(piv.castedValue);
         }
     }
 
     /**
-     * Имитирует поведение PostgreSQL (<a href="https://postgrespro.ru/docs/postgresql/13/queries-order">7.5. Сортировка строк</a>):
+     * Если null-handling не задан явно -- имитирует поведение PostgreSQL
+     * (<a href="https://postgrespro.ru/docs/postgresql/13/queries-order">7.5. Сортировка строк</a>):
      * "По умолчанию значения NULL считаются больше любых других,
      * то есть подразумевается NULLS FIRST для порядка DESC и NULLS LAST в противном случае."
      */
-    private Sort.NullHandling getNullHandling(Sort.Order order) {
-        Sort.NullHandling nullHandling = order.getNullHandling();
-        if (nullHandling != Sort.NullHandling.NATIVE)
-            return nullHandling;
-        if (order.isAscending())
-            return Sort.NullHandling.NULLS_LAST;
-        return Sort.NullHandling.NULLS_FIRST;
+    private Sort.NullHandling getExplicitNullHandling(Order order, boolean reverse) {
+        Sort.NullHandling result;
+        Sort.NullHandling provided = order.getNullHandling();
+        if (provided != Sort.NullHandling.NATIVE) {
+            result = provided;
+        } else {
+            if (order.isDescending())
+                result = Sort.NullHandling.NULLS_FIRST;
+            else
+                result = Sort.NullHandling.NULLS_LAST;
+        }
+        if (reverse)
+            result = result == Sort.NullHandling.NULLS_FIRST ? Sort.NullHandling.NULLS_LAST : Sort.NullHandling.NULLS_FIRST;
+        return result;
     }
 
     private ComparableExpressionBase<?> cast(String name, String lastValue, ComparableExpression<?> target) {
@@ -317,8 +318,8 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         } catch (RuntimeException exception) {
             throw new IllegalArgumentException(
                 "Unable to convert from string '" + lastValue + "' to target type: " + target.getType().getSimpleName() + ". " +
-                "Entity name: " + path.getMetadata().getName() +
-                "Property: " + name,
+                    "Entity name: " + path.getMetadata().getName() +
+                    "Property: " + name,
                 exception
             );
         }
@@ -365,14 +366,14 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     @SuppressWarnings("rawtypes")
     private static class EnrichedSeekPivot {
 
-        private final ComparableExpressionBase castedPivot;
+        private final ComparableExpressionBase castedValue;
         private final Order order;
-        private final ComparableExpression comparable;
+        private final ComparableExpression property;
 
-        private EnrichedSeekPivot(ComparableExpressionBase<?> castedPivot, Order order, ComparableExpression<?> comparable) {
-            this.castedPivot = castedPivot;
+        private EnrichedSeekPivot(ComparableExpressionBase<?> castedValue, Order order, ComparableExpression<?> property) {
+            this.castedValue = castedValue;
             this.order = order;
-            this.comparable = comparable;
+            this.property = property;
         }
 
     }

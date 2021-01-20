@@ -1,5 +1,8 @@
 package net.n2oapp.platform.seek;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import javax.persistence.*;
 import java.math.BigInteger;
 import java.time.LocalDate;
@@ -19,14 +22,16 @@ public class Animal {
     @Column
     private LocalDate birthDate;
 
-    @ManyToOne
+    @Fetch(FetchMode.SELECT)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Animal parent;
 
     @Column
     private BigInteger height;
 
-    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "favorite_food_id")
     private Food favoriteFood;
 
@@ -109,7 +114,7 @@ public class Animal {
             "getId=" + id +
             ", name='" + name + '\'' +
             ", birthDate=" + birthDate +
-            ", parentId=" + parent.getId() +
+            ", parentId=" + (parent == null ? null : parent.getId()) +
             ", height=" + height +
             ", favoriteFood=" + favoriteFood +
             '}';

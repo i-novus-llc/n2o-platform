@@ -42,8 +42,7 @@ public class SeekableRepositoryFactory extends JpaRepositoryFactory {
                                     getEntityInformation(metadata.getDomainType()),
                                     entityManager,
                                     SimpleEntityPathResolver.INSTANCE,
-                                    (CrudMethodMetadata) getField(querydsl, "metadata"),
-                                    metadata.getRepositoryInterface()
+                                    (CrudMethodMetadata) getField(querydsl, "metadata")
                                 )
                             )
                         );
