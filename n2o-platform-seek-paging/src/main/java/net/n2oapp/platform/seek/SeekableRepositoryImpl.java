@@ -46,15 +46,17 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
 
     private final Querydsl querydsl;
     private final EntityPath<?> path;
-    private final ConcurrentMap<String, ComparableExpression<?>> resolvedProperties;
+    private final ConcurrentMap<String, ComparableExpressionBase<?>> resolvedProperties;
     private final String entityPrefix;
     private final EntityManager entityManager;
+    private final NullabilityProvider nullabilityProvider;
 
     public SeekableRepositoryImpl(
         JpaEntityInformation<T, ?> entityInformation,
         EntityManager entityManager,
         EntityPathResolver resolver,
-        CrudMethodMetadata metadata
+        CrudMethodMetadata metadata,
+        Class<?> repositoryInterface
     )  {
         super(entityInformation, entityManager, resolver, metadata);
         try {
@@ -64,6 +66,9 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
             pathField.setAccessible(true);
             this.querydsl = (Querydsl) querydslField.get(this);
             this.path = (EntityPath<?>) pathField.get(this);
+            NullabilityProvided nullabilityProvided = repositoryInterface.getAnnotation(NullabilityProvided.class);
+            Class<? extends NullabilityProvider> nullabilityProviderClass = nullabilityProvided == null ? DefaultNullabilityProvider.class : nullabilityProvided.by();
+            this.nullabilityProvider = nullabilityProviderClass.getConstructor().newInstance();
         } catch (Exception e) {
             throw new BeanCreationException("Can't instantiate seekable repository", e);
         }
@@ -129,7 +134,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         BooleanBuilder res = new BooleanBuilder();
         for (EnrichedSeekPivot pivot : pivots) {
             Order order = pivot.order;
-            ComparableExpression exp = pivot.property;
+            ComparableExpression<?> exp = pivot.asComparable;
             ComparableExpressionBase castedPivot = pivot.castedValue;
             if (castedPivot == null) {
                 if (pivot.order.getNullHandling() == Sort.NullHandling.NULLS_FIRST) {
@@ -137,18 +142,21 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
                         res.and(pivot.property.isNotNull());
                     else
                         res.and(pivot.property.isNull());
-                } else {
-                    if (reverse)
-                        res.and(pivot.property.isNull());
-                    else
-                        res.and(pivot.property.isNotNull());
                 }
             } else {
+                BooleanExpression base;
                 if (order.isAscending()) {
-                    res.and(exp.loe(castedPivot));
+                    base = exp.loe(castedPivot);
                 } else {
-                    res.and(exp.goe(castedPivot));
+                    base = exp.goe(castedPivot);
                 }
+                if (nullabilityProvider.nullable(pivot.property) && pivot.order.getNullHandling() == Sort.NullHandling.NULLS_LAST) {
+                    if (reverse)
+                        base = base.or(pivot.property.isNotNull());
+                    else
+                        base = base.or(pivot.property.isNull());
+                }
+                res.and(base);
             }
         }
         return res;
@@ -177,14 +185,15 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     private List<EnrichedSeekPivot> makeList(List<Order> orders, List<SeekPivot> pivots) {
         List<EnrichedSeekPivot> res = new ArrayList<>(orders.size());
         for (Order order : orders) {
-            ComparableExpression<?> target = resolvedProperties.computeIfAbsent(order.getProperty(), this::findProperty);
+            ComparableExpressionBase<?> target = resolvedProperties.computeIfAbsent(order.getProperty(), this::findProperty);
             ComparableExpressionBase<?> cast;
             SeekPivot pivot = pivots.stream().filter(piv -> piv.getName().equals(order.getProperty())).findAny().orElse(null);
             if (pivot == null) {
+                nullabilitySanityCheck(target, order.getProperty());
                 cast = null;
             } else
                 cast = cast(pivot.getName(), pivot.getLastValue(), target);
-            EnrichedSeekPivot item = new EnrichedSeekPivot(cast, order, target);
+            EnrichedSeekPivot item = new EnrichedSeekPivot(order, cast, target);
             res.add(item);
         }
         return res;
@@ -261,15 +270,14 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
                 if (piv.castedValue == null)
                     accum.and(piv.property.isNull());
                 else {
-                    BooleanExpression base = piv.property.eq(piv.castedValue);
-                    accum.and(base);
+                    accum.and(piv.property.eq(piv.castedValue));
                 }
             }
             if (next.castedValue == null) {
                 accum.and(next.property.isNotNull());
             } else {
                 BooleanExpression base = compare(next);
-                if (next.order.getNullHandling() == Sort.NullHandling.NULLS_LAST)
+                if (nullabilityProvider.nullable(next.property) && next.order.getNullHandling() == Sort.NullHandling.NULLS_LAST)
                     base = base.or(next.property.isNull());
                 accum.and(base);
             }
@@ -283,9 +291,9 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         EnrichedSeekPivot piv
     ) {
         if (piv.order.isAscending()) {
-            return piv.property.gt(piv.castedValue);
+            return piv.asComparable.gt(piv.castedValue);
         } else {
-            return piv.property.lt(piv.castedValue);
+            return piv.asComparable.lt(piv.castedValue);
         }
     }
 
@@ -311,7 +319,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         return result;
     }
 
-    private ComparableExpressionBase<?> cast(String name, String lastValue, ComparableExpression<?> target) {
+    private ComparableExpressionBase<?> cast(String name, String lastValue, ComparableExpressionBase<?> target) {
         Comparable<?> casted;
         try {
             casted = StringConvert.INSTANCE.convertFromString(target.getType(), lastValue);
@@ -326,7 +334,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         return Expressions.asComparable(casted);
     }
 
-    private ComparableExpression<?> findProperty(String property) {
+    private ComparableExpressionBase<?> findProperty(String property) {
         Path<?> curr = path;
         String[] pathParts = property.split("\\.");
         for (int i = 0; i < pathParts.length; i++) {
@@ -342,7 +350,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
                             Preconditions.checkArgument(o != null, "Path (or part of the path) %s is null. Entity: %s", property, curr.getMetadata().getName());
                             if (i == pathParts.length - 1) {
                                 Preconditions.checkArgument(ComparableExpressionBase.class.isAssignableFrom(o.getClass()), "Property %s is not comparable. Entity: %s", property, curr.getMetadata().getName());
-                                return Expressions.asComparable(((ComparableExpressionBase<?>) o));
+                                return (ComparableExpressionBase<?>) o;
                             } else {
                                 curr = (Path<?>) o;
                                 break outer;
@@ -363,17 +371,23 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         throw new IllegalArgumentException("Property " + property + " not found. Entity: " + path.getMetadata().getName());
     }
 
+    private void nullabilitySanityCheck(ComparableExpressionBase<?> expression, String property) {
+        Preconditions.checkState(nullabilityProvider.nullable(expression), "Property %s is null, but is not nullable according to nullability provider. Entity: %s", property, path.getMetadata().getName());
+    }
+
     @SuppressWarnings("rawtypes")
     private static class EnrichedSeekPivot {
 
-        private final ComparableExpressionBase castedValue;
         private final Order order;
-        private final ComparableExpression property;
+        private final ComparableExpressionBase castedValue;
+        private final ComparableExpressionBase<?> property;
+        private final ComparableExpression<?> asComparable;
 
-        private EnrichedSeekPivot(ComparableExpressionBase<?> castedValue, Order order, ComparableExpression<?> property) {
-            this.castedValue = castedValue;
+        private EnrichedSeekPivot(Order order, ComparableExpressionBase<?> castedValue, ComparableExpressionBase<?> property) {
             this.order = order;
+            this.castedValue = castedValue;
             this.property = property;
+            this.asComparable = Expressions.asComparable(property);
         }
 
     }
