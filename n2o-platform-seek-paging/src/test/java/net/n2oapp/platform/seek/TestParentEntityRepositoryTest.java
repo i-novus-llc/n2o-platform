@@ -27,7 +27,7 @@ public class TestParentEntityRepositoryTest extends SeekPagingTest {
             thenComparing(TestParentEntity::getField3, nullsLast(naturalOrder())).
             thenComparing(TestParentEntity::getId, nullsFirst(naturalOrder()));
 
-    private static final int N = 10000;
+    private static final int N = 1000;
 
     private static final String FIELD_2 = stripUntilFirstDot(QTestParentEntity.testParentEntity.field2.toString());
     private static final String CHILD_FIELD_1 = stripUntilFirstDot(QTestParentEntity.testParentEntity.child.field1.toString());
@@ -139,7 +139,10 @@ public class TestParentEntityRepositoryTest extends SeekPagingTest {
         criteria.setPage(RequestedPageEnum.PREV);
         while (true) {
             SeekedPage<TestParentEntity> page = repository.findAll(criteria);
-//            assertTrue(page.hasNext());
+            if (!page.hasNext()) {
+                repository.findAll(criteria);
+            }
+            assertTrue(page.hasNext());
             if (!page.isEmpty()) {
                 assertFalse(pageSequence.isEmpty());
                 SeekedPage<TestParentEntity> expectedPage = pageSequence.remove(pageSequence.size() - 1);

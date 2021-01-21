@@ -134,14 +134,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
             Order order = pivot.order;
             ComparableExpression<?> exp = pivot.asComparable;
             ComparableExpressionBase castedPivot = pivot.castedValue;
-            if (castedPivot == null) {
-                if (pivot.order.getNullHandling() == Sort.NullHandling.NULLS_FIRST) {
-                    if (reverse)
-                        res.and(pivot.property.isNotNull());
-                    else
-                        res.and(pivot.property.isNull());
-                }
-            } else {
+            if (castedPivot != null) {
                 BooleanExpression base;
                 if (order.isAscending()) {
                     base = exp.loe(castedPivot);
