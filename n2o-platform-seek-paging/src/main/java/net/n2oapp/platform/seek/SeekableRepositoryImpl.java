@@ -23,7 +23,6 @@ import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.Querydsl;
 import org.springframework.data.jpa.repository.support.QuerydslJpaPredicateExecutor;
 import org.springframework.data.querydsl.EntityPathResolver;
-import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.util.CollectionUtils;
 
 import javax.persistence.EntityManager;
@@ -41,7 +40,6 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 import static org.springframework.data.domain.Sort.Order;
 import static org.springframework.data.domain.Sort.by;
 
-@NoRepositoryBean
 public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> implements SeekableRepository<T> {
 
     private final Querydsl querydsl;

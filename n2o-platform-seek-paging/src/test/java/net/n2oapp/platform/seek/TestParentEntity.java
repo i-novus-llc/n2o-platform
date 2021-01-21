@@ -7,6 +7,13 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
+@Table(indexes = {
+        @Index(columnList = "field1"),
+        @Index(columnList = "field2"),
+        @Index(columnList = "parent_id"),
+        @Index(columnList = "child_id"),
+        @Index(columnList = "field3")
+})
 public class TestParentEntity {
 
     @Id
@@ -28,7 +35,6 @@ public class TestParentEntity {
     @Column
     private Integer field3;
 
-    @Fetch(FetchMode.SELECT)
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "child_id")
     private TestChildEntity child;

@@ -3,6 +3,9 @@ package net.n2oapp.platform.seek;
 import javax.persistence.*;
 
 @Entity
+@Table(indexes = {
+        @Index(columnList = "field1")
+})
 public class TestChildEntity {
 
     @Id
