@@ -7,13 +7,6 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(indexes = {
-        @Index(columnList = "field1"),
-        @Index(columnList = "field2"),
-        @Index(columnList = "parent_id"),
-        @Index(columnList = "child_id"),
-        @Index(columnList = "field3")
-})
 public class TestParentEntity {
 
     @Id

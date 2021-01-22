@@ -6,17 +6,11 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 
-import javax.transaction.Transactional;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static java.util.Comparator.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.data.domain.Sort.Direction.ASC;
-import static org.springframework.data.domain.Sort.Direction.DESC;
-import static org.springframework.data.domain.Sort.NullHandling.NULLS_FIRST;
-import static org.springframework.data.domain.Sort.NullHandling.NULLS_LAST;
 
 public class TestParentEntityRepositoryTest extends SeekPagingTest {
 
@@ -43,12 +37,6 @@ public class TestParentEntityRepositoryTest extends SeekPagingTest {
             Sort.Order.asc(ID).nullsFirst()
     );
 
-    private static final List<Sort.Order> ORDERS_REVERSED = ORDERS.stream().map(order -> new Sort.Order(
-            order.getDirection() == ASC ? DESC : ASC,
-            order.getProperty(),
-            order.getNullHandling() == NULLS_FIRST ? NULLS_LAST : NULLS_FIRST
-    )).collect(Collectors.toList());
-
     @Autowired
     TestParentEntityRepository repository;
 
@@ -59,7 +47,6 @@ public class TestParentEntityRepositoryTest extends SeekPagingTest {
     private final List<TestChildEntity> childEntities = new ArrayList<>();
 
     @Before
-    @Transactional
     public void setup() {
         for (int i = 0; i < 50; i++) {
             TestChildEntity food = testChildEntityRepository.save(new TestChildEntity(null, randomInteger()));

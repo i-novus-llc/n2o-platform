@@ -5,6 +5,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -13,6 +14,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @RunWith(SpringRunner.class)
 @TestPropertySource(locations = {"classpath:application.properties"})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Transactional
 public abstract class SeekPagingTest {
 
     protected <T> T randomFrom(List<T> list) {
