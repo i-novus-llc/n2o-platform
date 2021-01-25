@@ -11,12 +11,12 @@ package net.n2oapp.platform.selection.api;
  * Этим методам обычно соответствуют примитивные поля сущности (скаляры), например числа, даты, строки и т.д.
  *
  * 2) А так же парные методы (помеченные одним и тем же {@code selectionKey}:
- *     а) без аргументов, возвращающий вложенный {@code Mapper<X>}
+ *     а) без аргументов, возвращающий вложенный {@code Fetcher<X>}
  *     б) и связанный с ним через {@code selectionKey} метод, принимающий DTO типа {@code E} и {@code X} и DTO {@code X}.
  * </pre>
  * @param <E> Тип DTO
  */
-public interface Mapper<E> {
+public interface Fetcher<E> {
 
     /**
      * @return Пустой DTO, чьи поля будут выборочно отображены в соответствии с {@link Selection<E>}

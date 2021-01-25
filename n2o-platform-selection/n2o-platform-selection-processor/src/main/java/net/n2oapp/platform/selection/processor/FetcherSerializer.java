@@ -4,18 +4,18 @@ import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
 import java.io.Writer;
 
-class MapperSerializer extends AbstractSerializer {
+class FetcherSerializer extends AbstractSerializer {
 
-    private final TypeMirror mapperInterface;
+    private final TypeMirror fetcherInterface;
 
-    MapperSerializer(TypeMirror selectionKey, TypeMirror mapperInterface) {
+    FetcherSerializer(TypeMirror selectionKey, TypeMirror fetcherInterface) {
         super(selectionKey);
-        this.mapperInterface = mapperInterface;
+        this.fetcherInterface = fetcherInterface;
     }
 
     @Override
     String getSuffix() {
-        return "Mapper";
+        return "Fetcher";
     }
 
     @Override
@@ -24,7 +24,7 @@ class MapperSerializer extends AbstractSerializer {
         out.append("select");
         out.append(capitalize(property.getKey()));
         out.append("(");
-        out.append(meta.getMapperTarget());
+        out.append(meta.getFetcherTarget());
         out.append(" ");
         out.append("model");
         if (property.getNestedSelection() != null) {
@@ -55,7 +55,7 @@ class MapperSerializer extends AbstractSerializer {
 
     @Override
     TypeMirror getInterfaceRaw() {
-        return mapperInterface;
+        return fetcherInterface;
     }
 
 }

@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Связывает методы {@link Selection} и {@link Mapper} один к одному.
+ * Связывает методы {@link Selection} и {@link Fetcher} один к одному.
  * <br><br>
  * Например, если у нас есть сущность EmployeeEntity:
  *
@@ -38,9 +38,9 @@ import java.lang.annotation.Target;
  *      }
  *      </pre>
  *
- *      А маппер:
+ *      А fetcher:
  *      <br><pre>
- *      EmployeeMapper implements Mapper<Employee> {
+ *      EmployeeFetcher implements Fetcher<Employee> {
  *
  *          {@code @SelectionKey(name)}
  *          void setName(Employee employee)
@@ -57,13 +57,13 @@ import java.lang.annotation.Target;
 public @interface SelectionKey {
 
     /**
-     * @return Строковое представление ключа, по которому связывается {@link Selection} и {@link Mapper}
+     * @return Строковое представление ключа, по которому связывается {@link Selection} и {@link Fetcher}
      *
-     * В общем случае данный ключ должен присутствовать и в реализации маппера и в реализации выборки.
-     * Однако при наличии ключа у маппера и отсутствии его в выборке логического противоречия не возникает
-     * (клиент мог указать выборку для некоторого типа, а маппер отображает его дочерний тип),
+     * В общем случае данный ключ должен присутствовать и в реализации fetcher-а и в реализации выборки.
+     * Однако при наличии ключа у fetcher-а и отсутствии его в выборке логического противоречия не возникает
+     * (клиент мог указать выборку для некоторого типа, а fetcher отображает его дочерний тип),
      * поэтому такой вариант тоже возможен.
-     * Но присутствие ключа в маппере и отсутствие его в выборке -- это ошибка.
+     * Но присутствие ключа в fetcher-е и отсутствие его в выборке -- это ошибка.
      */
     String value();
 

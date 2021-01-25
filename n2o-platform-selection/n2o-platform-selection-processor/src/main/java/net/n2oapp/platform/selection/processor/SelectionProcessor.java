@@ -39,7 +39,7 @@ public class SelectionProcessor extends AbstractProcessor {
     private boolean addJacksonTyping;
 
     private SelectionSerializer selectionSerializer;
-    private MapperSerializer mapperSerializer;
+    private FetcherSerializer fetcherSerializer;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -50,7 +50,7 @@ public class SelectionProcessor extends AbstractProcessor {
         TypeMirror selectionKey = elements.getTypeElement("net.n2oapp.platform.selection.api.SelectionKey").asType();
         TypeMirror selectionInterface = types.erasure(elements.getTypeElement("net.n2oapp.platform.selection.api.Selection").asType());
         TypeMirror selectionPropagation = elements.getTypeElement("net.n2oapp.platform.selection.api.SelectionPropagationEnum").asType();
-        TypeMirror mapperInterface = types.erasure(elements.getTypeElement("net.n2oapp.platform.selection.api.Mapper").asType());
+        TypeMirror fetcherInterface = types.erasure(elements.getTypeElement("net.n2oapp.platform.selection.api.Fetcher").asType());
         TypeMirror selectionEnum = elements.getTypeElement("net.n2oapp.platform.selection.api.SelectionEnum").asType();
         TypeElement jsonTypeInfo = elements.getTypeElement("com.fasterxml.jackson.annotation.JsonTypeInfo");
         TypeElement jsonSubTypes = elements.getTypeElement("com.fasterxml.jackson.annotation.JsonSubTypes");
@@ -60,7 +60,7 @@ public class SelectionProcessor extends AbstractProcessor {
         boolean addJaxRsAnnotations = Boolean.parseBoolean(processingEnv.getOptions().getOrDefault(ADD_JAXRS_ANNOTATIONS, Boolean.toString(requestParam != null)));
         boolean overrideSelectionKeys = Boolean.parseBoolean(processingEnv.getOptions().getOrDefault(OVERRIDE_SELECTION_KEYS, Boolean.toString(true)));
         this.selectionSerializer = new SelectionSerializer(selectionKey, selectionEnum, selectionInterface, selectionPropagation, addJacksonTyping, addJaxRsAnnotations, overrideSelectionKeys, jsonTypeInfo, jsonSubTypes, requestParam, beanParam);
-        this.mapperSerializer = new MapperSerializer(selectionKey, mapperInterface);
+        this.fetcherSerializer = new FetcherSerializer(selectionKey, fetcherInterface);
     }
 
     @Override
@@ -148,7 +148,7 @@ public class SelectionProcessor extends AbstractProcessor {
         Filer filer = processingEnv.getFiler();
         try {
             selectionSerializer.serialize(meta, filer);
-            mapperSerializer.serialize(meta, filer);
+            fetcherSerializer.serialize(meta, filer);
         } catch (IOException e) {
             System.err.println(e.getMessage());
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage());

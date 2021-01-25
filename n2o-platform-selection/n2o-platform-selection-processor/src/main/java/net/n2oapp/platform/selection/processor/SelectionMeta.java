@@ -22,7 +22,7 @@ class SelectionMeta {
     private final TypeMirror extendsType;
     private final String extendsSignature;
     private final List<SelectionProperty> properties;
-    private final String mapperTarget;
+    private final String fetcherTarget;
     private final boolean isAbstract;
     private final String prefix;
 
@@ -51,7 +51,7 @@ class SelectionMeta {
             genericSignature.createSelfVariable();
         }
         this.extendsSignature = resolveExtendsSignature();
-        this.mapperTarget = resolveMapperTarget();
+        this.fetcherTarget = resolveFetcherTarget();
     }
 
     String getPrefix() {
@@ -62,7 +62,7 @@ class SelectionMeta {
         return rawUse;
     }
 
-    private String resolveMapperTarget() {
+    private String resolveFetcherTarget() {
         if (genericSignature.getSelfVariable() != null)
             return genericSignature.getSelfVariable();
         return target.getQualifiedName().toString() + genericSignature.varsToString(false);
@@ -75,7 +75,7 @@ class SelectionMeta {
     private String resolveExtendsSignature() {
         if (parent == null) {
             if (genericSignature.getSelfVariable() != null)
-                return genericSignature.getSelfVariable(); // first class in the hierarchy of selectors/mappers
+                return genericSignature.getSelfVariable(); // first class in the hierarchy of selectors/fetchers
             return target.getQualifiedName().toString(); // no children and not abstract class
         } else {
             if (!parent.genericSignature.noGenericsDeclared()) { // parent's generic signature contains self variable and at least one type variable
@@ -231,8 +231,8 @@ class SelectionMeta {
         return "<" + extendsSignature + ">";
     }
 
-    String getMapperTarget() {
-        return mapperTarget;
+    String getFetcherTarget() {
+        return fetcherTarget;
     }
 
     String getJacksonTypeTag() {

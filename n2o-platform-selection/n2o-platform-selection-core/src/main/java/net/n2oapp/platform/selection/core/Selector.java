@@ -25,7 +25,7 @@ public final class Selector {
 
     private static final String VIOLATION = "Violation in %s";
 
-    private static final ResolvableType MAPPER_RAW = ResolvableType.forRawClass(Mapper.class);
+    private static final ResolvableType FETCHER_RAW = ResolvableType.forRawClass(Fetcher.class);
     private static final ResolvableType SELECTION_RAW = ResolvableType.forRawClass(Selection.class);
     private static final ResolvableType COLLECTION_RAW = ResolvableType.forRawClass(Collection.class);
     private static final String CREATE_METHOD = "create";
@@ -34,10 +34,10 @@ public final class Selector {
     }
 
     /**
-     * Кешированные дескрипторы мапперов
+     * Кешированные дескрипторы fetcher-ов
      */
     @SuppressWarnings("rawtypes")
-    private static final ConcurrentMap<Class<? extends Mapper>, MapperDescriptor> MAPPER_DESCRIPTORS = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class<? extends Fetcher>, FetcherDescriptor> FETCHER_DESCRIPTORS = new ConcurrentHashMap<>();
 
     /**
      * Кешированные дескрипторы выборок
@@ -46,79 +46,79 @@ public final class Selector {
     private static final ConcurrentMap<Class<? extends Selection>, SelectionDescriptor> SELECTION_DESCRIPTORS = new ConcurrentHashMap<>();
 
     /**
-     * @param srcPage Page мапперов
+     * @param srcPage Page fetcher-ов
      * @param selection Выборка
      * @param <E> Тип DTO
      * @return Page DTO, чьи поля выборочно заполнены в соответствии с {@code selection}
      */
-    public static <E> Page<E> resolvePage(Page<? extends Mapper<? extends E>> srcPage, Selection<? extends E> selection) {
-        return srcPage.map(mapper -> resolve(mapper, selection));
+    public static <E> Page<E> resolvePage(Page<? extends Fetcher<? extends E>> srcPage, Selection<? extends E> selection) {
+        return srcPage.map(fetcher -> resolve(fetcher, selection));
     }
 
     /**
-     * @param mapper Маппер
+     * @param fetcher Fetcher
      * @param selection Выборка
      * @param <E> Тип DTO
      * @return Выборочное отображение E в соответствии с {@code selection}
-     * @throws IllegalArgumentException если целевой тип DTO {@code mapper}-а нельзя присвоить целевому типу DTO {@code selection}-а,
-     * @throws IllegalArgumentException если в {@code selection} присутствует selectionKey и отсутствует в {@code mapper}-е.
-     * @throws IllegalArgumentException если в {@code mapper}-е некоторый selectionKey является вложенным, но в {@code selection}-е нет (и наоборот)
-     * @throws IllegalStateException если {@code selectionKey} {@code mapper} - а вернул коллекцию мапперов неподдерживаемого типа
+     * @throws IllegalArgumentException если целевой тип DTO {@code fetcher}-а нельзя присвоить целевому типу DTO {@code selection}-а,
+     * @throws IllegalArgumentException если в {@code selection} присутствует selectionKey и отсутствует в {@code fetcher}-е.
+     * @throws IllegalArgumentException если в {@code fetcher}-е некоторый selectionKey является вложенным, но в {@code selection}-е нет (и наоборот)
+     * @throws IllegalStateException если {@code selectionKey} {@code fetcher} - а вернул коллекцию fetcher-ов неподдерживаемого типа
      * @throws IllegalArgumentException
-     *              если переданные реализации {@code mapper} и {@code selection} не соответствуют контрактам,
-     *              описанным в {@link net.n2oapp.platform.selection.api.Mapper} и {@link net.n2oapp.platform.selection.api.Selection} соответственно
+     *              если переданные реализации {@code fetcher} и {@code selection} не соответствуют контрактам,
+     *              описанным в {@link Fetcher} и {@link net.n2oapp.platform.selection.api.Selection} соответственно
      */
     @SuppressWarnings("rawtypes")
-    public static <E> E resolve(Mapper<? extends E> mapper, Selection<? extends E> selection) {
-        if (mapper == null || selection == null)
+    public static <E> E resolve(Fetcher<? extends E> fetcher, Selection<? extends E> selection) {
+        if (fetcher == null || selection == null)
             return null;
         SelectionDescriptor selectionDescriptor = getSelectionDescriptor(selection);
-        MapperDescriptor mapperDescriptor = getMapperDescriptor(mapper);
+        FetcherDescriptor fetcherDescriptor = getFetcherDescriptor(fetcher);
         Preconditions.checkArgument(
-            selectionDescriptor.type.isAssignableFrom(mapperDescriptor.type),
-            "Selection %s target type is not assignable from mapper %s target type",
+            selectionDescriptor.type.isAssignableFrom(fetcherDescriptor.type),
+            "Selection %s target type is not assignable from fetcher %s target type",
             selection.getClass(),
-            mapper.getClass()
+            fetcher.getClass()
         );
         SelectionPropagationEnum propagation = NORMAL;
         if (selection.propagation() != null)
             propagation = selection.propagation();
         if (propagation == NESTED || propagation == ALL) {
-            return selectAll(mapper, mapperDescriptor, propagation);
+            return selectAll(fetcher, fetcherDescriptor, propagation);
         } else {
-            E model = mapper.create();
+            E model = fetcher.create();
             if (model == null)
                 return null;
             for (SelectionDescriptor.SelectionAccessor selectionAccessor : selectionDescriptor.accessors) {
                 SelectionEnum select = (SelectionEnum) invoke(selectionAccessor.selectionEnumAccessor, selection);
                 if (select == null || !select.asBoolean())
                     continue;
-                MapperDescriptor.MapperAccessor mapperAccessor = mapperDescriptor.accessors.get(selectionAccessor.selectionKey);
+                FetcherDescriptor.FetcherAccessor fetcherAccessor = fetcherDescriptor.accessors.get(selectionAccessor.selectionKey);
                 Preconditions.checkArgument(
-                        mapperAccessor != null,
-                        "Property %s defined in selection, but mapper is unaware of it. Selection: %s. Mapper: %s",
+                        fetcherAccessor != null,
+                        "Property %s defined in selection, but fetcher is unaware of it. Selection: %s. Fetcher: %s",
                         selectionAccessor.selectionKey,
                         selection.getClass(),
-                        mapper.getClass()
+                        fetcher.getClass()
                 );
-                if (mapperAccessor.isNested()) {
+                if (fetcherAccessor.isNested()) {
                     Preconditions.checkArgument(
                             selectionAccessor.isNested(),
-                            "Property %s has nested mapper accessor, but selection is unaware of it. Selection of type %s, mapper of type %s",
+                            "Property %s has nested fetcher accessor, but selection is unaware of it. Selection of type %s, fetcher of type %s",
                             selectionAccessor.selectionKey,
                             selection.getClass(),
-                            mapper.getClass()
+                            fetcher.getClass()
                     );
                     Selection nestedSelection = (Selection) invoke(selectionAccessor.nestedSelectionAccessor, selection);
-                    nestedSelection(mapper, model, mapperAccessor, nestedSelection, Selector::resolve);
+                    nestedSelection(fetcher, model, fetcherAccessor, nestedSelection, Selector::resolve);
                 } else {
                     Preconditions.checkArgument(
                             !selectionAccessor.isNested(),
-                            "Property %s has nested selection, but mapper is unaware of it. Selection of type %s, mapper of type %s",
+                            "Property %s has nested selection, but fetcher is unaware of it. Selection of type %s, fetcher of type %s",
                             selection.getClass(),
-                            mapper.getClass()
+                            fetcher.getClass()
                     );
-                    invoke(mapperAccessor.selectMethod, mapper, model);
+                    invoke(fetcherAccessor.selectMethod, fetcher, model);
                 }
             }
             return model;
@@ -127,14 +127,14 @@ public final class Selector {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static <E> void nestedSelection(
-            Mapper<? extends E> mapper,
+            Fetcher<? extends E> fetcher,
             E model,
-            MapperDescriptor.MapperAccessor mapperAccessor,
+            FetcherDescriptor.FetcherAccessor fetcherAccessor,
             Selection nestedSelection,
-            BiFunction<Mapper<? extends E>, Selection, Object> nestedResolve
+            BiFunction<Fetcher<? extends E>, Selection, Object> nestedResolve
     ) {
-        if (mapperAccessor.isCollectionMapper()) {
-            Collection<Mapper> collection = (Collection) invoke(mapperAccessor.nestedMapperAccessor, mapper);
+        if (fetcherAccessor.isCollectionFetcher()) {
+            Collection<Fetcher> collection = (Collection) invoke(fetcherAccessor.nestedFetcherAccessor, fetcher);
             if (CollectionUtils.isEmpty(collection))
                 return;
             Collection result;
@@ -144,38 +144,38 @@ public final class Selector {
                 result = new HashSet(collection.size());
             else
                 throw new IllegalStateException("Unexpected collection of type " + collection.getClass() + " provided");
-            for (Mapper nestedMapper : collection) {
-                result.add(nestedResolve.apply(nestedMapper, nestedSelection));
+            for (Fetcher nestedFetcher : collection) {
+                result.add(nestedResolve.apply(nestedFetcher, nestedSelection));
             }
-            invoke(mapperAccessor.selectMethod, mapper, model, result);
+            invoke(fetcherAccessor.selectMethod, fetcher, model, result);
         } else {
-            Mapper nestedMapper = (Mapper) invoke(mapperAccessor.nestedMapperAccessor, mapper);
-            Object resolve = nestedResolve.apply(nestedMapper, nestedSelection);
+            Fetcher nestedFetcher = (Fetcher) invoke(fetcherAccessor.nestedFetcherAccessor, fetcher);
+            Object resolve = nestedResolve.apply(nestedFetcher, nestedSelection);
             if (resolve != null)
-                invoke(mapperAccessor.selectMethod, mapper, model, resolve);
+                invoke(fetcherAccessor.selectMethod, fetcher, model, resolve);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private static <E> E selectAll(Mapper<? extends E> mapper, MapperDescriptor mapperDescriptor, SelectionPropagationEnum propagation) {
-        if (mapper == null)
+    private static <E> E selectAll(Fetcher<? extends E> fetcher, FetcherDescriptor fetcherDescriptor, SelectionPropagationEnum propagation) {
+        if (fetcher == null)
             return null;
-        E model = mapper.create();
+        E model = fetcher.create();
         if (model == null)
             return null;
-        for (Map.Entry<String, MapperDescriptor.MapperAccessor> entry : mapperDescriptor.accessors.entrySet()) {
-            MapperDescriptor.MapperAccessor mapperAccessor = entry.getValue();
-            if (!mapperAccessor.isNested())
-                invoke(mapperAccessor.selectMethod, mapper, model);
+        for (Map.Entry<String, FetcherDescriptor.FetcherAccessor> entry : fetcherDescriptor.accessors.entrySet()) {
+            FetcherDescriptor.FetcherAccessor fetcherAccessor = entry.getValue();
+            if (!fetcherAccessor.isNested())
+                invoke(fetcherAccessor.selectMethod, fetcher, model);
             else {
-                nestedSelection(mapper, model, mapperAccessor, null, (nestedMapper, selection) -> {
-                    if (nestedMapper == null)
+                nestedSelection(fetcher, model, fetcherAccessor, null, (nestedFetcher, selection) -> {
+                    if (nestedFetcher == null)
                         return null;
                     switch (propagation) {
                         case ALL:
-                            return resolve(nestedMapper, selection);
+                            return resolve(nestedFetcher, selection);
                         case NESTED:
-                            return selectAll(nestedMapper, getMapperDescriptor(nestedMapper), propagation);
+                            return selectAll(nestedFetcher, getFetcherDescriptor(nestedFetcher), propagation);
                         default:
                             throw new IllegalStateException("Unexpected propagation of type " + propagation);
                     }
@@ -195,55 +195,55 @@ public final class Selector {
         }
     }
 
-    private static MapperDescriptor getMapperDescriptor(Mapper<?> mapper) {
-        return MAPPER_DESCRIPTORS.computeIfAbsent(mapper.getClass(), clazz -> {
+    private static FetcherDescriptor getFetcherDescriptor(Fetcher<?> fetcher) {
+        return FETCHER_DESCRIPTORS.computeIfAbsent(fetcher.getClass(), clazz -> {
             ResolvableType type = ResolvableType.forMethodReturnType(getMethod(clazz, CREATE_METHOD));
             Map<String, List<Method>> methods = groupBySelectionKey(clazz);
-            Map<String, MapperDescriptor.MapperAccessor> result = new HashMap<>(methods.size());
+            Map<String, FetcherDescriptor.FetcherAccessor> result = new HashMap<>(methods.size());
             for (Map.Entry<String, List<Method>> entry : methods.entrySet()) {
                 List<Method> list = entry.getValue();
                 Method selectMethod = list.get(0);
                 if (list.size() == 2) {
-                    Method nestedMapperAccessor = list.get(1);
-                    ResolvableType nestedReturnType = ResolvableType.forMethodReturnType(nestedMapperAccessor);
+                    Method nestedFetcherAccessor = list.get(1);
+                    ResolvableType nestedReturnType = ResolvableType.forMethodReturnType(nestedFetcherAccessor);
                     if (
-                        !MAPPER_RAW.isAssignableFrom(nestedReturnType) &&
+                        !FETCHER_RAW.isAssignableFrom(nestedReturnType) &&
                         !COLLECTION_RAW.isAssignableFrom(nestedReturnType)
                     ) {
                         Method temp = selectMethod;
-                        selectMethod = nestedMapperAccessor;
-                        nestedMapperAccessor = temp;
+                        selectMethod = nestedFetcherAccessor;
+                        nestedFetcherAccessor = temp;
                         list.set(0, selectMethod);
-                        list.set(1, nestedMapperAccessor);
+                        list.set(1, nestedFetcherAccessor);
                     }
-                    nestedReturnType = ResolvableType.forMethodReturnType(nestedMapperAccessor);
+                    nestedReturnType = ResolvableType.forMethodReturnType(nestedFetcherAccessor);
                     Preconditions.checkArgument(
                         selectMethod.getParameterCount() == 2,
-                        "Mapper's select method must have 2 parameters when nested mapper accessor is present. " +
+                        "Fetcher's select method must have 2 parameters when nested fetcher accessor is present. " +
                         VIOLATION,
                         selectMethod
                     );
                     ResolvableType secondParam = ResolvableType.forMethodParameter(selectMethod, 1);
                     ResolvableType generic;
                     if (!COLLECTION_RAW.isAssignableFrom(nestedReturnType)) {
-                        assertReturnsMapper(nestedMapperAccessor, nestedReturnType);
+                        assertReturnsFetcher(nestedFetcherAccessor, nestedReturnType);
                         generic = ResolvableType.forMethodReturnType(getMethod(nestedReturnType.resolve(Object.class), CREATE_METHOD));
                     } else {
-                        assertReturnsMapper(nestedMapperAccessor, nestedReturnType.getGeneric(0));
+                        assertReturnsFetcher(nestedFetcherAccessor, nestedReturnType.getGeneric(0));
                         assertCollection(secondParam, selectMethod);
                         secondParam = secondParam.getGeneric(0);
                         generic = ResolvableType.forMethodReturnType(getMethod(nestedReturnType.getGeneric(0).resolve(Object.class), CREATE_METHOD));
                     }
                     Preconditions.checkArgument(
                             generic.isAssignableFrom(secondParam),
-                            "Mapper's nested mapper accessor return type not assignable to select method second param. " +
+                            "Fetcher's nested fetcher accessor return type not assignable to select method second param. " +
                             VIOLATION,
-                            nestedMapperAccessor
+                            nestedFetcherAccessor
                     );
                 } else {
                     Preconditions.checkArgument(
                         selectMethod.getParameterCount() == 1,
-                        "Mapper property with no nested mapper accessor must have 1 parameter. Violation in %s",
+                        "Fetcher property with no nested fetcher accessor must have 1 parameter. Violation in %s",
                         selectMethod
                     );
                 }
@@ -251,35 +251,35 @@ public final class Selector {
             }
             for (Map.Entry<String, List<Method>> entry : methods.entrySet()) {
                 List<Method> list = entry.getValue();
-                Method nestedMapperAccessor = list.size() > 1 ? list.get(1) : null;
-                boolean collectionMapper = nestedMapperAccessor != null && Collection.class.isAssignableFrom(nestedMapperAccessor.getReturnType());
-                result.put(entry.getKey(), new MapperDescriptor.MapperAccessor(entry.getKey(), list.get(0), nestedMapperAccessor, collectionMapper));
+                Method nestedFetcherAccessor = list.size() > 1 ? list.get(1) : null;
+                boolean collectionFetcher = nestedFetcherAccessor != null && Collection.class.isAssignableFrom(nestedFetcherAccessor.getReturnType());
+                result.put(entry.getKey(), new FetcherDescriptor.FetcherAccessor(entry.getKey(), list.get(0), nestedFetcherAccessor, collectionFetcher));
             }
-            return new MapperDescriptor(type, result);
+            return new FetcherDescriptor(type, result);
         });
     }
 
     private static void assertCollection(ResolvableType param, Method selectMethod) {
         Preconditions.checkArgument(COLLECTION_RAW.isAssignableFrom(param),
-            "Second param of select method must be of collection type when nested mapper accessor is present" +
+            "Second param of select method must be of collection type when nested fetcher accessor is present" +
             VIOLATION,
             selectMethod
         );
     }
 
-    private static void assertReturnsMapper(Method nestedMapperAccessor, ResolvableType returnType) {
+    private static void assertReturnsFetcher(Method nestedFetcherAccessor, ResolvableType returnType) {
         Preconditions.checkArgument(
-            MAPPER_RAW.isAssignableFrom(returnType),
-            "Mapper's nested mapper accessor must return instance of Mapper class. Violation in %s",
-            nestedMapperAccessor
+            FETCHER_RAW.isAssignableFrom(returnType),
+            "Fetcher's nested fetcher accessor must return instance of Fetcher class. Violation in %s",
+            nestedFetcherAccessor
         );
     }
 
-    private static void checkSelectMethodFirstParam(ResolvableType mapperType, Method selectMethod) {
+    private static void checkSelectMethodFirstParam(ResolvableType fetcherType, Method selectMethod) {
         ResolvableType selectMethodFirstArg = ResolvableType.forMethodParameter(selectMethod, 0);
         Preconditions.checkArgument(
-            selectMethodFirstArg.isAssignableFrom(mapperType),
-            "Mapper's select method first argument must be the same, or a subtype of type returned by 'create' method. " +
+            selectMethodFirstArg.isAssignableFrom(fetcherType),
+            "Fetcher's select method first argument must be the same, or a subtype of type returned by 'create' method. " +
             VIOLATION,
             selectMethod
         );

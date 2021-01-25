@@ -19,7 +19,7 @@ public class CompileTest {
         CompilationSubject.assertThat(compilation).succeeded();
         for (int i = 1; i <= 12; i++) {
             CompilationSubject.assertThat(compilation).generatedSourceFile(source("Test" + i + "Selection"));
-            CompilationSubject.assertThat(compilation).generatedSourceFile(source("Test" + i + "Mapper"));
+            CompilationSubject.assertThat(compilation).generatedSourceFile(source("Test" + i + "Fetcher"));
             CompilationSubject.assertThat(compilation).generatedSourceFile(source("DefaultTest" + i + "Selection"));
         }
     }

@@ -51,16 +51,16 @@ public class SelectiveRestImpl implements SelectiveRest {
     @Override
     public Page<Employee> search(EmployeeCriteria criteria) {
         return Selector.resolvePage(
-            new PageImpl<>(EMPLOYEES).map(EmployeeMapperImpl::new),
+            new PageImpl<>(EMPLOYEES).map(EmployeeFetcherImpl::new),
             criteria.selection()
         );
     }
 
-    private static class EmployeeMapperImpl implements EmployeeMapper {
+    private static class EmployeeFetcherImpl implements EmployeeFetcher {
 
         private final Employee src;
 
-        private EmployeeMapperImpl(Employee src) {
+        private EmployeeFetcherImpl(Employee src) {
             this.src = src;
         }
 
@@ -85,8 +85,8 @@ public class SelectiveRestImpl implements SelectiveRest {
         }
 
         @Override
-        public OrganisationMapper organisationMapper() {
-            return new OrganisationMapperImpl(src.getOrganisation());
+        public OrganisationFetcher organisationFetcher() {
+            return new OrganisationFetcherImpl(src.getOrganisation());
         }
 
         @Override
@@ -95,8 +95,8 @@ public class SelectiveRestImpl implements SelectiveRest {
         }
 
         @Override
-        public List<? extends ContactMapper> contactsMapper() {
-            return src.contacts == null ? Collections.emptyList() : src.contacts.stream().map(contact -> new ContactMapper() {
+        public List<? extends ContactFetcher> contactsFetcher() {
+            return src.contacts == null ? Collections.emptyList() : src.contacts.stream().map(contact -> new ContactFetcher() {
                 @Override
                 public void selectPhone(Employee.Contact model) {
                     model.setPhone(contact.getPhone());
@@ -116,11 +116,11 @@ public class SelectiveRestImpl implements SelectiveRest {
 
     }
 
-    private static class OrganisationMapperImpl implements OrganisationMapper {
+    private static class OrganisationFetcherImpl implements OrganisationFetcher {
 
         private final Organisation src;
 
-        private OrganisationMapperImpl(Organisation src) {
+        private OrganisationFetcherImpl(Organisation src) {
             this.src = src;
         }
 
@@ -140,8 +140,8 @@ public class SelectiveRestImpl implements SelectiveRest {
         }
 
         @Override
-        public AddressMapper legalAddressMapper() {
-            return new AddressMapperImpl(src.getLegalAddress());
+        public AddressFetcher legalAddressFetcher() {
+            return new AddressFetcherImpl(src.getLegalAddress());
         }
 
         @Override
@@ -150,17 +150,17 @@ public class SelectiveRestImpl implements SelectiveRest {
         }
 
         @Override
-        public AddressMapper factualAddressMapper() {
-            return new AddressMapperImpl(src.getFactualAddress());
+        public AddressFetcher factualAddressFetcher() {
+            return new AddressFetcherImpl(src.getFactualAddress());
         }
 
     }
 
-    private static class AddressMapperImpl implements AddressMapper {
+    private static class AddressFetcherImpl implements AddressFetcher {
 
         private final Address src;
 
-        private AddressMapperImpl(Address src) {
+        private AddressFetcherImpl(Address src) {
             this.src = src;
         }
 
