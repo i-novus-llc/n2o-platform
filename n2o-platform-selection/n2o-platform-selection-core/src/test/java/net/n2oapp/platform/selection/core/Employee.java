@@ -1,14 +1,25 @@
 package net.n2oapp.platform.selection.core;
 
+import net.n2oapp.platform.selection.api.Joined;
 import net.n2oapp.platform.selection.api.Selective;
 
+import javax.persistence.*;
 import java.util.List;
 
+@Entity
 @Selective
 public class Employee extends BaseModel {
 
+    @Column
     public String name;
+
+    @Joined
+    @JoinColumn
+    @ManyToOne(fetch = FetchType.LAZY)
     public Organisation organisation;
+
+    @Joined(withNestedJoiner = false)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner")
     public List<Contact> contacts;
 
     public String getName() {
@@ -33,30 +44,6 @@ public class Employee extends BaseModel {
 
     public void setContacts(List<Contact> contacts) {
         this.contacts = contacts;
-    }
-
-    @Selective
-    public static class Contact {
-
-        public String phone;
-        public String email;
-
-        public String getPhone() {
-            return phone;
-        }
-
-        public void setPhone(String phone) {
-            this.phone = phone;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
     }
 
 }

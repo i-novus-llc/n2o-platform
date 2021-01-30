@@ -1,5 +1,6 @@
 package net.n2oapp.platform.selection.core;
 
+import net.n2oapp.platform.selection.api.Fetcher;
 import org.springframework.core.ResolvableType;
 
 import java.lang.reflect.Method;
@@ -13,12 +14,14 @@ class FetcherDescriptor {
     /**
      * Тип DTO, для которого этот fetcher предназначен.
      */
-    final ResolvableType type;
+    final ResolvableType targetType;
     final Map<String, FetcherAccessor> accessors;
+    final Class<? extends Fetcher> fetcherClass;
 
-    FetcherDescriptor(ResolvableType type, Map<String, FetcherAccessor> accessors) {
-        this.type = type;
+    FetcherDescriptor(ResolvableType targetType, Map<String, FetcherAccessor> accessors, Class<? extends Fetcher> fetcherClass) {
+        this.targetType = targetType;
         this.accessors = accessors;
+        this.fetcherClass = fetcherClass;
     }
 
     /**
@@ -32,11 +35,11 @@ class FetcherDescriptor {
         final String selectionKey;
 
         /**
-         * Метод, выбирающий значение из сущности (в случае не вложенной выборки) или
+         * Метод, достающий значение из сущности (в случае не вложенной выборки) или
          * проставляющий в DTO значение, которое вернул из
          * {@link FetcherAccessor#nestedFetcherAccessor} (в случае вложенной выборки)
          */
-        final Method selectMethod;
+        final Method fetchMethod;
 
         /**
          * Метод, возвращающий вложенный fetcher
@@ -45,24 +48,24 @@ class FetcherDescriptor {
         final Method nestedFetcherAccessor;
 
         /**
-         * {@code true} -- если {@link FetcherAccessor#nestedFetcherAccessor}
+         * Если {@link FetcherAccessor#nestedFetcherAccessor}
          * возвращает коллекцию fetcher-ов
          */
-        private final boolean isCollectionFetcher;
+        final ResolvableType collectionType;
 
-        FetcherAccessor(String selectionKey, Method selectMethod, Method nestedFetcherAccessor, boolean isCollectionFetcher) {
+        FetcherAccessor(String selectionKey, Method fetchMethod, Method nestedFetcherAccessor, ResolvableType collectionType) {
             this.selectionKey = selectionKey;
-            this.selectMethod = selectMethod;
+            this.fetchMethod = fetchMethod;
             this.nestedFetcherAccessor = nestedFetcherAccessor;
-            this.isCollectionFetcher = isCollectionFetcher;
+            this.collectionType = collectionType;
         }
 
         boolean isNested() {
             return nestedFetcherAccessor != null;
         }
 
-        boolean isCollectionFetcher() {
-            return isCollectionFetcher;
+        boolean isToManyAssociation() {
+            return collectionType != null;
         }
 
     }

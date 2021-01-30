@@ -1,17 +1,40 @@
 package net.n2oapp.platform.selection.core;
 
 import net.n2oapp.platform.jaxrs.autoconfigure.EnableJaxRsProxyClient;
+import net.n2oapp.platform.selection.api.SelectionPropagationEnum;
+import net.ttddyy.dsproxy.QueryCount;
+import net.ttddyy.dsproxy.listener.ChainListener;
+import net.ttddyy.dsproxy.listener.DataSourceQueryCountListener;
+import net.ttddyy.dsproxy.listener.SingleQueryCountHolder;
+import net.ttddyy.dsproxy.listener.logging.SLF4JQueryLoggingListener;
+import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
+import org.springframework.lang.NonNull;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import javax.sql.DataSource;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+
+import static java.util.Collections.emptyList;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootApplication
 @RunWith(SpringRunner.class)
@@ -20,49 +43,189 @@ import static org.junit.jupiter.api.Assertions.assertNull;
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT
 )
 @EnableJaxRsProxyClient(value = SelectiveRest.class, address = "http://localhost:8425/api")
+@Import(SelectionTest.Config.class)
 public class SelectionTest {
+
+    private static QueryCount queryCount;
 
     @Autowired
     @Qualifier("selectiveRestJaxRsProxyClient")
     private SelectiveRest client;
 
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private OrganisationRepository organisationRepository;
+
+    @Autowired
+    private AddressRepository addressRepository;
+
+    @Autowired
+    private PlatformTransactionManager txManager;
+
+    private static String randString() {
+        byte[] bytes = new byte[10];
+        ThreadLocalRandom.current().nextBytes(bytes);
+        return new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    private static boolean randBoolean() {
+        return ThreadLocalRandom.current().nextBoolean();
+    }
+
+    @Before
+    public void setup() {
+        int numAddresses = 20;
+        List<Integer> addresses = new ArrayList<>(numAddresses);
+        for (int i = 0; i < numAddresses; i++) {
+            Address address = new Address();
+            address.setPostcode(randString());
+            address.setRegion(randString());
+            addresses.add(addressRepository.save(address).getId());
+        }
+        int numOrgs = 5;
+        List<Integer> orgs = new ArrayList<>(numOrgs);
+        for (int i = 0; i < numOrgs; i++) {
+            Organisation org = new Organisation();
+            org.setName(randString());
+            if (randBoolean())
+                org.setLegalAddress(new Address(addresses.get(ThreadLocalRandom.current().nextInt(numAddresses))));
+            if (randBoolean())
+                org.setFactualAddress(new Address(addresses.get(ThreadLocalRandom.current().nextInt(numAddresses))));
+            orgs.add(organisationRepository.save(org).getId());
+        }
+        for (int i = 0; i < 100; i++) {
+            Employee employee = new Employee();
+            employee.setName(randString());
+            if (randBoolean()) {
+                employee.setOrganisation(new Organisation(orgs.get(ThreadLocalRandom.current().nextInt(numOrgs))));
+            }
+            if (randBoolean()) {
+                int n = 3;
+                List<Contact> contacts = new ArrayList<>(n);
+                for (int j = 0; j < n; j++) {
+                    Contact contact = new Contact();
+                    contact.setEmail(randString());
+                    contact.setPhone(randString());
+                    contact.setOwner(employee);
+                    contacts.add(contact);
+                }
+                employee.setContacts(contacts);
+            }
+            employeeRepository.save(employee);
+        }
+    }
+
     @Test
-    public void name() {
+    public void test() {
         EmployeeCriteria criteria = new EmployeeCriteria();
+        criteria.setPageSize(100);
         DefaultEmployeeSelection selection = EmployeeSelection.create().id().name().contacts(
-            ContactSelection.create().phone()
+                ContactSelection.create().phone()
         ).organisation(
-            OrganisationSelection.create().factualAddress(
-                AddressSelection.create().postcode()
-            ).legalAddress(
-                AddressSelection.create().region()
-            )
+                OrganisationSelection.create().name().factualAddress(
+                        AddressSelection.create().postcode()
+                ).legalAddress(
+                        AddressSelection.create().region()
+                )
         );
         criteria.setSelection(selection);
+        queryCount.setSelect(0);
         Page<Employee> page = client.search(criteria);
-        for (Employee employee : page) {
-            assertNotNull(employee.getId());
-            assertNotNull(employee.getName());
-            assertNotNull(employee.getContacts());
-            for (Employee.Contact contact : employee.getContacts()) {
-                assertNotNull(contact.getPhone());
-                assertNull(contact.getEmail());
-            }
-            assertNotNull(employee.getOrganisation());
-            assertNull(employee.getOrganisation().getId());
-            assertNotNull(employee.getOrganisation().getLegalAddress());
-            assertNull(employee.getOrganisation().getLegalAddress().getId());
-            assertNotNull(employee.getOrganisation().getFactualAddress());
-            assertNull(employee.getOrganisation().getFactualAddress().getId());
-            assertNull(employee.getOrganisation().getFactualAddress().getRegion());
-            assertNotNull(employee.getOrganisation().getFactualAddress().getPostcode());
-            assertNull(employee.getOrganisation().getLegalAddress().getPostcode());
-            assertNotNull(employee.getOrganisation().getLegalAddress().getRegion());
-        }
+        assertEquals(6, queryCount.getSelect());
+        check(page);
         criteria.setSelection(selection.unselectContacts());
+        queryCount.setSelect(0);
         page = client.search(criteria);
+        assertEquals(5, queryCount.getSelect());
         for (Employee employee : page)
             assertNull(employee.getContacts());
+        criteria.setSelection(selection.propagate(SelectionPropagationEnum.NESTED));
+        queryCount.setSelect(0);
+        client.search(criteria);
+        assertEquals(6, queryCount.getSelect());
+        criteria.setSelection(selection.propagate(SelectionPropagationEnum.ALL).unselectOrganisation());
+        queryCount.setSelect(0);
+        client.search(criteria);
+        assertEquals(2, queryCount.getSelect());
+    }
+
+    private void check(Page<Employee> page) {
+        TransactionTemplate template = new TransactionTemplate(txManager);
+        template.execute(status -> {
+            for (Employee actual : page.getContent()) {
+                assertNotNull(actual.getId());
+                Employee expected = employeeRepository.findById(actual.getId()).get();
+                assertNotNull(actual.getName());
+                assertEquals(expected.getName(), actual.getName());
+                if (actual.getContacts() != null) {
+                    assertNotNull(expected.getContacts());
+                    assertEquals(expected.getContacts().size(), actual.getContacts().size());
+                    Iterator<Contact> iterator = expected.getContacts().iterator();
+                    for (Contact actualContact : actual.getContacts()) {
+                        assertNull(actualContact.getEmail());
+                        assertNotNull(actualContact.getPhone());
+                        Contact expectedContact = iterator.next();
+                        assertEquals(expectedContact.getPhone(), actualContact.getPhone());
+                    }
+                } else {
+                    assertEquals(emptyList(), expected.getContacts());
+                }
+                if (actual.getOrganisation() != null) {
+                    assertNotNull(expected.getOrganisation());
+                    assertNull(actual.getOrganisation().getId());
+                    assertNotNull(actual.getOrganisation().getName());
+                    assertEquals(expected.getOrganisation().getName(), actual.getOrganisation().getName());
+                    if (actual.getOrganisation().getLegalAddress() != null) {
+                        assertNotNull(expected.getOrganisation().getLegalAddress());
+                        assertNull(actual.getOrganisation().getLegalAddress().getId());
+                        assertNull(actual.getOrganisation().getLegalAddress().getPostcode());
+                        assertNotNull(actual.getOrganisation().getLegalAddress().getRegion());
+                        assertEquals(expected.getOrganisation().getLegalAddress().getRegion(), actual.getOrganisation().getLegalAddress().getRegion());
+                    }
+                    if (actual.getOrganisation().getFactualAddress() != null) {
+                        assertNotNull(expected.getOrganisation().getFactualAddress());
+                        assertNull(actual.getOrganisation().getFactualAddress().getId());
+                        assertNull(actual.getOrganisation().getFactualAddress().getRegion());
+                        assertNotNull(actual.getOrganisation().getFactualAddress().getPostcode());
+                        assertEquals(expected.getOrganisation().getFactualAddress().getPostcode(), actual.getOrganisation().getFactualAddress().getPostcode());
+                    }
+                } else
+                    assertNull(expected.getOrganisation());
+            }
+           return null;
+        });
+    }
+
+    @Configuration
+    public static class Config {
+        @Bean
+        public DataSourceBeanPostProcessor dataSourceBeanPostProcessor() {
+            return new DataSourceBeanPostProcessor();
+        }
+    }
+
+    public static class DataSourceBeanPostProcessor implements BeanPostProcessor {
+        @Override
+        public Object postProcessAfterInitialization(@NonNull Object bean, @NonNull String beanName) throws BeansException {
+            if (bean instanceof DataSource) {
+                DataSource dataSourceBean = (DataSource) bean;
+                ChainListener listener = new ChainListener();
+                SLF4JQueryLoggingListener loggingListener = new SLF4JQueryLoggingListener();
+                listener.addListener(loggingListener);
+                DataSourceQueryCountListener queryCountListener = new DataSourceQueryCountListener();
+                queryCountListener.setQueryCountStrategy(new SingleQueryCountHolder());
+                listener.addListener(queryCountListener);
+                SelectionTest.queryCount = queryCountListener.getQueryCountStrategy().getOrCreateQueryCount("DataSourceCounter");
+                return ProxyDataSourceBuilder
+                        .create(dataSourceBean)
+                        .name("DataSourceCounter")
+                        .listener(listener)
+                        .build();
+            }
+            return bean;
+        }
     }
 
 }

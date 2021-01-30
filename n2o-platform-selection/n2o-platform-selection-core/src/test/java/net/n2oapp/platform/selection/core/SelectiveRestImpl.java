@@ -1,59 +1,114 @@
 package net.n2oapp.platform.selection.core;
 
+import net.n2oapp.platform.selection.api.Fetcher;
+import net.n2oapp.platform.selection.api.JoinUtil;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
+import java.util.Map;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 public class SelectiveRestImpl implements SelectiveRest {
 
-    private static final List<Employee> EMPLOYEES;
-    static {
-        EMPLOYEES = new ArrayList<>();
-        ThreadLocalRandom rnd = ThreadLocalRandom.current();
-        for (int i = 0; i < 100; i++) {
-            Employee emp = new Employee();
-            emp.id = rnd.nextInt();
-            byte[] temp = new byte[10];
-            rnd.nextBytes(temp);
-            emp.name = new String(temp);
-            emp.organisation = new Organisation();
-            emp.organisation.id = rnd.nextInt();
-            emp.organisation.legalAddress = new Address();
-            emp.organisation.factualAddress = new Address();
-            rnd.nextBytes(temp);
-            emp.organisation.legalAddress.postcode = new String(temp);
-            rnd.nextBytes(temp);
-            emp.organisation.legalAddress.region = new String(temp);
-            rnd.nextBytes(temp);
-            emp.organisation.factualAddress.postcode = new String(temp);
-            rnd.nextBytes(temp);
-            emp.organisation.factualAddress.region = new String(temp);
-            emp.contacts = new ArrayList<>();
-            for (int j = 0; j < 10; j++) {
-                Employee.Contact contact = new Employee.Contact();
-                rnd.nextBytes(temp);
-                contact.email = new String(temp);
-                rnd.nextBytes(temp);
-                contact.phone = new String(temp);
-                emp.contacts.add(contact);
-            }
-            EMPLOYEES.add(emp);
-        }
+    private final EmployeeRepository employeeRepository;
+    private final OrganisationRepository organisationRepository;
+    private final ContactRepository contactRepository;
+    private final AddressRepository addressRepository;
+
+    public SelectiveRestImpl(EmployeeRepository employeeRepository, OrganisationRepository organisationRepository, ContactRepository contactRepository, AddressRepository addressRepository) {
+        this.employeeRepository = employeeRepository;
+        this.organisationRepository = organisationRepository;
+        this.contactRepository = contactRepository;
+        this.addressRepository = addressRepository;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Employee> search(EmployeeCriteria criteria) {
-        return Selector.resolvePage(
-            new PageImpl<>(EMPLOYEES).map(EmployeeFetcherImpl::new),
-            criteria.selection()
-        );
+        return Selector.resolvePage(new EmployeeJoinerImpl(), employeeRepository.findAll(criteria).map(EmployeeFetcherImpl::new), criteria.selection());
+    }
+
+    public class EmployeeJoinerImpl implements EmployeeJoiner<Integer, Employee, EmployeeFetcherImpl> {
+
+        @Override
+        public Map<Integer, Fetcher<Organisation>> joinOrganisation(Collection<Employee> employees) {
+            return JoinUtil.joinUnidirectionalToOnePrefetching(
+                    employees,
+                    organisationRepository::joinOrganisation,
+                    OrganisationFetcherImpl::new,
+                    Employee::getOrganisation,
+                    Employee::getId
+            );
+        }
+
+        @Override
+        public OrganisationJoinerImpl organisationJoiner() {
+            return new OrganisationJoinerImpl();
+        }
+
+        @Override
+        public Map<Integer, List<Fetcher<Contact>>> joinContacts(Collection<Employee> employees) {
+            return JoinUtil.joinBidirectionalOneToMany(
+                employees,
+                employeeRepository::joinContacts,
+                EmployeeFetcherImpl.ContactFetcherImpl::new,
+                contact -> contact.getOwner().getId()
+            );
+        }
+
+        @Override
+        public Integer getId(Employee entity) {
+            return entity.getId();
+        }
+
+        @Override
+        public Employee getUnderlyingEntity(EmployeeFetcherImpl fetcher) {
+            return fetcher.src;
+        }
+
+    }
+
+    public class OrganisationJoinerImpl implements OrganisationJoiner<Integer, Organisation, OrganisationFetcherImpl> {
+
+        @Override
+        public Map<Integer, Fetcher<Address>> joinLegalAddress(Collection<Organisation> organisations) {
+            return JoinUtil.joinUnidirectionalToOne(
+                    organisations,
+                    addressRepository::findLegalAddressesOfOrganisations,
+                    AddressFetcherImpl::new,
+                    Organisation::getId,
+                    organisation -> organisation.getLegalAddress() == null ? null : organisation.getLegalAddress().getId(),
+                    Address::getId
+            );
+        }
+
+        @Override
+        public Map<Integer, Fetcher<Address>> joinFactualAddress(Collection<Organisation> organisations) {
+            return JoinUtil.joinUnidirectionalToOne(
+                    organisations,
+                    addressRepository::findFactualAddressesOfOrganisations,
+                    AddressFetcherImpl::new,
+                    Organisation::getId,
+                    organisation -> organisation.getFactualAddress() == null ? null : organisation.getFactualAddress().getId(),
+                    Address::getId
+            );
+        }
+
+        @Override
+        public Integer getId(Organisation entity) {
+            return entity.getId();
+        }
+
+        @Override
+        public Organisation getUnderlyingEntity(OrganisationFetcherImpl fetcher) {
+            return fetcher.src;
+        }
+
     }
 
     private static class EmployeeFetcherImpl implements EmployeeFetcher {
@@ -70,50 +125,73 @@ public class SelectiveRestImpl implements SelectiveRest {
         }
 
         @Override
-        public void selectId(Employee model) {
+        public void fetchId(Employee model) {
             model.setId(src.getId());
         }
 
         @Override
-        public void selectName(Employee model) {
+        public void fetchName(Employee model) {
             model.setName(src.getName());
         }
 
         @Override
-        public void selectOrganisation(Employee model, Organisation organisation) {
+        public void setOrganisation(Employee model, Organisation organisation) {
             model.setOrganisation(organisation);
         }
 
         @Override
         public OrganisationFetcher organisationFetcher() {
-            return new OrganisationFetcherImpl(src.getOrganisation());
+            return src.getOrganisation() == null ? null : new OrganisationFetcherImpl(src.getOrganisation());
         }
 
         @Override
-        public void selectContacts(Employee model, List<Employee.Contact> contacts) {
+        public void setContacts(Employee model, List<Contact> contacts) {
             model.setContacts(contacts);
         }
 
         @Override
         public List<? extends ContactFetcher> contactsFetcher() {
-            return src.contacts == null ? Collections.emptyList() : src.contacts.stream().map(contact -> new ContactFetcher() {
-                @Override
-                public void selectPhone(Employee.Contact model) {
-                    model.setPhone(contact.getPhone());
-                }
-
-                @Override
-                public void selectEmail(Employee.Contact model) {
-                    model.setEmail(contact.getEmail());
-                }
-
-                @Override
-                public Employee.Contact create() {
-                    return new Employee.Contact();
-                }
-            }).collect(Collectors.toList());
+            return src.getContacts() == null ? null : src.getContacts().stream().map(ContactFetcherImpl::new).collect(toList());
         }
 
+        private static class ContactFetcherImpl implements ContactFetcher, Fetcher<Contact> {
+
+            private final Contact contact;
+
+            public ContactFetcherImpl(Contact contact) {
+                this.contact = contact;
+            }
+
+            @Override
+            public void setOwner(Contact model, Employee owner) {
+            }
+
+            @Override
+            public EmployeeFetcher ownerFetcher() {
+                return null;
+            }
+
+            @Override
+            public void fetchPhone(Contact model) {
+                model.setPhone(contact.getPhone());
+            }
+
+            @Override
+            public void fetchEmail(Contact model) {
+                model.setEmail(contact.getEmail());
+            }
+
+            @Override
+            public Contact create() {
+                return new Contact();
+            }
+
+            @Override
+            public void fetchId(Contact model) {
+                model.setId(contact.getId());
+            }
+
+        }
     }
 
     private static class OrganisationFetcherImpl implements OrganisationFetcher {
@@ -130,28 +208,33 @@ public class SelectiveRestImpl implements SelectiveRest {
         }
 
         @Override
-        public void selectId(Organisation model) {
+        public void fetchId(Organisation model) {
             model.setId(src.getId());
         }
 
         @Override
-        public void selectLegalAddress(Organisation model, Address legalAddress) {
+        public void setLegalAddress(Organisation model, Address legalAddress) {
             model.setLegalAddress(legalAddress);
         }
 
         @Override
         public AddressFetcher legalAddressFetcher() {
-            return new AddressFetcherImpl(src.getLegalAddress());
+            return src.getLegalAddress() == null ? null : new AddressFetcherImpl(src.getLegalAddress());
         }
 
         @Override
-        public void selectFactualAddress(Organisation model, Address factualAddress) {
+        public void setFactualAddress(Organisation model, Address factualAddress) {
             model.setFactualAddress(factualAddress);
         }
 
         @Override
         public AddressFetcher factualAddressFetcher() {
-            return new AddressFetcherImpl(src.getFactualAddress());
+            return src.getFactualAddress() == null ? null : new AddressFetcherImpl(src.getFactualAddress());
+        }
+
+        @Override
+        public void fetchName(Organisation model) {
+            model.setName(src.getName());
         }
 
     }
@@ -170,17 +253,17 @@ public class SelectiveRestImpl implements SelectiveRest {
         }
 
         @Override
-        public void selectPostcode(Address model) {
+        public void fetchPostcode(Address model) {
             model.setPostcode(src.getPostcode());
         }
 
         @Override
-        public void selectRegion(Address model) {
+        public void fetchRegion(Address model) {
             model.setRegion(src.getRegion());
         }
 
         @Override
-        public void selectId(Address model) {
+        public void fetchId(Address model) {
             model.setId(src.getId());
         }
 

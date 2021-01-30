@@ -15,13 +15,24 @@ class GenericSignature {
 
     GenericSignature(TypeElement owner) {
         this.owner = owner;
-        this.typeVariables = new ArrayList<>(0);
-        this.upperBounds = new ArrayList<>(0);
+        this.typeVariables = new ArrayList<>();
+        this.upperBounds = new ArrayList<>();
     }
 
     void addTypeVariable(String var, String upperBound) {
         this.typeVariables.add(var);
-        this.upperBounds.add(Arrays.stream(upperBound.split("&")).filter(s -> !s.equals("java.lang.Object")).toArray(String[]::new));
+        if (upperBound != null) {
+            this.upperBounds.add(Arrays.stream(upperBound.split("&")).filter(s -> !s.equals("java.lang.Object")).toArray(String[]::new));
+        } else
+            upperBounds.add(new String[0]);
+    }
+
+    GenericSignature copy() {
+        GenericSignature copy = new GenericSignature(owner);
+        copy.typeVariables.addAll(this.typeVariables);
+        copy.upperBounds.addAll(this.upperBounds);
+        copy.selfVariable = this.selfVariable;
+        return copy;
     }
 
     boolean isEmpty() {
@@ -33,7 +44,7 @@ class GenericSignature {
     }
 
     void createSelfVariable() {
-        String var = allocateVar();
+        String var = allocateVar("T", "E", "M");
         StringBuilder builder = new StringBuilder();
         builder.append(owner.getQualifiedName());
         if (!typeVariables.isEmpty())
@@ -78,9 +89,8 @@ class GenericSignature {
         return "<" + String.join(", ", typeVariables.subList(1, typeVariables.size())) + ">";
     }
 
-    private String allocateVar() {
-        for (int i = 'A'; i <= 'Z'; i++) {
-            String var = Character.toString((char) i);
+    String allocateVar(String...preferred) {
+        for (String var : preferred) {
             if (!typeVariables.contains(var))
                 return var;
         }
@@ -88,7 +98,7 @@ class GenericSignature {
         for (int i = 0;;i++) {
             String temp = var + i;
             if (!typeVariables.contains(temp))
-                return var;
+                return temp;
         }
     }
 

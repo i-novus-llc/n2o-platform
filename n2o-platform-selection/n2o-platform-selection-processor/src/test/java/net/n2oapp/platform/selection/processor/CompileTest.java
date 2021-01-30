@@ -21,6 +21,7 @@ public class CompileTest {
             CompilationSubject.assertThat(compilation).generatedSourceFile(source("Test" + i + "Selection"));
             CompilationSubject.assertThat(compilation).generatedSourceFile(source("Test" + i + "Fetcher"));
             CompilationSubject.assertThat(compilation).generatedSourceFile(source("DefaultTest" + i + "Selection"));
+            CompilationSubject.assertThat(compilation).generatedSourceFile(source("Test" + i + "Joiner"));
         }
     }
 

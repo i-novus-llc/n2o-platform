@@ -19,16 +19,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
  * В таком случае у него должен быть стандартный геттер.
  *
  * </pre>
- * @param <E> Тип DTO для этой выборки
+ * @param <T> Тип DTO для этой выборки
  */
-public interface Selection<E> {
-
-    /**
-     * Метод-маркер для вывода типа {@code <E>} в runtime
-     */
-    default E typeMarker() {
-        return null;
-    }
+public interface Selection<T> {
 
     /**
      * @see SelectionPropagationEnum
@@ -36,6 +29,16 @@ public interface Selection<E> {
     default SelectionPropagationEnum propagation() {
         return SelectionPropagationEnum.NORMAL;
     }
+
+    /**
+     * @return {@code true}, если данная выборка является пустой
+     * (
+     *  то есть
+     *      {@link #propagation()} == {@link SelectionPropagationEnum#NORMAL} (или null) и
+     *      ни одно значение {@link SelectionEnum} не равно {@link SelectionEnum#T}
+     * )
+     */
+    boolean empty();
 
     /**
      * Данный метод нужен, чтобы уменьшить кол-во символов, необходимых для передачи выборки в формате JSON,

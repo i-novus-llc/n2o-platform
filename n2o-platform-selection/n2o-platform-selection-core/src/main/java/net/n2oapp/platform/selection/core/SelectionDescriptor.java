@@ -1,9 +1,10 @@
 package net.n2oapp.platform.selection.core;
 
+import net.n2oapp.platform.selection.api.Selection;
 import org.springframework.core.ResolvableType;
 
 import java.lang.reflect.Method;
-import java.util.List;
+import java.util.Map;
 
 /**
  * Описание выборки, полученное через Reflection
@@ -13,23 +14,20 @@ class SelectionDescriptor {
     /**
      * Тип DTO, для которого предназначена эта выборка
      */
-    final ResolvableType type;
-    final List<SelectionAccessor> accessors;
+    final ResolvableType targetType;
+    final Map<String, SelectionAccessor> accessors;
+    final Class<? extends Selection> selectionClass;
 
-    SelectionDescriptor(ResolvableType type, List<SelectionAccessor> accessors) {
-        this.type = type;
+    SelectionDescriptor(ResolvableType targetType, Map<String, SelectionAccessor> accessors, Class<? extends Selection> selectionClass) {
+        this.targetType = targetType;
         this.accessors = accessors;
+        this.selectionClass = selectionClass;
     }
 
     /**
      * Доступ к методам выборки, помеченным {@link net.n2oapp.platform.selection.api.SelectionKey}
      */
     static class SelectionAccessor {
-
-        /**
-         * @see net.n2oapp.platform.selection.api.SelectionKey
-         */
-        final String selectionKey;
 
         /**
          * Метод, возвращающий {@link net.n2oapp.platform.selection.api.SelectionEnum}
@@ -42,8 +40,7 @@ class SelectionDescriptor {
          */
         final Method nestedSelectionAccessor;
 
-        SelectionAccessor(String selectionKey, Method selectionEnumAccessor, Method nestedSelectionAccessor) {
-            this.selectionKey = selectionKey;
+        SelectionAccessor(Method selectionEnumAccessor, Method nestedSelectionAccessor) {
             this.selectionEnumAccessor = selectionEnumAccessor;
             this.nestedSelectionAccessor = nestedSelectionAccessor;
         }

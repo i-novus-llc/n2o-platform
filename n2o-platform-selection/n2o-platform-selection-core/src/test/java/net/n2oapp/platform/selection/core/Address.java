@@ -2,11 +2,25 @@ package net.n2oapp.platform.selection.core;
 
 import net.n2oapp.platform.selection.api.Selective;
 
-@Selective
+import javax.persistence.Column;
+import javax.persistence.Entity;
+
+@Entity
+@Selective(prefix = "a")
 public class Address extends BaseModel {
 
+    @Column
     public String postcode;
+
+    @Column
     public String region;
+
+    protected Address() {
+    }
+
+    public Address(Integer id) {
+        super(id);
+    }
 
     public String getPostcode() {
         return postcode;

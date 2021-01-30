@@ -14,13 +14,13 @@ package net.n2oapp.platform.selection.api;
  *     а) без аргументов, возвращающий вложенный {@code Fetcher<X>}
  *     б) и связанный с ним через {@code selectionKey} метод, принимающий DTO типа {@code E} и {@code X} и DTO {@code X}.
  * </pre>
- * @param <E> Тип DTO
+ * @param <T> Тип DTO
  */
-public interface Fetcher<E> {
+public interface Fetcher<T> {
 
     /**
-     * @return Пустой DTO, чьи поля будут выборочно отображены в соответствии с {@link Selection<E>}
+     * @return Пустой DTO, чьи поля будут выборочно отображены в соответствии с {@link Selection<T>}
      */
-    E create();
+    T create();
 
 }

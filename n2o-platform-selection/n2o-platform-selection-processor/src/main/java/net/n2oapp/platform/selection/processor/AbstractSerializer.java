@@ -1,23 +1,24 @@
 package net.n2oapp.platform.selection.processor;
 
+import net.n2oapp.platform.selection.api.SelectionKey;
+
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.PackageElement;
-import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.Writer;
 
 abstract class AbstractSerializer {
 
-    private final TypeMirror selectionKey;
-
-    AbstractSerializer(TypeMirror selectionKey) {
-        this.selectionKey = selectionKey;
+    AbstractSerializer() {
     }
 
-    abstract String getSuffix();
+    String getSuffix() {
+        return getInterfaceRaw().getSimpleName();
+    }
+
     abstract void serializeProperty(SelectionMeta meta, SelectionProperty property, Writer out) throws IOException;
-    abstract TypeMirror getInterfaceRaw();
+    abstract Class<?> getInterfaceRaw();
 
     void serialize(SelectionMeta meta, Filer filer) throws IOException {
         PackageElement targetPackage = meta.getTargetPackage();
@@ -27,16 +28,18 @@ abstract class AbstractSerializer {
             appendPackage(targetPackage, out);
             out.append("public interface ");
             out.append(interfaceName);
-            out.append(meta.getGenericSignature().toString());
+            out.append(getGenericSignature(meta).toString());
             out.append(" extends ");
             if (meta.getParent() != null) {
                 out.append(getQualifiedName(meta.getParent(), meta.getParent().getTargetPackage()));
             } else {
-                out.append(getInterfaceRaw().toString());
+                out.append(getInterfaceRaw().getCanonicalName());
             }
-            out.append(meta.getExtendsSignature());
+            out.append(getExtendsSignature(meta));
             out.append(" {");
             for (SelectionProperty property : meta.getProperties()) {
+                if (!shouldSerialize(property))
+                    continue;
                 out.append("\n\t");
                 appendSelectionKey(out, property.getKey());
                 out.append("\n\t");
@@ -48,15 +51,21 @@ abstract class AbstractSerializer {
         }
     }
 
+    protected boolean shouldSerialize(SelectionProperty property) {
+        return true;
+    }
+
+    protected abstract GenericSignature getGenericSignature(SelectionMeta meta);
+    protected abstract String getExtendsSignature(SelectionMeta meta);
+
     void postSerialize(SelectionMeta meta, Writer out) throws IOException {
     }
 
-    protected Writer appendPackage(PackageElement targetPackage, Writer out) throws IOException {
+    protected void appendPackage(PackageElement targetPackage, Writer out) throws IOException {
         out.append("package ");
         out.append(targetPackage.getQualifiedName());
         out.append(';');
         out.append("\n\n");
-        return out;
     }
 
     String getQualifiedName(SelectionMeta meta, PackageElement targetPackage) {
@@ -76,7 +85,7 @@ abstract class AbstractSerializer {
 
     void appendSelectionKey(Writer out, String key) throws IOException {
         out.append("@");
-        out.append(selectionKey.toString());
+        out.append(SelectionKey.class.getCanonicalName());
         out.append("(\"");
         out.append(key);
         out.append("\")");

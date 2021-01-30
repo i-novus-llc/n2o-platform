@@ -1,6 +1,8 @@
 package net.n2oapp.platform.selection.processor;
 
+import net.n2oapp.platform.selection.api.Selection;
 import net.n2oapp.platform.selection.api.SelectionEnum;
+import net.n2oapp.platform.selection.api.SelectionPropagationEnum;
 
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.PackageElement;
@@ -33,9 +35,6 @@ class SelectionSerializer extends AbstractSerializer {
     private static final String SETTER = "set";
     private static final String VOID = "void";
 
-    private final TypeMirror selectionEnum;
-    private final TypeMirror selectionInterface;
-    private final TypeMirror selectionPropagation;
     private final TypeMirror jsonTypeInfo;
     private final TypeMirror jsonSubTypes;
     private final TypeElement requestParam;
@@ -46,22 +45,14 @@ class SelectionSerializer extends AbstractSerializer {
     private final boolean overrideSelectionKeys;
 
     SelectionSerializer(
-        TypeMirror selectionKey,
-        TypeMirror selectionEnum,
-        TypeMirror selectionInterface,
-        TypeMirror selectionPropagation,
-        boolean addJacksonTyping,
-        boolean addJaxRsAnnotations,
-        boolean overrideSelectionKeys,
-        TypeElement jsonTypeInfo,
-        TypeElement jsonSubTypes,
-        TypeElement requestParam,
-        TypeElement beanParam
+            boolean addJacksonTyping,
+            boolean addJaxRsAnnotations,
+            boolean overrideSelectionKeys,
+            TypeElement jsonTypeInfo,
+            TypeElement jsonSubTypes,
+            TypeElement requestParam,
+            TypeElement beanParam
     ) {
-        super(selectionKey);
-        this.selectionEnum = selectionEnum;
-        this.selectionInterface = selectionInterface;
-        this.selectionPropagation = selectionPropagation;
         this.addJacksonTyping = addJacksonTyping;
         this.addJaxRsAnnotations = addJaxRsAnnotations;
         this.overrideSelectionKeys = overrideSelectionKeys;
@@ -77,13 +68,8 @@ class SelectionSerializer extends AbstractSerializer {
     }
 
     @Override
-    String getSuffix() {
-        return "Selection";
-    }
-
-    @Override
     void serializeProperty(SelectionMeta meta, SelectionProperty property, Writer out) throws IOException {
-        out.append(selectionEnum.toString());
+        out.append(SelectionEnum.class.getCanonicalName());
         out.append(' ');
         out.append(GETTER);
         String capitalizedProperty = capitalize(property.getKey());
@@ -95,7 +81,7 @@ class SelectionSerializer extends AbstractSerializer {
             out.append("\n\t");
             SelectionMeta nestedSelection = property.getNestedSelection();
             out.append(getQualifiedName(nestedSelection, nestedSelection.getTargetPackage()));
-            out.append(property.getNestedGenericSignature());
+            out.append(property.getNestedGenericSignatureOrWildcards());
             out.append(' ');
             out.append(GETTER);
             out.append(capitalizedProperty);
@@ -138,94 +124,12 @@ class SelectionSerializer extends AbstractSerializer {
         JavaFileObject file = filer.createSourceFile(self, targetPackage);
         self += meta.getGenericSignature().varsToString(true);
         try (Writer out = file.openWriter()) {
-            appendPackage(targetPackage, out);
-            if (addJacksonTyping && !meta.getChildren().isEmpty()) {
-                out.append("@");
-                out.append(jsonTypeInfo.toString());
-                out.append("(use");
-                out.append(ASSIGNMENT);
-                out.append(jsonTypeInfo.toString());
-                out.append(".Id.NAME, property");
-                out.append(ASSIGNMENT);
-                out.append("\"t\")\n");
-                out.append("@");
-                out.append(jsonSubTypes.toString());
-                out.append("({\n");
-                addJacksonTyping(meta, out);
-                out.append("})\n");
-            }
-            out.append("public");
-            if (meta.isAbstract())
-                out.append(" abstract");
-            out.append(" class ");
-            out.append(className);
-            out.append(meta.getGenericSignature().toString());
-            if (meta.getParent() != null) {
-                out.append(" extends ");
-                out.append(getQualifiedName(meta.getParent(), meta.getParent().getTargetPackage(), CLASS_PREFIX));
-                out.append(meta.getExtendsSignature());
-            }
-            out.append(" implements ");
-            out.append(getQualifiedName(meta, targetPackage));
-            out.append(meta.getGenericSignature().varsToString(true));
-            out.append("{\n\n");
-            String prefix = meta.getPrefix();
+            initClassFile(meta, targetPackage, className, out);
             if (meta.getParent() == null) {
-                if (addJaxRsAnnotations) {
-                    out.append("\t@");
-                    out.append(requestParam.toString());
-                    out.append("(\"");
-                    out.append(prefix);
-                    out.append(PROPAGATION_CAPITALIZED);
-                    out.append("\")\n");
-                }
-                out.append("\tprotected ");
-                out.append(selectionPropagation.toString());
-                out.append(' ');
-                out.append(PROPAGATION);
-                out.append(FIELD_END);
-                out.append(METHOD_START);
-                out.append(selectionPropagation.toString());
-                out.append(' ');
-                out.append(GETTER);
-                out.append(PROPAGATION_CAPITALIZED);
-                out.append(NO_ARG_METHOD_BODY_START);
-                out.append(METHOD_BODY_STATEMENT_START);
-                out.append(RETURN_STATEMENT);
-                out.append(PROPAGATION);
-                out.append(STATEMENT_END);
-                out.append(METHOD_END);
-                out.append(METHOD_START);
-                out.append(VOID);
-                out.append(' ');
-                out.append(SETTER);
-                out.append(PROPAGATION_CAPITALIZED);
-                out.append('(');
-                out.append(selectionPropagation.toString());
-                out.append(' ');
-                out.append(PROPAGATION);
-                out.append(WITH_ARG_METHOD_BODY_START);
-                out.append(METHOD_BODY_STATEMENT_START);
-                out.append(THIS);
-                out.append('.');
-                out.append(PROPAGATION);
-                out.append(ASSIGNMENT);
-                out.append(PROPAGATION);
-                out.append(STATEMENT_END);
-                out.append(METHOD_END);
-                appendOverride(out);
-                out.append(METHOD_START);
-                out.append(selectionPropagation.toString());
-                out.append(' ');
-                out.append(PROPAGATION);
-                out.append(NO_ARG_METHOD_BODY_START);
-                out.append(METHOD_BODY_STATEMENT_START);
-                out.append(RETURN_STATEMENT);
-                out.append(PROPAGATION);
-                out.append(STATEMENT_END);
-                out.append(METHOD_END);
+                definePropagationField(meta, out);
             }
-            overridePropagation(self, out);
+            writePropagationMethod(meta.getParent() != null, self, out);
+            String prefix = meta.getPrefix();
             for (SelectionProperty property : meta.getProperties()) {
                 String capitalizedKey = capitalize(property.getKey());
                 fieldForSelectionEnum(out, prefix, property.getKey());
@@ -251,16 +155,169 @@ class SelectionSerializer extends AbstractSerializer {
                 appendSelect(self, out, property.getKey(), UNSELECT_PREFIX, SelectionEnum.F, "", assignments);
             }
             if (overrideSelectionKeys)
-                override(meta, out, self);
+                overrideSelectionKeys(meta, out, self);
+            overrideIsEmptyMethod(meta, out);
             out.append("\n}");
         }
     }
 
-    private void overridePropagation(String self, Writer out) throws IOException {
+    private void initClassFile(SelectionMeta meta, PackageElement targetPackage, String className, Writer out) throws IOException {
+        appendPackage(targetPackage, out);
+        if (addJacksonTyping && !meta.getChildren().isEmpty()) {
+            out.append("@");
+            out.append(jsonTypeInfo.toString());
+            out.append("(use");
+            out.append(ASSIGNMENT);
+            out.append(jsonTypeInfo.toString());
+            out.append(".Id.NAME, property");
+            out.append(ASSIGNMENT);
+            out.append("\"t\")\n");
+            out.append("@");
+            out.append(jsonSubTypes.toString());
+            out.append("({\n");
+            addJacksonTyping(meta, out);
+            out.append("})\n");
+        }
+        out.append("public");
+        if (meta.isAbstract())
+            out.append(" abstract");
+        out.append(" class ");
+        out.append(className);
+        out.append(meta.getGenericSignature().toString());
+        if (meta.getParent() != null) {
+            out.append(" extends ");
+            out.append(getQualifiedName(meta.getParent(), meta.getParent().getTargetPackage(), CLASS_PREFIX));
+            out.append(meta.getExtendsSignature());
+        }
+        out.append(" implements ");
+        out.append(getQualifiedName(meta, targetPackage));
+        out.append(meta.getGenericSignature().varsToString(true));
+        out.append("{\n\n");
+    }
+
+    private void definePropagationField(SelectionMeta meta, Writer out) throws IOException {
+        if (addJaxRsAnnotations) {
+            out.append("\t@");
+            out.append(requestParam.toString());
+            out.append("(\"");
+            out.append(meta.getPrefixOrGenerate());
+            out.append(PROPAGATION_CAPITALIZED);
+            out.append("\")\n");
+        }
+        out.append("\tprotected ");
+        out.append(SelectionPropagationEnum.class.getCanonicalName());
+        out.append(' ');
+        out.append(PROPAGATION);
+        out.append(FIELD_END);
+        out.append(METHOD_START);
+        out.append(SelectionPropagationEnum.class.getCanonicalName());
+        out.append(' ');
+        out.append(GETTER);
+        out.append(PROPAGATION_CAPITALIZED);
+        out.append(NO_ARG_METHOD_BODY_START);
+        out.append(METHOD_BODY_STATEMENT_START);
+        out.append(RETURN_STATEMENT);
+        out.append(PROPAGATION);
+        out.append(STATEMENT_END);
+        out.append(METHOD_END);
+        out.append(METHOD_START);
+        out.append(VOID);
+        out.append(' ');
+        out.append(SETTER);
+        out.append(PROPAGATION_CAPITALIZED);
+        out.append('(');
+        out.append(SelectionPropagationEnum.class.getCanonicalName());
+        out.append(' ');
+        out.append(PROPAGATION);
+        out.append(WITH_ARG_METHOD_BODY_START);
+        out.append(METHOD_BODY_STATEMENT_START);
+        out.append(THIS);
+        out.append('.');
+        out.append(PROPAGATION);
+        out.append(ASSIGNMENT);
+        out.append(PROPAGATION);
+        out.append(STATEMENT_END);
+        out.append(METHOD_END);
+        appendOverride(out);
+        out.append(METHOD_START);
+        out.append(SelectionPropagationEnum.class.getCanonicalName());
+        out.append(' ');
+        out.append(PROPAGATION);
+        out.append(NO_ARG_METHOD_BODY_START);
+        out.append(METHOD_BODY_STATEMENT_START);
+        out.append(RETURN_STATEMENT);
+        out.append(PROPAGATION);
+        out.append(STATEMENT_END);
+        out.append(METHOD_END);
+    }
+
+    private void overrideIsEmptyMethod(SelectionMeta meta, Writer out) throws IOException {
+        appendOverride(out);
+        out.append(METHOD_START);
+        out.append("boolean");
+        out.append(" empty");
+        out.append(NO_ARG_METHOD_BODY_START);
+        out.append(METHOD_BODY_STATEMENT_START);
+        out.append(RETURN_STATEMENT);
+        out.append(" ");
+        if (meta.getParent() == null) {
+            out.append("(");
+            out.append(PROPAGATION);
+            out.append("()");
+            out.append(" == ");
+            out.append("null");
+            out.append(" || ");
+            out.append(PROPAGATION);
+            out.append("()");
+            out.append(" == ");
+            out.append(SelectionPropagationEnum.class.getCanonicalName());
+            out.append(".");
+            out.append(SelectionPropagationEnum.NORMAL.name());
+            out.append(")");
+        } else {
+            out.append("super.empty()");
+        }
+        if (!meta.getProperties().isEmpty()) {
+            for (SelectionProperty property : meta.getProperties()) {
+                out.append(" && ");
+                out.append("\n");
+                out.append("\t\t\t\t");
+                out.append("(");
+                out.append(property.getKey());
+                out.append(" == ");
+                out.append("null");
+                out.append(" || ");
+                out.append(property.getKey());
+                out.append(" == ");
+                out.append(SelectionEnum.class.getCanonicalName());
+                out.append(".");
+                out.append(SelectionEnum.F.name());
+                if (property.getNestedSelection() != null) {
+                    out.append(" || ");
+                    out.append(property.getKey());
+                    out.append(getSuffix());
+                    out.append(" == ");
+                    out.append("null");
+                    out.append(" || ");
+                    out.append(property.getKey());
+                    out.append(getSuffix());
+                    out.append(".");
+                    out.append("empty()");
+                }
+                out.append(")");
+            }
+        }
+        out.append(STATEMENT_END);
+        out.append(METHOD_END);
+    }
+
+    private void writePropagationMethod(boolean override, String self, Writer out) throws IOException {
+        if (override)
+            appendOverride(out);
         out.append(METHOD_START);
         out.append(self);
         out.append(" propagate(");
-        out.append(selectionPropagation.toString());
+        out.append(SelectionPropagationEnum.class.getCanonicalName());
         out.append(' ');
         out.append(PROPAGATION);
         out.append(WITH_ARG_METHOD_BODY_START);
@@ -278,17 +335,27 @@ class SelectionSerializer extends AbstractSerializer {
         out.append(METHOD_END);
     }
 
+    @Override
+    protected GenericSignature getGenericSignature(SelectionMeta meta) {
+        return meta.getGenericSignature();
+    }
+
+    @Override
+    protected String getExtendsSignature(SelectionMeta meta) {
+        return meta.getExtendsSignature();
+    }
+
     private void fieldForSelectionEnum(Writer out, String prefix, String key) throws IOException {
         if (addJaxRsAnnotations) {
             out.append("\t@");
             out.append(requestParam.toString());
             out.append("(\"");
             out.append(prefix);
-            out.append(capitalize(key));
+            out.append(prefix.isBlank() ? key : capitalize(key));
             out.append("\")\n");
         }
         out.append(FIELD_START);
-        out.append(selectionEnum.toString());
+        out.append(SelectionEnum.class.getCanonicalName());
         out.append(' ');
         out.append(key);
         out.append(FIELD_END);
@@ -297,7 +364,7 @@ class SelectionSerializer extends AbstractSerializer {
     private void getterForSelectionEnum(Writer out, String key) throws IOException {
         appendOverride(out);
         out.append(METHOD_START);
-        out.append(selectionEnum.toString());
+        out.append(SelectionEnum.class.getCanonicalName());
         out.append(' ');
         out.append(GETTER);
         out.append(capitalize(key));
@@ -316,7 +383,7 @@ class SelectionSerializer extends AbstractSerializer {
         out.append(SETTER);
         out.append(capitalize(key));
         out.append("(");
-        out.append(selectionEnum.toString());
+        out.append(SelectionEnum.class.getCanonicalName());
         out.append(' ');
         out.append(key);
         out.append(WITH_ARG_METHOD_BODY_START);
@@ -338,7 +405,7 @@ class SelectionSerializer extends AbstractSerializer {
         }
         out.append(FIELD_START);
         out.append(nestedQualified);
-        out.append(property.getNestedGenericSignature());
+        out.append(property.getNestedGenericSignatureOrWildcards());
         out.append(' ');
         out.append(property.getKey());
         out.append(getSuffix());
@@ -349,7 +416,7 @@ class SelectionSerializer extends AbstractSerializer {
         appendOverride(out);
         out.append(METHOD_START);
         out.append(nestedQualified);
-        out.append(property.getNestedGenericSignature());
+        out.append(property.getNestedGenericSignatureOrWildcards());
         out.append(' ');
         out.append(GETTER);
         out.append(capitalizedKey);
@@ -372,7 +439,7 @@ class SelectionSerializer extends AbstractSerializer {
         out.append(getSuffix());
         out.append("(");
         out.append(nestedQualified);
-        out.append(property.getNestedGenericSignature());
+        out.append(property.getNestedGenericSignatureOrWildcards());
         out.append(' ');
         out.append(SELECTION_ARG);
         out.append(WITH_ARG_METHOD_BODY_START);
@@ -388,10 +455,10 @@ class SelectionSerializer extends AbstractSerializer {
     }
 
     private String getNestedAsMethodArg(SelectionProperty property) {
-        return getQualifiedName(property.getNestedSelection(), property.getNestedSelection().getTargetPackage(), CLASS_PREFIX) + property.getNestedGenericSignature() + " " + SELECTION_ARG;
+        return getQualifiedName(property.getNestedSelection(), property.getNestedSelection().getTargetPackage(), CLASS_PREFIX) + property.getNestedGenericSignatureOrWildcards() + " " + SELECTION_ARG;
     }
 
-    private void override(SelectionMeta meta, Writer out, String self) throws IOException {
+    private void overrideSelectionKeys(SelectionMeta meta, Writer out, String self) throws IOException {
         SelectionMeta curr = meta;
         SelectionMeta parent = meta.getParent();
         while (parent != null) {
@@ -473,7 +540,7 @@ class SelectionSerializer extends AbstractSerializer {
         out.append('.');
         out.append(key);
         out.append(ASSIGNMENT);
-        out.append(selectionEnum.toString());
+        out.append(SelectionEnum.class.getCanonicalName());
         out.append(".");
         out.append(value.name());
         out.append(STATEMENT_END);
@@ -524,8 +591,8 @@ class SelectionSerializer extends AbstractSerializer {
     }
 
     @Override
-    TypeMirror getInterfaceRaw() {
-        return selectionInterface;
+    Class<?> getInterfaceRaw() {
+        return Selection.class;
     }
 
 }

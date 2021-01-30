@@ -4,6 +4,8 @@ import javax.lang.model.type.TypeMirror;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 class SelectionProperty {
 
@@ -14,17 +16,25 @@ class SelectionProperty {
     private final SelectionMeta nestedSelection;
     private final String originalType;
     private final TypeMirror collectionRawType;
+    private final TypeMirror type;
     private final SelectionMeta owner;
+    private final boolean isJoined;
+    private final boolean withNestedJoiner;
+    private final boolean rawUse;
 
     SelectionProperty(String key) {
-        this(key, null, null, null, null, null);
+        this(key, null, null, null, null, null, null, false, false, false);
     }
 
-    SelectionProperty(String key, String nestedGenericSignature, SelectionMeta nestedSelection, TypeMirror originalType, TypeMirror collectionRawType, SelectionMeta owner) {
+    SelectionProperty(String key, String nestedGenericSignature, SelectionMeta nestedSelection, TypeMirror type, TypeMirror originalType, TypeMirror collectionRawType, SelectionMeta owner, boolean isJoined, boolean withNestedJoiner, boolean rawUse) {
         this.key = key;
         this.nestedGenericSignature = nestedGenericSignature;
         this.nestedSelection = nestedSelection;
+        this.type = type;
         this.owner = owner;
+        this.isJoined = isJoined;
+        this.withNestedJoiner = withNestedJoiner;
+        this.rawUse = rawUse;
         if (originalType != null) {
             this.originalType = stripAnnotations(originalType);
         } else
@@ -56,10 +66,13 @@ class SelectionProperty {
         return key;
     }
 
-    String getNestedGenericSignature() {
-        if (nestedGenericSignature.isEmpty())
-            return "";
-        return "<" + nestedGenericSignature + ">";
+    String getNestedGenericSignatureOrWildcards(String...additionalTypeVariables) {
+        if (nestedGenericSignature.isBlank() && !rawUse)
+            return additionalTypeVariables.length == 0 ? "" : "<" + String.join(", ", additionalTypeVariables) + ">";
+        String suffix = additionalTypeVariables.length == 0 ? "" : ", " + String.join(", ", additionalTypeVariables);
+        if (!nestedGenericSignature.isEmpty())
+            return "<" + String.join(", ", nestedGenericSignature) + suffix + ">";
+        return "<" + IntStream.range(0, nestedSelection.getGenericSignature().size()).mapToObj(ignored -> "?").collect(Collectors.joining(", ")) + suffix + ">";
     }
 
     TypeMirror getCollectionRawType() {
@@ -68,6 +81,10 @@ class SelectionProperty {
 
     SelectionMeta getNestedSelection() {
         return nestedSelection;
+    }
+
+    TypeMirror getType() {
+        return type;
     }
 
     String getOriginalType() {
@@ -139,6 +156,14 @@ class SelectionProperty {
             return !GENERIC_DELIMITER.contains(signature.charAt(i + 1));
         }
         return false;
+    }
+
+    boolean isJoined() {
+        return isJoined;
+    }
+
+    boolean isWithNestedJoiner() {
+        return withNestedJoiner;
     }
 
 }

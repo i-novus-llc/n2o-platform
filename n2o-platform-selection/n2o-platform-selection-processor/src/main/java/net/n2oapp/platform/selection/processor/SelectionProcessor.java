@@ -1,5 +1,6 @@
 package net.n2oapp.platform.selection.processor;
 
+import net.n2oapp.platform.selection.api.Joined;
 import net.n2oapp.platform.selection.api.Selective;
 
 import javax.annotation.processing.*;
@@ -21,8 +22,6 @@ import static net.n2oapp.platform.selection.processor.ProcessorUtil.toposort;
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class SelectionProcessor extends AbstractProcessor {
 
-    private static final String SELECTIVE_ANNOTATION = "@Selective";
-
     private static final String ADD_JACKSON_TYPING = "net.n2oapp.platform.selection.addJacksonTyping";
     private static final String ADD_JAXRS_ANNOTATIONS = "net.n2oapp.platform.selection.addJaxRsAnnotations";
     private static final String OVERRIDE_SELECTION_KEYS = "net.n2oapp.platform.selection.overrideSelectionKeys";
@@ -40,6 +39,7 @@ public class SelectionProcessor extends AbstractProcessor {
 
     private SelectionSerializer selectionSerializer;
     private FetcherSerializer fetcherSerializer;
+    private JoinerSerializer joinerSerializer;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -47,11 +47,6 @@ public class SelectionProcessor extends AbstractProcessor {
         this.types = processingEnv.getTypeUtils();
         Elements elements = processingEnv.getElementUtils();
         this.collection = types.erasure(elements.getTypeElement("java.util.Collection").asType());
-        TypeMirror selectionKey = elements.getTypeElement("net.n2oapp.platform.selection.api.SelectionKey").asType();
-        TypeMirror selectionInterface = types.erasure(elements.getTypeElement("net.n2oapp.platform.selection.api.Selection").asType());
-        TypeMirror selectionPropagation = elements.getTypeElement("net.n2oapp.platform.selection.api.SelectionPropagationEnum").asType();
-        TypeMirror fetcherInterface = types.erasure(elements.getTypeElement("net.n2oapp.platform.selection.api.Fetcher").asType());
-        TypeMirror selectionEnum = elements.getTypeElement("net.n2oapp.platform.selection.api.SelectionEnum").asType();
         TypeElement jsonTypeInfo = elements.getTypeElement("com.fasterxml.jackson.annotation.JsonTypeInfo");
         TypeElement jsonSubTypes = elements.getTypeElement("com.fasterxml.jackson.annotation.JsonSubTypes");
         TypeElement requestParam = elements.getTypeElement("javax.ws.rs.QueryParam");
@@ -59,8 +54,9 @@ public class SelectionProcessor extends AbstractProcessor {
         this.addJacksonTyping = Boolean.parseBoolean(processingEnv.getOptions().getOrDefault(ADD_JACKSON_TYPING, Boolean.toString(jsonTypeInfo != null)));
         boolean addJaxRsAnnotations = Boolean.parseBoolean(processingEnv.getOptions().getOrDefault(ADD_JAXRS_ANNOTATIONS, Boolean.toString(requestParam != null)));
         boolean overrideSelectionKeys = Boolean.parseBoolean(processingEnv.getOptions().getOrDefault(OVERRIDE_SELECTION_KEYS, Boolean.toString(true)));
-        this.selectionSerializer = new SelectionSerializer(selectionKey, selectionEnum, selectionInterface, selectionPropagation, addJacksonTyping, addJaxRsAnnotations, overrideSelectionKeys, jsonTypeInfo, jsonSubTypes, requestParam, beanParam);
-        this.fetcherSerializer = new FetcherSerializer(selectionKey, fetcherInterface);
+        this.selectionSerializer = new SelectionSerializer(addJacksonTyping, addJaxRsAnnotations, overrideSelectionKeys, jsonTypeInfo, jsonSubTypes, requestParam, beanParam);
+        this.fetcherSerializer = new FetcherSerializer();
+        this.joinerSerializer = new JoinerSerializer();
     }
 
     @Override
@@ -88,7 +84,7 @@ public class SelectionProcessor extends AbstractProcessor {
         }
         for (SelectionMeta meta : metalist) {
             List<Element> children = toposort.stream().filter(elem -> elem.getKey().equals(meta.getTarget())).findFirst().orElseThrow().getValue();
-            meta.setChildren(metalist.stream().filter(other -> children.contains(other.getTarget())).collect(toList()));
+            meta.addChildren(metalist.stream().filter(other -> children.contains(other.getTarget())).collect(toList()));
         }
         for (SelectionMeta meta : metalist) {
             processFields(metalist, meta);
@@ -127,7 +123,12 @@ public class SelectionProcessor extends AbstractProcessor {
                         collectionRawType = erased;
                     }
                 }
-                meta.addProperty(member.getSimpleName().toString(), originalType, type, nested, collectionRawType);
+                Joined joinedAnno = member.getAnnotation(Joined.class);
+                boolean isJoined = joinedAnno != null;
+                boolean withNestedJoiner = isJoined && joinedAnno.withNestedJoiner();
+                if (isJoined && nested == null)
+                    processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, Joined.class.getSimpleName() + " can be placed only on nested properties", member);
+                meta.addProperty(member.getSimpleName().toString(), originalType, type, nested, collectionRawType, isJoined, withNestedJoiner);
             }
         }
     }
@@ -149,6 +150,7 @@ public class SelectionProcessor extends AbstractProcessor {
         try {
             selectionSerializer.serialize(meta, filer);
             fetcherSerializer.serialize(meta, filer);
+            joinerSerializer.serialize(meta, filer);
         } catch (IOException e) {
             System.err.println(e.getMessage());
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage());
@@ -167,13 +169,16 @@ public class SelectionProcessor extends AbstractProcessor {
         ) {
             Optional<SelectionMeta> opt = metalist.stream().filter(meta -> types.isSameType(superErasure, types.erasure(meta.getTarget().asType()))).findAny();
             if (opt.isEmpty()) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Superclass is missing " + SELECTIVE_ANNOTATION + " annotation", entry.getKey());
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Superclass is missing " + Selective.class + " annotation", entry.getKey());
                 return true;
             }
             parent = opt.get();
         }
         GenericSignature signature = getGenericSignature(element, (DeclaredType) element.asType());
-        SelectionMeta result = new SelectionMeta(element, parent, !entry.getValue().isEmpty(), signature, types, element.getAnnotation(Selective.class).prefix());
+        String prefix = element.getAnnotation(Selective.class).prefix();
+        if (prefix.equals(Selective.NULL))
+            prefix = null;
+        SelectionMeta result = new SelectionMeta(element, parent, !entry.getValue().isEmpty(), signature, types, prefix);
         metalist.add(result);
         return false;
     }
@@ -193,13 +198,13 @@ public class SelectionProcessor extends AbstractProcessor {
     private boolean valid(Element element) {
         boolean result = true;
         if (element.getKind() != ElementKind.CLASS) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, SELECTIVE_ANNOTATION + " must be placed only on DTO class", element);
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, Selective.class + " must be placed only on DTO class", element);
             result = false;
         } else {
             TypeElement typeElement = (TypeElement) element;
             NestingKind nesting = typeElement.getNestingKind();
             if (nesting != NestingKind.TOP_LEVEL && nesting != NestingKind.MEMBER) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, SELECTIVE_ANNOTATION + " must be placed either on top level class or inner DTO class", element);
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, Selective.class + " must be placed either on top level class or inner DTO class", element);
                 result = false;
             }
         }
