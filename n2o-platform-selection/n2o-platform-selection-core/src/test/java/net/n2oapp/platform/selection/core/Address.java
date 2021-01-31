@@ -10,10 +10,10 @@ import javax.persistence.Entity;
 public class Address extends BaseModel {
 
     @Column
-    public String postcode;
+    private String postcode;
 
     @Column
-    public String region;
+    private String region;
 
     protected Address() {
     }

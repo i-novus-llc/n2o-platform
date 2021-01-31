@@ -3,11 +3,15 @@ package net.n2oapp.platform.selection.core;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Set;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 
-    @Query("SELECT c FROM Contact c WHERE c.owner IN (?1)")
-    List<Contact> joinContacts(Iterable<Employee> owners);
+    @Query("SELECT e FROM Employee e JOIN FETCH e.contacts WHERE e IN (?1)")
+    Set<Employee> joinContacts(Collection<Employee> owners);
+
+    @Query("SELECT e FROM Employee e JOIN FETCH e.projects WHERE e IN (?1)")
+    Set<Employee> joinProjects(Collection<Employee> workers);
 
 }

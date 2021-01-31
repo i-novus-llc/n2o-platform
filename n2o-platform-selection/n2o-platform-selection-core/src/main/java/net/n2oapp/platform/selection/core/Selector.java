@@ -652,7 +652,7 @@ public final class Selector {
 //          потому что мы вызываем только публичные методы публичных классов
             throw new IllegalStateException("Can't access method " + m, e);
         } catch (InvocationTargetException e) {
-            throw new IllegalStateException("Method " + m + " threw exception during reflection access", e);
+            throw new IllegalStateException("Method " + m + " threw exception during reflection access", e.getTargetException());
         }
     }
 

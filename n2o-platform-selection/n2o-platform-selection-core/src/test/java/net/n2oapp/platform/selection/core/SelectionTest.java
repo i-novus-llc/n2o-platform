@@ -25,12 +25,14 @@ import org.springframework.lang.NonNull;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.CollectionUtils;
 
 import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static java.util.Collections.emptyList;
@@ -62,6 +64,9 @@ public class SelectionTest {
     private AddressRepository addressRepository;
 
     @Autowired
+    private ProjectRepository projectRepository;
+
+    @Autowired
     private PlatformTransactionManager txManager;
 
     private static String randString() {
@@ -76,6 +81,13 @@ public class SelectionTest {
 
     @Before
     public void setup() {
+        int numProjects = 10;
+        List<Project> projects = new ArrayList<>(numProjects);
+        for (int i = 0; i < numProjects; i++) {
+            Project project = new Project();
+            project.setName(randString());
+            projects.add(projectRepository.save(project));
+        }
         int numAddresses = 20;
         List<Integer> addresses = new ArrayList<>(numAddresses);
         for (int i = 0; i < numAddresses; i++) {
@@ -102,16 +114,23 @@ public class SelectionTest {
                 employee.setOrganisation(new Organisation(orgs.get(ThreadLocalRandom.current().nextInt(numOrgs))));
             }
             if (randBoolean()) {
-                int n = 3;
-                List<Contact> contacts = new ArrayList<>(n);
-                for (int j = 0; j < n; j++) {
+                int numContacts = 3;
+                List<Contact> contacts = new ArrayList<>(numContacts);
+                for (int j = 0; j < numContacts; j++) {
                     Contact contact = new Contact();
                     contact.setEmail(randString());
                     contact.setPhone(randString());
-                    contact.setOwner(employee);
                     contacts.add(contact);
                 }
                 employee.setContacts(contacts);
+            }
+            if (randBoolean()) {
+                int numProjectsWorkingOn = 2;
+                for (int j = 0; j < numProjectsWorkingOn; j++) {
+                    Project project = projects.get(ThreadLocalRandom.current().nextInt(projects.size()));
+                    employee.getProjects().add(project);
+                    project.getWorkers().add(employee);
+                }
             }
             employeeRepository.save(employee);
         }
@@ -129,23 +148,23 @@ public class SelectionTest {
                 ).legalAddress(
                         AddressSelection.create().region()
                 )
-        );
+        ).projects(ProjectSelection.create().name());
         criteria.setSelection(selection);
         queryCount.setSelect(0);
         Page<Employee> page = client.search(criteria);
-        assertEquals(6, queryCount.getSelect());
+        assertEquals(7, queryCount.getSelect());
         check(page);
         criteria.setSelection(selection.unselectContacts());
         queryCount.setSelect(0);
         page = client.search(criteria);
-        assertEquals(5, queryCount.getSelect());
+        assertEquals(6, queryCount.getSelect());
         for (Employee employee : page)
             assertNull(employee.getContacts());
         criteria.setSelection(selection.propagate(SelectionPropagationEnum.NESTED));
         queryCount.setSelect(0);
         client.search(criteria);
-        assertEquals(6, queryCount.getSelect());
-        criteria.setSelection(selection.propagate(SelectionPropagationEnum.ALL).unselectOrganisation());
+        assertEquals(7, queryCount.getSelect());
+        criteria.setSelection(selection.propagate(SelectionPropagationEnum.ALL).unselectProjects().unselectOrganisation());
         queryCount.setSelect(0);
         client.search(criteria);
         assertEquals(2, queryCount.getSelect());
@@ -193,6 +212,14 @@ public class SelectionTest {
                     }
                 } else
                     assertNull(expected.getOrganisation());
+                if (!CollectionUtils.isEmpty(actual.getProjects())) {
+                    assertFalse(expected.getProjects().isEmpty());
+                    for (Project project : expected.getProjects()) {
+                        Optional<Project> opt = actual.getProjects().stream().filter(p -> p.getName().equals(project.getName())).findAny();
+                        assertTrue(opt.isPresent());
+                    }
+                } else
+                    assertTrue(expected.getProjects().isEmpty());
             }
            return null;
         });

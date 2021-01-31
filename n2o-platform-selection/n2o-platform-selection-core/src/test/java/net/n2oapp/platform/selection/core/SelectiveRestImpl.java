@@ -6,9 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -17,13 +16,11 @@ public class SelectiveRestImpl implements SelectiveRest {
 
     private final EmployeeRepository employeeRepository;
     private final OrganisationRepository organisationRepository;
-    private final ContactRepository contactRepository;
     private final AddressRepository addressRepository;
 
-    public SelectiveRestImpl(EmployeeRepository employeeRepository, OrganisationRepository organisationRepository, ContactRepository contactRepository, AddressRepository addressRepository) {
+    public SelectiveRestImpl(EmployeeRepository employeeRepository, OrganisationRepository organisationRepository, AddressRepository addressRepository) {
         this.employeeRepository = employeeRepository;
         this.organisationRepository = organisationRepository;
-        this.contactRepository = contactRepository;
         this.addressRepository = addressRepository;
     }
 
@@ -53,11 +50,24 @@ public class SelectiveRestImpl implements SelectiveRest {
 
         @Override
         public Map<Integer, List<Fetcher<Contact>>> joinContacts(Collection<Employee> employees) {
-            return JoinUtil.joinBidirectionalOneToMany(
+            return JoinUtil.joinToMany(
                 employees,
                 employeeRepository::joinContacts,
                 EmployeeFetcherImpl.ContactFetcherImpl::new,
-                contact -> contact.getOwner().getId()
+                Employee::getId,
+                Employee::getContacts
+            );
+        }
+
+        @Override
+        public Map<Integer, Set<Fetcher<Project>>> joinProjects(Collection<Employee> employees) {
+            return JoinUtil.joinToMany(
+                employees,
+                employeeRepository::joinProjects,
+                EmployeeFetcherImpl.ProjectFetcherImpl::new,
+                Employee::getId,
+                Employee::getProjects,
+                HashSet::new
             );
         }
 
@@ -154,21 +164,22 @@ public class SelectiveRestImpl implements SelectiveRest {
             return src.getContacts() == null ? null : src.getContacts().stream().map(ContactFetcherImpl::new).collect(toList());
         }
 
+        @Override
+        public void setProjects(Employee model, Set<Project> projects) {
+            model.setProjects(projects);
+        }
+
+        @Override
+        public Set<? extends ProjectFetcher> projectsFetcher() {
+            return src.getProjects().stream().map(ProjectFetcherImpl::new).collect(Collectors.toSet());
+        }
+
         private static class ContactFetcherImpl implements ContactFetcher, Fetcher<Contact> {
 
             private final Contact contact;
 
             public ContactFetcherImpl(Contact contact) {
                 this.contact = contact;
-            }
-
-            @Override
-            public void setOwner(Contact model, Employee owner) {
-            }
-
-            @Override
-            public EmployeeFetcher ownerFetcher() {
-                return null;
             }
 
             @Override
@@ -189,6 +200,40 @@ public class SelectiveRestImpl implements SelectiveRest {
             @Override
             public void fetchId(Contact model) {
                 model.setId(contact.getId());
+            }
+
+        }
+
+        private static class ProjectFetcherImpl implements ProjectFetcher {
+
+            private final Project project;
+
+            public ProjectFetcherImpl(Project project) {
+                this.project = project;
+            }
+
+            @Override
+            public void setWorkers(Project model, Set<Employee> workers) {
+            }
+
+            @Override
+            public Set<? extends EmployeeFetcher> workersFetcher() {
+                return null;
+            }
+
+            @Override
+            public void fetchName(Project model) {
+                model.setName(project.getName());
+            }
+
+            @Override
+            public void fetchId(Project model) {
+                model.setId(project.getId());
+            }
+
+            @Override
+            public Project create() {
+                return new Project();
             }
 
         }

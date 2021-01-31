@@ -12,7 +12,7 @@ public class BaseModel {
     @SequenceGenerator(name = "seq")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq")
     @Access(AccessType.PROPERTY)
-    public Integer id;
+    private Integer id;
 
     protected BaseModel() {
     }

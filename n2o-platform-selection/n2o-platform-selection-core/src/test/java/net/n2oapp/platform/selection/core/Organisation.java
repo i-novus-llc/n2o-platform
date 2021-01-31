@@ -12,12 +12,12 @@ public class Organisation extends BaseModel {
     @Joined(withNestedJoiner = false)
     @JoinColumn
     @ManyToOne(fetch = FetchType.LAZY)
-    public Address legalAddress;
+    private Address legalAddress;
 
     @Joined(withNestedJoiner = false)
     @JoinColumn
     @ManyToOne(fetch = FetchType.LAZY)
-    public Address factualAddress;
+    private Address factualAddress;
 
     @Column
     public String name;
