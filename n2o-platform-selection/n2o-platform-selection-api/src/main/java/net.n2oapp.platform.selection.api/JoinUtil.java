@@ -1,5 +1,7 @@
 package net.n2oapp.platform.selection.api;
 
+import org.springframework.util.Assert;
+
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -35,8 +37,9 @@ public final class JoinUtil {
         Map<ID, C> result = new HashMap<>();
         Iterable<E2> childEntities = joinRightSide.apply(leftSide);
         for (E2 child : childEntities) {
-            F fetcher = fetcherConstructor.apply(child);
-            result.computeIfAbsent(getLeftSideIdFromRightSide.apply(child), ignored -> targetCollectionSupplier.get()).add(fetcher);
+            F fetcher = Objects.requireNonNull(fetcherConstructor.apply(child));
+            ID leftSideId = Objects.requireNonNull(getLeftSideIdFromRightSide.apply(child));
+            result.computeIfAbsent(leftSideId, ignored -> targetCollectionSupplier.get()).add(fetcher);
         }
         return result;
     }
@@ -88,11 +91,18 @@ public final class JoinUtil {
         Map<ID, C> result = new HashMap<>();
         Set<E1> joined = innerJoinRightSide.apply(leftSide);
         for (E1 leftSideEntity : joined) {
+            ID leftSideId = Objects.requireNonNull(getLeftSideId.apply(leftSideEntity));
             Collection<? extends E2> rightSide = getRightSideByLeftSide.apply(leftSideEntity);
-            ID leftSideId = getLeftSideId.apply(leftSideEntity);
-            C manySideFetchers = result.computeIfAbsent(leftSideId, ignored -> targetCollectionSupplier.get());
+            Assert.notEmpty(
+                rightSide,
+                () -> "Empty collection provided for INNER join. Left side entity: " + leftSideEntity + ", ID: " + leftSideId
+            );
+            checkDuplicates(leftSideId, leftSideEntity, result);
+            C manySideFetchers = targetCollectionSupplier.get();
+            result.put(leftSideId, manySideFetchers);
             for (E2 rightSideEntity : rightSide) {
-                manySideFetchers.add(fetcherConstructor.apply(rightSideEntity));
+                F fetcher = Objects.requireNonNull(fetcherConstructor.apply(rightSideEntity));
+                manySideFetchers.add(fetcher);
             }
         }
         return result;
@@ -137,10 +147,14 @@ public final class JoinUtil {
             ID2 fk = getForeignKey.apply(owner);
             if (fk != null) {
                 E2 e2 = joined.get(fk);
-                if (e2 != null) {
-                    F fetcher = fetcherConstructor.apply(e2);
-                    result.put(getLeftSideId.apply(owner), fetcher);
-                }
+                ID1 leftSideId = Objects.requireNonNull(getLeftSideId.apply(owner));
+                checkDuplicates(leftSideId, owner, result);
+                Objects.requireNonNull(
+                    e2,
+                    () -> "Relationship present on " + owner + " for right side via foreign key " + fk + ", but could not be found on joined right side"
+                );
+                F fetcher = Objects.requireNonNull(fetcherConstructor.apply(e2));
+                result.put(leftSideId, fetcher);
             }
         }
         return result;
@@ -175,8 +189,10 @@ public final class JoinUtil {
         for (E1 owner : leftSide) {
             E2 prefetchedOtherSide = getOtherSideFromLeftSide.apply(owner);
             if (prefetchedOtherSide != null) {
-                F fetcher = fetcherConstructor.apply(prefetchedOtherSide);
-                result.put(getLeftSideId.apply(owner), fetcher);
+                ID leftSideId = Objects.requireNonNull(getLeftSideId.apply(owner));
+                F fetcher = Objects.requireNonNull(fetcherConstructor.apply(prefetchedOtherSide));
+                checkDuplicates(leftSideId, owner, result);
+                result.put(leftSideId, fetcher);
             }
         }
        return result;
@@ -211,10 +227,16 @@ public final class JoinUtil {
         for (E2 owner : owners) {
             ID leftSideId = getLeftSideIdFromRightSide.apply(owner);
             if (leftSideId != null) {
-                result.put(leftSideId, fetcherConstructor.apply(owner));
+                checkDuplicates(leftSideId, owner, result);
+                F fetcher = Objects.requireNonNull(fetcherConstructor.apply(owner));
+                result.put(leftSideId, fetcher);
             }
         }
         return result;
+    }
+
+    private static void checkDuplicates(Object id, Object entity, Map<?, ?> result) {
+        Assert.isTrue(!result.containsKey(id), () -> "Duplicate id " + id + " for entity " + entity);
     }
 
 }
