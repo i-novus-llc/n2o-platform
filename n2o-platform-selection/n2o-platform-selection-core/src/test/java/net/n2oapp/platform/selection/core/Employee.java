@@ -30,6 +30,11 @@ public class Employee extends BaseModel {
     @ManyToMany
     private Set<Project> projects = new HashSet<>();
 
+    @JoinColumn
+    @Joined(withNestedJoiner = false)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Passport passport;
+
     public String getName() {
         return name;
     }
@@ -60,6 +65,14 @@ public class Employee extends BaseModel {
 
     public void setProjects(Set<Project> projects) {
         this.projects = projects;
+    }
+
+    public Passport getPassport() {
+        return passport;
+    }
+
+    public void setPassport(Passport passport) {
+        this.passport = passport;
     }
 
 }

@@ -9,13 +9,13 @@ import javax.persistence.*;
 @Selective(prefix = "")
 public class Organisation extends BaseModel {
 
-    @Joined(withNestedJoiner = false)
     @JoinColumn
+    @Joined(withNestedJoiner = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Address legalAddress;
 
-    @Joined(withNestedJoiner = false)
     @JoinColumn
+    @Joined(withNestedJoiner = false)
     @ManyToOne(fetch = FetchType.LAZY)
     private Address factualAddress;
 

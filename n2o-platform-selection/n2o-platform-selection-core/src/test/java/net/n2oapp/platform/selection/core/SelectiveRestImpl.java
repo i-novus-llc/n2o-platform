@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -34,7 +35,7 @@ public class SelectiveRestImpl implements SelectiveRest {
 
         @Override
         public Map<Integer, Fetcher<Organisation>> joinOrganisation(Collection<Employee> employees) {
-            return JoinUtil.joinUnidirectionalToOnePrefetching(
+            return JoinUtil.joinToOnePrefetching(
                     employees,
                     organisationRepository::joinOrganisation,
                     OrganisationFetcherImpl::new,
@@ -53,7 +54,7 @@ public class SelectiveRestImpl implements SelectiveRest {
             return JoinUtil.joinToMany(
                 employees,
                 employeeRepository::joinContacts,
-                EmployeeFetcherImpl.ContactFetcherImpl::new,
+                ContactFetcherImpl::new,
                 Employee::getId,
                 Employee::getContacts
             );
@@ -64,10 +65,22 @@ public class SelectiveRestImpl implements SelectiveRest {
             return JoinUtil.joinToMany(
                 employees,
                 employeeRepository::joinProjects,
-                EmployeeFetcherImpl.ProjectFetcherImpl::new,
+                ProjectFetcherImpl::new,
                 Employee::getId,
                 Employee::getProjects,
                 HashSet::new
+            );
+        }
+
+        @Override
+        public Map<Integer, Fetcher<Passport>> joinPassport(Collection<Employee> entities) {
+            return JoinUtil.joinToOne(
+                entities,
+                employeeRepository::joinPassport,
+                PassportFetcherImpl::new,
+                Employee::getId,
+                employee -> mapNullable(employee.getPassport(), BaseModel::getId),
+                Passport::getId
             );
         }
 
@@ -87,24 +100,24 @@ public class SelectiveRestImpl implements SelectiveRest {
 
         @Override
         public Map<Integer, Fetcher<Address>> joinLegalAddress(Collection<Organisation> organisations) {
-            return JoinUtil.joinUnidirectionalToOne(
+            return JoinUtil.joinToOne(
                     organisations,
                     addressRepository::findLegalAddressesOfOrganisations,
                     AddressFetcherImpl::new,
                     Organisation::getId,
-                    organisation -> organisation.getLegalAddress() == null ? null : organisation.getLegalAddress().getId(),
+                    organisation -> mapNullable(organisation.getLegalAddress(), BaseModel::getId),
                     Address::getId
             );
         }
 
         @Override
         public Map<Integer, Fetcher<Address>> joinFactualAddress(Collection<Organisation> organisations) {
-            return JoinUtil.joinUnidirectionalToOne(
+            return JoinUtil.joinToOne(
                     organisations,
                     addressRepository::findFactualAddressesOfOrganisations,
                     AddressFetcherImpl::new,
                     Organisation::getId,
-                    organisation -> organisation.getFactualAddress() == null ? null : organisation.getFactualAddress().getId(),
+                    organisation -> mapNullable(organisation.getFactualAddress(), BaseModel::getId),
                     Address::getId
             );
         }
@@ -121,22 +134,15 @@ public class SelectiveRestImpl implements SelectiveRest {
 
     }
 
-    private static class EmployeeFetcherImpl implements EmployeeFetcher {
-
-        private final Employee src;
+    private static class EmployeeFetcherImpl extends BaseModelFetcherImpl<Employee> implements EmployeeFetcher {
 
         private EmployeeFetcherImpl(Employee src) {
-            this.src = src;
+            super(src);
         }
 
         @Override
         public Employee create() {
             return new Employee();
-        }
-
-        @Override
-        public void fetchId(Employee model) {
-            model.setId(src.getId());
         }
 
         @Override
@@ -151,7 +157,7 @@ public class SelectiveRestImpl implements SelectiveRest {
 
         @Override
         public OrganisationFetcher organisationFetcher() {
-            return src.getOrganisation() == null ? null : new OrganisationFetcherImpl(src.getOrganisation());
+            return mapNullable(src.getOrganisation(), OrganisationFetcherImpl::new);
         }
 
         @Override
@@ -161,7 +167,7 @@ public class SelectiveRestImpl implements SelectiveRest {
 
         @Override
         public List<? extends ContactFetcher> contactsFetcher() {
-            return src.getContacts() == null ? null : src.getContacts().stream().map(ContactFetcherImpl::new).collect(toList());
+            return src.getContacts().stream().map(ContactFetcherImpl::new).collect(toList());
         }
 
         @Override
@@ -174,87 +180,82 @@ public class SelectiveRestImpl implements SelectiveRest {
             return src.getProjects().stream().map(ProjectFetcherImpl::new).collect(Collectors.toSet());
         }
 
-        private static class ContactFetcherImpl implements ContactFetcher, Fetcher<Contact> {
-
-            private final Contact contact;
-
-            public ContactFetcherImpl(Contact contact) {
-                this.contact = contact;
-            }
-
-            @Override
-            public void fetchPhone(Contact model) {
-                model.setPhone(contact.getPhone());
-            }
-
-            @Override
-            public void fetchEmail(Contact model) {
-                model.setEmail(contact.getEmail());
-            }
-
-            @Override
-            public Contact create() {
-                return new Contact();
-            }
-
-            @Override
-            public void fetchId(Contact model) {
-                model.setId(contact.getId());
-            }
-
+        @Override
+        public void setPassport(Employee model, Passport passport) {
+            model.setPassport(passport);
         }
 
-        private static class ProjectFetcherImpl implements ProjectFetcher {
-
-            private final Project project;
-
-            public ProjectFetcherImpl(Project project) {
-                this.project = project;
-            }
-
-            @Override
-            public void setWorkers(Project model, Set<Employee> workers) {
-            }
-
-            @Override
-            public Set<? extends EmployeeFetcher> workersFetcher() {
-                return null;
-            }
-
-            @Override
-            public void fetchName(Project model) {
-                model.setName(project.getName());
-            }
-
-            @Override
-            public void fetchId(Project model) {
-                model.setId(project.getId());
-            }
-
-            @Override
-            public Project create() {
-                return new Project();
-            }
-
+        @Override
+        public PassportFetcher passportFetcher() {
+            return new PassportFetcherImpl(src.getPassport());
         }
+
     }
 
-    private static class OrganisationFetcherImpl implements OrganisationFetcher {
+    private static class ContactFetcherImpl extends BaseModelFetcherImpl<Contact> implements ContactFetcher {
 
-        private final Organisation src;
+        public ContactFetcherImpl(Contact contact) {
+            super(contact);
+        }
+
+        @Override
+        public void fetchPhone(Contact model) {
+            model.setPhone(src.getPhone());
+        }
+
+        @Override
+        public void fetchEmail(Contact model) {
+            model.setEmail(src.getEmail());
+        }
+
+        @Override
+        public Contact create() {
+            return new Contact();
+        }
+
+        @Override
+        public void fetchId(Contact model) {
+            model.setId(src.getId());
+        }
+
+    }
+
+    private static class ProjectFetcherImpl extends BaseModelFetcherImpl<Project> implements ProjectFetcher {
+
+        public ProjectFetcherImpl(Project project) {
+            super(project);
+        }
+
+        @Override
+        public void setWorkers(Project model, Set<Employee> workers) {
+        }
+
+        @Override
+        public Set<? extends EmployeeFetcher> workersFetcher() {
+            return null;
+        }
+
+        @Override
+        public void fetchName(Project model) {
+            model.setName(src.getName());
+        }
+
+        @Override
+        public Project create() {
+            return new Project();
+        }
+
+    }
+
+    private static class OrganisationFetcherImpl extends BaseModelFetcherImpl<Organisation> implements OrganisationFetcher {
 
         private OrganisationFetcherImpl(Organisation src) {
-            this.src = src;
+            super(src);
         }
 
         @Override
         public Organisation create() {
             return new Organisation();
-        }
-
-        @Override
-        public void fetchId(Organisation model) {
-            model.setId(src.getId());
         }
 
         @Override
@@ -264,7 +265,7 @@ public class SelectiveRestImpl implements SelectiveRest {
 
         @Override
         public AddressFetcher legalAddressFetcher() {
-            return src.getLegalAddress() == null ? null : new AddressFetcherImpl(src.getLegalAddress());
+            return mapNullable(src.getLegalAddress(), AddressFetcherImpl::new);
         }
 
         @Override
@@ -274,7 +275,7 @@ public class SelectiveRestImpl implements SelectiveRest {
 
         @Override
         public AddressFetcher factualAddressFetcher() {
-            return src.getFactualAddress() == null ? null : new AddressFetcherImpl(src.getFactualAddress());
+            return mapNullable(src.getFactualAddress(), AddressFetcherImpl::new);
         }
 
         @Override
@@ -284,12 +285,10 @@ public class SelectiveRestImpl implements SelectiveRest {
 
     }
 
-    private static class AddressFetcherImpl implements AddressFetcher {
-
-        private final Address src;
+    private static class AddressFetcherImpl extends BaseModelFetcherImpl<Address> implements AddressFetcher {
 
         private AddressFetcherImpl(Address src) {
-            this.src = src;
+            super(src);
         }
 
         @Override
@@ -307,11 +306,53 @@ public class SelectiveRestImpl implements SelectiveRest {
             model.setRegion(src.getRegion());
         }
 
+    }
+
+    private static class PassportFetcherImpl extends BaseModelFetcherImpl<Passport> implements PassportFetcher {
+
+        private PassportFetcherImpl(Passport src) {
+            super(src);
+        }
+
         @Override
-        public void fetchId(Address model) {
+        public Passport create() {
+            return new Passport();
+        }
+
+        @Override
+        public void fetchId(Passport model) {
             model.setId(src.getId());
         }
 
+        @Override
+        public void fetchSeries(Passport model) {
+            model.setSeries(src.getSeries());
+        }
+
+        @Override
+        public void fetchNumber(Passport model) {
+            model.setNumber(src.getNumber());
+        }
+
+    }
+
+    private static abstract class BaseModelFetcherImpl<T extends BaseModel> implements BaseModelFetcher<T> {
+
+        protected final T src;
+
+        protected BaseModelFetcherImpl(T src) {
+            this.src = src;
+        }
+
+        @Override
+        public void fetchId(T model) {
+            model.setId(src.getId());
+        }
+
+    }
+
+    private static <E1, E2> E2 mapNullable(E1 e1, Function<? super E1, ? extends E2> mapper) {
+        return e1 == null ? null : mapper.apply(e1);
     }
 
 }

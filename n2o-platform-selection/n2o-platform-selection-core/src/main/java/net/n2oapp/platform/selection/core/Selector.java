@@ -211,9 +211,7 @@ public final class Selector {
     }
 
     private static boolean empty(Iterable<?> iterable) {
-        for (Object ignored : iterable)
-            return false;
-        return true;
+        return iterable == null || !iterable.iterator().hasNext();
     }
 
     @SuppressWarnings("unchecked")
@@ -652,7 +650,7 @@ public final class Selector {
 //          потому что мы вызываем только публичные методы публичных классов
             throw new IllegalStateException("Can't access method " + m, e);
         } catch (InvocationTargetException e) {
-            throw new IllegalStateException("Method " + m + " threw exception during reflection access", e.getTargetException());
+            throw new IllegalStateException("Method " + m + " threw exception during reflection access: " + e.getTargetException().getMessage(), e.getTargetException());
         }
     }
 

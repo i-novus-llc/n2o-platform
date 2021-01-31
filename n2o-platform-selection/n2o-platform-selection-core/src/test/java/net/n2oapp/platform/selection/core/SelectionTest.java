@@ -132,6 +132,10 @@ public class SelectionTest {
                     project.getWorkers().add(employee);
                 }
             }
+            Passport passport = new Passport();
+            passport.setNumber(randString());
+            passport.setSeries(randString());
+            employee.setPassport(passport);
             employeeRepository.save(employee);
         }
     }
@@ -148,23 +152,27 @@ public class SelectionTest {
                 ).legalAddress(
                         AddressSelection.create().region()
                 )
-        ).projects(ProjectSelection.create().name());
+        ).projects(
+            ProjectSelection.create().name()
+        ).passport(
+            PassportSelection.create().series()
+        );
         criteria.setSelection(selection);
         queryCount.setSelect(0);
         Page<Employee> page = client.search(criteria);
-        assertEquals(7, queryCount.getSelect());
+        assertEquals(8, queryCount.getSelect());
         check(page);
         criteria.setSelection(selection.unselectContacts());
         queryCount.setSelect(0);
         page = client.search(criteria);
-        assertEquals(6, queryCount.getSelect());
+        assertEquals(7, queryCount.getSelect());
         for (Employee employee : page)
             assertNull(employee.getContacts());
         criteria.setSelection(selection.propagate(SelectionPropagationEnum.NESTED));
         queryCount.setSelect(0);
         client.search(criteria);
-        assertEquals(7, queryCount.getSelect());
-        criteria.setSelection(selection.propagate(SelectionPropagationEnum.ALL).unselectProjects().unselectOrganisation());
+        assertEquals(8, queryCount.getSelect());
+        criteria.setSelection(selection.propagate(SelectionPropagationEnum.ALL).unselectProjects().unselectOrganisation().unselectPassport());
         queryCount.setSelect(0);
         client.search(criteria);
         assertEquals(2, queryCount.getSelect());
@@ -217,9 +225,17 @@ public class SelectionTest {
                     for (Project project : expected.getProjects()) {
                         Optional<Project> opt = actual.getProjects().stream().filter(p -> p.getName().equals(project.getName())).findAny();
                         assertTrue(opt.isPresent());
+                        Project actualProject = opt.get();
+                        assertNotNull(actualProject.getName());
+                        assertNull(actualProject.getId());
                     }
                 } else
                     assertTrue(expected.getProjects().isEmpty());
+                assertNotNull(actual.getPassport());
+                assertNull(actual.getPassport().getNumber());
+                assertNull(actual.getPassport().getId());
+                assertNotNull(actual.getPassport().getSeries());
+                assertEquals(expected.getPassport().getSeries(), actual.getPassport().getSeries());
             }
            return null;
         });
