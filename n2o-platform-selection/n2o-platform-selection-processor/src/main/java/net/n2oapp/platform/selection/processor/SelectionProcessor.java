@@ -1,6 +1,7 @@
 package net.n2oapp.platform.selection.processor;
 
 import net.n2oapp.platform.selection.api.Joined;
+import net.n2oapp.platform.selection.api.SelectionIgnore;
 import net.n2oapp.platform.selection.api.Selective;
 
 import javax.annotation.processing.*;
@@ -106,6 +107,8 @@ public class SelectionProcessor extends AbstractProcessor {
         Element target = meta.getTarget();
         for (Element member : target.getEnclosedElements()) {
             if (member.getKind() == ElementKind.FIELD && member.getModifiers().stream().noneMatch(Modifier.STATIC::equals)) {
+                if (member.getAnnotation(SelectionIgnore.class) != null)
+                    continue;
                 TypeMirror collectionRawType = null;
                 final TypeMirror originalType = member.asType();
                 TypeMirror type = originalType;

@@ -1,4 +1,4 @@
-package net.n2oapp.platform.selection.core;
+package net.n2oapp.platform.selection.core.domain;
 
 import net.n2oapp.platform.selection.api.Joined;
 import net.n2oapp.platform.selection.api.Selective;
@@ -21,8 +21,7 @@ public class Employee extends BaseModel {
     private Organisation organisation;
 
     @Joined(withNestedJoiner = false)
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner")
     private List<Contact> contacts;
 
     @JoinTable

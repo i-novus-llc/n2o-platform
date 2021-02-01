@@ -58,8 +58,6 @@ import org.springframework.lang.NonNull;
  *  </pre>
  *  <br>
  *
- *  В классе {@link JoinUtil} есть удобные методы для различных отношений (односторонний ToOne, двусторонний OneToMany и т.д)
- *
  *  @param <T> Тип элементов (моделей DTO)
  *  @param <ID> Тип идентификаторов сущностей
  *  @param <E> Тип отображаемой сущности

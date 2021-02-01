@@ -1,5 +1,6 @@
-package net.n2oapp.platform.selection.api;
+package net.n2oapp.platform.selection.core;
 
+import net.n2oapp.platform.selection.api.Fetcher;
 import org.springframework.util.Assert;
 
 import java.util.*;
@@ -19,7 +20,7 @@ public final class JoinUtil {
      * (в терминах JPA это означает, что на {@code leftSide} объявлено {@code OneToMany(mappedBy = "...")},
      * а на правой стороне {@code JoinColumn})
      * @param leftSide Левая сторона отношения
-     * @param joinRightSide Функция, возвращающая правую сторону отношения по левой стороне (inner-join)
+     * @param innerJoinRightSide Функция, возвращающая правую сторону отношения по левой стороне (inner-join)
      * @param fetcherConstructor Функция, возвращающая {@link Fetcher} {@code <F>} по экземпляру с правой стороны отношения
      * @param getLeftSideIdFromRightSide Функция, возвращающая идентификатор левой стороны отношения по правой стороне отношения (не {@code null})
      * @param <ID> Идентификатор левой стороны отношения
@@ -29,16 +30,16 @@ public final class JoinUtil {
      */
     public static <ID, F extends Fetcher<?>, E1, E2, C extends Collection<F>> Map<ID, C> joinOneToMany(
             Collection<E1> leftSide,
-            Function<Collection<E1>, Collection<E2>> joinRightSide,
+            Function<Collection<E1>, Collection<E2>> innerJoinRightSide,
             Function<? super E2, ? extends F> fetcherConstructor,
             Function<? super E2, ? extends ID> getLeftSideIdFromRightSide,
             Supplier<? extends C> targetCollectionSupplier
     ) {
         Map<ID, C> result = new HashMap<>();
-        Iterable<E2> childEntities = joinRightSide.apply(leftSide);
+        Collection<E2> childEntities = innerJoinRightSide.apply(leftSide);
         for (E2 child : childEntities) {
             F fetcher = Objects.requireNonNull(fetcherConstructor.apply(child));
-            ID leftSideId = Objects.requireNonNull(getLeftSideIdFromRightSide.apply(child));
+            ID leftSideId = Objects.requireNonNull(getLeftSideIdFromRightSide.apply(child), () -> "Missing left side for INNER join for " + child);
             result.computeIfAbsent(leftSideId, ignored -> targetCollectionSupplier.get()).add(fetcher);
         }
         return result;
@@ -56,6 +57,7 @@ public final class JoinUtil {
     /**
      * Для общего типа отношений ToMany (unidirectional/bidirectional, OneToMany/ManyToMany).
      * Специфичен для JPA
+     * (для OneToMany отношений лучше использовать {@link #joinOneToMany})
      * @param leftSide Левая сторона отношения
      * @param innerJoinRightSide Функция, которая произведет inner join с правой стороной отношения и
      *                  вернет distinct-подмножество {@code leftSide} (отфильтрованное по inner join).<br>
@@ -85,11 +87,11 @@ public final class JoinUtil {
         Function<Collection<E1>, Set<E1>> innerJoinRightSide,
         Function<? super E2, ? extends F> fetcherConstructor,
         Function<? super E1, ? extends ID> getLeftSideId,
-        Function<? super E1, ? extends Collection<? extends E2>> getRightSideByLeftSide,
+        Function<? super E1, Collection<E2>> getRightSideByLeftSide,
         Supplier<? extends C> targetCollectionSupplier
     ) {
         Map<ID, C> result = new HashMap<>();
-        Set<E1> joined = innerJoinRightSide.apply(leftSide);
+        Set<? extends E1> joined = innerJoinRightSide.apply(leftSide);
         for (E1 leftSideEntity : joined) {
             ID leftSideId = Objects.requireNonNull(getLeftSideId.apply(leftSideEntity));
             Collection<? extends E2> rightSide = getRightSideByLeftSide.apply(leftSideEntity);
@@ -113,7 +115,7 @@ public final class JoinUtil {
         Function<Collection<E1>, Set<E1>> innerJoin,
         Function<? super E2, ? extends F> fetcherConstructor,
         Function<? super E1, ? extends ID> getLeftSideId,
-        Function<? super E1, ? extends Collection<? extends E2>> getRightSideByLeftSide
+        Function<? super E1, Collection<E2>> getRightSideByLeftSide
     ) {
         return joinToMany(leftSide, innerJoin, fetcherConstructor, getLeftSideId, getRightSideByLeftSide, ArrayList::new);
     }

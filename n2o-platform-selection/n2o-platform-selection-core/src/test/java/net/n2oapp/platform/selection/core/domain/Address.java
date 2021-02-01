@@ -1,4 +1,4 @@
-package net.n2oapp.platform.selection.core;
+package net.n2oapp.platform.selection.core.domain;
 
 import net.n2oapp.platform.selection.api.Selective;
 
@@ -15,7 +15,7 @@ public class Address extends BaseModel {
     @Column
     private String region;
 
-    protected Address() {
+    public Address() {
     }
 
     public Address(Integer id) {

@@ -1,6 +1,6 @@
-package net.n2oapp.platform.selection.core;
+package net.n2oapp.platform.selection.core.domain;
 
-import net.n2oapp.platform.selection.api.Joined;
+import net.n2oapp.platform.selection.api.SelectionIgnore;
 import net.n2oapp.platform.selection.api.Selective;
 
 import javax.persistence.Column;
@@ -13,7 +13,7 @@ import java.util.Set;
 @Selective
 public class Project extends BaseModel {
 
-    @Joined
+    @SelectionIgnore
     @ManyToMany(mappedBy = "projects")
     private Set<Employee> workers = new HashSet<>();
 

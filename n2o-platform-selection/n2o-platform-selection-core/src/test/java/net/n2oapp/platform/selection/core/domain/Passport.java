@@ -1,4 +1,4 @@
-package net.n2oapp.platform.selection.core;
+package net.n2oapp.platform.selection.core.domain;
 
 import net.n2oapp.platform.selection.api.Selective;
 

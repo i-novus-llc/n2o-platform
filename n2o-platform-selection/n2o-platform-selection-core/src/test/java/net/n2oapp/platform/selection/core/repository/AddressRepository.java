@@ -1,5 +1,7 @@
-package net.n2oapp.platform.selection.core;
+package net.n2oapp.platform.selection.core.repository;
 
+import net.n2oapp.platform.selection.core.domain.Address;
+import net.n2oapp.platform.selection.core.domain.Organisation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

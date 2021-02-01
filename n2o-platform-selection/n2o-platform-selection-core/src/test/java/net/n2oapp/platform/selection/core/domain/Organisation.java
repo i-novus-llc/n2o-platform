@@ -1,4 +1,4 @@
-package net.n2oapp.platform.selection.core;
+package net.n2oapp.platform.selection.core.domain;
 
 import net.n2oapp.platform.selection.api.Joined;
 import net.n2oapp.platform.selection.api.Selective;
@@ -22,7 +22,7 @@ public class Organisation extends BaseModel {
     @Column
     public String name;
 
-    protected Organisation() {
+    public Organisation() {
     }
 
     public Organisation(Integer id) {

@@ -2,6 +2,13 @@ package net.n2oapp.platform.selection.core;
 
 import net.n2oapp.platform.jaxrs.autoconfigure.EnableJaxRsProxyClient;
 import net.n2oapp.platform.selection.api.SelectionPropagationEnum;
+import net.n2oapp.platform.selection.core.domain.*;
+import net.n2oapp.platform.selection.core.repository.AddressRepository;
+import net.n2oapp.platform.selection.core.repository.EmployeeRepository;
+import net.n2oapp.platform.selection.core.repository.OrganisationRepository;
+import net.n2oapp.platform.selection.core.repository.ProjectRepository;
+import net.n2oapp.platform.selection.core.rest.EmployeeCriteria;
+import net.n2oapp.platform.selection.core.rest.SelectiveRest;
 import net.ttddyy.dsproxy.QueryCount;
 import net.ttddyy.dsproxy.listener.ChainListener;
 import net.ttddyy.dsproxy.listener.DataSourceQueryCountListener;
@@ -120,6 +127,7 @@ public class SelectionTest {
                     Contact contact = new Contact();
                     contact.setEmail(randString());
                     contact.setPhone(randString());
+                    contact.setOwner(employee);
                     contacts.add(contact);
                 }
                 employee.setContacts(contacts);

@@ -1,5 +1,6 @@
-package net.n2oapp.platform.selection.core;
+package net.n2oapp.platform.selection.core.rest;
 
+import net.n2oapp.platform.selection.core.domain.Employee;
 import org.springframework.data.domain.Page;
 
 import javax.ws.rs.*;

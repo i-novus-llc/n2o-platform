@@ -1,7 +1,8 @@
-package net.n2oapp.platform.selection.core;
+package net.n2oapp.platform.selection.core.rest;
 
 import net.n2oapp.platform.jaxrs.RestCriteria;
 import net.n2oapp.platform.selection.api.Selection;
+import net.n2oapp.platform.selection.core.domain.DefaultEmployeeSelection;
 import org.springframework.data.domain.Sort;
 
 import javax.ws.rs.QueryParam;

@@ -1,5 +1,7 @@
 package net.n2oapp.platform.selection.api;
 
+import org.springframework.lang.NonNull;
+
 /**
  * <pre>
  * Основной интерфейс, который знает, как отобразить некую сущность в DTO типа {@code <T>}.
@@ -21,6 +23,6 @@ public interface Fetcher<T> {
     /**
      * @return Пустой DTO, чьи поля будут выборочно отображены в соответствии с {@link Selection<T>}
      */
-    T create();
+    @NonNull T create();
 
 }
