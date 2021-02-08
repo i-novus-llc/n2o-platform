@@ -134,10 +134,7 @@ public class JaxRsClientTest {
             } catch (Exception e) {
                 assertThat(e, instanceOf(RestException.class));
                 RestException restException = (RestException) e;
-                CodeModel codeModel = CodeModel.buildCode(e.getMessage());
-                String message = restException.getMessage();
-                codeModel.setCode(message.substring(message.lastIndexOf(" ") + 1));
-                assertThat(restException.getMessage(), is(codeModel.getCode()));
+                assertNotNull(restException.getMessage());
                 assertThat(restException.getCause(), instanceOf(RemoteException.class));
                 assertThat(restException.getCause().getMessage(), is("java.lang.IllegalArgumentException: Field [id] mustn't be null"));
                 Optional<StackTraceElement> causeLine = Stream.of(restException.getCause().getStackTrace()).filter(ste ->
