@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Past;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -17,9 +17,13 @@ import java.util.Date;
 @Validated
 public class SomeModel {
     private Long id;
-    private @NotBlank String name;
-    private @Past Date date;
-    private @Past LocalDateTime dateEnd;
+    private @NotNull String name;
+    private @NotNull Date date;
+    private @NotNull LocalDateTime dateEnd;
+
+    @NotNull
+    @Valid
+    private StringModel stringModel;
 
     public SomeModel() {
     }

@@ -12,7 +12,7 @@
 * Автоматическое подключение stateless аутентификации по jwt к микросервису
 * Получение пользователя обычным для spring security способом (SecurityContextHolder и т.п.)
 * Прозрачная отправка jwt через RestTemplate
-* Прозрачная отправлка jwt через feign client при подключении n2o-platform-starter-feign-client
+* Прозрачная отправка jwt через feign client при подключении n2o-platform-starter-feign-client
 * Прозрачная отправка jwt по REST при подключении n2o-platform-starter-web
 
 = Подключение
@@ -66,8 +66,9 @@ n2o.platform.security.client-id=test
 #Секретный код клиента
 n2o.platform.security.client-secret=qwerty
 ```
+Указанный client-id должен быть зарегистрирован в сервере аутентификации.
 
-Если микросервис выпполняет запросы к другим авторизованным микросервисам с тем же идентификатором ресурса,
+Если микросервис выполняет запросы к другим авторизованным микросервисам с тем же идентификатором ресурса,
 то задавать настройку `n2o.platform.security.resource-id` не требуется, достаточно задать `n2o.platform.security.client-id`.
 
 = Использование

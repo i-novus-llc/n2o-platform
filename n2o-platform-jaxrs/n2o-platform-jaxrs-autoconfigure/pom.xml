@@ -9,7 +9,7 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-platform-jaxrs</artifactId>
-        <version>4.0.2-SNAPSHOT</version>
+        <version>4.2.7-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -110,6 +110,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
             <scope>test</scope>
         </dependency>
 

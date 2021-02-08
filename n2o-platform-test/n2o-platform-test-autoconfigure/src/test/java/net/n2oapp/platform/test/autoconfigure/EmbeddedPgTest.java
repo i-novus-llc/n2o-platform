@@ -15,10 +15,6 @@ import java.sql.ResultSet;
 @SpringBootTest(classes = Application.class)
 @EnableEmbeddedPg
 public class EmbeddedPgTest {
-
-    @Value("${server.port}")
-    private String serverPort;
-
     @Autowired
     private DataSource dataSource;
 

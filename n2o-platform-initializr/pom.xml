@@ -9,7 +9,7 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-boot-platform-parent</artifactId>
-        <version>4.0.2-SNAPSHOT</version>
+        <version>4.2.7-SNAPSHOT</version>
         <relativePath>../n2o-platform-parent</relativePath>
     </parent>
 
@@ -61,7 +61,7 @@
         <repository>
             <id>repository.spring.release</id>
             <name>Spring GA Repository</name>
-            <url>http://repo.spring.io/release</url>
+            <url>https://repo.spring.io/release</url>
         </repository>
     </repositories>
 

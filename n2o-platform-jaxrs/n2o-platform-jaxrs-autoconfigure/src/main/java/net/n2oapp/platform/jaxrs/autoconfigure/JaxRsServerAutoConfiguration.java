@@ -60,6 +60,7 @@ public class JaxRsServerAutoConfiguration {
             result.setSecurityDefinitions(Map.of(auth.getName(), oAuth2Definition));
         }
         result.setResourcePackage(jaxRsProperties.getSwagger().getResourcePackage());
+        result.setScan(true);
         return result;
     }
 
@@ -128,4 +129,10 @@ public class JaxRsServerAutoConfiguration {
     BraveFeature braveFeature(Tracing brave) {
         return new BraveFeature(brave);
     }
+
+    @Bean
+    JaxRsAcceptHeaderSorter jaxRsAcceptHeaderSorter() {
+        return new JaxRsAcceptHeaderSorter();
+    }
+
 }

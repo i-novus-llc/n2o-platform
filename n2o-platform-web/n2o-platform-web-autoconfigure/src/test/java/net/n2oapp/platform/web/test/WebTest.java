@@ -2,6 +2,7 @@ package net.n2oapp.platform.web.test;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.OAuth2AutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
 
@@ -26,6 +28,14 @@ public class WebTest extends WebSecurityConfigurerAdapter {
 
     @LocalServerPort
     private int port;
+
+    @Value("${server.forward-headers-strategy}")
+    private String forwardHeadersStrategy;
+
+    @Test
+    public void propertiesLoaded() {
+        assertThat(forwardHeadersStrategy, is("native"));
+    }
 
     @Test
     public void pageUp() {

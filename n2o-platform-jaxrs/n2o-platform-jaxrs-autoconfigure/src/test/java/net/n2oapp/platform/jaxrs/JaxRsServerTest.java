@@ -27,6 +27,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @SpringBootApplication
@@ -192,12 +193,12 @@ public class JaxRsServerTest {
         forEachClient(webClient -> {
             Page<Map<String, Object>> page = webClient.path("example").path("search")
                     .query("name", "John")
-                    .query("date", "2018-03-01T08:00:00.000+0000")
+                    .query("date", "2018-03-01T08:00:00.000+00:00")
                     .query("dateEnd", "2018-03-31T08:00:00")
                     .get(Page.class);
             List<Map<String, Object>> content = page.getContent();
             assertThat(content.get(0).get("name"), equalTo("John"));
-            assertThat(content.get(0).get("date"), equalTo("2018-03-01T08:00:00.000+0000"));
+            assertThat(content.get(0).get("date"), equalTo("2018-03-01T08:00:00.000+00:00"));
             assertThat(content.get(0).get("dateEnd"), equalTo("2018-03-31T08:00:00"));
         });
     }
@@ -230,6 +231,17 @@ public class JaxRsServerTest {
             assertNotNull(model.getDate());
             assertNotNull(model.getDateEnd());
         });
+    }
+
+    @Test
+    public void testDefaultContentTypeIsJson() {
+        WebClient client = WebClient.create("http://localhost:" + port, List.of(jsonProvider, xmlProvider))
+                .accept(MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON)
+                .type(MediaType.APPLICATION_JSON)
+                .path("api");
+        Response response = client.path("example").path("{id}", 50).get();
+        String contentType = response.getHeaderString(HttpHeaders.CONTENT_TYPE);
+        assertEquals(MediaType.APPLICATION_JSON, contentType);
     }
 
     private void forEachClient(Consumer<WebClient> clientConsumer) {

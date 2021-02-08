@@ -26,7 +26,6 @@ import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.lang.reflect.Method;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -118,18 +117,15 @@ public class FeignClientTest {
      * Проверка обработки JSR303 валидаций от сервера к прокси клиенту.
      */
     @Test
-    public void validations() throws ParseException {
+    public void validations() {
         SomeModel model = new SomeModel();
-        SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy hh:mm");
-        df.setTimeZone(TimeZone.getTimeZone("UTC"));
-        model.setDate(df.parse("01.01.2050 01:00"));
         try {
             client.create(model);
             fail("Validation didn't work");
         } catch (Exception e) {
             assertThat(e, instanceOf(RestException.class));
             RestException restException = (RestException)e;
-            assertThat(restException.getErrors().size(), equalTo(2));
+            assertThat(restException.getErrors().size(), equalTo(4));
         }
     }
 
@@ -194,7 +190,7 @@ public class FeignClientTest {
             assertThat(e, instanceOf(RestException.class));
             RestException restException = (RestException) e;
             assertThat(restException.getErrors().size(), equalTo(3));
-            List<String> errorTextList = restException.getErrors().stream().map(RestMessage.Error::getMessage).collect(Collectors.toList());
+            List<String> errorTextList = restException.getErrors().stream().map(RestMessage.BaseError::getMessage).collect(Collectors.toList());
             assertThat(errorTextList, anyOf(hasItems("Ошибка пользователя раз", "Ошибка пользователя два", "Другая ошибка пользователя"), hasItems("user.error1", "user.error1", "user.error2")));
         }
     }

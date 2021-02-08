@@ -6,6 +6,7 @@ import net.n2oapp.framework.api.criteria.N2oPreparedCriteria;
 import net.n2oapp.framework.api.data.QueryExceptionHandler;
 import net.n2oapp.framework.api.exception.N2oException;
 import net.n2oapp.framework.api.exception.N2oUserException;
+import net.n2oapp.framework.api.exception.ValidationMessage;
 import net.n2oapp.framework.api.metadata.local.CompiledObject;
 import net.n2oapp.framework.api.metadata.local.CompiledQuery;
 import net.n2oapp.framework.engine.data.N2oOperationExceptionHandler;
@@ -13,9 +14,14 @@ import net.n2oapp.platform.i18n.Messages;
 import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.RestException;
 import net.n2oapp.platform.jaxrs.RestMessage;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.HttpStatusCodeException;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.joining;
@@ -30,7 +36,7 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
     @Override
     public N2oException handle(CompiledObject.Operation operation, DataSet dataSet, Exception e) {
         if (isMultipleErrorsException(e))
-            return handleMultipleErrorsException(e);
+            return handleMultipleErrorsException(operation, e);
         N2oException exception = handle(e);
         if (exception != null) return exception;
         return super.handle(operation, dataSet, e);
@@ -62,10 +68,7 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
         handled = handleRestClientException(e);
         if (handled != null)
             return handled;
-        handled = handleUserException(e);
-        if (handled != null)
-            return handled;
-        return null;
+        return handleUserException(e);
     }
 
     private N2oException handleJaxRsException(Exception e) {
@@ -101,7 +104,11 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
                 return n2oException;
             }
             if (restClientException.getStatusCode().is4xxClientError() && message != null) {
-                return new N2oUserException(message.getMessage());
+
+                return CollectionUtils.isEmpty(message.getErrors())
+                        ? new N2oUserException(message.getMessage())
+                        : handleMessageErrorsException(message);
+
             } else if (restClientException.getStatusCode().is5xxServerError() && message != null) {
                 return new N2oException(new RestException(message, restClientException.getRawStatusCode()));
             }
@@ -136,4 +143,33 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
         return new N2oUserException(message);
     }
 
+    private N2oException handleMultipleErrorsException(CompiledObject.Operation operation, Exception e) {
+        List<ValidationMessage> validationMessages = new ArrayList<>();
+        StringBuilder message = new StringBuilder();
+        Map<String, String> fieldIdByValidationFailKey = operation.getInParametersMap().entrySet().stream()
+                .filter(entry -> entry.getValue().getValidationFailKey() != null)
+                .collect(Collectors.toMap(entry -> entry.getValue().getValidationFailKey(), Map.Entry::getKey));
+
+        int counter = 1;
+        for (RestMessage.BaseError error : ((RestException) e.getCause()).getErrors()) {
+            if (error instanceof RestMessage.ConstraintViolationError)
+                validationMessages.add(new ValidationMessage(
+                        error.getMessage(),
+                        fieldIdByValidationFailKey.get(((RestMessage.ConstraintViolationError) error).getField()),
+                        null
+                ));
+            else
+                message.append(counter++).append(") ").append(error.getMessage()).append("\n");
+        }
+        return validationMessages.isEmpty() ? new N2oUserException(message.toString()) :
+                new N2oUserException(message.toString(), null, validationMessages);
+    }
+
+    private N2oException handleMessageErrorsException(RestMessage restMessage) {
+        String message = IntStream
+                .rangeClosed(1, restMessage.getErrors().size())
+                .mapToObj(i -> i + ") " + restMessage.getErrors().get(i - 1).getMessage())
+                .collect(joining("\n"));
+        return new N2oUserException(message);
+    }
 }
