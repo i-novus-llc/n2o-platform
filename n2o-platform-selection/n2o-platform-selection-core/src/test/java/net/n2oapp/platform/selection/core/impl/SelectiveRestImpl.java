@@ -16,6 +16,7 @@ public class SelectiveRestImpl implements SelectiveRest {
 
     private final EmployeeRepository employeeRepository;
     private final EmployeeJoiner<Integer, Employee, EmployeeFetcherImpl> joiner;
+    private final Selector selector = Selector.create();
 
     public SelectiveRestImpl(EmployeeRepository employeeRepository, EmployeeJoiner<Integer, Employee, EmployeeFetcherImpl> joiner) {
         this.employeeRepository = employeeRepository;
@@ -25,7 +26,7 @@ public class SelectiveRestImpl implements SelectiveRest {
     @Override
     @Transactional(readOnly = true)
     public Page<Employee> search(EmployeeCriteria criteria) {
-        return Selector.resolvePage(joiner, employeeRepository.findAll(criteria).map(EmployeeFetcherImpl::new), criteria.selection());
+        return selector.resolvePage(joiner, employeeRepository.findAll(criteria).map(EmployeeFetcherImpl::new), criteria.selection());
     }
 
 }

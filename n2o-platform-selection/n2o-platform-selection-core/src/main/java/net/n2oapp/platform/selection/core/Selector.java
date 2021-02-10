@@ -51,7 +51,20 @@ public final class Selector {
     private static final String VIOLATION = "Violation in %s";
     private static final String UNMATCHED_ID = "Unmatched id %s for selection key %s";
 
+    private boolean failOnAllPropagation;
+    private boolean failOnNestedPropagation;
+
     private Selector() {
+    }
+
+    public Selector failOnAllPropagation(boolean failOnAllPropagation) {
+        this.failOnAllPropagation = failOnAllPropagation;
+        return this;
+    }
+
+    public Selector failOnNestedPropagation(boolean failOnNestedPropagation) {
+        this.failOnNestedPropagation = failOnNestedPropagation;
+        return this;
     }
 
     /**
@@ -82,12 +95,12 @@ public final class Selector {
      * @param selection Выборка
      * @return {@link Iterable} элементов типа {@code <T>}, чьи поля выборочно отображены в соответствии с {@code selection}
      */
-    public static <T, ID, E, F extends Fetcher<T>> Iterable<T> resolveIterable(
+    public <T, ID, E, F extends Fetcher<T>> Iterable<T> resolveIterable(
             @NonNull Joiner<? extends T, ? extends ID, E, ? super F> joiner,
             Iterable<? extends F> fetchers,
             Selection<? extends T> selection
     ) {
-        return Selector.<T, ID, E, F>resolveFetched(joiner, fetchers, selection);
+        return this.<T, ID, E, F>resolveFetched(joiner, fetchers, selection);
     }
 
     /**
@@ -97,12 +110,12 @@ public final class Selector {
      * @param selection Выборка клиента
      * @return {@link Page} элементов типа {@code <T>}, чьи элементы выборочно отображены в соответствии с {@code selection}
      */
-    public static <T, ID, E, F extends Fetcher<T>> Page<T> resolvePage(
+    public <T, ID, E, F extends Fetcher<T>> Page<T> resolvePage(
             @NonNull Joiner<? extends T, ? extends ID, E, ? super F> joiner,
             Page<? extends F> fetchers,
             Selection<? extends T> selection
     ) {
-        return (Page<T>) Selector.<T, ID, E, F>resolveFetched(joiner, fetchers, selection);
+        return (Page<T>) this.<T, ID, E, F>resolveFetched(joiner, fetchers, selection);
     }
 
     /**
@@ -113,12 +126,12 @@ public final class Selector {
      * @param <T> Тип DTO
      * @return Page DTO, чьи поля выборочно заполнены в соответствии с {@code selection}
      */
-    public static <T> Page<T> resolvePage(Page<? extends Fetcher<? extends T>> srcPage, Selection<? extends T> selection) {
+    public <T> Page<T> resolvePage(Page<? extends Fetcher<? extends T>> srcPage, Selection<? extends T> selection) {
         return srcPage.map(fetcher -> resolve(fetcher, selection));
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Collection<T> resolveCollection(Collection<? extends Fetcher<? extends T>> fetchers, Selection<? extends T> selection) {
+    public <T> Collection<T> resolveCollection(Collection<? extends Fetcher<? extends T>> fetchers, Selection<? extends T> selection) {
         if (empty(fetchers) || empty(selection))
             return null;
         Collection<T> result = getTargetCollection(fetchers.getClass(), false);
@@ -134,11 +147,12 @@ public final class Selector {
      * @param selection Выборка
      * @return Выборочное отображение E в соответствии с {@code selection}
      */
-    public static <T> T resolve(Fetcher<? extends T> fetcher, Selection<? extends T> selection) {
+    public <T> T resolve(Fetcher<? extends T> fetcher, Selection<? extends T> selection) {
         if (fetcher == null || empty(selection))
             return null;
         final SelectionPropagationEnum propagation = selection.propagation() == null ? NORMAL : selection.propagation();
         if (propagation == NESTED || propagation == ALL) {
+            checkPropagationSupported(propagation);
             return fetchAll(fetcher, selection, propagation, emptySet());
         } else {
             SelectionDescriptor selectionDescriptor = getSelectionDescriptor(selection);
@@ -154,7 +168,7 @@ public final class Selector {
                 if (fetcherAccessor.isNested()) {
                     Selection<?> nestedSelection = (Selection<?>) invoke(selectionAccessor.nestedSelectionAccessor, selection);
                     Object nested = invoke(fetcherAccessor.nestedFetcherAccessor, fetcher);
-                    nestedSelection(model, nested, fetcher, fetcherAccessor, nestedSelection, Selector::resolve);
+                    nestedSelection(model, nested, fetcher, fetcherAccessor, nestedSelection, this::resolve);
                 } else {
                     invoke(fetcherAccessor.fetchMethod, fetcher, model);
                 }
@@ -163,7 +177,12 @@ public final class Selector {
         }
     }
 
-    public static <T, ID, E, F extends Fetcher<T>> T resolve(
+    private void checkPropagationSupported(SelectionPropagationEnum propagation) {
+        Preconditions.checkArgument(propagation != ALL || !failOnAllPropagation, "ALL propagation not supported");
+        Preconditions.checkArgument(propagation != NESTED || !failOnNestedPropagation, "NESTED propagation not supported");
+    }
+
+    public <T, ID, E, F extends Fetcher<T>> T resolve(
         @NonNull Joiner<? extends T, ? extends ID, E, ? super F> joiner,
         F fetcher,
         Selection<? extends T> selection
@@ -172,10 +191,10 @@ public final class Selector {
         if (fetcher == null || empty(selection))
             return null;
         ID id = Preconditions.checkNotNull(joiner.getId(joiner.getUnderlyingEntity(fetcher)));
-        return Selector.<T, ID, E, F>resolveTopLevelBatch(joiner, Map.of(id, fetcher), selection).get(id);
+        return this.<T, ID, E, F>resolveTopLevelBatch(joiner, Map.of(id, fetcher), selection).get(id);
     }
 
-    private static <T, ID, E, F extends Fetcher<T>> Map<ID, F> makeBatch(
+    private <T, ID, E, F extends Fetcher<T>> Map<ID, F> makeBatch(
             Joiner<? extends T, ? extends ID, E, ? super F> joiner,
             Iterable<? extends F> fetch
     ) {
@@ -189,18 +208,18 @@ public final class Selector {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static <T, ID, E, F extends Fetcher<T>> Iterable<T> resolveFetched(
+    private <T, ID, E, F extends Fetcher<T>> Iterable<T> resolveFetched(
             Joiner<? extends T, ? extends ID, E, ? super F> joiner,
             Iterable<? extends F> fetchers,
             Selection<? extends T> selection
     ) {
         if (empty(selection) || empty(fetchers))
             return null;
-        Map<ID, F> batch = Selector.<T, ID, E, F>makeBatch(joiner, fetchers);
+        Map<ID, F> batch = this.<T, ID, E, F>makeBatch(joiner, fetchers);
         if (!(fetchers instanceof Page)) {
             Preconditions.checkArgument(fetchers instanceof Collection, "Collection expected, got %s", ClassUtil.classNameOf(fetchers));
         }
-        Map<ID, T> resolvedBatch = Selector.<T, ID, E, F>resolveTopLevelBatch(joiner, batch, selection);
+        Map<ID, T> resolvedBatch = this.<T, ID, E, F>resolveTopLevelBatch(joiner, batch, selection);
         if (fetchers instanceof Page) {
             return ((Page<? extends F>) fetchers).map(fetcher -> resolvedBatch.get(Preconditions.checkNotNull(joiner.getId(joiner.getUnderlyingEntity(fetcher)))));
         } else {
@@ -210,12 +229,12 @@ public final class Selector {
         }
     }
 
-    private static boolean empty(Iterable<?> iterable) {
+    private boolean empty(Iterable<?> iterable) {
         return iterable == null || !iterable.iterator().hasNext();
     }
 
     @SuppressWarnings("unchecked")
-    private static <T, ID, E, F extends Fetcher<T>> Map<ID, T> resolveTopLevelBatch(
+    private <T, ID, E, F extends Fetcher<T>> Map<ID, T> resolveTopLevelBatch(
             @NonNull Joiner<? extends T, ? extends ID, E, ? super F> joiner,
             @NonNull Map<ID, F> batch,
             Selection<? extends T> selection
@@ -226,7 +245,8 @@ public final class Selector {
         if (propagation == null)
             propagation = NORMAL;
         if (propagation == ALL || propagation == NESTED) {
-            return Selector.<T, ID, F, E>fetchAll(batch, joiner, selection, propagation);
+            checkPropagationSupported(propagation);
+            return this.<T, ID, F, E>fetchAll(batch, joiner, selection, propagation);
         } else {
             JoinerDescriptor joinerDescriptor = getJoinerDescriptor(joiner);
             SelectionDescriptor selectionDescriptor = getSelectionDescriptor(selection);
@@ -234,7 +254,7 @@ public final class Selector {
             checkBatchOfFetchers(batch, selectionDescriptor, joinerDescriptor);
             List<E> entities = new ArrayList<>(batch.size());
             Map<ID, T> result = new HashMap<>(batch.size());
-            Selector.<T, ID, E, F>prepareForGrouping(joiner, batch, entities, result);
+            this.<T, ID, E, F>prepareForGrouping(joiner, batch, entities, result);
             for (Map.Entry<String, SelectionDescriptor.SelectionAccessor> selectionAccessorEntry : selectionDescriptor.accessors.entrySet()) {
                 SelectionDescriptor.SelectionAccessor selectionAccessor = selectionAccessorEntry.getValue();
                 SelectionEnum select = (SelectionEnum) invoke(selectionAccessor.selectionEnumAccessor, selection);
@@ -259,7 +279,7 @@ public final class Selector {
                             FetcherDescriptor fetcherDescriptor = getFetcherDescriptor(fetcher);
                             FetcherDescriptor.FetcherAccessor fetcherAccessor = fetcherDescriptor.accessors.get(key);
                             Object nested = invoke(fetcherAccessor.nestedFetcherAccessor, fetcher);
-                            nestedSelection(model, nested, fetcher, fetcherAccessor, nestedSelection, Selector::resolve);
+                            nestedSelection(model, nested, fetcher, fetcherAccessor, nestedSelection, this::resolve);
                         }
                     } else {
                         Map<ID, Object> nestedBatch = (Map<ID, Object>) invoke(joinerAccessor.joinMethod, joiner, entities);
@@ -269,10 +289,10 @@ public final class Selector {
                                 T model = result.get(entry.getKey());
                                 F fetcher = batch.get(entry.getKey());
                                 Preconditions.checkState(model != null, UNMATCHED_ID, entry.getKey(), key);
-                                nestedSelection(model, Preconditions.checkNotNull(entry.getValue()), fetcher, getFetcherDescriptor(fetcher).accessors.get(key), nestedSelection, Selector::resolve);
+                                nestedSelection(model, Preconditions.checkNotNull(entry.getValue()), fetcher, getFetcherDescriptor(fetcher).accessors.get(key), nestedSelection, this::resolve);
                             }
                         } else {
-                            Map<ID, Object> resolvedNestedBatch = resolveNestedBatch(nestedJoiner, nestedBatch, nestedSelection, Selector::resolveTopLevelBatch);
+                            Map<ID, Object> resolvedNestedBatch = resolveNestedBatch(nestedJoiner, nestedBatch, nestedSelection, this::resolveTopLevelBatch);
                             applyResolvedNestedBatch(batch, result, key, resolvedNestedBatch);
                         }
                     }
@@ -282,7 +302,7 @@ public final class Selector {
         }
     }
 
-    private static <T, ID, E, F extends Fetcher<T>> void prepareForGrouping(Joiner<? extends T, ? extends ID, E, ? super F> joiner, Map<ID, F> batch, List<E> entities, Map<ID, T> result) {
+    private <T, ID, E, F extends Fetcher<T>> void prepareForGrouping(Joiner<? extends T, ? extends ID, E, ? super F> joiner, Map<ID, F> batch, List<E> entities, Map<ID, T> result) {
         for (Map.Entry<ID, F> entry : batch.entrySet()) {
             F fetcher = entry.getValue();
             result.put(entry.getKey(), Preconditions.checkNotNull(fetcher.create()));
@@ -290,7 +310,7 @@ public final class Selector {
         }
     }
 
-    private static <T, ID, F extends Fetcher<T>> void applyResolvedNestedBatch(Map<ID, F> srcBatch, Map<ID, T> result, String key, Map<ID, Object> resolvedNestedBatch) {
+    private <T, ID, F extends Fetcher<T>> void applyResolvedNestedBatch(Map<ID, F> srcBatch, Map<ID, T> result, String key, Map<ID, Object> resolvedNestedBatch) {
         for (Map.Entry<ID, Object> entry : resolvedNestedBatch.entrySet()) {
             T model = result.get(entry.getKey());
             Preconditions.checkState(model != null, UNMATCHED_ID, entry.getKey(), key);
@@ -302,7 +322,7 @@ public final class Selector {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T, ID, F extends Fetcher<T>, E> Map<ID, T> fetchAll(
+    private <T, ID, F extends Fetcher<T>, E> Map<ID, T> fetchAll(
             Map<ID, F> batch,
             @NonNull Joiner<? extends T, ? extends ID, E, ? super F> joiner,
             Selection<? extends T> selection,
@@ -316,7 +336,7 @@ public final class Selector {
         }
         List<E> entities = new ArrayList<>(batch.size());
         Map<ID, T> result = new HashMap<>(batch.size());
-        Selector.<T, ID, E, F>prepareForGrouping(joiner, batch, entities, result);
+        this.<T, ID, E, F>prepareForGrouping(joiner, batch, entities, result);
         Set<String> joined = new HashSet<>(1);
         for (Map.Entry<String, JoinerDescriptor.JoinerAccessor> entry : joinerDescriptor.accessors.entrySet()) {
             JoinerDescriptor.JoinerAccessor joinerAccessor = entry.getValue();
@@ -354,7 +374,7 @@ public final class Selector {
         return result;
     }
 
-    private static <T, ID, F extends Fetcher<T>> void checkBatchOfFetchers(Map<ID, F> batch, SelectionDescriptor selectionDescriptor, JoinerDescriptor joinerDescriptor) {
+    private <T, ID, F extends Fetcher<T>> void checkBatchOfFetchers(Map<ID, F> batch, SelectionDescriptor selectionDescriptor, JoinerDescriptor joinerDescriptor) {
         for (F fetcher : batch.values()) {
             FetcherDescriptor fetcherDescriptor = getFetcherDescriptor(fetcher);
             checkFetcherAgainstSelection(fetcherDescriptor, selectionDescriptor);
@@ -363,7 +383,7 @@ public final class Selector {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static <ID> Map<ID, Object> resolveNestedBatch(
+    private <ID> Map<ID, Object> resolveNestedBatch(
             @NonNull Joiner joiner,
             Map<ID, ?> batch,
             Selection<?> selection,
@@ -420,7 +440,7 @@ public final class Selector {
         return result;
     }
 
-    private static <T> T fetchAll(
+    private <T> T fetchAll(
             Fetcher<? extends T> fetcher,
             Selection<? extends T> selection,
             SelectionPropagationEnum propagation,
@@ -439,7 +459,7 @@ public final class Selector {
         return model;
     }
 
-    private static <T> void fetchAll(T model, Fetcher<? extends T> fetcher, FetcherDescriptor fetcherDescriptor, Selection<? extends T> selection, SelectionDescriptor selectionDescriptor, SelectionPropagationEnum propagation, Set<String> skip) {
+    private <T> void fetchAll(T model, Fetcher<? extends T> fetcher, FetcherDescriptor fetcherDescriptor, Selection<? extends T> selection, SelectionDescriptor selectionDescriptor, SelectionPropagationEnum propagation, Set<String> skip) {
         for (Map.Entry<String, FetcherDescriptor.FetcherAccessor> fetcherAccessorEntry : fetcherDescriptor.accessors.entrySet()) {
             if (skip.contains(fetcherAccessorEntry.getKey()))
                 continue;
@@ -463,7 +483,7 @@ public final class Selector {
         }
     }
 
-    private static Object propagate(SelectionPropagationEnum propagation, Selection<?> nestedSelection, Fetcher<?> nestedFetcher) {
+    private Object propagate(SelectionPropagationEnum propagation, Selection<?> nestedSelection, Fetcher<?> nestedFetcher) {
         if (propagation == NESTED) {
             return fetchAll(nestedFetcher, null, NESTED, emptySet());
         } else {
@@ -472,7 +492,7 @@ public final class Selector {
     }
 
     @SuppressWarnings({"unchecked"})
-    private static <T> void nestedSelection(
+    private <T> void nestedSelection(
             T model,
             Object nested,
             Fetcher<? extends T> fetcher,
@@ -498,13 +518,13 @@ public final class Selector {
     }
 
     @SuppressWarnings("rawtypes")
-    private static Collection getTargetCollection(Class<? extends Collection> collectionClass, boolean empty) {
+    private Collection getTargetCollection(Class<? extends Collection> collectionClass, boolean empty) {
         Class<? extends Collection> supportedCollection = getSupportedCollection(collectionClass);
         return empty ? SUPPORTED_EMPTY_COLLECTIONS.get(supportedCollection).get() : SUPPORTED_COLLECTIONS.get(supportedCollection).get();
     }
 
     @SuppressWarnings("rawtypes")
-    private static Class<? extends Collection> getSupportedCollection(Class<? extends Collection> collectionClass) {
+    private Class<? extends Collection> getSupportedCollection(Class<? extends Collection> collectionClass) {
         for (Map.Entry<Class<? extends Collection>, Supplier<? extends Collection<?>>> entry : SUPPORTED_COLLECTIONS.entrySet()) {
             if (entry.getKey().isAssignableFrom(collectionClass))
                 return entry.getKey();
@@ -512,7 +532,7 @@ public final class Selector {
         throw new IllegalStateException("Unexpected collection of type " + collectionClass + " provided");
     }
 
-    private static JoinerDescriptor getJoinerDescriptor(Joiner<?, ?, ?, ?> joiner) {
+    private JoinerDescriptor getJoinerDescriptor(Joiner<?, ?, ?, ?> joiner) {
         return JOINER_DESCRIPTORS.computeIfAbsent(joiner.getClass(), clazz -> {
             ResolvableType type = ResolvableType.forClass(Joiner.class, clazz);
             ResolvableType target = type.getGeneric(0);
@@ -559,7 +579,7 @@ public final class Selector {
         });
     }
 
-    private static FetcherDescriptor getFetcherDescriptor(Fetcher<?> fetcher) {
+    private FetcherDescriptor getFetcherDescriptor(Fetcher<?> fetcher) {
         return FETCHER_DESCRIPTORS.computeIfAbsent(fetcher.getClass(), clazz -> {
             ResolvableType fetcherTarget = ResolvableType.forClass(Fetcher.class, clazz).getGeneric(0);
             Map<String, List<Method>> methods = groupBySelectionKey(clazz);
@@ -634,7 +654,7 @@ public final class Selector {
         });
     }
 
-    private static void assertReturnsFetcher(Method nestedFetcherAccessor, ResolvableType returnType) {
+    private void assertReturnsFetcher(Method nestedFetcherAccessor, ResolvableType returnType) {
         Preconditions.checkArgument(
             FETCHER_RAW.isAssignableFrom(returnType),
             "Fetcher's nested fetcher accessor must return instance of Fetcher class. Violation in %s",
@@ -642,7 +662,7 @@ public final class Selector {
         );
     }
 
-    private static Object invoke(Method m, Object obj, Object...args) {
+    private Object invoke(Method m, Object obj, Object...args) {
         try {
             return m.invoke(obj, args);
         } catch (IllegalAccessException e) {
@@ -654,7 +674,7 @@ public final class Selector {
         }
     }
 
-    private static SelectionDescriptor getSelectionDescriptor(Selection<?> selection) {
+    private SelectionDescriptor getSelectionDescriptor(Selection<?> selection) {
         return SELECTION_DESCRIPTORS.computeIfAbsent(selection.getClass(), clazz -> {
             Map<String, List<Method>> methods = groupBySelectionKey(clazz);
             ReflectionUtils.doWithFields(clazz, field -> getFromField(clazz, methods, field));
@@ -669,7 +689,7 @@ public final class Selector {
         });
     }
 
-    private static Map<String, List<Method>> groupBySelectionKey(Class<?> clazz) {
+    private Map<String, List<Method>> groupBySelectionKey(Class<?> clazz) {
         Map<String, List<Method>> methodsRelatedToKey = new HashMap<>();
         doWithMethods(clazz, method -> {
             SelectionKey key = method.getAnnotation(SelectionKey.class);
@@ -680,7 +700,7 @@ public final class Selector {
         return methodsRelatedToKey;
     }
 
-    private static void getFromField(Class<?> clazz, Map<String, List<Method>> methods, java.lang.reflect.Field field) {
+    private void getFromField(Class<?> clazz, Map<String, List<Method>> methods, java.lang.reflect.Field field) {
         SelectionKey key = field.getAnnotation(SelectionKey.class);
         if (key != null) {
             PropertyDescriptor descriptor = BeanUtils.getPropertyDescriptor(clazz, field.getName());
@@ -695,7 +715,7 @@ public final class Selector {
         }
     }
 
-    private static void checkSelection(Class<?> clazz, Map<String, List<Method>> methodsRelatedToKey) {
+    private void checkSelection(Class<?> clazz, Map<String, List<Method>> methodsRelatedToKey) {
         for (Map.Entry<String, List<Method>> entry : methodsRelatedToKey.entrySet()) {
             List<Method> list = entry.getValue();
             Method selectionEnumAccessor = list.get(0);
@@ -716,7 +736,7 @@ public final class Selector {
         }
     }
 
-    private static void assertReturnsSelection(Class<?> clazz, Map.Entry<String, List<Method>> entry, Method nestedSelectionAccessor) {
+    private void assertReturnsSelection(Class<?> clazz, Map.Entry<String, List<Method>> entry, Method nestedSelectionAccessor) {
         Preconditions.checkArgument(
             SELECTION_RAW.isAssignableFrom(ResolvableType.forMethodReturnType(nestedSelectionAccessor)),
             "No nested selection accessor specified for property %s for type %s",
@@ -725,7 +745,7 @@ public final class Selector {
         );
     }
 
-    private static void assertReturnsSelectionEnum(Class<?> clazz, Map.Entry<String, List<Method>> entry, Method selectionEnumAccessor) {
+    private void assertReturnsSelectionEnum(Class<?> clazz, Map.Entry<String, List<Method>> entry, Method selectionEnumAccessor) {
         Preconditions.checkArgument(
             selectionEnumAccessor.getReturnType() == SelectionEnum.class,
             "No %s accessor found for property %s in selection of type %s",
@@ -735,7 +755,7 @@ public final class Selector {
         );
     }
 
-    private static void assertSelectionMethodZeroParams(Method selectionEnumAccessor) {
+    private void assertSelectionMethodZeroParams(Method selectionEnumAccessor) {
         Preconditions.checkArgument(
             selectionEnumAccessor.getParameterCount() == 0,
             "Selection's methods annotated with %s must have zero arguments. Violation in %s",
@@ -744,7 +764,7 @@ public final class Selector {
         );
     }
 
-    private static List<Method> ensureNoDuplicates(Method method, String key, List<Method> list) {
+    private List<Method> ensureNoDuplicates(Method method, String key, List<Method> list) {
         if (list == null)
             return new ArrayList<>(Collections.singletonList(method));
         if (list.contains(method))
@@ -754,7 +774,7 @@ public final class Selector {
         return list;
     }
 
-    private static void doWithMethods(Class<?> clazz, ReflectionUtils.MethodCallback callback) {
+    private void doWithMethods(Class<?> clazz, ReflectionUtils.MethodCallback callback) {
         Method[] methods = clazz.getMethods();
         for (Method method : methods) {
             if (!method.getDeclaringClass().isInterface() && !Modifier.isPublic(method.getDeclaringClass().getModifiers()))
@@ -775,7 +795,7 @@ public final class Selector {
     }
 
     @SuppressWarnings("rawtypes")
-    private static void checkJoinerAccessor(
+    private void checkJoinerAccessor(
             Class<? extends Joiner> clazz,
             String selectionKey,
             Method fetchMethod,
@@ -845,7 +865,7 @@ public final class Selector {
         }
     }
 
-    private static void checkFetcherAgainstSelection(FetcherDescriptor fetcherDescriptor, SelectionDescriptor selectionDescriptor) {
+    private void checkFetcherAgainstSelection(FetcherDescriptor fetcherDescriptor, SelectionDescriptor selectionDescriptor) {
         cacheCheck(CHECKED_FETCHERS_AGAINST_SELECTION, selectionDescriptor, fetcherDescriptor, () -> {
             Preconditions.checkArgument(
                     selectionDescriptor.targetType.isAssignableFrom(fetcherDescriptor.targetType),
@@ -883,7 +903,7 @@ public final class Selector {
         });
     }
 
-    private static void checkJoinerAgainstSelection(JoinerDescriptor joinerDescriptor, SelectionDescriptor selectionDescriptor) {
+    private void checkJoinerAgainstSelection(JoinerDescriptor joinerDescriptor, SelectionDescriptor selectionDescriptor) {
         cacheCheck(CHECKED_JOINERS_AGAINST_SELECTION, selectionDescriptor, joinerDescriptor, () -> {
             Preconditions.checkArgument(
                     selectionDescriptor.targetType.isAssignableFrom(joinerDescriptor.targetType),
@@ -909,7 +929,7 @@ public final class Selector {
         });
     }
 
-    private static void checkFetcherAgainstJoiner(FetcherDescriptor fetcherDescriptor, JoinerDescriptor joinerDescriptor) {
+    private void checkFetcherAgainstJoiner(FetcherDescriptor fetcherDescriptor, JoinerDescriptor joinerDescriptor) {
         cacheCheck(CHECKED_FETCHERS_AGAINST_JOINER, joinerDescriptor, fetcherDescriptor, () -> {
             Preconditions.checkArgument(
                     joinerDescriptor.targetType.isAssignableFrom(joinerDescriptor.targetType),
@@ -973,7 +993,7 @@ public final class Selector {
         });
     }
 
-    private static <K, V> void cacheCheck(ConcurrentMap<K, List<V>> cache, K checkKey, V checkValue, Runnable check) {
+    private <K, V> void cacheCheck(ConcurrentMap<K, List<V>> cache, K checkKey, V checkValue, Runnable check) {
         List<V> checked = cache.computeIfAbsent(checkKey, ignored -> new ArrayList<>());
         if (!checked.contains(checkValue)) {
             check.run();
@@ -984,7 +1004,11 @@ public final class Selector {
         }
     }
 
-    private static boolean empty(Selection<?> selection) {
+    public static Selector create() {
+        return new Selector();
+    }
+
+    private boolean empty(Selection<?> selection) {
         return selection == null || selection.empty();
     }
 

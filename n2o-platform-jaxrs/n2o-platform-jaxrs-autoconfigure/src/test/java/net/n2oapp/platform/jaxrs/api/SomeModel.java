@@ -13,12 +13,10 @@ import java.util.Date;
 @Validated
 public class SomeModel {
     private Long id;
-    private @NotNull String name;
-    private @NotNull Date date;
-    private @NotNull LocalDateTime dateEnd;
+    private String name;
+    private Date date;
+    private LocalDateTime dateEnd;
 
-    @NotNull
-    @Valid
     private StringModel stringModel;
 
     public SomeModel() {
