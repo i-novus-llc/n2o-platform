@@ -26,7 +26,7 @@ public class SelectiveRestImpl implements SelectiveRest {
     @Override
     @Transactional(readOnly = true)
     public Page<Employee> search(EmployeeCriteria criteria) {
-        return selector.resolvePage(joiner, employeeRepository.findAll(criteria).map(EmployeeFetcherImpl::new), criteria.selection());
+        return selector.resolveStreamable(joiner, employeeRepository.findAll(criteria).map(EmployeeFetcherImpl::new), criteria.selection());
     }
 
 }

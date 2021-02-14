@@ -1,11 +1,10 @@
 package net.n2oapp.platform.selection.core;
 
-import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.google.common.base.Preconditions;
 import net.n2oapp.platform.selection.api.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.ResolvableType;
-import org.springframework.data.domain.Page;
+import org.springframework.data.util.Streamable;
 import org.springframework.lang.NonNull;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
@@ -90,55 +89,45 @@ public final class Selector {
     private static final ConcurrentMap<JoinerDescriptor, List<FetcherDescriptor>> CHECKED_FETCHERS_AGAINST_JOINER = new ConcurrentHashMap<>();
 
     /**
-     * @param joiner Группировщик запросов
-     * @param fetchers {@link Iterable} fetcher-ов. Поддерживаются {@link List}, {@link Set} и {@link Page}
-     * @param selection Выборка
-     * @return {@link Iterable} элементов типа {@code <T>}, чьи поля выборочно отображены в соответствии с {@code selection}
-     */
-    public <T, ID, E, F extends Fetcher<T>> Iterable<T> resolveIterable(
-            @NonNull Joiner<? extends T, ? extends ID, E, ? super F> joiner,
-            Iterable<? extends F> fetchers,
-            Selection<? extends T> selection
-    ) {
-        return this.<T, ID, E, F>resolveFetched(joiner, fetchers, selection);
-    }
-
-    /**
-     * Удобный метод для методов постраничного поиска в сервисах
      * @param joiner Группировщик запросов.
-     * @param fetchers {@link Page} fetcher-ов
+     * @param fetchers {@link Streamable} fetcher-ов
      * @param selection Выборка клиента
-     * @return {@link Page} элементов типа {@code <T>}, чьи элементы выборочно отображены в соответствии с {@code selection}
+     * @return {@link Streamable} элементов типа {@code <T>}, чьи элементы выборочно отображены в соответствии с {@code selection}
      */
-    public <T, ID, E, F extends Fetcher<T>> Page<T> resolvePage(
+    @SuppressWarnings("unchecked")
+    public <T, ID, E, F extends Fetcher<T>, S extends Streamable<T>> S resolveStreamable(
             @NonNull Joiner<? extends T, ? extends ID, E, ? super F> joiner,
-            Page<? extends F> fetchers,
+            Streamable<? extends F> fetchers,
             Selection<? extends T> selection
     ) {
-        return (Page<T>) this.<T, ID, E, F>resolveFetched(joiner, fetchers, selection);
+        Iterable<T> res;
+        if (empty(selection) || empty(fetchers)) {
+            res = null;
+        } else {
+            Map<ID, F> batch = this.<T, ID, E, F>makeBatch(joiner, fetchers);
+            Map<ID, T> resolvedBatch = this.<T, ID, E, F>resolveTopLevelBatch(joiner, batch, selection);
+            res = fetchers.map(fetcher -> resolvedBatch.get(Preconditions.checkNotNull(joiner.getId(joiner.getUnderlyingEntity(fetcher)))));
+        }
+        return (S) res;
     }
 
     /**
      * Данный метод подвержен проблеме {@code N+1} и не должен использоваться в общем случае.
-     * Вместо него используйте метод {@link Selector#resolvePage(Joiner, Page, net.n2oapp.platform.selection.api.Selection)}
-     * @param srcPage Страница данных
+     * Вместо него используйте метод {@link Selector#resolveStreamable(Joiner, Streamable, Selection)}
+     * @param fetchers Streamable fetcher-ов
      * @param selection Выборка
      * @param <T> Тип DTO
-     * @return Page DTO, чьи поля выборочно заполнены в соответствии с {@code selection}
+     * @return {@link Streamable} DTO, чьи поля выборочно заполнены в соответствии с {@code selection}
      */
-    public <T> Page<T> resolvePage(Page<? extends Fetcher<? extends T>> srcPage, Selection<? extends T> selection) {
-        return srcPage.map(fetcher -> resolve(fetcher, selection));
-    }
-
     @SuppressWarnings("unchecked")
-    public <T> Collection<T> resolveCollection(Collection<? extends Fetcher<? extends T>> fetchers, Selection<? extends T> selection) {
-        if (empty(fetchers) || empty(selection))
-            return null;
-        Collection<T> result = getTargetCollection(fetchers.getClass(), false);
-        for (Fetcher<? extends T> fetcher : fetchers) {
-            result.add(resolve(fetcher, selection));
+    public <T, S extends Streamable<T>> S resolveStreamable(Streamable<? extends Fetcher<? extends T>> fetchers, Selection<? extends T> selection) {
+        Iterable<T> res;
+        if (empty(selection) || empty(fetchers)) {
+            res = null;
+        } else {
+            res = fetchers.map(fetcher -> resolve(fetcher, selection));
         }
-        return result;
+        return (S) res;
     }
 
     /**
@@ -205,28 +194,6 @@ public final class Selector {
             batch.put(id, fetcher);
         }
         return batch;
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private <T, ID, E, F extends Fetcher<T>> Iterable<T> resolveFetched(
-            Joiner<? extends T, ? extends ID, E, ? super F> joiner,
-            Iterable<? extends F> fetchers,
-            Selection<? extends T> selection
-    ) {
-        if (empty(selection) || empty(fetchers))
-            return null;
-        Map<ID, F> batch = this.<T, ID, E, F>makeBatch(joiner, fetchers);
-        if (!(fetchers instanceof Page)) {
-            Preconditions.checkArgument(fetchers instanceof Collection, "Collection expected, got %s", ClassUtil.classNameOf(fetchers));
-        }
-        Map<ID, T> resolvedBatch = this.<T, ID, E, F>resolveTopLevelBatch(joiner, batch, selection);
-        if (fetchers instanceof Page) {
-            return ((Page<? extends F>) fetchers).map(fetcher -> resolvedBatch.get(Preconditions.checkNotNull(joiner.getId(joiner.getUnderlyingEntity(fetcher)))));
-        } else {
-            Collection<T> result = getTargetCollection((Class<? extends Collection>) fetchers.getClass(), false);
-            result.addAll(resolvedBatch.values());
-            return result;
-        }
     }
 
     private boolean empty(Iterable<?> iterable) {
