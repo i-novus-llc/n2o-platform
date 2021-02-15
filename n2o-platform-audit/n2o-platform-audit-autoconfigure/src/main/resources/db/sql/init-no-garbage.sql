@@ -20,9 +20,9 @@ CREATE TABLE aud_excluded_schemas (
 CREATE SEQUENCE IF NOT EXISTS aud_excluded_schemas_seq;
 ALTER TABLE aud_excluded_schemas ADD CONSTRAINT aud_excluded_schemas_schema_name_uq UNIQUE (schema_name);
 
-INSERT INTO aud_excluded_schemas(id, schema_name) VALUES (nextval('aud_excluded_schemas_seq'), 'quartz');
-insert into aud_excluded_schemas(id, schema_name) values(nextval('aud_excluded_schemas_seq'), 'audit');
-insert into aud_excluded_schemas(id, schema_name) values(nextval('aud_excluded_schemas_seq'),'liquibase');
+INSERT INTO aud_excluded_schemas(id, schema_name) VALUES (nextval('aud_excluded_schemas_seq'), 'quartz') ON CONFLICT (schema_name) DO NOTHING;
+INSERT INTO aud_excluded_schemas(id, schema_name) VALUES (nextval('aud_excluded_schemas_seq'), 'audit') ON CONFLICT (schema_name) DO NOTHING;
+INSERT INTO aud_excluded_schemas(id, schema_name) VALUES (nextval('aud_excluded_schemas_seq'), 'liquibase') ON CONFLICT (schema_name) DO NOTHING;
 
 CREATE TABLE aud_excluded_tables(
   id integer NOT NULL,
@@ -39,9 +39,9 @@ CREATE SEQUENCE IF NOT EXISTS aud_excluded_tables_seq;
 ALTER TABLE aud_excluded_tables ADD CONSTRAINT aud_excluded_tables_table_name_uq UNIQUE (table_name);
 ALTER TABLE aud_excluded_tables ADD CONSTRAINT aud_excluded_tables_check_schema CHECK (split_part(table_name, '.', 2) != '');
 
-insert into aud_excluded_tables(id, table_name) values(nextval('aud_excluded_tables_seq'), 'public.aud_excluded_schemas');
-insert into aud_excluded_tables(id, table_name) values(nextval('aud_excluded_tables_seq'), 'public.aud_excluded_table');
-INSERT INTO aud_excluded_tables(id, table_name) values(nextval('aud_excluded_tables_seq'), 'public.aud_excluded_columns');
+INSERT INTO aud_excluded_tables(id, table_name) VALUES (nextval('aud_excluded_tables_seq'), 'public.aud_excluded_schemas') ON CONFLICT (table_name) DO NOTHING;
+INSERT INTO aud_excluded_tables(id, table_name) VALUES (nextval('aud_excluded_tables_seq'), 'public.aud_excluded_tables') ON CONFLICT (table_name) DO NOTHING;
+INSERT INTO aud_excluded_tables(id, table_name) VALUES (nextval('aud_excluded_tables_seq'), 'public.aud_excluded_columns') ON CONFLICT (table_name) DO NOTHING;
 
 CREATE OR REPLACE FUNCTION aud_add_audit(table_name text)
   RETURNS void AS
