@@ -80,14 +80,12 @@ public class SomeRestImpl implements SomeRest {
         throw new UserException(messages);
     }
 
-    @SuppressWarnings("all")
     @Override
     public String timeoutSuccess() throws InterruptedException {
         Thread.sleep(500);
         return "timeout success";
     }
 
-    @SuppressWarnings("all")
     @Override
     public String timeoutFailure() throws InterruptedException {
         Thread.sleep(1500);
@@ -119,6 +117,16 @@ public class SomeRestImpl implements SomeRest {
         return List.of(
                 new ListModel(List.of(new IntegerModel(0), new IntegerModel(1), new IntegerModel(2))),
                 new ListModel(List.of(new IntegerModel(3), new IntegerModel(4), new IntegerModel(5))));
+    }
+
+    @Override
+    public Map<String, String> mapQueryParam(Map<String, String> map) {
+        return map;
+    }
+
+    @Override
+    public Map<String, String> mapQueryParamViaHolder(MapParamHolder holder) {
+        return holder.getMap();
     }
 
     private List<SomeModel> findAll(SomeCriteria criteria) {

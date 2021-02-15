@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
@@ -194,6 +195,15 @@ public class FeignClientTest {
     @Test
     public void testAuthorization() {
         assertThat(client.authHeader().get("Authorization"), is("Bearer " + TEST_TOKEN));
+    }
+
+    @Test
+    public void testMapQueryParams() {
+        Map<String, String> map = Map.of("number", "1", "code", "1");
+        assertThat(client.mapQueryParam(map), is(map));
+        MapParamHolder holder = new MapParamHolder();
+        holder.setMap(map);
+        assertThat(client.mapQueryParamViaHolder(holder), is(map));
     }
 
     @Configuration

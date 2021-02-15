@@ -117,4 +117,12 @@ public interface SomeRest {
     @Path("/genericList")
     List<ListModel> getListModels();
 
+    @GET
+    @Path("/mapQueryParam")
+    Map<String, String> mapQueryParam(@QueryParam("map") Map<String, String> map);
+
+    @GET
+    @Path("/mapQueryParamViaHolder")
+    Map<String, String> mapQueryParamViaHolder(@BeanParam MapParamHolder holder);
+
 }
