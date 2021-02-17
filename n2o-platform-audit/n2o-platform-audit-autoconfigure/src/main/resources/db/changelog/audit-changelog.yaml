@@ -1,36 +1,6 @@
 databaseChangeLog:
   - include:
-      file: classpath*:/audit/201510151320_audit_init.xml
-  - include:
-      file: classpath*:/audit/201604151115_audit_trigger_fun_bfx.xml
-  - include:
-      file: classpath*:/audit/201605271738_create_func_get_primary_keys.xml
-  - include:
-      file: classpath*:/audit/201605271744_edit_func_add_table.xml
-  - include:
-      file: classpath*:/audit/201605301814_add_tables_to_full_audit_func.xml
-  - include:
-      file: classpath*:/audit/201606141200_audit_funct_v2.xml
-  - include:
-      file: classpath*:/audit/201608290927_type_check_con_bfx.xml
-  - include:
-      file: classpath*:/audit/201610171705_exclude_denorm_columns.xml
-  - include:
-      file: classpath*:/audit/201701271230_add_unique_in_audit_exception_tables.xml
-  - include:
-      file: classpath*:/audit/201804161602_full_audit_func_without_pglogical.xml
-  - include:
-      file: classpath*:/audit/201911131146_add_delta.xml
-  - include:
-      file: classpath*:/audit/201911141107_audit_trigger_fun_bfx_2.xml
-  - include:
-      file: classpath*:/audit/202001131500_tables_to_full_audit_func_bfx_2.xml
-  - include:
-      file: classpath*:/audit/202004131430_add_dump.xml
-  - include:
-      file: classpath*:/audit/202004271543_all_to_utc.xml
-  - include:
-      file: classpath*:/audit/202004281554_exclude_quartz.xml
+      file: classpath*:/audit/202102151601_audit_init.xml.xml
   - includeAll:
       path: classpath*:/audit/customize/
       errorIfMissingOrEmpty: false

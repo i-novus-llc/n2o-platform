@@ -3,22 +3,19 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-    <changeSet id="201510151320_audit_init_1.0" author="tnurdinov" dbms="postgresql">
+    <changeSet id="202102151601_audit_init-1.xml" author="ikarimullin" dbms="postgresql">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="aud_excluded_tables" schemaName="public"/>
             </not>
         </preConditions>
-        <sqlFile path="db/sql/audit_stage_1.sql" splitStatements="false"/>
+        <sqlFile path="db/sql/init.sql" splitStatements="false"/>
     </changeSet>
 
-    <changeSet id="201510151320_audit_init_2.0" author="tnurdinov" dbms="postgresql">
-        <preConditions onFail="MARK_RAN">
-            <sqlCheck expectedResult="0">
-                SELECT count(1) FROM information_schema.schemata WHERE schema_name = 'audit';
-            </sqlCheck>
-        </preConditions>
-        <sqlFile path="db/sql/audit_stage_2.sql" splitStatements="false"/>
+    <changeSet id="202102151601_audit_init-2.xml" author="ikarimullin" dbms="postgresql">
+        <sql splitStatements="false">
+            INSERT INTO aud_excluded_tables(id, table_name) VALUES (nextval('aud_excluded_tables_seq'), 'public.aud_excluded_tables') ON CONFLICT (table_name) DO NOTHING;
+        </sql>
     </changeSet>
 
 </databaseChangeLog>
