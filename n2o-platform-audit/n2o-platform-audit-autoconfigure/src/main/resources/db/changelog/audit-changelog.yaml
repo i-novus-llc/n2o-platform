@@ -1,6 +1,6 @@
 databaseChangeLog:
   - include:
-      file: classpath*:/audit/202102151601-nnop-130.xml
+      file: classpath*:/audit/202102151601_audit_init.xml.xml
   - includeAll:
       path: classpath*:/audit/customize/
       errorIfMissingOrEmpty: false

@@ -518,19 +518,6 @@ $BODY$
 DECLARE
     current_dt TIMESTAMP;
 BEGIN
-    /*
-    ------- replicate mode ---------
-    current_dt := now() at time zone 'utc;
-    IF ('create_next_part' = (SELECT current_setting('app.source'))) THEN
-      RETURN '_y' || date_part( 'year', current_dt + interval '1 month' )::text || '_m' || date_part( 'month', current_dt + interval '1 month')::text;
-    ELSEIF ('drop_previous_part' = (SELECT current_setting('app.source'))) THEN
-      RETURN '_y' || date_part( 'year', current_dt - interval '1 month' )::text || '_m' || date_part( 'month', current_dt - interval '1 month')::text;
-    ELSE
-      RETURN '_y' || date_part( 'year', current_dt )::text || '_m' || date_part( 'month', current_dt )::text;
-    END IF;
-     ------- end ---------
-    */
-
     -------- simple mode -------
     IF ('create_current_part' = (SELECT current_setting('app.source')))
     THEN
