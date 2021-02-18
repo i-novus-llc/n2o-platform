@@ -1,0 +1,316 @@
+package net.n2oapp.platform.selection.processor;
+
+import net.n2oapp.platform.selection.api.Fetcher;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.*;
+import javax.lang.model.util.Types;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+class SelectionMeta {
+
+    public static final String EXTENDS = "? extends ";
+
+    private final TypeElement target;
+    private final SelectionMeta parent;
+    private final List<SelectionMeta> children = new ArrayList<>();
+    private final GenericSignature genericSignature;
+    private final GenericSignature joinerGenericSignature;
+    private final TypeMirror extendsType;
+    private final String extendsSignature;
+    private final String joinerExtendsSignature;
+    private final String idTypeVariable;
+    private final String entityTypeVariable;
+    private final List<SelectionProperty> properties;
+    private final String fetcherTarget;
+    private final boolean isAbstract;
+    private final String prefix;
+
+    private boolean rawUse;
+
+    private String jacksonTypeTag;
+
+    SelectionMeta(
+            TypeElement target,
+            SelectionMeta parent,
+            boolean hasChildren,
+            GenericSignature genericSignature,
+            Types types,
+            String prefix
+    ) {
+        this.target = target;
+        this.parent = parent;
+        this.genericSignature = genericSignature;
+        if (prefix == null) {
+            String str = target.getSimpleName().toString();
+            prefix = Character.toLowerCase(str.charAt(0)) + str.substring(1);
+        }
+        this.prefix = prefix.strip();
+        this.properties = new ArrayList<>(0);
+        this.isAbstract = target.getModifiers().stream().anyMatch(Modifier.ABSTRACT::equals);
+        this.extendsType = getExtendsType(types);
+        if (
+                (isAbstract || hasChildren) && (
+                        parent == null ||
+                                (parent.genericSignature.getSelfVariable() != null && (parent.genericSignature.noGenericsDeclared() || !extendsTypeEmpty()))
+                )
+        ) {
+            genericSignature.createSelfVariable();
+        }
+        this.extendsSignature = resolveExtendsSignature();
+        this.fetcherTarget = resolveFetcherTarget();
+        this.joinerGenericSignature = genericSignature.copy();
+        this.idTypeVariable = joinerGenericSignature.allocateVar("ID");
+        this.entityTypeVariable = joinerGenericSignature.allocateVar("E");
+        String fetcherTypeVariable = joinerGenericSignature.allocateVar("F");
+        this.joinerGenericSignature.addTypeVariable(idTypeVariable, null);
+        this.joinerGenericSignature.addTypeVariable(entityTypeVariable, null);
+        this.joinerGenericSignature.addTypeVariable(fetcherTypeVariable, Fetcher.class.getCanonicalName() + "<" + fetcherTarget + ">");
+        this.joinerExtendsSignature = String.join(", ", extendsSignature, idTypeVariable, entityTypeVariable, fetcherTypeVariable);
+    }
+
+    String getPrefix() {
+        return prefix;
+    }
+
+    String getPrefixOrGenerate() {
+        if (prefix == null || prefix.isBlank()) {
+            String str = target.getSimpleName().toString();
+            return Character.toLowerCase(str.charAt(0)) + str.substring(1);
+        }
+        return prefix;
+    }
+
+    boolean isRawUse() {
+        return rawUse;
+    }
+
+    private String resolveFetcherTarget() {
+        if (genericSignature.getSelfVariable() != null)
+            return genericSignature.getSelfVariable();
+        return target.getQualifiedName().toString() + genericSignature.varsToString(false);
+    }
+
+    private boolean extendsTypeEmpty() {
+        return extendsType.getKind() == TypeKind.NONE || ((DeclaredType) extendsType).getTypeArguments().isEmpty();
+    }
+
+    private String resolveExtendsSignature() {
+        if (parent == null) {
+            if (genericSignature.getSelfVariable() != null)
+                return genericSignature.getSelfVariable(); // first class in the hierarchy of selectors/fetchers
+            return target.getQualifiedName().toString(); // no children and not abstract class
+        } else {
+            if (!parent.genericSignature.noGenericsDeclared()) { // parent's generic signature contains self variable and at least one type variable
+                if (extendsTypeEmpty()) { // raw use
+                    rawUse = true;
+                    return "";
+                } else {
+                    if (this.genericSignature.noGenericsDeclared()) { // no type variables declared on this class
+                        String var = this.genericSignature.getSelfVariable();
+                        String temp = getGenerics(extendsType.toString());
+                        if (var == null) { // no children and not abstract class
+                            return (parent.genericSignature.getSelfVariable() == null ? "" : target.getQualifiedName().toString() + ", ") + temp;
+                        } else {
+                            return var + ", " + temp;
+                        }
+                    } else {
+                        String var = this.genericSignature.getSelfVariable();
+                        String temp = var == null ? target.getQualifiedName().toString() + genericSignature.varsToString(true) : var;
+                        return (parent.genericSignature.getSelfVariable() == null ? "" : temp + ", ") + getGenerics(extendsType.toString());
+                    }
+                }
+            } else { // parent's generic signature contains either no type variables or only self variable
+                if (parent.genericSignature.isEmpty()) // no variables...
+                    return "";
+                else { // parent's generic signature contains only self variable
+                    if (this.genericSignature.isEmpty()) { // this class is not abstract, doesn't have children and no type variables declared on it
+                        return target.getQualifiedName().toString();
+                    } else {
+                        String var = this.genericSignature.getSelfVariable();
+                        if (var == null) { // no children and not abstract
+                            return target.getQualifiedName().toString() + genericSignature.varsToString(true);
+                        } else { // has children or abstract
+                            return var;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private String getGenerics(String type) {
+        if (type.isBlank())
+            return "";
+        int i = type.indexOf('<');
+        if (i == -1)
+            return "";
+        return type.substring(i + 1, type.length() - 1);
+    }
+
+    private TypeMirror getExtendsType(Types types) {
+        if (parent == null)
+            return types.getNoType(TypeKind.NONE);
+        TypeMirror parentType = null;
+        TypeMirror parentErasure = types.erasure(parent.target.asType());
+        for (TypeMirror mirror : types.directSupertypes(target.asType())) {
+            if (types.isSameType(types.erasure(mirror), parentErasure)) {
+                parentType = mirror;
+                break;
+            }
+        }
+        return parentType;
+    }
+
+    List<SelectionMeta> getChildren() {
+        return children;
+    }
+
+    void addChildren(List<SelectionMeta> children) {
+        this.children.addAll(children);
+    }
+
+    PackageElement getTargetPackage() {
+        Element temp = target;
+        while (!(temp.getEnclosingElement() instanceof PackageElement)) {
+            temp = temp.getEnclosingElement();
+        }
+        return (PackageElement) temp.getEnclosingElement();
+    }
+
+    TypeElement getTarget() {
+        return target;
+    }
+
+    void addProperty(String key, TypeMirror originalType, TypeMirror type, SelectionMeta nested, TypeMirror collectionRawType, boolean joined, boolean withNestedJoiner) {
+        if (nested == null)
+            properties.add(new SelectionProperty(key));
+        else {
+            boolean raw = false;
+            boolean wildcard = false;
+            String nestedGenericSignature;
+            if (type instanceof WildcardType) {
+                wildcard = true;
+                type = ((WildcardType) type).getExtendsBound();
+            }
+            if (type instanceof TypeVariable) {
+                String var = type.toString();
+                if (nested.genericSignature.noGenericsDeclared()) {
+                    if (nested.genericSignature.getSelfVariable() != null)
+                        nestedGenericSignature = (wildcard || collectionRawType == null ? EXTENDS : "") + var;
+                    else
+                        nestedGenericSignature = "";
+                } else {
+                    String generics = getGenerics(genericSignature.getVariableBounds(var)[0]);
+                    if (nested.genericSignature.getSelfVariable() == null) {
+                        nestedGenericSignature = generics;
+                    } else {
+                        if (generics.isEmpty()) {
+                            // raw use, fallback to wildcards
+                            generics = IntStream.range(0, nested.genericSignature.size() - 1).mapToObj(i -> "?").collect(Collectors.joining(", "));
+                            raw = true;
+                        }
+                        nestedGenericSignature = (wildcard || collectionRawType == null ? EXTENDS : "") + var + ", " + generics;
+                    }
+                }
+            } else {
+                if (nested.genericSignature.noGenericsDeclared()) {
+                    if (nested.genericSignature.getSelfVariable() != null)
+                        nestedGenericSignature = (wildcard || collectionRawType == null ? EXTENDS : "") + nested.target.getQualifiedName().toString();
+                    else
+                        nestedGenericSignature = "";
+                } else {
+                    DeclaredType declaredType = (DeclaredType) type;
+                    if (declaredType.getTypeArguments().isEmpty()) {
+                        nestedGenericSignature = ""; // raw use
+                        raw = true;
+                    } else {
+                        if (nested.genericSignature.getSelfVariable() != null) {
+                            nestedGenericSignature = (wildcard || collectionRawType == null ? EXTENDS : "") + type.toString() + ", " + getGenerics(type.toString());
+                        } else {
+                            nestedGenericSignature = getGenerics(type.toString());
+                        }
+                    }
+                }
+            }
+            properties.add(new SelectionProperty(key, nestedGenericSignature, nested, type, originalType, collectionRawType, this, joined, withNestedJoiner, raw));
+        }
+    }
+
+    GenericSignature getGenericSignature() {
+        return genericSignature;
+    }
+
+    List<SelectionProperty> getProperties() {
+        return properties;
+    }
+
+    SelectionMeta getParent() {
+        return parent;
+    }
+
+    String getExtendsSignatureNoBrackets() {
+        return extendsSignature;
+    }
+
+    String getExtendsSignature() {
+        if (extendsSignature.isEmpty())
+            return "";
+        return "<" + extendsSignature + ">";
+    }
+
+    String getFetcherTarget() {
+        return fetcherTarget;
+    }
+
+    String getJacksonTypeTag() {
+        return jacksonTypeTag;
+    }
+
+    void addJacksonTyping() {
+        if (jacksonTypeTag == null) {
+            if (parent != null)
+                parent.addJacksonTyping();
+            else {
+                spreadJacksonTyping(0);
+            }
+        }
+    }
+
+    private int spreadJacksonTyping(int typeId) {
+        if (!isAbstract) {
+            this.jacksonTypeTag = Integer.toString(typeId++);
+        }
+        for (SelectionMeta meta : children) {
+            typeId = meta.spreadJacksonTyping(typeId);
+        }
+        return typeId;
+    }
+
+    boolean isAbstract() {
+        return isAbstract;
+    }
+
+    GenericSignature getJoinerGenericSignature() {
+        return joinerGenericSignature;
+    }
+
+    String getJoinerExtendsSignature() {
+        return joinerExtendsSignature.isBlank() ? "" : "<" + joinerExtendsSignature + ">";
+    }
+
+    String getIdTypeVariable() {
+        return idTypeVariable;
+    }
+
+    String getEntityTypeVariable() {
+        return entityTypeVariable;
+    }
+
+}
