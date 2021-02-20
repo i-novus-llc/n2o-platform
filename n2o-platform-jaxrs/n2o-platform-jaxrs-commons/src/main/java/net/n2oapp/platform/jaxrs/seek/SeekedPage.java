@@ -2,17 +2,20 @@ package net.n2oapp.platform.jaxrs.seek;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.data.util.Streamable;
 import org.springframework.lang.NonNull;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Страница данных, полученная путем seek-пагинации
  * @param <T> Тип элементов
  */
-public class SeekedPage<T> implements Iterable<T> {
+public class SeekedPage<T> implements Streamable<T> {
 
     private static final SeekedPage<?> EMPTY = new SeekedPage<>(Collections.emptyList(), false, false);
 
@@ -83,8 +86,45 @@ public class SeekedPage<T> implements Iterable<T> {
         return content.listIterator(idx);
     }
 
-    public <E> SeekedPage<E> map(Function<? super T, ? extends E> mapper) {
+    @NonNull
+    public <E> SeekedPage<E> map(@NonNull Function<? super T, ? extends E> mapper) {
         return SeekedPage.of(content.stream().map(mapper).collect(Collectors.toList()), hasNext, hasPrev);
+    }
+
+    @NonNull
+    @Override
+    public List<T> toList() {
+        return content;
+    }
+
+    @NonNull
+    @Override
+    public Set<T> toSet() {
+        return new HashSet<>(content);
+    }
+
+    @NonNull
+    @Override
+    public Stream<T> stream() {
+        return get();
+    }
+
+    @NonNull
+    @Override
+    public Stream<T> get() {
+        return content.stream();
+    }
+
+    @NonNull
+    @Override
+    public SeekedPage<T> filter(@NonNull Predicate<? super T> predicate) {
+        return SeekedPage.of(content.stream().filter(predicate).collect(Collectors.toList()), hasNext, hasPrev);
+    }
+
+    @NonNull
+    @Override
+    public <R> SeekedPage<R> flatMap(@NonNull Function<? super T, ? extends Stream<? extends R>> mapper) {
+        return SeekedPage.of(content.stream().flatMap(mapper).collect(Collectors.toList()), hasNext, hasPrev);
     }
 
     @Override
