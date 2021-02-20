@@ -172,6 +172,21 @@
                 <artifactId>n2o-platform-starter-loader-server</artifactId>
                 <version>4.2.7-SNAPSHOT</version>
             </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-selection-api</artifactId>
+                <version>4.2.7-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-selection-core</artifactId>
+                <version>4.2.7-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-selection-processor</artifactId>
+                <version>4.2.7-SNAPSHOT</version>
+            </dependency>
 
             <!--N2O Framework-->
             <dependency>

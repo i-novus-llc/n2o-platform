@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet id="202102151601_audit_init-1.xml" author="ikarimullin" dbms="postgresql">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="aud_excluded_tables" schemaName="public"/>
+            </not>
+        </preConditions>
+        <sqlFile path="db/sql/init.sql" splitStatements="false"/>
+    </changeSet>
+
+    <changeSet id="202102151601_audit_init-2.xml" author="ikarimullin" dbms="postgresql">
+        <sql splitStatements="false">
+            INSERT INTO aud_excluded_tables(id, table_name) VALUES (nextval('aud_excluded_tables_seq'), 'public.aud_excluded_tables') ON CONFLICT (table_name) DO NOTHING;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

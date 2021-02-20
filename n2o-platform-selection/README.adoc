@@ -1,0 +1,724 @@
+= Selection API
+
+== Для чего это
+
+REST-сервисы страдают тем свойством, что зачастую отдают данных клиенту намного больше,
+чем ему на самом деле нужно. Это приводит к неоптимальному использованию пропускной
+способности сети, а так же усугубляют проблемы, связанные с БД и ORM - фреймворками,
+такими, как `N + 1`.
+
+Например в привычной архитектуре сервиса есть сущности, мапперы и DTO.
+Сущности являются ядром сервиса, которые знают свою предметную область.
+DTO -- это мост между сервисом и остальным миром,
+а маппер -- это мост между сущностью и DTO, которые отображает поля сущности на поля DTO.
+
+В большинстве сервисов так же есть некая центральная сущность (или несколько),
+которые содержат в себе много полей и другие (дочерние) сущности. Например, в `JIRA`
+такой сущностью является `issue`, то есть задача или проблема.
+
+Проблема маппера в том, что он производит отображение безусловно,
+в независимости от того, нужны ли клиенту сервиса эти данные или нет.
+
+К примеру если клиентом сервиса выступает веб-модуль и он хочет отобразить в таблице
+краткую сводку по центральной сущности приложения -- для этого ему нужно какое — то небольшое
+кол — во ключевых полей. Но если клиент не может указать, какие поля ему нужны --
+сервис будет каждый раз проделывать много бесполезной работы,
+и сеть будет использоваться неоптимально.
+
+Например, такой ответ сервиса сотрудников:
+
+[source,json]
+----
+{"content":
+  [
+    {
+      "id": "e57c4993-aed4-40f4-8f3f-3a640ed4491a",
+      "username": "example@gmail.com",
+      "email": "example@gmail.com",
+      "surname": "Smith",
+      "name": "John",
+      "accountStatus": "ACTIVE",
+      "organisations": [...],
+      "contacts": [...]
+    },
+    ...
+    ...
+    ...
+  ],
+  "totalElements": 50,
+  "sort": [
+    {
+      "property": "id",
+      "direction": "desc"
+    }
+  ]
+}
+----
+
+При желании отобразить только имя/фамилию и статус аккаунта на форме можно сократить до такого:
+
+[source,json]
+----
+{"content":
+  [
+    {
+      "surname": "Smith",
+      "name": "John",
+      "accountStatus": "ACTIVE"
+    },
+    ...
+    ...
+    ...
+  ],
+  "totalElements": 50,
+  "sort": [
+    {
+      "property": "id",
+      "direction": "desc"
+    }
+  ]
+}
+----
+
+При таких параметрах запроса:
+
+`http://employee-service.com/api/employees?employeeSurname=T&employeeName=T&employeeAccountStatus=T&page=0&size=10`
+
+Есть реальные примеры, в которых веб модуль приложения запрашивает данные от апи модуля с размером страницы 10 элементов и получает ответ размером 1 мегабайт, в котором содержится чуть ли не вся бизнес-модель, и использует из него несколько полей верхнего уровня. Поэтому в особо запущенных случаях общий профит может составить более 90%.
+
+== Как использовать
+
+API и логика по выборочному отображению находятся в двух зависимостях:
+[source,xml]
+----
+<dependencies>
+    <dependency>
+        <groupId>net.n2oapp.platform</groupId>
+        <artifactId>n2o-platform-selection-api</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>net.n2oapp.platform</groupId>
+        <artifactId>n2o-platform-selection-core</artifactId>
+    </dependency>
+</dependencies>
+----
+
+В API описаны два интерфейса `Selection<T>` и `Fetcher<T>`.
+
+В первом перечисляются поля, необходимые клиенту.
+Делается это через метод, возвращающий `SelectionEnum` (в котором есть всего два значения,
+`T` и `F` от `true` и `false` соответственно) без аргументов.
+Данный метод так же должен быть помечен аннотацией `@SelectionKey("key")`.
+Переменная типа `E` -- это тип данных, для которого предназначен этот `Selection`.
+
+Например, для `issue` `REST API JIRA` реализация данного интерфейса может выглядеть так:
+
+[source,java]
+----
+public class IssueSelection implements Selection<Issue> {
+
+    private SelectionEnum selectKey; // Номер задачи
+    private SelectionEnum selectAssignee; // Исполнитель
+    private AssigneeSelection assigneeSelection; // Вложенная выборка полей исполнителя
+    private SelectionEnum selectStatus; // Статус
+    private SelectionEnum selectProject; // Проект
+//  ...
+
+    @SelectionKey("key")
+    public SelectionEnum getSelectKey() {
+        return selectKey;
+    }
+
+    @SelectionKey("assignee")
+    public SelectionEnum getSelectAssignee() {
+        return selectAssignee;
+    }
+
+    @SelectionKey("assignee")
+    public Selection<Employee> getAssigneeSelection() {
+        return assigneeSelection;
+    }
+
+    @SelectionKey("status")
+    public SelectionEnum getSelectStatus() {
+        return selectStatus;
+    }
+
+    @SelectionKey("project")
+    public SelectionEnum getSelectProject() {
+        return selectProject;
+    }
+
+//  ...
+
+    public static class AssigneeSelection implements Selection<Employee> {
+
+        @SelectionKey("name")
+        private SelectionEnum selectName;
+        @SelectionKey("surname")
+        private SelectionEnum selectSurname;
+        @SelectionKey("email")
+        private SelectionEnum selectEmail;
+        @SelectionKey("login")
+        private SelectionEnum selectLogin;
+
+//      ...
+
+    }
+
+}
+----
+
+Аннотацию `@SelectionKey` можно так же указывать над соответствующим полем, но тогда надо убедиться,
+что у этого поля есть стандартный геттер, который будет распознан методом
+`org.springframework.beans.BeanUtils.getPropertyDescriptor`.
+
+В приведенной выше выборке так же есть вложенная выборка `Selection<Assignee>`.
+То есть поле `selectAssignee` говорит о том, что клиенту нужен исполнитель.
+А поле `assigneeSelection` говорит о том, какие поля исполнителя нужны клиенту.
+Заметьте, что у них должен быть совпадающий `@SelectionKey`.
+
+Для данной выборки так же должная быть реализация интерфейса `Fetcher`.
+[source,java]
+----
+public class IssueFetcher implements Fetcher<Issue> {
+
+    /**
+    * Персистентная сущность
+    */
+    private final IssueEntity issue;
+
+    public IssueFetcher(IssueEntity issue) {
+        this.issue = issue;
+    }
+
+    /**
+    * @return Пустая модель DTO
+    */
+    @Override
+    public Issue create() {
+        return new Issue();
+    }
+
+    @SelectionKey("key")
+    public void selectKey(Issue dto) {
+        dto.setKey(issue.getKey());
+    }
+
+    @SelectionKey("assignee")
+    public void selectAssignee(Issue dto, User assignee) {
+        dto.setAssignee(assignee);
+    }
+
+    @SelectionKey("assignee")
+    public Fetcher<Assignee> assigneeFetcher() {
+        return new AssigneeFetcher(issue.getAssignee());
+    }
+
+    @SelectionKey("status")
+    public void selectStatus(Issue dto) {
+        dto.setStatus(issue.getStatus());
+    }
+
+    @SelectionKey("project")
+    public void setProject(Issue dto) {
+        dto.setProject(issue.getProject());
+    }
+
+}
+----
+
+Здесь есть несколько ключевых моментов:
+
+* Fetcher возвращает пустую модель DTO (метод `create`). Это значит, что DTO не должна быть неизменяемой.
+
+*   У fetcher-а есть методы следующих видов:
+
+**  Метод, который принимает модель DTO и кладет туда соответствующие данному `@SelectionKey` данные.
+    Этим методам обычно соответствуют единичные поля сущности, например `key`.
+
+**  А так же парные методы:
+***     без аргументов, возвращающий вложенный `Fetcher<X>`
+***     и связанный с ним через `@SelectionKey` метод, принимающий DTO и `X`, который кладет в DTO `X`.
+
+Как видно реализации `Selection` и `Fetcher` достаточно похожи по структуре.
+
+Имея данные реализации их можно использовать через метод `net.n2oapp.platform.selection.core.Selector.resolve(Fetcher<T>, Selector<T>)`.
+
+Данный метод в начале проверит, что переменную типа `E` интерфейса `Selection<T>` можно присвоить переменной типа `E` интерфейса `Fetcher<T>`.
+
+Так же он проверит все парные методы fetcher-а на типобезопасность (с учетом дженериков).
+Если где - то будет несоответствие -- будет брошено исключение.
+
+Так же если в `Selection` указан `@SelectionKey`, о котором неизвестно fetcher-у -- будет брошено исключение.
+
+Так же если у `Fetcher`-а (или у `Selection`-а) будет вложенный `Fetcher` (или `Selection`), но у соответствующего по
+`@SelectionKey` `Selection`-а (или `Fetcher`-а) не будет вложенного `Selection`-а (или `Fetcher`-а) -- будет брошено исключение.
+
+После этого будет произведена выборка полей. Для вложенных полей данный метод будет вызван рекурсивно.
+
+== Ограничения
+
+Чтобы соответствовать HTTP соглашениям по поводу получения данных и в то же время эффективно использовать данный API --
+нужно проектировать свою модель правильно.
+
+По соглашениям получение данных должно осуществляться через GET запрос.
+Тело может присутствовать в запросе, но оно не должно влиять на результат, он полностью определяется
+URI и параметрами (QueryParam) запроса. Так как параметры запроса имеют плоскую модель
+(по сути это отображение `ключ` -> `список значений`) -- очень сложно описать в них иерархическую модель (подобную JSON).
+
+Например, допустим у нас есть класс `Organisation`, в котором есть два поля типа `Address`, юридический и фактический адреса.
+[source,java]
+----
+@Selective
+public class Organisation {
+
+    Address legal; // Юридический адрес
+    Address factual; // Фактический адрес
+
+    @Selective
+    public static class Address {
+        String postcode; // Почтовый код
+        String region; // Регион
+//      ...
+    }
+
+}
+----
+Выборки из обоих полей описываются одним и тем же `AddressSelection`:
+[source,java]
+----
+public class OrganisationSelection {
+
+    @QueryParam("selectLegal")
+    SelectionEnum selectLegal;
+
+    @QueryParam("selectLegal")
+    SelectionEnum selectFactual;
+
+    @BeanParam
+    AddressSelection legalSelection; // Вложенная выборка
+
+    @BeanParam
+    AddressSelection factualSelection; // Вложенная выборка
+
+    public static class AddressSelection {
+
+        @QueryParam("selectPostcode")
+        SelectionEnum selectPostcode;
+
+        @QueryParam("selectRegion")
+        SelectionEnum selectRegion;
+
+//      ...
+    }
+
+}
+----
+
+Невозможно через параметры запроса указать (по крайней мере в JAX-RS, через `@BeanParam`),
+что из юридического адреса нам нужен почтовый код, а из фактического регион, так как
+в строке запроса это выглядит так:
+`http://rest-api/organisations?selectLegal=T&selectFactual=T&selectPostcode=T&selectRegion=T`
+
+В итоге сервис отдаст оба адреса, с заполненными почтовым кодом и регионом.
+
+Это лишь один пример того, что нужно иметь в виду при проектировании модели данных.
+В общем случае нужно делать так, чтобы ваши `DTO` были максимально плоскими.
+Так же не используйте наследование, используйте композицию.
+
+Но можно избежать этих трудностей, если передавать выборку в параметре запроса в формате JSON.
+
+Если же описания выборок становятся очень большими, единственный выход -- нарушить соглашения по построению REST-сервисов и отдавать
+данные по POST запросу с Body. Так вы можете описать произвольно сложную и большую выборку в формате JSON.
+Примеры известных систем, использующих подобный подход:
+
+* GraphQL
+* ElasticSearch
+* JIRA REST API
+
+Но нужно понимать, что оверхед на передачу выборки не должен превышать профит от ее использования. Иначе вам не стоит
+использовать данный API.
+
+В целом у вас есть 3 опции:
+
+* Описывать выборку параметрами запроса, например так:
+[source,java]
+----
+public class SomeCriteria extends RestCriteria {
+
+    @BeanParam
+    private SomeSelection selection;
+
+//  Фильтры опущены
+
+    public class SomeSelection implements Selection<SomeModel> {
+
+        @QueryParam("selectField1")
+        private SelectionEnum selectField1;
+
+        @QueryParam("selectField2")
+        private SelectionEnum selectField2;
+//      ...
+    }
+
+}
+----
+
+Это самый правильный и чистый подход
+
+* Описывать выборку в JSON и передавать ее в параметре запроса:
+[source,java]
+----
+public class SomeCriteria extends RestCriteria {
+
+    @QueryParam("selection")
+    private String selection; // Здесь лежит JSON
+
+    public String getSelection() {
+        return selection;
+    }
+
+    public void setSelection(String selection) {
+        this.selection = selection;
+    }
+
+    public void setSelection(SomeSelection selection) {
+        this.selection = Selection.toString(selection);
+    }
+
+    public SomeSelection selection() {
+        return Selection.parse(selection, SomeSelection.class);
+    }
+
+}
+----
+Вам следует использовать статические методы `net.n2oapp.platform.selection.api.Selection.encode` и `net.n2oapp.platform.selection.api.Selection.decode` для этого (они `null-safe`).
+Они кодируют JSON так, чтобы избежать кодирования процентами в строке запроса URI и экономят место (помните, что безопасным лимитом длины URI является 2048 символов). Метод `decode` так же может работать и с не кодированным JSON (для не Java-клиентов).
+
+* Передавать выборку в теле запроса:
+[source,java]
+----
+@Path("/example")
+public class SomeService {
+    @POST
+    @Path("/search")
+    Page<SomeModel> search(@BeanParam SomeCriteria criteria, SomeSelection selection); // Второй параметр -- это тело запроса
+}
+----
+
+В начале стоит использовать первый подход.
+
+Если его начинает не хватать по гибкости -- перейти на второй.
+
+И только если выборка становится настолько большой, что не умещается в параметре запроса
+(и профит от ее использования не превышает оверхед на ее передачу) --
+нужно использовать третий.
+
+Иначе не стоит использовать данный API.
+
+Так же есть ограничение на присутствие циклов в отображаемых сущностях (будет StackOverflowError). Пока решать ее можно с помощью аннотации `net.n2oapp.platform.selection.api.SelectionIgnore`. В будущем возможно будет механизм, позволяющий отображать двусторонние отношения.
+
+== Проблема N+1
+
+Описание проблемы:
+https://stackoverflow.com/questions/97197/what-is-the-n1-selects-problem-in-orm-object-relational-mapping
+
+Данная проблема сильно ухудшает производительность и уменьшает кол-во пользователей, которых приложение можно обслужить в единицу времени.
+
+Ее решение стандартными средствами `JPA` это API `EntityGraph` и `Criteria API`.
+Однако у данных подходов есть несколько особенностей:
+
+1. Интеграция `Spring` с `JPA` не позволяет определять `EntityGraph` в рантайме. То есть он является статичным и указывается над методом `JpaRepository` (например `findAll`). Это не ложится на модель доступа, предлагаемую данным модулем, в котором клиент сам определяет, какие данные ему нужны (и, следовательно, сам задает `EntityGraph`).
+
+2. Так же оба из них достают данные одним запросом, то есть используют большое кол-во `join`-ов в пределах одного запроса. В БД есть оптимизатор запросов и стоимость построения оптимального плана выполнения возрастает очень быстро с количеством `join`-ов в нем (сложность `O(n!)`).
+
+3. Оба из них работают на уровне сущностей, а не на уровне моделей `DTO`, то есть если предположить типичный каркас сервиса типа (`api`, `impl`, `web`), мы по сути раскрываем реализацию, так как сущности хранятся в модуле `impl`.
+
+4. Оба подхода перестают работать при наличии двух и более `ToMany` отношений (в случае использования `List` будет брошено исключение `MultipleBagFetchException`, в случае `Set` исключения не будет, но производительность очень сильно пострадает из-за `Cartesian Product` (https://stackoverflow.com/a/51055523))
+
+Поэтому данный модуль так же содержит интерфейс `Joiner<T, ID, E, F>`. Подход, предлагаемый им, свободен от приведенных выше особенностей (однако стоит отдельно сказать про второй пункт, что это не всегда плохо. При адекватном количестве `join`-ов в запросе это будет скорее всего быстрее, чем работать через `Joiner`. При 5 `join`-ах в бенчмарке `Joiner` на 28% медленнее (5 миллисекунд против 7 миллисекунд). Если БД и приложение находятся не в одной локальной сети -- этот показатель будет намного хуже).
+
+У него объявлены четыре переменных типа:
+
+* `T` -- тип `DTO`, по аналогии с `T` в интерфейсах `Fetcher` и `Selection`
+
+* `F extends Fetcher<T>` -- `Fetcher`, с которым может работать `Joiner`
+
+* `E` -- Сущность, которую отображает `F` (то есть `Fetcher<T>`)
+
+* `ID` -- идентификатор сущностей `E`
+
+Методы данного интерфейса так же помечаются аннотацией `@SelectionKey` и могут быть двух видов:
+
+* Метод, принимающий `Collection<E>` и возвращающий `Map<ID, Fetcher<X>>`, где `X` -- это тип `DTO` с другой стороны отношения (в примере с сотрудниками выше, для `EmployeeJoiner` и `@SelectionKey("organisation")` в качестве `X` выступала бы `Organisation`)
+
+* Метод в пределах того же `SelectionKey`, возвращающий вложенный `Joiner<X, ?, ?, ?>`. Этот метод является опциональным и дополняет первый. Для примера выше `EmployeeJoiner` возвращал бы для `@SelectionKey("organisation)` `OrganisationJoiner`, который бы смог заджойнить контакты организаций.
+
+Экземпляр `Joiner`-а в общем случае должен быть `stateless`, потому что он не хранит данный, а лишь предоставляет функциональность.
+
+Типичная реализация `Joiner`-а для примера выше может выглядеть так:
+
+[source,java]
+----
+public class EmployeeJoinerImpl implements EmployeeJoiner<Integer, Employee, EmployeeFetcherImpl> {
+
+    @Autowired
+    private OrganisationRepository organisationRepository;
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private OrganisationJoiner organisationJoiner;
+
+    @SelectionKey("organisation")
+    public Map<Integer, Fetcher<Organisation>> joinOrganisation(Collection<Employee> employees) {
+//      делаем prefetch организаций.
+//      Так как это ToOne отношение и Employee является является его owner-ом
+//      (потому что на нем объявлен JoinColumn) --
+//      hibernate закеширует его в Employee и при вызове Employee#getOrganisation запроса в базу не будет
+        organisationRepository.findEmployeeOrganisations(employees);
+        Map<Integer, Fetcher<Organisation>> result = new HashMap<>();
+        for (Employee owner : employees) {
+            Organisation prefetchedOtherSide = owner.getOrganisation(); // запроса в базу не будет
+            if (prefetchedOtherSide != null) {
+                Fetcher<Organisation> fetcher = new OrganisationFetcherImpl(prefetchedOtherSide);
+                result.put(owner.getId(), fetcher);
+            }
+        }
+        return result;
+    }
+
+    @SelectionKey("organisation")
+    public OrganisationJoinerImpl organisationJoiner() {
+        return organisationJoiner;
+    }
+
+    @SelectionKey("contacts")
+//  Так как это ToMany отношение (у сотрудника есть несколько контактов) --
+//  мы должны вернуть   список Fetcher<Contact> для каждого Employee
+    public Map<Integer, List<Fetcher<Contact>>> joinContacts(Collection<Employee> employees) {
+        Map<Integer, List<Fetcher<Contact>>> result = new HashMap<>();
+        Iterable<Contact> contacts = contactRepository.findContactsOfEmployees(employees); // запрос за контактами в БД
+        for (Contact child : contacts) {
+            Fetcher<Contact> fetcher = new EmployeeFetcherImpl.ContactFetcherImpl(child);
+            Integer ownerEmployeeId = child.getOwner().getId();
+            result.computeIfAbsent(ownerEmployeeId, ignored -> new ArrayList<>(1)).add(fetcher);
+        }
+        return result;
+    }
+
+    @Override
+    public Integer getId(Employee entity) {
+        return entity.getId();
+    }
+
+    @Override
+    public Employee getUnderlyingEntity(EmployeeFetcherImpl fetcher) {
+        return fetcher.src;
+    }
+
+}
+----
+
+Код выше является довольно шаблонным и поэтому, вместо его написания каждый раз стоит пользоваться статическими методами класса `net.n2oapp.platform.selection.api.JoinUtil`. Переписав `join` методы выше, это будет выглядеть следующим образом:
+[source,java]
+----
+@SelectionKey("organisation")
+public Map<Integer, Fetcher<Organisation>> joinOrganisation(Collection<Employee> employees) {
+    return JoinUtil.joinUnidirectionalToOnePrefetching(
+            employees,
+            organisationRepository::findEmployeeOrganisations,
+            OrganisationFetcherImpl::new,
+            Employee::getOrganisation,
+            Employee::getId
+    );
+}
+
+@SelectionKey("contacts")
+public Map<Integer, List<Fetcher<Contact>>> joinContacts(Collection<Employee> employees) {
+    return JoinUtil.joinBidirectionalOneToMany(
+            employees,
+            contactRepository::findContactsOfEmployees,
+            EmployeeFetcherImpl.ContactFetcherImpl::new,
+            contact -> contact.getOwner().getId()
+    );
+}
+----
+
+Напоследок нужно сказать, что при использовании `Joiner`-а вам следует делать больщую часть своих отношений `lazy`. Исключение можно сделать для случаев, когда с другой стороны отношения стоит небольшая по размеру таблица (например справочник регионов РФ и тому подобное).
+
+== Генерация интерфейсов `Fetcher`, `Selection` и `Joiner` по `DTO`
+
+Добавьте зависимость
+[source,xml]
+----
+<dependency>
+    <groupId>net.n2oapp.platform</groupId>
+    <artifactId>n2o-platform-selection-processor</artifactId>
+    <scope>compile</scope>
+</dependency>
+----
+
+И укажите
+[source,xml]
+----
+<build>
+    <plugins>
+        <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>generate-sources</id>
+                    <phase>generate-sources</phase>
+                    <goals>
+                        <goal>compile</goal>
+                    </goals>
+                    <configuration>
+                        <annotationProcessors>
+                            <annotationProcessor>net.n2oapp.platform.selection.processor.SelectionProcessor</annotationProcessor>
+                        </annotationProcessors>
+                        <compilerArgs>
+                            <arg>-Anet.n2oapp.platform.selection.addJacksonTyping=?</arg>
+                            <arg>-Anet.n2oapp.platform.selection.addJaxRsAnnotations=?</arg>
+                            <arg>-Anet.n2oapp.platform.selection.overrideSelectionKeys</arg>
+                        </compilerArgs>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+----
+
+В `n2o-platform-selection-api` есть аннотация `@Selective`.
+Она указывается над классом `DTO` и говорит о том, что выборка полей данного `DTO` происходит выборочно,
+то есть через механизм, описанный выше.
+
+Генератор кода распознает данную аннотацию и сгенерирует интерфейсы `Selection`, `Fetcher` и `Joiner` для каждого `DTO`.
+
+Для отдельных полей `DTO` так же можно указать аннотацию `@Joined(withNestedJoiner = true/false)`.
+
+Также он сгенерирует дефолтную реализацию для каждого интерфейса `Selection`.
+
+У генератора кода есть три опции `net.n2oapp.platform.selection.addJacksonTyping`, `net.n2oapp.platform.selection.addJaxRsAnnotations` и `net.n2oapp.platform.selection.overrideSelectionKeys`.
+
+Первая добавляет типизацию для Jackson-а. По-умолчанию `true`, если при компиляции присутствует аннотация `JsonTypeInfo`.
+
+Вторая добавляет аннотации JAX-RS. Это позволяет передавать `Selection`-ы в параметрах запроса HTTP. По-умолчанию `true`, если при компиляции присутствует аннотация `QueryParam`.
+
+Последняя (по-умолчанию `true`) указывает, что в дефолтных реализациях `Selection` при наличии наследования между ними в подклассах следует переопределять методы. Например, если есть:
+[source,java]
+----
+public class BaseModel {
+    private Integer id;
+}
+----
+
+Для нее, помимо интерфейса, будет сгенерирован дефолтный `Selection`
+[source,java]
+----
+public class DefaultBaseModelSelection<A extends BaseModel> implements BaseModelSelection<A> {
+
+	@QueryParam("baseModelPropagation")
+	protected SelectionPropagationEnum propagation;
+
+	public SelectionPropagationEnum getPropagation() {
+		return propagation;
+	}
+
+	public void setPropagation(SelectionPropagationEnum propagation) {
+		this.propagation = propagation;
+	}
+
+	@Override
+	public SelectionPropagationEnum propagation() {
+		return propagation;
+	}
+
+	public DefaultBaseModelSelection<A> propagate(SelectionPropagationEnum propagation) {
+		this.propagation = propagation;
+		return this;
+	}
+
+	@QueryParam("baseModelId")
+	private SelectionEnum id;
+
+	@Override
+	public SelectionEnum getId() {
+		return id;
+	}
+
+	public void setId(SelectionEnum id) {
+		this.id = id;
+	}
+
+	/**
+    * Будет переопределен
+    */
+	public DefaultBaseModelSelection<A> id() {
+		this.id = SelectionEnum.T;
+		return this;
+	}
+
+	/**
+    * Будет переопределен
+    */
+	public DefaultBaseModelSelection<A> unselectId() {
+		this.id = SelectionEnum.F;
+		return this;
+	}
+
+}
+----
+
+Если у BaseModel есть наследник `SomeModel`, и указана опция `overrideSelectionKeys`, то для `SomeModel` дефолтная реализация будет такой:
+[source,java]
+----
+public class DefaultSomeModelSelection extends DefaultBaseModelSelection<SomeModel> implements SomeModelSelection {
+
+	public DefaultSomeModelSelection propagate(SelectionPropagationEnum propagation) {
+		this.propagation = propagation;
+		return this;
+	}
+
+	/**
+    * Переопределено из DefaultBaseModelSelection
+    */
+	@Override
+	public DefaultSomeModelSelection id() {
+		return (DefaultSomeModelSelection) super.id();
+	}
+
+
+	/**
+    * Переопределено из DefaultBaseModelSelection
+    */
+	@Override
+	public DefaultSomeModelSelection unselectId() {
+		return (DefaultSomeModelSelection) super.unselectId();
+	}
+
+}
+----
+
+Это позволяет использовать `call-chain` (по аналогии с методами `append` класса `StringBuilder`) без явных кастов. Например:
+[source,java]
+----
+DefaultSomeModelSelection selection = SomeModelSelection.create().id(); // тут потребуется явный каст, если бы переопределения не было
+----
+
+Главное преимущество в использовании генератора кода -- типобезопасность.
+
+== Почему не GraphQL
+
+GraphQL -- это мощный фреймворк, созданный для тех же целей. Почему бы не использовать его?
+
+На самом деле причин не использовать его немного. Просто данный API дает возможность сохранить привычную модель REST-сервисов, в котором есть множество эндпоинтов, каждый из которых имеет свою ограниченную зону ответственности. В GraphQL же на все приходится один POST-эндпоинт, отвечающий за все.
+
+Также данный API более удобен для Java-разработчика, потому что достаточно лишь описать свои POJO модели. В GraphQL же нужно в начале описать схему (помимо той, что уже есть в БД) и после этого воспользоваться генератором кода для создания POJO моделей и интерфейсов.
+
+В существующие сервисы можно легко встроить данный API, в то время как с GraphQL потребуется достаточно глобальный рефакторинг.
+
+Ну и в последних выразительная сила GraphQL выходит далеко за рамки того, чтобы просто указать, что "мне нужны такие — то поля". По сути это целый язык запросов. И использование его лишь для описания полей в выборке кому — то может показать большим оверхедом.
