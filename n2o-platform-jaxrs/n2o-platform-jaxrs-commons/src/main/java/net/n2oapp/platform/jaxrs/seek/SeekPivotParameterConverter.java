@@ -8,19 +8,19 @@ public class SeekPivotParameterConverter implements TypedParamConverter<SeekPivo
     public SeekPivot fromString(String value) {
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
-            if (c == ':') {
+            if (c == ',') {
                 return SeekPivot.of(value.substring(0, i), value.substring(i + 1));
             }
         }
-        throw new IllegalArgumentException("No ':' can be found on '" + value + "'");
+        throw new IllegalArgumentException("No ',' can be found on '" + value + "'");
     }
 
     /**
-     * Так как в валидном java-identifier не может присутствовать ':' -- его можно использовать в качестве разделителя
+     * Так как в валидном java-identifier не может присутствовать ',' -- его можно использовать в качестве разделителя
      */
     @Override
     public String toString(SeekPivot value) {
-        return value.getName() + ":" + value.getLastValue();
+        return value.getName() + "," + value.getLastValue();
     }
 
     @Override

@@ -16,6 +16,33 @@
 ----
 3) Репозитории, которые должны поддерживать seek-пагинацию, наследуйте от SeekableRepository.
 
+Пример:
+
+[source,java]
+----
+class SomeCriteria extends EmptySeekableCriteria {
+//  Фильтры
+}
+
+// Dto
+class SomeModel {}
+
+@Path("/rest")
+class RestService {
+    @GET
+    @Path("/search")
+    SeekedPage<SomeModel> search(@BeanParam SomeCriteria criteria);
+}
+----
+
+Имя такой сервис можно делать запросы типа:
+
+----
+http://rest-service/rest/search?sort=id,asc&piv=id,54&size=10&page=NEXT
+Хотим следующую страницу с сортировкой по id
+На предыдущей странице у последней записи id был 54, поэтому указываем его в параметре "piv"
+----
+
 == SeekableRepository
 
 Данный интерфейс сам наследует QueryDslPredicateExecutor, поэтому все его методы доступны.
@@ -68,11 +95,57 @@ Hibernate сгенерирует `CROSS JOIN` с `WHERE child_id = ChildEntity.i
 
 == Программная пагинация
 Для программной пагинации следует использовать `net.n2oapp.platform.seek.SeekedPageIterator`.
+В этом классе есть статичные методы, возвращающие итератор для разных случаев.
+Например для того, чтобы скачать постранично данные типа `<T>` с некоторого сервиса, подойдет такой:
+
+[source,java]
+----
+<T, C extends SeekableCriteria> SeekedPageIterator.from(
+    Function<? super C, SeekedPage<T>> pageSource,
+    Function<? super T, List<SeekPivot>> pivotsMaker,
+    C criteria
+)
+----
+Функция `pageSource` возвращает страницу данных. Параметр `criteria` -- это критерий выборки. А функция `pivotsMaker` возвращает список `SeekPivot`-ов, извлекая каждый из них из `T`.
+
+Пример использования:
+
+[source,java]
+----
+class Animal {
+    int id;
+    String name;
+}
+
+interface AnimalRest {
+    @GET
+    SeekedPage<Animal> search(SeekableCriteria criteria);
+}
+
+void paginateOverAnimals(AnimalRest rest, SeekableCriteria criteria) {
+//  Хотим сортировку по "name" и потом по "id"
+    criteria.setOrders(List.of(Sort.Order.asc("name"), Sort.Order.asc("id")));
+    SeekedPageIterator<T,C> iterator = SeekedPageIterator.from(
+        rest::search,
+        animal ->   List.of(
+//                      Так как сортировка у нас по (name ASC, id ASC),
+//                      поля в списке pivot-ов должны быть точно такими же
+                        SeekPivot.of("name", animal.name),
+                        SeekPivot.of("id", Integer.toString(animal.id))
+                    ),
+        criteria
+    );
+    while (iterator.hasNext()) {
+        SeekedPage<Animal> next = iterator.next();
+//          Обработка
+    }
+}
+
+----
 
 == Советы
-Производительность базы данных -- это сложно и тут нет серебряных пуль.
-Этот модуль просто генерирует `seek`-предикаты для корректной пагинации. Но если в самой БД не налажена
-инфраструктура под конкретное `seek`-условие -- все сведется к обычному `seq-scan`
+Этот модуль просто генерирует `seek`-предикаты для корректной пагинации.
+Но если в самой БД не налажена инфраструктура под конкретное `seek`-условие -- все сведется к обычному `seq-scan`
 (последовательному сканированию всей таблицы). Однако это все еще будет эффективнее `offset` пагинации.
 
 === *

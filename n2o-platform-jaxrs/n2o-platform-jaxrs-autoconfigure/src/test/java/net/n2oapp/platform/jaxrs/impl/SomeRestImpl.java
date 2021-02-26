@@ -29,10 +29,10 @@ public class SomeRestImpl implements SomeRest {
     private HttpHeaders httpHeaders;
 
     public static final List<SeekPivot> EXPECTED_PIVOTS = List.of(
-        SeekPivot.of("id", "543"),
-        SeekPivot.of("date", "1970-01-01"),
-        SeekPivot.of("plain-text", "ABRACA:::::DAB:::::RA\\Хыхыхы"),
-        SeekPivot.of("triplesix", "異体字")
+        SeekPivot.of("id", "54,3"),
+        SeekPivot.of("date", "1,970-01-01"),
+        SeekPivot.of("plain-text", ",ABRACA:::::DAB:::::RA\\Хыхыхы"),
+        SeekPivot.of("triplesix", ",異体字")
     );
 
     @Override
