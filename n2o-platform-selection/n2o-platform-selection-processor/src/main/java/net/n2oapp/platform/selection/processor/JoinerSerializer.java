@@ -19,14 +19,14 @@ class JoinerSerializer extends AbstractSerializer {
         if (property.getCollectionRawType() == null) {
             out.append(Fetcher.class.getCanonicalName());
             out.append("<");
-            out.append(property.getType().toString());
+            out.append(property.getType());
             out.append(">");
         } else {
             out.append(property.getCollectionRawType().toString());
             out.append("<");
             out.append(Fetcher.class.getCanonicalName());
             out.append("<");
-            out.append(property.getType().toString());
+            out.append(property.getType());
             out.append(">");
             out.append(">");
         }

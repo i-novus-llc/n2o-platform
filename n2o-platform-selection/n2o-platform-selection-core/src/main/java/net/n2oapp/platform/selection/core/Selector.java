@@ -150,15 +150,17 @@ public final class Selector {
             T model = Preconditions.checkNotNull(fetcher.create());
             for (Map.Entry<String, SelectionDescriptor.SelectionAccessor> selectionAccessorEntry : selectionDescriptor.accessors.entrySet()) {
                 SelectionDescriptor.SelectionAccessor selectionAccessor = selectionAccessorEntry.getValue();
-                SelectionEnum select = (SelectionEnum) invoke(selectionAccessor.selectionEnumAccessor, selection);
-                if (select == null || !select.asBoolean())
-                    continue;
                 FetcherDescriptor.FetcherAccessor fetcherAccessor = fetcherDescriptor.accessors.get(selectionAccessorEntry.getKey());
                 if (fetcherAccessor.isNested()) {
                     Selection<?> nestedSelection = (Selection<?>) invoke(selectionAccessor.nestedSelectionAccessor, selection);
+                    if (empty(nestedSelection))
+                        continue;
                     Object nested = invoke(fetcherAccessor.nestedFetcherAccessor, fetcher);
                     nestedSelection(model, nested, fetcher, fetcherAccessor, nestedSelection, this::resolve);
                 } else {
+                    SelectionEnum select = (SelectionEnum) invoke(selectionAccessor.selectionEnumAccessor, selection);
+                    if (select == null || !select.asBoolean())
+                        continue;
                     invoke(fetcherAccessor.fetchMethod, fetcher, model);
                 }
             }
@@ -224,12 +226,12 @@ public final class Selector {
             this.<T, ID, E, F>prepareForGrouping(joiner, batch, entities, result);
             for (Map.Entry<String, SelectionDescriptor.SelectionAccessor> selectionAccessorEntry : selectionDescriptor.accessors.entrySet()) {
                 SelectionDescriptor.SelectionAccessor selectionAccessor = selectionAccessorEntry.getValue();
-                SelectionEnum select = (SelectionEnum) invoke(selectionAccessor.selectionEnumAccessor, selection);
-                if (select == null || !select.asBoolean())
-                    continue;
                 String key = selectionAccessorEntry.getKey();
                 JoinerDescriptor.JoinerAccessor joinerAccessor = joinerDescriptor.accessors.get(key);
                 if (!selectionAccessor.isNested()) {
+                    SelectionEnum select = (SelectionEnum) invoke(selectionAccessor.selectionEnumAccessor, selection);
+                    if (select == null || !select.asBoolean())
+                        continue;
                     for (Map.Entry<ID, F> entry : batch.entrySet()) {
                         T model = result.get(entry.getKey());
                         F fetcher = entry.getValue();
@@ -239,6 +241,8 @@ public final class Selector {
                     }
                 } else {
                     Selection<?> nestedSelection = (Selection<?>) invoke(selectionAccessor.nestedSelectionAccessor, selection);
+                    if (empty(nestedSelection))
+                        continue;
                     if (joinerAccessor == null) {
                         for (Map.Entry<ID, F> entry : batch.entrySet()) {
                             T model = result.get(entry.getKey());
@@ -506,7 +510,7 @@ public final class Selector {
             ResolvableType idType = type.getGeneric(1);
             ResolvableType entityType = type.getGeneric(2);
             ResolvableType fetcherType = type.getGeneric(3);
-            Map<String, List<Method>> methods = groupBySelectionKey(clazz);
+            Map<String, List<Method>> methods = groupBySelectionKey(clazz, 2);
             Map<String, JoinerDescriptor.JoinerAccessor> accessors = new HashMap<>();
             for (Map.Entry<String, List<Method>> entry : methods.entrySet()) {
                 List<Method> list = entry.getValue();
@@ -549,7 +553,7 @@ public final class Selector {
     private FetcherDescriptor getFetcherDescriptor(Fetcher<?> fetcher) {
         return FETCHER_DESCRIPTORS.computeIfAbsent(fetcher.getClass(), clazz -> {
             ResolvableType fetcherTarget = ResolvableType.forClass(Fetcher.class, clazz).getGeneric(0);
-            Map<String, List<Method>> methods = groupBySelectionKey(clazz);
+            Map<String, List<Method>> methods = groupBySelectionKey(clazz, 2);
             Map<String, FetcherDescriptor.FetcherAccessor> result = new HashMap<>(methods.size());
             for (Map.Entry<String, List<Method>> entry : methods.entrySet()) {
                 List<Method> list = entry.getValue();
@@ -643,26 +647,47 @@ public final class Selector {
 
     private SelectionDescriptor getSelectionDescriptor(Selection<?> selection) {
         return SELECTION_DESCRIPTORS.computeIfAbsent(selection.getClass(), clazz -> {
-            Map<String, List<Method>> methods = groupBySelectionKey(clazz);
+            Map<String, List<Method>> methods = groupBySelectionKey(clazz, 1);
             ReflectionUtils.doWithFields(clazz, field -> getFromField(clazz, methods, field));
             Map<String, SelectionDescriptor.SelectionAccessor> result = new HashMap<>(methods.size());
-            checkSelection(clazz, methods);
             for (Map.Entry<String, List<Method>> entry : methods.entrySet()) {
                 List<Method> list = entry.getValue();
-                result.put(entry.getKey(), new SelectionDescriptor.SelectionAccessor(list.get(0), list.size() > 1 ? list.get(1) : null));
+                Method m = list.get(0);
+                Method selectionEnumAccessor;
+                Method nestedSelectionAccessor;
+                if (m.getReturnType() == SelectionEnum.class) {
+                    selectionEnumAccessor = m;
+                    nestedSelectionAccessor = null;
+                } else {
+                    selectionEnumAccessor = null;
+                    nestedSelectionAccessor = m;
+                }
+                checkSelectionAccessors(clazz, entry, selectionEnumAccessor, nestedSelectionAccessor);
+                result.put(entry.getKey(), new SelectionDescriptor.SelectionAccessor(selectionEnumAccessor, nestedSelectionAccessor));
             }
             ResolvableType type = ResolvableType.forClass(Selection.class, clazz).getGeneric(0);
             return new SelectionDescriptor(type, result, clazz);
         });
     }
 
-    private Map<String, List<Method>> groupBySelectionKey(Class<?> clazz) {
+    @SuppressWarnings("rawtypes")
+    private void checkSelectionAccessors(Class<? extends Selection> clazz, Map.Entry<String, List<Method>> entry, Method selectionEnumAccessor, Method nestedSelectionAccessor) {
+        if (selectionEnumAccessor != null) {
+            assertReturnsSelectionEnum(clazz, entry, selectionEnumAccessor);
+            assertSelectionMethodZeroParams(selectionEnumAccessor);
+        } else {
+            assertSelectionMethodZeroParams(nestedSelectionAccessor);
+            assertReturnsSelection(clazz, entry, nestedSelectionAccessor);
+        }
+    }
+
+    private Map<String, List<Method>> groupBySelectionKey(Class<?> clazz, int maxSize) {
         Map<String, List<Method>> methodsRelatedToKey = new HashMap<>();
         doWithMethods(clazz, method -> {
             SelectionKey key = method.getAnnotation(SelectionKey.class);
             if (key == null)
                 return;
-            methodsRelatedToKey.compute(key.value(), (s, list) -> ensureNoDuplicates(method, s, list));
+            methodsRelatedToKey.compute(key.value(), (s, list) -> ensureNoDuplicates(method, s, list, maxSize));
         });
         return methodsRelatedToKey;
     }
@@ -678,28 +703,7 @@ public final class Selector {
                 field
             );
             Method method = descriptor.getReadMethod();
-            methods.compute(key.value(), (s, list) -> ensureNoDuplicates(method, s, list));
-        }
-    }
-
-    private void checkSelection(Class<?> clazz, Map<String, List<Method>> methodsRelatedToKey) {
-        for (Map.Entry<String, List<Method>> entry : methodsRelatedToKey.entrySet()) {
-            List<Method> list = entry.getValue();
-            Method selectionEnumAccessor = list.get(0);
-            if (list.size() == 2) {
-                Method nestedSelectionAccessor = list.get(1);
-                if (selectionEnumAccessor.getReturnType() != SelectionEnum.class) {
-                    Method temp = selectionEnumAccessor;
-                    selectionEnumAccessor = nestedSelectionAccessor;
-                    nestedSelectionAccessor = temp;
-                    list.set(0, selectionEnumAccessor);
-                    list.set(1, nestedSelectionAccessor);
-                }
-                assertSelectionMethodZeroParams(nestedSelectionAccessor);
-                assertReturnsSelection(clazz, entry, nestedSelectionAccessor);
-            }
-            assertReturnsSelectionEnum(clazz, entry, selectionEnumAccessor);
-            assertSelectionMethodZeroParams(selectionEnumAccessor);
+            methods.compute(key.value(), (s, list) -> ensureNoDuplicates(method, s, list, 1));
         }
     }
 
@@ -731,12 +735,12 @@ public final class Selector {
         );
     }
 
-    private List<Method> ensureNoDuplicates(Method method, String key, List<Method> list) {
+    private List<Method> ensureNoDuplicates(Method method, String key, List<Method> list, int maxSize) {
         if (list == null)
             return new ArrayList<>(Collections.singletonList(method));
         if (list.contains(method))
             return list;
-        Preconditions.checkArgument(list.size() < 2, "Key %s meets more than maximum of 2 times", key);
+        Preconditions.checkArgument(list.size() < maxSize, "Key %s meets more than maximum of %s times", key, maxSize);
         list.add(method);
         return list;
     }

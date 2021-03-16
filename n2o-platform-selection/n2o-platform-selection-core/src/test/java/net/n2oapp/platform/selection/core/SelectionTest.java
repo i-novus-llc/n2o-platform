@@ -152,7 +152,8 @@ public class SelectionTest {
     public void test() {
         EmployeeCriteria criteria = new EmployeeCriteria();
         criteria.setPageSize(100);
-        DefaultEmployeeSelection selection = EmployeeSelection.create().id().name().contacts(
+        criteria.setEmployeeSelection(EmployeeSelection.create().id().propagate(SelectionPropagationEnum.NESTED).passport(PassportSelection.create().series()));
+        DefaultEmployeeSelection selection = EmployeeSelection.create().id().name().cntcts(
                 ContactSelection.create().phone()
         ).organisation(
                 OrganisationSelection.create().name().factualAddress(
@@ -170,7 +171,7 @@ public class SelectionTest {
         Page<Employee> page = client.search(criteria);
         assertEquals(8, queryCount.getSelect());
         check(page);
-        criteria.setSelection(selection.unselectContacts());
+        criteria.setSelection(selection.unselectCntcts());
         queryCount.setSelect(0);
         page = client.search(criteria);
         assertEquals(7, queryCount.getSelect());

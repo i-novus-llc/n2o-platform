@@ -4,6 +4,7 @@ import net.n2oapp.platform.selection.api.Fetcher;
 import org.springframework.util.Assert;
 
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -210,7 +211,7 @@ public final class JoinUtil {
      * Если только не используется инструментация байт-кода:<br>
      * <a href="https://stackoverflow.com/a/47768154">Ссылка</a>
      * @param leftSide Левая сторона отношения
-     * @param fetchRightSide Метод, делающий {@code joine} с правой стороной отношения
+     * @param fetchRightSide Метод, делающий {@code join} с правой стороной отношения
      * @param fetcherConstructor Метод, возвращающий {@link Fetcher} {@code F} по экземпляру правой стороны отношения
      * @param getLeftSideIdFromRightSide Метод, возвращающий идентификатор левой стороны отношения по правой стороне отношения (или {@code null}, если отношения нет)
      * @param <ID> Идентификатор левой стороны отношения
@@ -233,6 +234,92 @@ public final class JoinUtil {
                 F fetcher = Objects.requireNonNull(fetcherConstructor.apply(owner));
                 result.put(leftSideId, fetcher);
             }
+        }
+        return result;
+    }
+
+    /**
+     * Метод для ToOne отношений, похожий на {@link #joinToOne} с той разницей,
+     * что тип элементов с правой стороны отношения определяется на основе ключа группировки {@code <G>}.
+     * Это полезно для случаев, когда метод сервиса может возвращать разные типы.
+     * Например данный метод будет полезен для сервиса документов с типами "Отказ" и "Разрешение", состав полей которых
+     * определяется через таблицу базового типа (таблица "Документ") + дочернюю таблицу
+     * (то есть через правую сторону отношения, в терминах Hibernate это наследование типа {@code Joined}).
+     * @param entities Левая сторона отношения
+     * @param groupingKeyExtractor Метод, возвращающий ключ группировки по левой стороне отношения
+     * @param joinRightSide Метод, делающий {@code join} с правой стороной отношения с учетом ключа группировки
+     * @param fetcherConstructor Метод, возвращающий {@link Fetcher} по сущности с правой стороны отношения с учетом ключа группировки
+     * @param getLeftSideId Метод, возвращающий идентификатор сущности с левой стороны отношения
+     * @param getForeignKey Метод, возвращающий ключ, по которому происходит join отношения
+     * @param getRightSideId Метод, возвращающий идентификатор сущности с правой стороны отношения
+     * @param <ID1> Тип идентификатора сущностей с левой стороны отношения
+     * @param <T> Тип DTO
+     * @param <E1> Тип сущностей с левой стороны отношения
+     * @param <E2> Тип сущностей с правой стороны отношения
+     * @param <G> Тип ключа группировки
+     * @param <F> Тип {@link Fetcher}
+     * @param <ID2> Тип идентификатора сущностей с правой стороны отношения
+     */
+    public static <ID1, T, E1, E2, G, F extends Fetcher<T>, ID2> Map<ID1, F> joinToOneGrouping(
+        Collection<E1> entities,
+        Function<? super E1, ? extends G> groupingKeyExtractor,
+        BiFunction<? super G, Collection<E1>, Collection<E2>> joinRightSide,
+        BiFunction<? super G, ? super E2, ? extends F> fetcherConstructor,
+        Function<? super E1, ? extends ID1> getLeftSideId,
+        Function<? super E1, ? extends ID2> getForeignKey,
+        Function<? super E2, ? extends ID2> getRightSideId
+    ) {
+        Map<ID1, F> result = new HashMap<>();
+        Map<? extends G, List<E1>> grouped = entities.stream().collect(Collectors.groupingBy(groupingKeyExtractor));
+        for (Map.Entry<? extends G, List<E1>> entry : grouped.entrySet()) {
+            Map<? extends ID1, ? extends F> map = joinToOne(
+                entry.getValue(),
+                leftSide -> joinRightSide.apply(entry.getKey(), leftSide),
+                rightSide -> fetcherConstructor.apply(entry.getKey(), rightSide),
+                getLeftSideId,
+                getForeignKey,
+                getRightSideId
+            );
+            result.putAll(map);
+        }
+        return result;
+    }
+
+    /**
+     * См. {@link #joinToOneGrouping}
+     */
+    public static <ID, T, E1, E2, K, F extends Fetcher<T>> Map<ID, List<F>> joinOneToManyGrouping(
+        Collection<E1> entities,
+        Function<? super E1, ? extends K> groupingKeyExtractor,
+        BiFunction<? super K, ? super E2, ? extends F> fetcherConstructor,
+        BiFunction<? super K, Collection<E1>, Collection<E2>> innerJoinRightSide,
+        Function<? super E2, ? extends ID> getLeftSideIdFromRightSide
+    ) {
+        return joinOneToManyGrouping(entities, groupingKeyExtractor, fetcherConstructor, innerJoinRightSide, getLeftSideIdFromRightSide, ArrayList::new);
+    }
+
+    /**
+     * См. {@link #joinToOneGrouping}
+     */
+    public static <ID, T, E1, E2, K, F extends Fetcher<T>, C extends Collection<F>> Map<ID, C> joinOneToManyGrouping(
+        Collection<E1> entities,
+        Function<? super E1, ? extends K> groupingKeyExtractor,
+        BiFunction<? super K, ? super E2, ? extends F> fetcherConstructor,
+        BiFunction<? super K, Collection<E1>, Collection<E2>> innerJoinRightSide,
+        Function<? super E2, ? extends ID> getLeftSideIdFromRightSide,
+        Supplier<? extends C> targetCollectionSupplier
+    ) {
+        Map<ID, C> result = new HashMap<>();
+        Map<? extends K, ? extends List<E1>> grouped = entities.stream().collect(Collectors.groupingBy(groupingKeyExtractor));
+        for (Map.Entry<? extends K, ? extends List<E1>> entry : grouped.entrySet()) {
+            Map<? extends ID, ? extends C> next = JoinUtil.joinOneToMany(
+                entry.getValue(),
+                leftSide -> innerJoinRightSide.apply(entry.getKey(), leftSide),
+                rightSideEntity -> fetcherConstructor.apply(entry.getKey(), rightSideEntity),
+                getLeftSideIdFromRightSide,
+                targetCollectionSupplier
+            );
+            result.putAll(next);
         }
         return result;
     }

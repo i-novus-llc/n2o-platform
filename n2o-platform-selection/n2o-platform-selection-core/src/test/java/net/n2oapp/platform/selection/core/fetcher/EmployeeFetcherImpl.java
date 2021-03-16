@@ -36,12 +36,12 @@ public class EmployeeFetcherImpl extends BaseModelFetcherImpl<Employee> implemen
     }
 
     @Override
-    public void setContacts(Employee model, List<Contact> contacts) {
+    public void setCntcts(Employee model, List<Contact> contacts) {
         model.setContacts(contacts);
     }
 
     @Override
-    public List<? extends ContactFetcher> contactsFetcher() {
+    public List<? extends ContactFetcher> cntctsFetcher() {
         return src.getContacts().stream().map(ContactFetcherImpl::new).collect(toList());
     }
 

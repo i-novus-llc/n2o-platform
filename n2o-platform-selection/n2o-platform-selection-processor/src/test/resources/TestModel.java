@@ -2,6 +2,7 @@ package net.n2oapp.platform.selection.processor;
 
 import net.n2oapp.platform.selection.api.Selective;
 import net.n2oapp.platform.selection.api.Joined;
+import net.n2oapp.platform.selection.api.SelectionKey;
 
 import java.io.Serializable;
 import java.util.List;
@@ -24,6 +25,7 @@ public class TestModel {
         @Joined
         B test1;
         @Joined
+        @SelectionKey("abracadabra")
         List<? extends B> list;
         @Joined
         List<? extends Test4> test4s;
