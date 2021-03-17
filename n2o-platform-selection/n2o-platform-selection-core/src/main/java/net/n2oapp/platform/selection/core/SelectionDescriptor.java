@@ -1,5 +1,6 @@
 package net.n2oapp.platform.selection.core;
 
+import com.google.common.base.Preconditions;
 import net.n2oapp.platform.selection.api.Selection;
 import org.springframework.core.ResolvableType;
 
@@ -41,6 +42,10 @@ class SelectionDescriptor {
         final Method nestedSelectionAccessor;
 
         SelectionAccessor(Method selectionEnumAccessor, Method nestedSelectionAccessor) {
+            Preconditions.checkArgument(
+                (selectionEnumAccessor != null && nestedSelectionAccessor == null) ||
+                (selectionEnumAccessor == null && nestedSelectionAccessor != null)
+            );
             this.selectionEnumAccessor = selectionEnumAccessor;
             this.nestedSelectionAccessor = nestedSelectionAccessor;
         }

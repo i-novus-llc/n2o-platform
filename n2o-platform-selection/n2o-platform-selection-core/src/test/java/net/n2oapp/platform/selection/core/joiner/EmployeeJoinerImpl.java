@@ -59,7 +59,7 @@ public class EmployeeJoinerImpl implements EmployeeJoiner<Integer, Employee, Emp
     }
 
     @Override
-    public Map<Integer, List<Fetcher<Contact>>> joinContacts(Collection<Employee> employees) {
+    public Map<Integer, List<Fetcher<Contact>>> joinCntcts(Collection<Employee> employees) {
         return JoinUtil.joinOneToMany(
             employees,
             employeeRepository::joinContacts,

@@ -2,6 +2,7 @@ package net.n2oapp.platform.selection.processor;
 
 import net.n2oapp.platform.selection.api.Joined;
 import net.n2oapp.platform.selection.api.SelectionIgnore;
+import net.n2oapp.platform.selection.api.SelectionKey;
 import net.n2oapp.platform.selection.api.Selective;
 
 import javax.annotation.processing.*;
@@ -109,6 +110,7 @@ public class SelectionProcessor extends AbstractProcessor {
             if (member.getKind() == ElementKind.FIELD && member.getModifiers().stream().noneMatch(Modifier.STATIC::equals)) {
                 if (member.getAnnotation(SelectionIgnore.class) != null)
                     continue;
+
                 TypeMirror collectionRawType = null;
                 final TypeMirror originalType = member.asType();
                 TypeMirror type = originalType;
@@ -130,8 +132,21 @@ public class SelectionProcessor extends AbstractProcessor {
                 boolean isJoined = joinedAnno != null;
                 boolean withNestedJoiner = isJoined && joinedAnno.withNestedJoiner();
                 if (isJoined && nested == null)
-                    processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, Joined.class.getSimpleName() + " can be placed only on nested properties", member);
-                meta.addProperty(member.getSimpleName().toString(), originalType, type, nested, collectionRawType, isJoined, withNestedJoiner);
+                    processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, Joined.class.getSimpleName() + " can be placed only on nested SELECTIVE properties", member);
+                String name = member.getSimpleName().toString();
+                SelectionKey selectionKeyAnno = member.getAnnotation(SelectionKey.class);
+                if (selectionKeyAnno != null) {
+                    name = selectionKeyAnno.value();
+                }
+                meta.addProperty(
+                    name,
+                    originalType,
+                    type,
+                    nested,
+                    collectionRawType,
+                    isJoined,
+                    withNestedJoiner
+                );
             }
         }
     }

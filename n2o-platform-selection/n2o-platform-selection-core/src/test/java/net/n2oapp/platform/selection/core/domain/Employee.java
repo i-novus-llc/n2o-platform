@@ -1,6 +1,7 @@
 package net.n2oapp.platform.selection.core.domain;
 
 import net.n2oapp.platform.selection.api.Joined;
+import net.n2oapp.platform.selection.api.SelectionKey;
 import net.n2oapp.platform.selection.api.Selective;
 
 import javax.persistence.*;
@@ -20,6 +21,7 @@ public class Employee extends BaseModel {
     @ManyToOne(fetch = FetchType.LAZY)
     private Organisation organisation;
 
+    @SelectionKey("cntcts")
     @Joined(withNestedJoiner = false)
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner")
     private List<Contact> contacts;

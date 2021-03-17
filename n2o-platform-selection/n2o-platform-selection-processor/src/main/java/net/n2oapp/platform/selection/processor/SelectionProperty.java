@@ -16,7 +16,7 @@ class SelectionProperty {
     private final SelectionMeta nestedSelection;
     private final String originalType;
     private final TypeMirror collectionRawType;
-    private final TypeMirror type;
+    private final String type;
     private final SelectionMeta owner;
     private final boolean isJoined;
     private final boolean withNestedJoiner;
@@ -30,7 +30,10 @@ class SelectionProperty {
         this.key = key;
         this.nestedGenericSignature = nestedGenericSignature;
         this.nestedSelection = nestedSelection;
-        this.type = type;
+        if (type != null)
+            this.type = stripAnnotations(type);
+        else
+            this.type = null;
         this.owner = owner;
         this.isJoined = isJoined;
         this.withNestedJoiner = withNestedJoiner;
@@ -43,11 +46,11 @@ class SelectionProperty {
     }
 
     private String stripAnnotations(TypeMirror originalType) {
-        String type = originalType.toString();
+        String t = originalType.toString();
         StringBuilder builder = new StringBuilder();
         boolean anno = false;
-        for (int i = 0; i < type.length(); i++) {
-            char c = type.charAt(i);
+        for (int i = 0; i < t.length(); i++) {
+            char c = t.charAt(i);
             if (anno) {
                 if (c == ',' || Character.isWhitespace(c))
                     anno = false;
@@ -83,7 +86,7 @@ class SelectionProperty {
         return nestedSelection;
     }
 
-    TypeMirror getType() {
+    String getType() {
         return type;
     }
 
