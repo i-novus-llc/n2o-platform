@@ -374,7 +374,7 @@ public final class Selector {
                     toManyAssociation = true;
                 }
                 Collection<Fetcher<?>> fetchers = (Collection<Fetcher<?>>) entry.getValue();
-                if (collectionClass != null && collectionClass.isAssignableFrom(fetchers.getClass()))
+                if (collectionClass != null && !collectionClass.isAssignableFrom(fetchers.getClass()))
                     throw new IllegalStateException("Class of collections should be same");
                 else {
                     collectionClass = getSupportedCollection(fetchers.getClass());
@@ -514,20 +514,20 @@ public final class Selector {
             Map<String, JoinerDescriptor.JoinerAccessor> accessors = new HashMap<>();
             for (Map.Entry<String, List<Method>> entry : methods.entrySet()) {
                 List<Method> list = entry.getValue();
-                Method fetchMethod = list.get(0);
+                Method joinMethod = list.get(0);
                 Method nestedJoinerAccessor;
                 if (list.size() == 1) {
                     nestedJoinerAccessor = null;
                 } else {
                     nestedJoinerAccessor = list.get(1);
-                    if (!Map.class.isAssignableFrom(fetchMethod.getReturnType())) {
-                        Method temp = fetchMethod;
-                        fetchMethod = nestedJoinerAccessor;
+                    if (!Map.class.isAssignableFrom(joinMethod.getReturnType())) {
+                        Method temp = joinMethod;
+                        joinMethod = nestedJoinerAccessor;
                         nestedJoinerAccessor = temp;
                     }
                 }
-                checkJoinerAccessor(clazz, entry.getKey(), fetchMethod, nestedJoinerAccessor, idType, entityType);
-                ResolvableType fetchMethodTargetType = ResolvableType.forType(Map.class, ResolvableType.forMethodReturnType(fetchMethod)).getGeneric(1);
+                checkJoinerAccessor(clazz, entry.getKey(), joinMethod, nestedJoinerAccessor, idType, entityType);
+                ResolvableType fetchMethodTargetType = ResolvableType.forType(Map.class, ResolvableType.forMethodReturnType(joinMethod)).getGeneric(1);
                 ResolvableType collectionType;
                 if (COLLECTION_RAW.isAssignableFrom(fetchMethodTargetType)) {
                     collectionType = fetchMethodTargetType;
@@ -539,7 +539,7 @@ public final class Selector {
                 accessors.put(
                         entry.getKey(),
                         new JoinerDescriptor.JoinerAccessor(
-                                fetchMethod,
+                                joinMethod,
                                 nestedJoinerAccessor,
                                 fetchMethodTargetType,
                                 collectionType
@@ -582,7 +582,7 @@ public final class Selector {
                     ResolvableType generic;
                     if (!COLLECTION_RAW.isAssignableFrom(nestedReturnType)) {
                         assertReturnsFetcher(nestedFetcherAccessor, nestedReturnType);
-                        generic = ResolvableType.forType(Fetcher.class, nestedReturnType).getGeneric(0);
+                        generic = ResolvableType.forClass(Fetcher.class, nestedReturnType.resolve()).getGeneric(0);
                     } else {
                         nestedReturnType = ResolvableType.forType(Collection.class, nestedReturnType);
                         assertReturnsFetcher(nestedFetcherAccessor, nestedReturnType.getGeneric(0));
@@ -592,7 +592,7 @@ public final class Selector {
                             fetchMethod
                         );
                         fetchMethodTarget = ResolvableType.forType(Collection.class, fetchMethodTarget).getGeneric(0);
-                        generic = ResolvableType.forType(Fetcher.class, nestedReturnType.getGeneric(0)).getGeneric(0);
+                        generic = ResolvableType.forClass(Fetcher.class, nestedReturnType.getGeneric(0).resolve()).getGeneric(0);
                     }
                     Preconditions.checkArgument(
                             generic.isAssignableFrom(fetchMethodTarget),
@@ -769,24 +769,24 @@ public final class Selector {
     private void checkJoinerAccessor(
             Class<? extends Joiner> clazz,
             String selectionKey,
-            Method fetchMethod,
+            Method joinMethod,
             Method nestedJoinerAccessor,
             ResolvableType idType,
             ResolvableType entityType
     ) {
-        ResolvableType fetchMethodReturns = ResolvableType.forMethodReturnType(fetchMethod, clazz);
+        ResolvableType fetchMethodReturns = ResolvableType.forMethodReturnType(joinMethod, clazz);
         Preconditions.checkArgument(
                 MAP_RAW.isAssignableFrom(fetchMethodReturns),
                 "Joiner's join method should return Map. Violation in %s for type %s. Selection key: %s",
-                fetchMethod,
+                joinMethod,
                 clazz,
                 selectionKey
         );
-        ResolvableType fetchMethodParam = ResolvableType.forMethodParameter(fetchMethod, 0, clazz);
+        ResolvableType fetchMethodParam = ResolvableType.forMethodParameter(joinMethod, 0, clazz);
         Preconditions.checkArgument(
                 COLLECTION_RAW.isAssignableFrom(fetchMethodParam) && fetchMethodParam.getRawClass().isAssignableFrom(Collection.class),
                 "Joiner's join method param must be assignable to Collection. Violation in %s for type %s. Selection key: %s",
-                fetchMethod,
+                joinMethod,
                 clazz,
                 selectionKey
         );
@@ -812,12 +812,12 @@ public final class Selector {
         Preconditions.checkArgument(
                 FETCHER_RAW.isAssignableFrom(returnedMapValueType),
                 "Joiner's join method return type second type argument must be assignable to Fetcher. Violation in %s for type %s. Selection key %s",
-                fetchMethod,
+                joinMethod,
                 clazz,
                 selectionKey
         );
         if (nestedJoinerAccessor != null) {
-            ResolvableType nestedJoinerReturns = ResolvableType.forMethodReturnType(nestedJoinerAccessor);
+            ResolvableType nestedJoinerReturns = ResolvableType.forMethodReturnType(nestedJoinerAccessor, clazz);
             Preconditions.checkArgument(
                     JOINER_RAW.isAssignableFrom(nestedJoinerReturns),
                     "Nested joiner accessor must return Joiner. Violation in %s for type %s. Selection key: %s",
@@ -825,10 +825,9 @@ public final class Selector {
                     clazz,
                     selectionKey
             );
-            ResolvableType nestedTarget = ResolvableType.forType(Joiner.class, nestedJoinerReturns).getGeneric(0);
-            ResolvableType joinMethodTarget = ResolvableType.forType(Fetcher.class, ResolvableType.forMethodReturnType(fetchMethod).getGeneric(1)).getGeneric(0);
+            ResolvableType nestedTarget = ResolvableType.forClass(Joiner.class, nestedJoinerReturns.resolve()).getGeneric(0);
             Preconditions.checkArgument(
-                    nestedTarget.isAssignableFrom(joinMethodTarget),
+                    nestedTarget.isAssignableFrom(ResolvableType.forType(Fetcher.class, returnedMapValueType).getGeneric(0)),
                     "Nested joiner target must be assignable from join method target. Violation in selection key %s for type %s",
                     selectionKey,
                     clazz
@@ -903,7 +902,7 @@ public final class Selector {
     private void checkFetcherAgainstJoiner(FetcherDescriptor fetcherDescriptor, JoinerDescriptor joinerDescriptor) {
         cacheCheck(CHECKED_FETCHERS_AGAINST_JOINER, joinerDescriptor, fetcherDescriptor, () -> {
             Preconditions.checkArgument(
-                    joinerDescriptor.targetType.isAssignableFrom(joinerDescriptor.targetType),
+                    joinerDescriptor.targetType.isAssignableFrom(fetcherDescriptor.targetType),
                     "Joiner %s target type %s is not assignable from fetcher %s target type %s",
                     joinerDescriptor.joinerClass,
                     joinerDescriptor.targetType,
