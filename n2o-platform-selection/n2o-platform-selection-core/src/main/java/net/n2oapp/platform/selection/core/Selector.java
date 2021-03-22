@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
@@ -100,15 +101,13 @@ public final class Selector {
             Streamable<? extends F> fetchers,
             Selection<? extends T> selection
     ) {
-        Iterable<T> res;
-        if (empty(selection) || empty(fetchers)) {
-            res = null;
-        } else {
-            Map<ID, F> batch = this.<T, ID, E, F>makeBatch(joiner, fetchers);
-            Map<ID, T> resolvedBatch = this.<T, ID, E, F>resolveTopLevelBatch(joiner, batch, selection);
-            res = fetchers.map(fetcher -> resolvedBatch.get(Preconditions.checkNotNull(joiner.getId(joiner.getUnderlyingEntity(fetcher)))));
-        }
-        return (S) res;
+        if (empty(selection))
+            return null;
+        if (empty(fetchers))
+            return (S) fetchers;
+        Map<ID, F> batch = this.<T, ID, E, F>makeBatch(joiner, fetchers);
+        Map<ID, T> resolvedBatch = this.<T, ID, E, F>resolveTopLevelBatch(joiner, batch, selection);
+        return (S) fetchers.map(fetcher -> resolvedBatch.get(Preconditions.checkNotNull(joiner.getId(joiner.getUnderlyingEntity(fetcher)))));
     }
 
     /**
@@ -121,13 +120,39 @@ public final class Selector {
      */
     @SuppressWarnings("unchecked")
     public <T, S extends Streamable<T>> S resolveStreamable(Streamable<? extends Fetcher<? extends T>> fetchers, Selection<? extends T> selection) {
-        Iterable<T> res;
-        if (empty(selection) || empty(fetchers)) {
-            res = null;
-        } else {
-            res = fetchers.map(fetcher -> resolve(fetcher, selection));
-        }
-        return (S) res;
+        if (empty(selection))
+            return null;
+        if (empty(fetchers))
+            return (S) fetchers;
+        return (S) fetchers.map(fetcher -> resolve(fetcher, selection));
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T, C extends Collection<T>> C resolveCollection(Collection<? extends Fetcher<? extends T>> fetchers, Selection<? extends T> selection) {
+        if (empty(selection))
+            return null;
+        if (empty(fetchers))
+            return (C) fetchers;
+        Supplier<? extends Collection<?>> supplier = SUPPORTED_COLLECTIONS.get(getSupportedCollection(fetchers.getClass()));
+        Preconditions.checkArgument(supplier != null, "Unsupported collection: %s", fetchers);
+        return fetchers.stream().map(fetcher -> resolve(fetcher, selection)).collect(Collectors.toCollection(() -> ((C) supplier.get())));
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T, ID, E, F extends Fetcher<T>, C extends Collection<T>> C resolveCollection(
+        @NonNull Joiner<? extends T, ? extends ID, E, ? super F> joiner,
+        Collection<? extends F> fetchers,
+        Selection<? extends T> selection
+    ) {
+        if (empty(selection))
+            return null;
+        if (empty(fetchers))
+            return (C) fetchers;
+        Map<ID, F> batch = this.<T, ID, E, F>makeBatch(joiner, fetchers);
+        Map<ID, T> resolvedBatch = this.<T, ID, E, F>resolveTopLevelBatch(joiner, batch, selection);
+        Supplier<? extends Collection<?>> supplier = SUPPORTED_COLLECTIONS.get(getSupportedCollection(fetchers.getClass()));
+        Preconditions.checkArgument(supplier != null, "Unsupported collection: %s", fetchers);
+        return fetchers.stream().map(fetcher -> resolvedBatch.get(Preconditions.checkNotNull(joiner.getId(joiner.getUnderlyingEntity(fetcher))))).collect(Collectors.toCollection(() -> ((C) supplier.get())));
     }
 
     /**
@@ -595,7 +620,7 @@ public final class Selector {
                         generic = ResolvableType.forClass(Fetcher.class, nestedReturnType.getGeneric(0).resolve()).getGeneric(0);
                     }
                     Preconditions.checkArgument(
-                            generic.isAssignableFrom(fetchMethodTarget),
+                            fetchMethodTarget.isAssignableFrom(generic),
                             "Fetcher's nested fetcher accessor return type not assignable to fetch method second param. " +
                             VIOLATION,
                             nestedFetcherAccessor
