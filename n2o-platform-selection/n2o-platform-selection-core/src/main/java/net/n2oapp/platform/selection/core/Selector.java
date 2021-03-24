@@ -127,32 +127,47 @@ public final class Selector {
         return (S) fetchers.map(fetcher -> resolve(fetcher, selection));
     }
 
-    @SuppressWarnings("unchecked")
-    public <T, C extends Collection<T>> C resolveCollection(Collection<? extends Fetcher<? extends T>> fetchers, Selection<? extends T> selection) {
-        if (empty(selection))
-            return null;
-        if (empty(fetchers))
-            return (C) fetchers;
-        Supplier<? extends Collection<?>> supplier = SUPPORTED_COLLECTIONS.get(getSupportedCollection(fetchers.getClass()));
-        Preconditions.checkArgument(supplier != null, "Unsupported collection: %s", fetchers);
-        return fetchers.stream().map(fetcher -> resolve(fetcher, selection)).collect(Collectors.toCollection(() -> ((C) supplier.get())));
+    public <T> List<T> resolveCollection(
+        Collection<? extends Fetcher<? extends T>> fetchers,
+        Selection<? extends T> selection
+    ) {
+        return resolveCollection(fetchers, selection, ArrayList::new);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T, ID, E, F extends Fetcher<T>, C extends Collection<T>> C resolveCollection(
+    public <T, C extends Collection<T>> C resolveCollection(
+        Collection<? extends Fetcher<? extends T>> fetchers,
+        Selection<? extends T> selection,
+        Supplier<? extends C> collectionSupplier
+    ) {
+        if (empty(selection))
+            return null;
+        if (empty(fetchers)) {
+            return collectionSupplier.get();
+        }
+        return fetchers.stream().map(fetcher -> resolve(fetcher, selection)).collect(Collectors.toCollection(collectionSupplier));
+    }
+
+    public <T, ID, E, F extends Fetcher<T>> List<T> resolveCollection(
         @NonNull Joiner<? extends T, ? extends ID, E, ? super F> joiner,
         Collection<? extends F> fetchers,
         Selection<? extends T> selection
     ) {
+        return this.<T, ID, E, F, List<T>>resolveCollection(joiner, fetchers, selection, ArrayList::new);
+    }
+
+    public <T, ID, E, F extends Fetcher<T>, C extends Collection<T>> C resolveCollection(
+        @NonNull Joiner<? extends T, ? extends ID, E, ? super F> joiner,
+        Collection<? extends F> fetchers,
+        Selection<? extends T> selection,
+        Supplier<? extends C> collectionSupplier
+    ) {
         if (empty(selection))
             return null;
         if (empty(fetchers))
-            return (C) fetchers;
+            return collectionSupplier.get();
         Map<ID, F> batch = this.<T, ID, E, F>makeBatch(joiner, fetchers);
         Map<ID, T> resolvedBatch = this.<T, ID, E, F>resolveTopLevelBatch(joiner, batch, selection);
-        Supplier<? extends Collection<?>> supplier = SUPPORTED_COLLECTIONS.get(getSupportedCollection(fetchers.getClass()));
-        Preconditions.checkArgument(supplier != null, "Unsupported collection: %s", fetchers);
-        return fetchers.stream().map(fetcher -> resolvedBatch.get(Preconditions.checkNotNull(joiner.getId(joiner.getUnderlyingEntity(fetcher))))).collect(Collectors.toCollection(() -> ((C) supplier.get())));
+        return fetchers.stream().map(fetcher -> resolvedBatch.get(Preconditions.checkNotNull(joiner.getId(joiner.getUnderlyingEntity(fetcher))))).collect(Collectors.toCollection(collectionSupplier));
     }
 
     /**
@@ -389,7 +404,7 @@ public final class Selector {
             return emptyMap();
         Boolean toManyAssociation = null;
         Class<? extends Collection> collectionClass = null;
-        Map<Object, List<ID>> correlationIds = new HashMap<>(batch.size());
+        LinkedHashMap<Object, List<ID>> correlationIds = new LinkedHashMap<>(batch.size());
         Map<Object, Fetcher<?>> workingBatch = new HashMap<>();
         for (Map.Entry<ID, ?> entry : batch.entrySet()) {
             if (entry.getValue() instanceof Collection) {
@@ -422,14 +437,16 @@ public final class Selector {
         }
         Map<Object, Object> resolved = nestedResolve.apply(joiner, workingBatch, selection);
         Map<ID, Object> result = new HashMap<>(correlationIds.size());
-        for (Map.Entry<Object, Object> entry : resolved.entrySet()) {
-            for (ID id : correlationIds.get(entry.getKey())) {
+        for (Map.Entry<Object, List<ID>> rightSideIdToLeftSideIds : correlationIds.entrySet()) {
+            Object rightSideId = rightSideIdToLeftSideIds.getKey();
+            for (ID leftSideId : rightSideIdToLeftSideIds.getValue()) {
+                Object val = resolved.get(rightSideId);
                 if (toManyAssociation) {
                     final Class<? extends Collection> finalCollectionClass = collectionClass;
-                    Collection collection = (Collection) result.computeIfAbsent(id, ignored -> SUPPORTED_COLLECTIONS.get(finalCollectionClass).get());
-                    collection.add(entry.getValue());
+                    Collection collection = (Collection) result.computeIfAbsent(leftSideId, ignored -> SUPPORTED_COLLECTIONS.get(finalCollectionClass).get());
+                    collection.add(val);
                 } else {
-                    result.put(id, entry.getValue());
+                    result.put(leftSideId, val);
                 }
             }
         }
