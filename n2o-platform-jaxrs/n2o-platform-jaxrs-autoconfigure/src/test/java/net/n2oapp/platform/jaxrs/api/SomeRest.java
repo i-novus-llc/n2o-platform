@@ -4,7 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import net.n2oapp.platform.jaxrs.seek.EmptySeekableCriteria;
+import net.n2oapp.platform.jaxrs.seek.SeekRequest;
 import net.n2oapp.platform.jaxrs.seek.SeekedPage;
 import org.springframework.data.domain.Page;
 
@@ -121,6 +121,6 @@ public interface SomeRest {
 
     @GET
     @Path("/seek")
-    SeekedPage<String> searchSeeking(@BeanParam @Valid EmptySeekableCriteria criteria);
+    SeekedPage<String> searchSeeking(@BeanParam @Valid SeekRequest criteria);
 
 }

@@ -1,6 +1,9 @@
 package net.n2oapp.platform.seek;
 
-import net.n2oapp.platform.jaxrs.seek.*;
+import net.n2oapp.platform.jaxrs.seek.RequestedPageEnum;
+import net.n2oapp.platform.jaxrs.seek.SeekPivot;
+import net.n2oapp.platform.jaxrs.seek.SeekRequest;
+import net.n2oapp.platform.jaxrs.seek.SeekedPage;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,14 +40,18 @@ public class CompositePkEntityRepositoryTest extends SeekPagingTest {
 
     @Test
     public void test() {
-        SeekableCriteria criteria = new EmptySeekableCriteria();
+        SeekRequest criteria = new SeekRequest();
         criteria.setSize(1);
         criteria.setPage(RequestedPageEnum.FIRST);
-        criteria.setOrders(List.of(
-                Sort.Order.asc(SOME_FIELD),
-                Sort.Order.asc(FIRST),
-                Sort.Order.desc(SECOND)
-        ));
+        criteria.setSort(
+            Sort.by(
+                List.of(
+                    Sort.Order.asc(SOME_FIELD),
+                    Sort.Order.asc(FIRST),
+                    Sort.Order.desc(SECOND)
+                )
+            )
+        );
         CompositePkEntity last = null;
         int count = 0;
         SeekedPage<CompositePkEntity> prev = null;
@@ -82,9 +89,9 @@ public class CompositePkEntityRepositoryTest extends SeekPagingTest {
         }
         assertEquals(N * M, count);
         criteria.setPage(RequestedPageEnum.LAST);
-        SeekedPageIterator<CompositePkEntity, SeekableCriteria> iter = SeekedPageIterator.from(
-                repository::findAll,
-                criteria
+        SeekedPageIterator<CompositePkEntity, SeekRequest> iter = SeekedPageIterator.from(
+            repository::findAll,
+            criteria
         );
         count = 0;
         while (iter.hasNext()) {

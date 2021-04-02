@@ -2,29 +2,28 @@ package net.n2oapp.platform.jaxrs;
 
 import org.springframework.data.domain.Sort;
 
-/**
- * Конвертация сортировки в параметрах REST запроса
- */
-public class SortParameterConverter implements TypedParamConverter<Sort.Order> {
+import java.util.Arrays;
+
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+
+public class SortParameterConverter implements TypedParamConverter<Sort> {
+
+    private final OrderParameterConverter delegate = new OrderParameterConverter();
+
     @Override
-    public Class<Sort.Order> getType() {
-        return Sort.Order.class;
+    public Class<Sort> getType() {
+        return Sort.class;
     }
 
     @Override
-    public Sort.Order fromString(String value) {
-        if (value.contains(":")) {
-            String fst = value.split(",")[0];
-            String[] cNd = fst.split(": ");
-            return new Sort.Order(Sort.Direction.fromString(cNd[1]), cNd[0]);
-        } else {
-            String[] cNd = value.split(",");
-            return new Sort.Order(Sort.Direction.fromString(cNd[1]), cNd[0]);
-        }
+    public Sort fromString(final String value) {
+        return Sort.by(Arrays.stream(value.split("-")).map(delegate::fromString).collect(toList()));
     }
 
     @Override
-    public String toString(Sort.Order value) {
-        return value.getProperty() + "," + value.getDirection().name().toLowerCase();
+    public String toString(final Sort value) {
+        return value.stream().map(delegate::toString).collect(joining("-"));
     }
+
 }

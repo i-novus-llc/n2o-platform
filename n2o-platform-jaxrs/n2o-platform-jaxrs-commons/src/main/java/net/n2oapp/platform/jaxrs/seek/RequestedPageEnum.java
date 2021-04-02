@@ -23,7 +23,7 @@ public enum RequestedPageEnum {
     LAST(false);
 
     /**
-     * Обязан ли {@link SeekableCriteria#getPivots()} вернуть не пустой список.
+     * Обязан ли {@link Seekable#getPivots()} вернуть не пустой список.
      */
     private final boolean pivotsNecessary;
 

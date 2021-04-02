@@ -69,7 +69,12 @@ public class JaxRsCommonAutoConfiguration {
     }
 
     @Bean
-    public TypedParamConverter<Sort.Order> sortParameterConverter() {
+    public TypedParamConverter<Sort.Order> orderParamConverter() {
+        return new OrderParameterConverter();
+    }
+
+    @Bean
+    public TypedParamConverter<Sort> sortParamConverter() {
         return new SortParameterConverter();
     }
 

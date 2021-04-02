@@ -2,7 +2,6 @@ package net.n2oapp.platform.jaxrs.seek;
 
 import org.springframework.data.domain.Sort;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import javax.ws.rs.DefaultValue;
@@ -11,9 +10,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Базовая реализация интерфейса {@link SeekableCriteria}
+ * Базовая реализация интерфейса {@link Seekable}
  */
-public class EmptySeekableCriteria implements SeekableCriteria {
+public class SeekRequest implements Seekable {
 
     @NotNull
     @QueryParam("page")
@@ -25,9 +24,9 @@ public class EmptySeekableCriteria implements SeekableCriteria {
     @DefaultValue("10")
     private Integer size = 10;
 
-    @NotEmpty
+    @NotNull
     @QueryParam("sort")
-    private List<Sort.Order> orders;
+    private Sort sort;
 
     @QueryParam("piv")
     private List<SeekPivot> pivots;
@@ -37,7 +36,6 @@ public class EmptySeekableCriteria implements SeekableCriteria {
         return page;
     }
 
-    @Override
     public void setPage(RequestedPageEnum page) {
         this.page = page;
     }
@@ -47,19 +45,17 @@ public class EmptySeekableCriteria implements SeekableCriteria {
         return size;
     }
 
-    @Override
     public void setSize(Integer size) {
         this.size = size;
     }
 
     @Override
-    public List<Sort.Order> getOrders() {
-        return orders;
+    public Sort getSort() {
+        return sort;
     }
 
-    @Override
-    public void setOrders(List<Sort.Order> orders) {
-        this.orders = orders;
+    public void setSort(Sort sort) {
+        this.sort = sort;
     }
 
     @Override
@@ -67,7 +63,6 @@ public class EmptySeekableCriteria implements SeekableCriteria {
         return pivots;
     }
 
-    @Override
     public void setPivots(List<SeekPivot> pivots) {
         this.pivots = pivots;
     }
@@ -75,14 +70,14 @@ public class EmptySeekableCriteria implements SeekableCriteria {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof EmptySeekableCriteria)) return false;
-        EmptySeekableCriteria that = (EmptySeekableCriteria) o;
-        return page == that.page && size.equals(that.size) && Objects.equals(orders, that.orders) && Objects.equals(pivots, that.pivots);
+        if (!(o instanceof SeekRequest)) return false;
+        SeekRequest that = (SeekRequest) o;
+        return page == that.page && size.equals(that.size) && Objects.equals(sort, that.sort) && Objects.equals(pivots, that.pivots);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(page, size, orders, pivots);
+        return Objects.hash(page, size, sort, pivots);
     }
 
 }

@@ -2,9 +2,7 @@ package net.n2oapp.platform.seek;
 
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.google.common.base.Preconditions;
-import net.n2oapp.platform.jaxrs.seek.SeekPivot;
-import net.n2oapp.platform.jaxrs.seek.SeekableCriteria;
-import net.n2oapp.platform.jaxrs.seek.SeekedPage;
+import net.n2oapp.platform.jaxrs.seek.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Sort;
 
@@ -15,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -26,7 +25,7 @@ import static net.n2oapp.platform.jaxrs.seek.RequestedPageEnum.*;
  * @param <T> Тип элементов
  * @param <C> Тип критерии
  */
-public class SeekedPageIterator<T, C extends SeekableCriteria> implements Iterator<SeekedPage<T>> {
+public class SeekedPageIterator<T, C extends Seekable> implements Iterator<SeekedPage<T>> {
 
     private final Function<? super C, SeekedPage<T>> pageSource;
     private final BiFunction<? super T, ? super List<Sort.Order>, List<SeekPivot>> pivotsMaker;
@@ -36,15 +35,24 @@ public class SeekedPageIterator<T, C extends SeekableCriteria> implements Iterat
     private boolean hasNextCalled;
     private final boolean forward;
 
+    private final List<Sort.Order> orders;
+    private final BiConsumer<? super C, RequestedPageEnum> setPage;
+    private final BiConsumer<? super C, List<SeekPivot>> setPivots;
+
     private SeekedPageIterator(
         Function<? super C, SeekedPage<T>> pageSource,
         BiFunction<? super T, ? super List<Sort.Order>, List<SeekPivot>> pivotsMaker,
-        C criteria
+        C criteria,
+        final BiConsumer<? super C, RequestedPageEnum> setPage,
+        final BiConsumer<? super C, List<SeekPivot>> setPivots
     ) {
         this.pageSource = pageSource;
         this.pivotsMaker = pivotsMaker;
         this.criteria = criteria;
         this.forward = criteria.getPage() == NEXT || criteria.getPage() == FIRST;
+        this.setPage = setPage;
+        this.setPivots = setPivots;
+        orders = criteria.getSort().toList();
     }
 
     @Override
@@ -77,13 +85,13 @@ public class SeekedPageIterator<T, C extends SeekableCriteria> implements Iterat
         List<T> content = next.getContent();
         if (!content.isEmpty()) {
             if (forward) {
-                criteria.setPivots(pivotsMaker.apply(content.get(content.size() - 1), criteria.getOrders()));
+                setPivots.accept(criteria, pivotsMaker.apply(content.get(content.size() - 1), orders));
                 if (criteria.getPage() == FIRST)
-                    criteria.setPage(NEXT);
+                    setPage.accept(criteria, NEXT);
             } else {
-                criteria.setPivots(pivotsMaker.apply(content.get(0), criteria.getOrders()));
+                setPivots.accept(criteria, pivotsMaker.apply(content.get(0), orders));
                 if (criteria.getPage() == LAST)
-                    criteria.setPage(PREV);
+                    setPage.accept(criteria, PREV);
             }
         } else {
             next = null;
@@ -99,11 +107,21 @@ public class SeekedPageIterator<T, C extends SeekableCriteria> implements Iterat
      *          Это удобно, но медленно, негибко и не всегда подходит.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static <T, C extends SeekableCriteria> SeekedPageIterator<T, C> from(
+    public static <T, C extends Seekable> SeekedPageIterator<T, C> from(
+        Function<? super C, SeekedPage<T>> pageSource,
+        BiConsumer<? super C, RequestedPageEnum> setPage,
+        BiConsumer<? super C, List<SeekPivot>> setPivots,
+        C criteria
+    ) {
+        return from(pageSource, ((ReflectionPivotsMaker) ReflectionPivotsMaker.INSTANCE), setPage, setPivots, criteria);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static <T, C extends SeekRequest> SeekedPageIterator<T, C> from(
         Function<? super C, SeekedPage<T>> pageSource,
         C criteria
     ) {
-        return from(pageSource, ((ReflectionPivotsMaker) ReflectionPivotsMaker.INSTANCE), criteria);
+        return from(pageSource, ((ReflectionPivotsMaker) ReflectionPivotsMaker.INSTANCE), SeekRequest::setPage, SeekRequest::setPivots, criteria);
     }
 
     /**
@@ -116,32 +134,52 @@ public class SeekedPageIterator<T, C extends SeekableCriteria> implements Iterat
      * @param <T> Тип элементов
      * @param <C> Тип критерии
      */
-    public static <T, C extends SeekableCriteria> SeekedPageIterator<T, C> from(
+    public static <T, C extends Seekable> SeekedPageIterator<T, C> from(
+        Function<? super C, SeekedPage<T>> pageSource,
+        BiFunction<? super T, ? super List<Sort.Order>, List<SeekPivot>> pivotsMaker,
+        BiConsumer<? super C, RequestedPageEnum> setPage,
+        BiConsumer<? super C, List<SeekPivot>> setPivots,
+        C criteria
+    ) {
+        return new SeekedPageIterator<>(pageSource, pivotsMaker, criteria, setPage, setPivots);
+    }
+
+    public static <T, C extends SeekRequest> SeekedPageIterator<T, C> from(
         Function<? super C, SeekedPage<T>> pageSource,
         BiFunction<? super T, ? super List<Sort.Order>, List<SeekPivot>> pivotsMaker,
         C criteria
     ) {
-        return new SeekedPageIterator<>(pageSource, pivotsMaker, criteria);
+        return new SeekedPageIterator<>(pageSource, pivotsMaker, criteria, SeekRequest::setPage, SeekRequest::setPivots);
     }
 
     /**
-     * Метод для ситуаций, когда тот, кто создал итератор, задал список {@link SeekableCriteria#getOrders()}.
+     * Метод для ситуаций, когда тот, кто создал итератор, задал список {@link Seekable#getSort()}.
      * То есть вызывающий точно знает, какая сортировка будет и может передать эффективную реализацию {@code pivotsMaker}.
      *
      * @param pageSource Источник данных
      * @param pivotsMaker Функция, принимающая элемент типа {@code T} и
      *                    возвращающая список {@link SeekPivot}-ов в
-     *                    соответствии со списком {@link SeekableCriteria#getOrders()} в переданной критерии
+     *                    соответствии со списком {@link Seekable#getSort()} в переданной критерии
      * @param criteria Критерия (будет модифицирована)
      * @param <T> Тип элементов
      * @param <C> Тип критерии
      */
-    public static <T, C extends SeekableCriteria> SeekedPageIterator<T, C> from(
+    public static <T, C extends Seekable> SeekedPageIterator<T, C> from(
+        Function<? super C, SeekedPage<T>> pageSource,
+        Function<? super T, List<SeekPivot>> pivotsMaker,
+        BiConsumer<? super C, RequestedPageEnum> setPage,
+        BiConsumer<? super C, List<SeekPivot>> setPivots,
+        C criteria
+    ) {
+        return from(pageSource, (t, unused) -> pivotsMaker.apply(t), setPage, setPivots, criteria);
+    }
+
+    public static <T, C extends SeekRequest> SeekedPageIterator<T, C> from(
         Function<? super C, SeekedPage<T>> pageSource,
         Function<? super T, List<SeekPivot>> pivotsMaker,
         C criteria
     ) {
-        return from(pageSource, (t, unused) -> pivotsMaker.apply(t), criteria);
+        return from(pageSource, (t, unused) -> pivotsMaker.apply(t), SeekRequest::setPage, SeekRequest::setPivots, criteria);
     }
 
     public static class ReflectionPivotsMaker<T> implements BiFunction<T, List<Sort.Order>, List<SeekPivot>> {

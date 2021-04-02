@@ -3,10 +3,10 @@ package net.n2oapp.platform.jaxrs.impl;
 import net.n2oapp.platform.i18n.Message;
 import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.api.*;
-import net.n2oapp.platform.jaxrs.seek.EmptySeekableCriteria;
 import net.n2oapp.platform.jaxrs.seek.RequestedPageEnum;
 import net.n2oapp.platform.jaxrs.seek.SeekPivot;
-import net.n2oapp.platform.jaxrs.seek.SeekedPage;
+import net.n2oapp.platform.jaxrs.seek.SeekRequest;
+import net.n2oapp.platform.jaxrs.seek.SeekedPageImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
@@ -132,14 +132,14 @@ public class SomeRestImpl implements SomeRest {
     }
 
     @Override
-    public SeekedPage<String> searchSeeking(EmptySeekableCriteria criteria) {
+    public SeekedPageImpl<String> searchSeeking(SeekRequest request) {
         if (
-            criteria.getPage() == RequestedPageEnum.NEXT &&
-            criteria.getSize() == 2077 &&
-            criteria.getOrders().equals(List.of(Sort.Order.asc("id"))) &&
-            criteria.getPivots().equals(EXPECTED_PIVOTS)
+            request.getPage() == RequestedPageEnum.NEXT &&
+            request.getSize() == 2077 &&
+            request.getSort().equals(Sort.by(List.of(Sort.Order.asc("id")))) &&
+            request.getPivots().equals(EXPECTED_PIVOTS)
         ) {
-            return SeekedPage.of(List.of("ok!"), true, false);
+            return SeekedPageImpl.of(List.of("ok!"), true, false);
         }
         return null;
     }

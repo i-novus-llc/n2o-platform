@@ -1,6 +1,6 @@
-= Возможность seek-пагинации используя QueryDSL (по ключу, без офсетов и count-запросов)
+= Возможность seek (keyset) - пагинации используя QueryDSL (по ключу, без офсетов и count-запросов)
 
-== Как использовать:
+== Как использовать
 1) Добавьте зависимость
 [source,xml]
 ----
@@ -20,7 +20,7 @@
 
 [source,java]
 ----
-class SomeCriteria extends EmptySeekableCriteria {
+class SomeCriteria extends SeekRequest {
 //  Фильтры
 }
 
@@ -35,7 +35,7 @@ class RestService {
 }
 ----
 
-Имя такой сервис можно делать запросы типа:
+Используя такой сервис, можно делать запросы типа:
 
 ----
 http://rest-service/rest/search?sort=id,asc&piv=id,54&size=10&page=NEXT
@@ -102,7 +102,7 @@ Hibernate сгенерирует `CROSS JOIN` с `WHERE child_id = ChildEntity.i
 
 [source,java]
 ----
-<T, C extends SeekableCriteria> SeekedPageIterator.from(
+<T, C extends SeekRequest> SeekedPageIterator.from(
     Function<? super C, SeekedPage<T>> pageSource,
     Function<? super T, List<SeekPivot>> pivotsMaker,
     C criteria
@@ -121,10 +121,10 @@ class Animal {
 
 interface AnimalRest {
     @GET
-    SeekedPage<Animal> search(SeekableCriteria criteria);
+    SeekedPage<Animal> search(SeekRequest criteria);
 }
 
-void paginateOverAnimals(AnimalRest rest, SeekableCriteria criteria) {
+void paginateOverAnimals(AnimalRest rest, SeekRequest criteria) {
 //  Хотим сортировку по "name" и потом по "id"
     criteria.setOrders(List.of(Sort.Order.asc("name"), Sort.Order.asc("id")));
     SeekedPageIterator<T,C> iterator = SeekedPageIterator.from(
@@ -146,11 +146,11 @@ void paginateOverAnimals(AnimalRest rest, SeekableCriteria criteria) {
 ----
 
 == Советы
-Этот модуль просто генерирует `seek`-предикаты для корректной пагинации.
-Но если в самой БД не налажена инфраструктура под конкретное `seek`-условие -- все сведется к обычному `seq-scan`
-(последовательному сканированию всей таблицы). Однако это все еще будет эффективнее `offset` пагинации.
+Для эффективного использования seek пагинации нужно придерживаться следующих советов.
 
-=== *
+=== 1.
+
+Для всех возможных сортировок в вашем приложении определите свой индекс.
 
 Рассмотрим пример.
 Пусть есть простая таблица animal:
@@ -202,16 +202,17 @@ SELECT * FROM animal WHERE name > :lastSeenName OR (name = :lastSeenName AND id 
 (для (name DESC, id DESC) все будет так же эффективно).
 Для обращения порядка сортировки следует использовать методы в классе `net.n2oapp.platform.seek.SortUtil`.
 
-Поэтому совет такой: для всех возможных сортировок в вашем приложении определите свой индекс.
-
-=== *
+=== 2.
 
 Учитывая вышесказанное вы не сможете эффективно сортировать по JOIN-ed полям (потому что на них нельзя создать индекс).
 Поэтому совет такой: используйте денормализацию для поиска (и только для него).
 
-=== *
+=== 3.
 
-Вообще, если у вас есть поля `x1, x2, id` и вы хотите произвольную и быструю сортировку по любой комбинации (исключая id, так как это суррогатный ключ и клиенту нет дела, какая у него сортировка, поэтому его везде можно сделать ASC) --
+Не стоит позволять клиенту указывать произвольные поля для сортировки.
+Нужно выделить ключевые сортировки (время, цена, популярность или некий составной бизнес-ключ) и сортировать по ним.
+
+Например, у вас есть поля `x1, x2, id` и вы хотите произвольную и быструю сортировку по любой комбинации (исключая id, так как это суррогатный ключ и клиенту нет дела, какая у него сортировка, поэтому его везде можно сделать ASC) --
 вам придется создать индексы:
 
 * x1 ASC, id ASC
@@ -239,10 +240,9 @@ SELECT * FROM animal WHERE name > :lastSeenName OR (name = :lastSeenName AND id 
 Как видите, затраты на произвольную и эффективную сортировку даже по двум колонкам *очень* большие и
 увеличиваются экспоненциально.
 
-Поэтому совет такой: не стоит позволять клиенту указывать произвольные поля для сортировки.
-Нужно выделить ключевые сортировки (время, цена, популярность или некий составной бизнес-ключ) и сортировать по ним.
+=== 4.
 
-=== *
+По возможности всегда определяйте `NullabilityProvider`.
 
 Условия для seek-пагинации становятся несколько проще, если заранее известно, что поле не может принимать значение `NULL`.
 Для указания `nullability` есть интерфейс `net.n2oapp.platform.seek.NullabilityProvider`.
@@ -263,5 +263,3 @@ public class AnimalNullabilityProvider implements NullabilityProvider {
 
 }
 ----
-
-Поэтому по возможности всегда определяйте `NullabilityProvider`.

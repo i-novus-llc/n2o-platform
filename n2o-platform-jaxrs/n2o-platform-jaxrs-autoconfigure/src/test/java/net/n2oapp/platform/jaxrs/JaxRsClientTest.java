@@ -4,9 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.api.*;
 import net.n2oapp.platform.jaxrs.impl.SomeRestImpl;
-import net.n2oapp.platform.jaxrs.seek.EmptySeekableCriteria;
-import net.n2oapp.platform.jaxrs.seek.RequestedPageEnum;
-import net.n2oapp.platform.jaxrs.seek.SeekedPage;
+import net.n2oapp.platform.jaxrs.seek.*;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -243,15 +241,19 @@ public class JaxRsClientTest {
         });
     }
 
+    /**
+     * Проверка сериализации/десериализации классов
+     * {@link Seekable}, {@link SeekRequest}, {@link SeekedPageImpl}
+     */
     @Test
     public void testSeek() {
         forEachHeaderCombination(() -> {
-            EmptySeekableCriteria criteria = new EmptySeekableCriteria();
-            criteria.setPivots(SomeRestImpl.EXPECTED_PIVOTS);
-            criteria.setPage(RequestedPageEnum.NEXT);
-            criteria.setSize(2077);
-            criteria.setOrders(List.of(Sort.Order.asc("id")));
-            SeekedPage<String> page = client.searchSeeking(criteria);
+            SeekRequest request = new SeekRequest();
+            request.setPivots(SomeRestImpl.EXPECTED_PIVOTS);
+            request.setPage(RequestedPageEnum.NEXT);
+            request.setSize(2077);
+            request.setSort(Sort.by(List.of(Sort.Order.asc("id"))));
+            SeekedPage<String> page = client.searchSeeking(request);
             assertThat(page.getContent(), is(List.of("ok!")));
             assertThat(page.hasNext(), is(true));
             assertThat(page.hasPrev(), is(false));
