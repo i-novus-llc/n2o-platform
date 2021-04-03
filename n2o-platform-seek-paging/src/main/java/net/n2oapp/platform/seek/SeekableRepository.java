@@ -9,7 +9,7 @@ import org.springframework.data.repository.NoRepositoryBean;
 @NoRepositoryBean
 public interface SeekableRepository<T> extends QuerydslPredicateExecutor<T> {
 
-    SeekedPage<T> findAll(Seekable criteria);
-    SeekedPage<T> findAll(Seekable criteria, Predicate predicate);
+    SeekedPage<T> findAll(Seekable seekable);
+    SeekedPage<T> findAll(Seekable seekable, Predicate predicate);
 
 }

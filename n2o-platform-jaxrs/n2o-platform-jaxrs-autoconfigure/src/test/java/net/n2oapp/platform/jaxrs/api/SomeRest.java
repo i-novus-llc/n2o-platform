@@ -121,6 +121,6 @@ public interface SomeRest {
 
     @GET
     @Path("/seek")
-    SeekedPage<String> searchSeeking(@BeanParam @Valid SeekRequest criteria);
+    SeekedPage<String> searchSeeking(@BeanParam @Valid SeekRequest request);
 
 }

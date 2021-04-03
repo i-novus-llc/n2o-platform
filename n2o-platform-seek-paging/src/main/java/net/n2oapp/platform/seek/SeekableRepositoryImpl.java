@@ -73,26 +73,26 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     }
 
     @Override
-    public SeekedPage<T> findAll(Seekable criteria) {
-        return fetch(criteria, null);
+    public SeekedPage<T> findAll(Seekable seekable) {
+        return fetch(seekable, null);
     }
 
     @Override
-    public SeekedPage<T> findAll(Seekable criteria, Predicate predicate) {
-        return fetch(criteria, predicate);
+    public SeekedPage<T> findAll(Seekable seekable, Predicate predicate) {
+        return fetch(seekable, predicate);
     }
 
-    private SeekedPage<T> fetch(Seekable criteria, Predicate predicate) {
+    private SeekedPage<T> fetch(Seekable seekable, Predicate predicate) {
         List<T> result;
-        checkCriteria(criteria);
-        List<Order> orders = copyOrders(criteria);
+        checkSeekable(seekable);
+        List<Order> orders = copyOrders(seekable);
         boolean hasNext;
         boolean hasPrev;
-        if (criteria.getPage() == FIRST || criteria.getPage() == LAST) {
-            result = fetchSimple(orders, predicate, criteria.getSize() + 1);
-            hasNext = criteria.getPage() == FIRST && result.size() > criteria.getSize();
-            hasPrev = criteria.getPage() == LAST && result.size() > criteria.getSize();
-            if (criteria.getPage() == LAST) {
+        if (seekable.getPage() == FIRST || seekable.getPage() == LAST) {
+            result = fetchSimple(orders, predicate, seekable.getSize() + 1);
+            hasNext = seekable.getPage() == FIRST && result.size() > seekable.getSize();
+            hasPrev = seekable.getPage() == LAST && result.size() > seekable.getSize();
+            if (seekable.getPage() == LAST) {
                 Collections.reverse(result);
                 if (hasPrev) {
                     result.remove(0);
@@ -102,23 +102,23 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
                     result.remove(result.size() - 1);
             }
         } else {
-            List<EnrichedSeekPivot> pivots = makeList(orders, copyPivots(criteria));
+            List<EnrichedSeekPivot> pivots = makeList(orders, copyPivots(seekable));
             ensureNoDuplicates(pivots);
-            result = fetchWithSeekPredicate(pivots, orders, criteria.getSize() + 1, predicate);
-            RequestedPageEnum page = criteria.getPage();
+            result = fetchWithSeekPredicate(pivots, orders, seekable.getSize() + 1, predicate);
+            RequestedPageEnum page = seekable.getPage();
             if (page == NEXT) {
-                hasNext = result.size() > criteria.getSize();
+                hasNext = result.size() > seekable.getSize();
                 if (hasNext)
                     result.remove(result.size() - 1);
                 hasPrev = !new JPAQuery<>(entityManager).select(Expressions.ONE).from(path).where(inverseSeekPredicate(pivots, false), predicate).limit(1).fetch().isEmpty();
             } else if (page == PREV) {
-                hasPrev = result.size() > criteria.getSize();
+                hasPrev = result.size() > seekable.getSize();
                 Collections.reverse(result);
                 if (hasPrev)
                     result.remove(0);
                 hasNext = !new JPAQuery<>(entityManager).select(Expressions.ONE).from(path).where(inverseSeekPredicate(pivots, true), predicate).limit(1).fetch().isEmpty();
             } else {
-                throw new IllegalStateException("Unexpected page enum: " + criteria.getPage());
+                throw new IllegalStateException("Unexpected page enum: " + seekable.getPage());
             }
         }
         return SeekedPageImpl.of(result, hasNext, hasPrev);
@@ -187,20 +187,20 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         return res;
     }
 
-    private void checkCriteria(Seekable criteria) {
-        Preconditions.checkArgument(criteria != null, "Criteria must not be null");
-        Preconditions.checkArgument(criteria.getSize() > 0, "Criteria size must be > 0");
-        Preconditions.checkArgument(criteria.getPage() != null, "A requested page must be specified");
-        Preconditions.checkNotNull(criteria.getSort());
-        Preconditions.checkArgument(!CollectionUtils.isEmpty(criteria.getSort().toList()), "Sorting must be applied");
+    private void checkSeekable(Seekable seekable) {
+        Preconditions.checkArgument(seekable != null, "Seekable must not be null");
+        Preconditions.checkArgument(seekable.getSize() > 0, "Seekable size must be > 0");
+        Preconditions.checkArgument(seekable.getPage() != null, "A requested page must be specified");
+        Preconditions.checkNotNull(seekable.getSort());
+        Preconditions.checkArgument(!CollectionUtils.isEmpty(seekable.getSort().toList()), "Sorting must be applied");
     }
 
-    private List<Order> copyOrders(Seekable criteria) {
-        List<Order> orders = criteria.getSort().toList();
+    private List<Order> copyOrders(Seekable seekable) {
+        List<Order> orders = seekable.getSort().toList();
         List<Order> result = new ArrayList<>(orders.size());
-        for (Order order : criteria.getSort()) {
+        for (Order order : seekable.getSort()) {
             String property = order.getProperty().startsWith(entityPrefix) ? order.getProperty().substring(entityPrefix.length() + 1) : order.getProperty();
-            if (criteria.getPage() == PREV || criteria.getPage() == LAST) {
+            if (seekable.getPage() == PREV || seekable.getPage() == LAST) {
                 result.add(reverse(order, property));
             } else {
                 result.add(new Order(order.getDirection(), property, getExplicitNullHandling(order, false)));
@@ -209,11 +209,11 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         return result;
     }
 
-    private List<SeekPivot> copyPivots(Seekable criteria) {
-        if (criteria.getPivots() == null)
+    private List<SeekPivot> copyPivots(Seekable seekable) {
+        if (seekable.getPivots() == null)
             return emptyList();
-        List<SeekPivot> pivots = new ArrayList<>(criteria.getPivots().size());
-        for (SeekPivot pivot : criteria.getPivots()) {
+        List<SeekPivot> pivots = new ArrayList<>(seekable.getPivots().size());
+        for (SeekPivot pivot : seekable.getPivots()) {
             if (!pivot.getName().startsWith(entityPrefix))
                 pivots.add(pivot.copy());
             else
@@ -229,7 +229,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
                 EnrichedSeekPivot item2 = list.get(j);
                 Preconditions.checkArgument(
                     !item1.order.getProperty().equals(item2.order.getProperty()),
-                    "%s duplicated in criteria",
+                    "%s duplicated in seekable",
                     item1.order.getProperty()
                 );
             }

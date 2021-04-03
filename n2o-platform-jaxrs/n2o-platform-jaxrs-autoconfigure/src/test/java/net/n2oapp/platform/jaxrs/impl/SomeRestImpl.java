@@ -135,8 +135,8 @@ public class SomeRestImpl implements SomeRest {
     public SeekedPageImpl<String> searchSeeking(SeekRequest request) {
         if (
             request.getPage() == RequestedPageEnum.NEXT &&
-            request.getSize() == 2077 &&
-            request.getSort().equals(Sort.by(List.of(Sort.Order.asc("id")))) &&
+            request.getSize() == 1000 &&
+            request.getSort().equals(Sort.by(List.of(Sort.Order.asc("id"), Sort.Order.desc("name")))) &&
             request.getPivots().equals(EXPECTED_PIVOTS)
         ) {
             return SeekedPageImpl.of(List.of("ok!"), true, false);
