@@ -3,26 +3,42 @@ package net.n2oapp.platform.selection.api;
 import org.springframework.lang.NonNull;
 
 /**
- * <pre>
- * Основной интерфейс, который знает, как отобразить некую сущность в DTO типа {@code <T>}.
+ * Основной интерфейс, который знает, как отобразить сущность в модель (DTO) типа {@code <T>}.
  * Сущностью может выступать что угодно, будь то сущность JPA или самая обычная {@code Map}.
  *
- * Методы, которые отображают сущность в {@code T} должны быть помечены аннотацией {@link SelectionKey} и могут быть двух видов:
- *
- * 1) Метод, который принимает модель DTO типа {@code T} и кладет туда соответствующие данному {@code selectionKey} данные.
- * Этим методам обычно соответствуют примитивные поля сущности (скаляры), например числа, даты, строки и т.д.
- *
- * 2) А так же парные методы (помеченные одним и тем же {@code selectionKey}:
- *     а) без аргументов, возвращающий вложенный {@code Fetcher<X>}
- *     б) и связанный с ним через {@code selectionKey} метод, принимающий DTO типа {@code T} и {@code X} и DTO {@code X}.
- * </pre>
- * @param <T> Тип DTO
+ * @param <T> Тип модели (DTO)
+ * @param <S> Тип выборки ({@link Selection})
+ * @param <E> Тип отображаемой сущности
  */
-public interface Fetcher<T> {
+public interface Fetcher<T, S extends Selection<T>, E> {
 
     /**
-     * @return Пустой DTO, чьи поля будут выборочно отображены в соответствии с {@link Selection<T>}
+     * @return Пустая модель, чьи поля будут выборочно отображены в соответствии с {@link Selection<T>}
      */
-    @NonNull T create();
+    @NonNull
+    T create();
+
+    /**
+     * @return Отображаемая сущность
+     */
+    @NonNull
+    E getUnderlyingEntity();
+
+    /**
+     *
+     * @param selection Выборка
+     * @return Проекция модели {@code T} в соответствии с выборкой
+     */
+    default T resolve(S selection) {
+        if (selection == null)
+            return null;
+        return resolve(selection, selection.propagation());
+    }
+
+    /**
+     * Данный метод не должен использоваться напрямую.
+     * Вместо него следует использовать {@link #resolve(Selection)}
+     */
+    T resolve(S selection, SelectionPropagation propagation);
 
 }

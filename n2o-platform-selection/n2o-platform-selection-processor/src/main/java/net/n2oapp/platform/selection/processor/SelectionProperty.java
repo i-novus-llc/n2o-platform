@@ -1,48 +1,61 @@
 package net.n2oapp.platform.selection.processor;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 class SelectionProperty {
 
-    private static final Set<Character> GENERIC_DELIMITER = Set.of('<', '>', ',', ' ');
-
-    private final String key;
-    private final String nestedGenericSignature;
-    private final SelectionMeta nestedSelection;
-    private final String originalType;
-    private final TypeMirror collectionRawType;
-    private final String type;
-    private final SelectionMeta owner;
+    private final String name;
+    private final String generics;
+    private final SelectionMeta selection;
+    private final String originalTypeStr;
+    private final TypeMirror originalType;
+    private final String typeStr;
+    private final Element member;
+    private final TypeMirror collectionType;
     private final boolean isJoined;
     private final boolean withNestedJoiner;
-    private final boolean rawUse;
 
-    SelectionProperty(String key) {
-        this(key, null, null, null, null, null, null, false, false, false);
+    SelectionProperty(
+        String name,
+        TypeMirror originalType,
+        Element member,
+        boolean joined
+    ) {
+        this(name, member, originalType, null, null, null, null, joined, false);
     }
 
-    SelectionProperty(String key, String nestedGenericSignature, SelectionMeta nestedSelection, TypeMirror type, TypeMirror originalType, TypeMirror collectionRawType, SelectionMeta owner, boolean isJoined, boolean withNestedJoiner, boolean rawUse) {
-        this.key = key;
-        this.nestedGenericSignature = nestedGenericSignature;
-        this.nestedSelection = nestedSelection;
+    SelectionProperty(
+        String name,
+        Element member,
+        TypeMirror originalType,
+        TypeMirror type,
+        SelectionMeta selection,
+        String generics,
+        TypeMirror collectionType,
+        boolean isJoined,
+        boolean withNestedJoiner
+    ) {
+        this.originalType = originalType;
+        this.name = name;
+        this.generics = generics;
+        this.selection = selection;
+        this.member = member;
         if (type != null)
-            this.type = stripAnnotations(type);
+            this.typeStr = stripAnnotations(type);
         else
-            this.type = null;
-        this.owner = owner;
+            this.typeStr = null;
         this.isJoined = isJoined;
         this.withNestedJoiner = withNestedJoiner;
-        this.rawUse = rawUse;
         if (originalType != null) {
-            this.originalType = stripAnnotations(originalType);
+            this.originalTypeStr = stripAnnotations(originalType);
         } else
-            this.originalType = null;
-        this.collectionRawType = collectionRawType;
+            this.originalTypeStr = null;
+        this.collectionType = collectionType;
     }
 
     private String stripAnnotations(TypeMirror originalType) {
@@ -65,100 +78,60 @@ class SelectionProperty {
         return builder.toString();
     }
 
-    String getKey() {
-        return key;
+    String getName() {
+        return name;
     }
 
-    String getNestedGenericSignatureOrWildcards(String...additionalTypeVariables) {
-        if (nestedGenericSignature.isBlank() && !rawUse)
-            return additionalTypeVariables.length == 0 ? "" : "<" + String.join(", ", additionalTypeVariables) + ">";
-        String suffix = additionalTypeVariables.length == 0 ? "" : ", " + String.join(", ", additionalTypeVariables);
-        if (!nestedGenericSignature.isEmpty())
-            return "<" + String.join(", ", nestedGenericSignature) + suffix + ">";
-        return "<" + IntStream.range(0, nestedSelection.getGenericSignature().size()).mapToObj(ignored -> "?").collect(Collectors.joining(", ")) + suffix + ">";
+    String getGenerics(String...additionalGenerics) {
+        String result;
+        additionalGenerics = Arrays.stream(additionalGenerics).filter(Objects::nonNull).toArray(String[]::new);
+        if (generics.isBlank()) {
+            result = additionalGenerics.length == 0 ? "" : "<" + join(additionalGenerics) + ">";
+        } else {
+            String suffix = additionalGenerics.length == 0 ? "" : ", " + join(additionalGenerics);
+            if (!generics.isEmpty()) {
+                result = "<" + generics + suffix + ">";
+            } else {
+                result = "<" + makeWildcards(selection.getSelectionGenericSignature().size()) + suffix + ">";
+            }
+        }
+        return result;
     }
 
-    TypeMirror getCollectionRawType() {
-        return collectionRawType;
+    private String makeWildcards(int count) {
+        return IntStream.range(0, count).mapToObj(unused -> "?").collect(Collectors.joining(", "));
     }
 
-    SelectionMeta getNestedSelection() {
-        return nestedSelection;
+    private String join(String[] generics) {
+        return String.join(", ", generics);
     }
 
-    String getType() {
-        return type;
+    TypeMirror getCollectionType() {
+        return collectionType;
     }
 
-    String getOriginalType() {
+    SelectionMeta getSelection() {
+        return selection;
+    }
+
+    boolean selective() {
+        return selection != null;
+    }
+
+    String getTypeStr() {
+        return typeStr;
+    }
+
+    TypeMirror getOriginalType() {
         return originalType;
     }
 
-    String resolveTypeVariables(SelectionMeta against) {
-        return resolveTypeVariables(owner, against, nestedGenericSignature);
+    String getOriginalTypeStr() {
+        return originalTypeStr;
     }
 
-    private String resolveTypeVariables(SelectionMeta from, SelectionMeta against, String generics) {
-        if (from == against || generics.isEmpty() || from.getGenericSignature().isEmpty())
-            return generics;
-        Map<String, String> resolvedVariables = new HashMap<>(0);
-        StringBuilder temp = new StringBuilder();
-        StringBuilder resolved = new StringBuilder();
-        GenericSignature signature = from.getGenericSignature();
-        for (int i = 0; i < generics.length(); i++) {
-            char c = generics.charAt(i);
-            temp.append(c);
-            if (signature.containsTypeVariable(temp) && !shouldSkip(generics, i)) {
-                String var = temp.toString();
-                String bounds = resolvedVariables.computeIfAbsent(var, variable ->
-                    findTypeVariableBounds(from, against, signature.indexOf(var))
-                );
-                resolved.append(bounds);
-                temp.setLength(0);
-            } else if (GENERIC_DELIMITER.contains(c)) {
-                resolved.append(temp);
-                temp.setLength(0);
-            }
-        }
-        if (temp.length() > 0)
-            resolved.append(temp);
-        return resolved.toString();
-    }
-
-    private String findTypeVariableBounds(SelectionMeta from, SelectionMeta against, int index) {
-        SelectionMeta curr = against;
-        do {
-            if (curr.getParent() == from)
-                return resolveTypeVariables(curr, against, getExtendsBounds(curr.getExtendsSignatureNoBrackets(), index).strip());
-            curr = curr.getParent();
-        } while (true);
-    }
-
-    private String getExtendsBounds(String signature, int index) {
-        int numBrackets = 0;
-        int currIndex = 0;
-        int prev = 0;
-        for (int i = 0; i < signature.length(); i++) {
-            char c = signature.charAt(i);
-            if (c == ',' && numBrackets == 0) {
-                if (currIndex == index) {
-                    return signature.substring(prev, i);
-                }
-                currIndex++;
-                prev = i + 1;
-            } else if (c == '<') {
-                numBrackets++;
-            } else if (c == '>')
-                numBrackets--;
-        }
-        return signature.substring(prev);
-    }
-
-    private boolean shouldSkip(String signature, int i) {
-        if (i < signature.length() - 1) {
-            return !GENERIC_DELIMITER.contains(signature.charAt(i + 1));
-        }
-        return false;
+    Element getMember() {
+        return member;
     }
 
     boolean isJoined() {

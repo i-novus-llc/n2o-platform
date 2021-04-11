@@ -3,39 +3,25 @@ package net.n2oapp.platform.selection.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
- * <pre>
  * Основной интерфейс, определяющий какие именно поля будут выбраны {@link Fetcher<T>}-ом
- *
- * Методы, которые определяют выборку полей типа {@code T} должны быть помечены аннотацией {@link SelectionKey}
- * и могут быть двух видов:
- *
- * 1) Метод возвращающий {@link SelectionEnum}. Таким методам обычно соответствуют примитивные поля сущности (числа, даты, строки и т.д).
- *
- * 2) А так же парные методы:
- *      а) Метод возвращающий {@link SelectionEnum}.
- *      б) И связанный с ним через {@code selectionKey} метод, возвращающий вложенный {@code Selection<X>}
- *
- * Аннотацией {@link SelectionKey} могут быть так же помечены поля типа {@link SelectionEnum}.
- * В таком случае у него должен быть стандартный геттер.
- *
- * </pre>
  * @param <T> Тип DTO для этой выборки
  */
 public interface Selection<T> {
 
     /**
-     * @see SelectionPropagationEnum
+     * @see SelectionPropagation
      */
-    default SelectionPropagationEnum propagation() {
-        return SelectionPropagationEnum.NORMAL;
+    default SelectionPropagation propagation() {
+        return SelectionPropagation.NORMAL;
     }
 
     /**
      * @return {@code true}, если данная выборка является пустой
      * (
      *  то есть
-     *      {@link #propagation()} == {@link SelectionPropagationEnum#NORMAL} (или null) и
-     *      ни одно значение {@link SelectionEnum} не равно {@link SelectionEnum#T}
+     *      {@link #propagation()} == {@link SelectionPropagation#NORMAL} (или null) и
+     *      ни одно значение {@link SelectionEnum} не равно {@link SelectionEnum#T} и
+     *      все вложенные выборки так же являются {@code empty()}
      * )
      */
     boolean empty();
