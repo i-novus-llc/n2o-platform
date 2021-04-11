@@ -6,7 +6,6 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public final class JoinUtil {
 
@@ -143,7 +142,10 @@ public final class JoinUtil {
             Function<? super E2, ? extends ID2> getRightSideId
     ) {
         Map<ID1, F> result = new HashMap<>();
-        Map<ID2, E2> joined = fetchRightSide.apply(leftSide).stream().collect(Collectors.toMap(getRightSideId, Function.identity()));
+        Map<ID2, E2> joined = new HashMap<>();
+        for (E2 e21 : fetchRightSide.apply(leftSide)) {
+            joined.putIfAbsent(getRightSideId.apply(e21), e21);
+        }
         for (E1 owner : leftSide) {
             ID2 fk = getForeignKey.apply(owner);
             if (fk != null) {
