@@ -78,11 +78,13 @@ public interface Joiner<T, S extends Selection<T>, E, F extends Fetcher<T, S, E>
 
     class Resolution<T, E, ID> {
 
+        private static final Resolution<?, ?, ?> EMPTY = new Resolution<>(Collections.emptyList(), Collections.emptyMap());
+
         public final Collection<E> entities;
         @SuppressWarnings("java:S1319")
-        public final LinkedHashMap<ID, T> models;
+        public final Map<ID, T> models;
 
-        private Resolution(Collection<E> entities, LinkedHashMap<ID, T> models) {
+        private Resolution(Collection<E> entities, Map<ID, T> models) {
             this.entities = entities;
             this.models = models;
         }
@@ -92,6 +94,11 @@ public interface Joiner<T, S extends Selection<T>, E, F extends Fetcher<T, S, E>
             @SuppressWarnings("java:S1319") LinkedHashMap<ID, T> models
         ) {
             return new Resolution<>(entities, models);
+        }
+
+        @SuppressWarnings("unchecked")
+        public static <T, E, ID> Resolution<T, E, ID> empty() {
+            return (Resolution<T, E, ID>) EMPTY;
         }
 
     }

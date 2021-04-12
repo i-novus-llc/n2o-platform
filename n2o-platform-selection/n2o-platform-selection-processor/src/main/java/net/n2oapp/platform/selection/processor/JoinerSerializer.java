@@ -75,21 +75,6 @@ class JoinerSerializer extends AbstractSerializer {
     }
 
     @Override
-    String getClassOrInterface(SelectionMeta meta) {
-        return "interface";
-    }
-
-    @Override
-    String getExtendsOrImplements(SelectionMeta meta) {
-        return "extends";
-    }
-
-    @Override
-    void appendTypeAnnotations(SelectionMeta meta, Writer out) {
-//      Нет аннотаций
-    }
-
-    @Override
     void preSerialize(SelectionMeta meta, String self, Writer out) throws IOException {
         appendOverride(out);
         out.append("\tdefault ");
@@ -101,6 +86,12 @@ class JoinerSerializer extends AbstractSerializer {
         out.append(" selection, ");
         out.append(SelectionPropagation.class.getCanonicalName());
         out.append(" propagation) {\n");
+        out.append("\t\tif (fetchers == null) return null;\n");
+        out.append("\t\tif (fetchers instanceof java.util.Collection) {\n");
+        out.append("\t\t\tif (((java.util.Collection) fetchers).isEmpty()) return ").append(Joiner.Resolution.class.getCanonicalName()).append(".").append("empty();\n");
+        out.append("\t\t} else {\n");
+        out.append("\t\t\tif (!fetchers.iterator().hasNext()) return ").append(Joiner.Resolution.class.getCanonicalName()).append(".").append("empty();\n");
+        out.append("\t\t}\n");
         if (meta.getParent() == null) {
             appendExplicitPropagation(out);
             appendReturnNullIfSelectionEmpty(out);
@@ -138,7 +129,6 @@ class JoinerSerializer extends AbstractSerializer {
             out.append("\t\tif (resolution == null) return null;\n");
             appendExplicitPropagation(out);
         }
-        out.append("\t\tif (resolution.entities.isEmpty()) return resolution;\n");
         out.append("\t\tjava.util.Iterator<java.util.Map.Entry<");
         out.append(meta.getIdTypeVariable());
         out.append(", ");

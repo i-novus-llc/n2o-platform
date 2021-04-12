@@ -54,21 +54,6 @@ class FetcherSerializer extends AbstractSerializer {
     }
 
     @Override
-    String getClassOrInterface(SelectionMeta meta) {
-        return "interface";
-    }
-
-    @Override
-    String getExtendsOrImplements(SelectionMeta meta) {
-        return "extends";
-    }
-
-    @Override
-    void appendTypeAnnotations(SelectionMeta meta, Writer out) {
-//      Пусто
-    }
-
-    @Override
     void preSerialize(SelectionMeta meta, String self, Writer out) throws IOException {
         appendOverride(out);
         out.append("\tdefault");

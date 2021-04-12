@@ -64,9 +64,18 @@ abstract class AbstractSerializer {
     abstract String getExtendsSignature(SelectionMeta meta);
     abstract void serializeProperty(SelectionMeta meta, String self, SelectionProperty property, Writer out) throws IOException;
     abstract Class<?> getInterfaceRaw();
-    abstract String getClassOrInterface(SelectionMeta meta);
-    abstract String getExtendsOrImplements(SelectionMeta meta);
-    abstract void appendTypeAnnotations(SelectionMeta meta, Writer out) throws IOException;
+
+    String getClassOrInterface(SelectionMeta meta) {
+        return "interface";
+    }
+
+    String getExtendsOrImplements(SelectionMeta meta) {
+        return "extends";
+    }
+
+    void appendTypeAnnotations(SelectionMeta meta, Writer out) throws IOException {
+//      Пусто
+    }
 
     void appendPackage(PackageElement targetPackage, Writer out) throws IOException {
         out.append("package ");
