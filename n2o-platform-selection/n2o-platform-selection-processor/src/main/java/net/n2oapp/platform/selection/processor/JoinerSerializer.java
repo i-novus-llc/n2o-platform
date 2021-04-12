@@ -138,6 +138,7 @@ class JoinerSerializer extends AbstractSerializer {
             out.append("\t\tif (resolution == null) return null;\n");
             appendExplicitPropagation(out);
         }
+        out.append("\t\tif (resolution.entities.isEmpty()) return resolution;\n");
         out.append("\t\tjava.util.Iterator<java.util.Map.Entry<");
         out.append(meta.getIdTypeVariable());
         out.append(", ");
@@ -225,7 +226,13 @@ class JoinerSerializer extends AbstractSerializer {
                     out.append("();\n");
                     out.append("\t\t\t");
                     out.append(Joiner.Resolution.class.getCanonicalName());
-                    out.append(" nestedResolution = nestedJoiner.resolveIterable(new java.util.ArrayList(joined.values()), selection == null ? null : selection.get");
+                    out.append(" nestedResolution = nestedJoiner.resolveIterable(");
+                    if (property.getCollectionType() == null) {
+                        out.append("new java.util.ArrayList(joined.values())");
+                    } else {
+                        out.append("(java.util.Collection) joined.values().stream().flatMap(o -> ((java.util.Collection) o).stream()).collect(java.util.stream.Collectors.toList())");
+                    }
+                    out.append(", selection == null ? null : selection.get");
                     out.append(capitalize(property.getName()));
                     out.append("(), propagation == ");
                     out.append(SelectionPropagation.class.getCanonicalName());
