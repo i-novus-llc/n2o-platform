@@ -13,7 +13,6 @@
 
     <properties>
         <jacoco.skip>false</jacoco.skip>
-        <sonarcube.cpd.exclusions>**/FetcherSerializer.java,**/JoinerSerializer.java</sonarcube.cpd.exclusions>
     </properties>
 
     <dependencies>

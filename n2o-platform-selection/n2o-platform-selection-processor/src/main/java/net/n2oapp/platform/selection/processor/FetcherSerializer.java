@@ -122,12 +122,7 @@ class FetcherSerializer extends AbstractSerializer {
                 out.append("\t\t\t");
                 out.append(nestedFetcher);
                 out.append(" nestedFetcher = ");
-                out.append(selfReference);
-                out.append(".");
-                out.append("fetch");
-                out.append(capitalizedKey);
-                out.append("();\n");
-                out.append(tabs);
+                appendFetch(out, selfReference, tabs, capitalizedKey);
                 out.append("\t\t\tif (nestedFetcher != null) {\n");
                 out.append(tabs);
                 out.append("\t\t\t\t");
@@ -143,12 +138,7 @@ class FetcherSerializer extends AbstractSerializer {
                 out.append("<");
                 out.append(nestedFetcher);
                 out.append("> nestedFetchers = ");
-                out.append(selfReference);
-                out.append(".");
-                out.append("fetch");
-                out.append(capitalizedKey);
-                out.append("();\n");
-                out.append(tabs);
+                appendFetch(out, selfReference, tabs, capitalizedKey);
                 out.append("\t\t\tif (nestedFetchers != null && !nestedFetchers.isEmpty()) {\n");
                 out.append(tabs);
                 out.append("\t\t\t\t");
@@ -179,6 +169,15 @@ class FetcherSerializer extends AbstractSerializer {
         }
         out.append(tabs);
         out.append("\t\t}\n");
+    }
+
+    private static void appendFetch(final Writer out, final String selfReference, final String tabs, final String capitalizedKey) throws IOException {
+        out.append(selfReference);
+        out.append(".");
+        out.append("fetch");
+        out.append(capitalizedKey);
+        out.append("();\n");
+        out.append(tabs);
     }
 
     private static void appendResolveNestedFetcher(Writer out, String nestedSelectionGetter) throws IOException {
