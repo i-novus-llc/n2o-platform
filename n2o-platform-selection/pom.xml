@@ -14,7 +14,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>n2o-platform-selection-api</module>
-        <module>n2o-platform-selection-core</module>
         <module>n2o-platform-selection-processor</module>
     </modules>
 

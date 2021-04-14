@@ -88,7 +88,19 @@ DTO -- это мост между сервисом и остальным мир�
 
 == Как использовать
 
-API и логика по выборочному отображению находятся в двух зависимостях:
+В API есть три интерфейса `Selection`, `Fetcher` и `Joiner`, которые нужно реализовать, чтобы использовать преимущества Selection API.
+
+`Selection` описывает поля, необходимые клиенту.
+Делается это через методы, возвращающие `SelectionEnum` (в котором есть всего два значения,
+`T` и `F` от `true` и `false` соответственно).
+
+`Fetcher` отвечает за извлечение полей из персистентной сущности и отображение их на модель (DTO).
+
+`Joiner` группирует запросы и тем самым позволяет избежать проблемы **N + 1**.
+
+Базовые реализации этих интерфейсов для каждой из моделей в проекте могут быть сгенерированы следующим образом:
+
+Подключите зависимости:
 [source,xml]
 ----
 <dependencies>
@@ -98,164 +110,456 @@ API и логика по выборочному отображению нахо�
     </dependency>
     <dependency>
         <groupId>net.n2oapp.platform</groupId>
-        <artifactId>n2o-platform-selection-core</artifactId>
+        <artifactId>n2o-platform-selection-processor</artifactId>
     </dependency>
 </dependencies>
 ----
 
-В API описаны два интерфейса `Selection<T>` и `Fetcher<T>`.
+Добавьте информацию для сборки:
+[source,xml]
+----
+<build>
+    <plugins>
+        <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>process-annotations</id>
+                    <phase>generate-sources</phase>
+                    <goals>
+                        <goal>compile</goal>
+                    </goals>
+                    <configuration>
+                        <annotationProcessors>
+                            <annotationProcessor>net.n2oapp.platform.selection.processor.SelectionProcessor</annotationProcessor>
+                        </annotationProcessors>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+----
 
-В первом перечисляются поля, необходимые клиенту.
-Делается это через метод, возвращающий `SelectionEnum` (в котором есть всего два значения,
-`T` и `F` от `true` и `false` соответственно) без аргументов.
-Данный метод так же должен быть помечен аннотацией `@SelectionKey("key")`.
-Переменная типа `E` -- это тип данных, для которого предназначен этот `Selection`.
+=== Пример
 
-Например, для `issue` `REST API JIRA` реализация данного интерфейса может выглядеть так:
+Пусть есть сущность `IssueEntity` из **JIRA**.
+
+[source,java]
+----
+@Entity
+public class IssueEntity {
+
+    @Id
+    private String key;
+
+    @Column
+    private String status;
+
+    @Column
+    private String project;
+
+    @JoinColumn
+    @ManyToOne(fetch = FetchType.LAZY)
+    private UserEntity assignee;
+
+    @Entity
+    private static class UserEntity {
+//        ...
+    }
+
+}
+----
+
+Для нее так же должна быть своя модель, которую видит клиент **API JIRA**
+
+[source,java]
+----
+@Selective // Указывает, что для модели должны быть сгенерированы интерфейсы Selection, Fetcher и Joiner
+public class Issue {
+
+    @JsonProperty
+    private String key;
+
+    @JsonProperty
+    private String status;
+
+    @JsonProperty
+    private String project;
+
+    @Joined(withNestedJoiner = false) // Указывает, что поле группируется
+    @JsonProperty
+    private User assignee;
+
+    @Selective
+    private static class User {
+//        ...
+    }
+
+}
+----
+
+После сборки будут сгенерированы следующие интерфейсы:
+
+* IssueFetcher:
+
+[source,java]
+----
+public interface IssueFetcher<E> extends Fetcher<Issue, IssueSelection, E> {
+
+	@Override
+	default Issue resolve(final IssueSelection selection, SelectionPropagation propagation) {
+		propagation = propagation == null ? NORMAL : propagation;
+		if (propagation == NORMAL && (selection == null || selection.empty())) return null;
+		Issue model = create();
+		if ((propagation == NESTED || propagation == ALL) || (selection != null && selection.getKey() != null && selection.getKey().asBoolean())) {
+			model.setKey(this.fetchKey());
+		}
+		if ((propagation == NESTED || propagation == ALL) || (selection != null && selection.getStatus() != null && selection.getStatus().asBoolean())) {
+			model.setStatus(this.fetchStatus());
+		}
+		if ((propagation == NESTED || propagation == ALL) || (selection != null && selection.getProject() != null && selection.getProject().asBoolean())) {
+			model.setProject(this.fetchProject());
+		}
+		if ((propagation == NESTED) || (selection != null && selection.getAssignee() != null && !selection.getAssignee().empty())) {
+			UserFetcher<?> nestedFetcher = this.fetchAssignee();
+			if (nestedFetcher != null) {
+				model.setAssignee(nestedFetcher.resolve(selection == null ? null : selection.getAssignee(), propagation == NESTED ? propagation : selection.getAssignee().propagation()));
+			}
+		}
+		return model;
+	}
+
+	/*
+        Эти методы нужно реализовать
+	 */
+	String fetchKey();
+	String fetchStatus();
+	String fetchProject();
+	UserFetcher<?> fetchAssignee();
+
+}
+----
+
+* IssueSelection:
 
 [source,java]
 ----
 public class IssueSelection implements Selection<Issue> {
 
-    private SelectionEnum selectKey; // Номер задачи
-    private SelectionEnum selectAssignee; // Исполнитель
-    private AssigneeSelection assigneeSelection; // Вложенная выборка полей исполнителя
-    private SelectionEnum selectStatus; // Статус
-    private SelectionEnum selectProject; // Проект
-//  ...
+    protected SelectionPropagation propagation;
+	protected SelectionEnum key;
+	protected SelectionEnum status;
+	protected SelectionEnum project;
 
-    @SelectionKey("key")
-    public SelectionEnum getSelectKey() {
-        return selectKey;
+	@BeanParam
+	protected UserSelection assignee;
+
+    @QueryParam("issuePropagation")
+    public SelectionPropagation getPropagation() {
+        return propagation;
     }
 
-    @SelectionKey("assignee")
-    public SelectionEnum getSelectAssignee() {
-        return selectAssignee;
+    @QueryParam("issuePropagation")
+    public void setPropagation(SelectionPropagation propagation) {
+        this.propagation = propagation;
     }
 
-    @SelectionKey("assignee")
-    public Selection<Employee> getAssigneeSelection() {
-        return assigneeSelection;
+    @QueryParam("issueKey")
+    public SelectionEnum getKey() {
+        return key;
     }
 
-    @SelectionKey("status")
-    public SelectionEnum getSelectStatus() {
-        return selectStatus;
+    @QueryParam("issueKey")
+    public void setKey(SelectionEnum key) {
+        this.key = key;
     }
 
-    @SelectionKey("project")
-    public SelectionEnum getSelectProject() {
-        return selectProject;
+    @QueryParam("issueStatus")
+    public SelectionEnum getStatus() {
+        return status;
     }
 
-//  ...
+    @QueryParam("issueStatus")
+    public void setStatus(SelectionEnum status) {
+        this.status = status;
+    }
 
-    public static class AssigneeSelection implements Selection<Employee> {
+    @QueryParam("issueProject")
+    public SelectionEnum getProject() {
+        return project;
+    }
 
-        @SelectionKey("name")
-        private SelectionEnum selectName;
-        @SelectionKey("surname")
-        private SelectionEnum selectSurname;
-        @SelectionKey("email")
-        private SelectionEnum selectEmail;
-        @SelectionKey("login")
-        private SelectionEnum selectLogin;
+    @QueryParam("issueProject")
+    public void setProject(SelectionEnum project) {
+        this.project = project;
+    }
 
-//      ...
+    public UserSelection getAssignee() {
+        return assignee;
+    }
 
+    public void setAssignee(UserSelection selection) {
+        this.assignee = selection;
+    }
+
+	@Override
+    public SelectionPropagation propagation() {
+        return propagation;
+    }
+
+    @Override
+    public boolean empty() {
+        return (propagation() == null || propagation() == SelectionPropagation.NORMAL) &&
+            (key == null || key == SelectionEnum.F) &&
+            (status == null || status == SelectionEnum.F) &&
+            (project == null || project == SelectionEnum.F) &&
+            (assignee == null || assignee.empty());
+    }
+
+    public IssueSelection propagate(SelectionPropagation propagation) {
+        this.propagation = propagation;
+        return this;
+    }
+
+    public IssueSelection key() {
+        this.key = SelectionEnum.T;
+        return this;
+    }
+
+    public IssueSelection unselectKey() {
+        this.key = SelectionEnum.F;
+        return this;
+    }
+
+    public IssueSelection status() {
+        this.status = SelectionEnum.T;
+        return this;
+    }
+
+    public IssueSelection unselectStatus() {
+        this.status = SelectionEnum.F;
+        return this;
+    }
+
+    public IssueSelection project() {
+        this.project = SelectionEnum.T;
+        return this;
+    }
+
+    public IssueSelection unselectProject() {
+        this.project = SelectionEnum.F;
+        return this;
+    }
+
+    public IssueSelection assignee(UserSelection selection) {
+        this.assignee = selection;
+        return this;
+    }
+
+    public IssueSelection unselectAssignee() {
+        this.assignee = null;
+        return this;
+    }
+
+    public static IssueSelection create() {
+        return new IssueSelection();
     }
 
 }
 ----
 
-Аннотацию `@SelectionKey` можно так же указывать над соответствующим полем, но тогда надо убедиться,
-что у этого поля есть стандартный геттер, который будет распознан методом
-`org.springframework.beans.BeanUtils.getPropertyDescriptor`.
+* IssueJoiner
 
-В приведенной выше выборке так же есть вложенная выборка `Selection<Assignee>`.
-То есть поле `selectAssignee` говорит о том, что клиенту нужен исполнитель.
-А поле `assigneeSelection` говорит о том, какие поля исполнителя нужны клиенту.
-Заметьте, что у них должен быть совпадающий `@SelectionKey`.
-
-Для данной выборки так же должная быть реализация интерфейса `Fetcher`.
 [source,java]
 ----
-public class IssueFetcher implements Fetcher<Issue> {
+public interface IssueJoiner<E, ID> extends Joiner<Issue, IssueSelection, E, IssueFetcher<E>, ID> {
 
-    /**
-    * Персистентная сущность
-    */
-    private final IssueEntity issue;
+	@Override
+	default Joiner.Resolution<Issue, E, ID> resolveIterable(
+		final Iterable<? extends IssueFetcher<E>> fetchers,
+		final IssueSelection selection,
+		SelectionPropagation propagation
+	) {
+		propagation = propagation == null ? SelectionPropagation.NORMAL : propagation;
+		if (propagation == SelectionPropagation.NORMAL && (selection == null || selection.empty())) return null;
+		Collection<E> entities = new ArrayList<>();
+		LinkedHashMap<ID, Issue> models = new LinkedHashMap<>();
+		for (Iterator<? extends IssueFetcher<E>> iter = fetchers.iterator(); iter.hasNext(); ) {
+			IssueFetcher<E> fetcher = iter.next();
+			E entity = fetcher.getUnderlyingEntity();
+			ID id = getId(entity);
+			if (models.containsKey(id)) iter.remove();
+			else {
+				models.put(getId(entity), fetcher.create());
+				entities.add(entity);
+			}
+		}
+		Joiner.Resolution<Issue, E, ID> resolution = Joiner.Resolution.from(entities, models);
+		Iterator<Map.Entry<ID, Issue>> iter = resolution.models.entrySet().iterator();
+		for (IssueFetcher<E> fetcher : fetchers) {
+			Issue model = iter.next().getValue();
+			if ((propagation == SelectionPropagation.NESTED || propagation == SelectionPropagation.ALL) || (selection != null && selection.getKey() != null && selection.getKey().asBoolean())) {
+				model.setKey(fetcher.fetchKey());
+			}
+			if ((propagation == SelectionPropagation.NESTED || propagation == SelectionPropagation.ALL) || (selection != null && selection.getStatus() != null && selection.getStatus().asBoolean())) {
+				model.setStatus(fetcher.fetchStatus());
+			}
+			if ((propagation == SelectionPropagation.NESTED || propagation == SelectionPropagation.ALL) || (selection != null && selection.getProject() != null && selection.getProject().asBoolean())) {
+				model.setProject(fetcher.fetchProject());
+			}
+		}
+		if ((propagation == SelectionPropagation.NESTED) || (selection != null && selection.getAssignee() != null && !selection.getAssignee().empty())) {
+			final SelectionPropagation fPropagation = propagation;
+			Map<ID, UserFetcher<?>> joined = joinAssignee(resolution.entities);
+			for (Map.Entry<ID, UserFetcher<?>> entry : joined.entrySet()) {
+				resolution.models.get(entry.getKey()).setAssignee(entry.getValue().resolve(selection == null ? null : selection.getAssignee(), fPropagation == SelectionPropagation.NESTED ? fPropagation : selection.getAssignee().propagation()));
+			}
+		}
+		return resolution;
+	}
 
-    public IssueFetcher(IssueEntity issue) {
-        this.issue = issue;
+	/*
+		Этот метод нужно реализовать
+	 */
+	Map<ID, UserFetcher<?>> joinAssignee(Collection<E> entities);
+
+}
+----
+
+Для начала нужно реализовать интерфейс `IssueFetcher`
+
+[source,java]
+----
+public class IssueFetcherImpl implements IssueFetcher<IssueEntity> {
+
+    /*
+    Персистентная сущность
+     */
+    private final IssueEntity src;
+
+    public IssueFetcherImpl(IssueEntity src) {
+        this.src = src;
     }
 
-    /**
-    * @return Пустая модель DTO
-    */
     @Override
-    public Issue create() {
+    public @NonNull Issue create() {
         return new Issue();
     }
 
-    @SelectionKey("key")
-    public void selectKey(Issue dto) {
-        dto.setKey(issue.getKey());
+    @Override
+    public @NonNull IssueEntity getUnderlyingEntity() {
+        return src;
     }
 
-    @SelectionKey("assignee")
-    public void selectAssignee(Issue dto, User assignee) {
-        dto.setAssignee(assignee);
+    @Override
+    public String fetchKey() {
+        return src.getKey();
     }
 
-    @SelectionKey("assignee")
-    public Fetcher<Assignee> assigneeFetcher() {
-        return new AssigneeFetcher(issue.getAssignee());
+    @Override
+    public String fetchStatus() {
+        return src.getStatus();
     }
 
-    @SelectionKey("status")
-    public void selectStatus(Issue dto) {
-        dto.setStatus(issue.getStatus());
+    @Override
+    public String fetchProject() {
+        return src.getProject();
     }
 
-    @SelectionKey("project")
-    public void setProject(Issue dto) {
-        dto.setProject(issue.getProject());
+    @Override
+    public UserFetcher<?> fetchAssignee() {
+        return src.getAssignee() == null ? null : new UserFetcherImpl(src.getAssignee());
     }
 
 }
 ----
 
-Здесь есть несколько ключевых моментов:
+После этого `IssueJoiner`
+[source,java]
+----
+@Component
+public class IssueJoinerImpl implements IssueJoiner<IssueEntity, String> {
 
-* Fetcher возвращает пустую модель DTO (метод `create`). Это значит, что DTO не должна быть неизменяемой.
+    private final UserRepository userRepository;
 
-*   У fetcher-а есть методы следующих видов:
+    public IssueJoinerImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
-**  Метод, который принимает модель DTO и кладет туда соответствующие данному `@SelectionKey` данные.
-    Этим методам обычно соответствуют единичные поля сущности, например `key`.
+    @Override
+    public @NonNull String getId(IssueEntity entity) {
+        return entity.getKey();
+    }
 
-**  А так же парные методы:
-***     без аргументов, возвращающий вложенный `Fetcher<X>`
-***     и связанный с ним через `@SelectionKey` метод, принимающий DTO и `X`, который кладет в DTO `X`.
+    @Override
+    public Map<String, UserFetcher<?>> joinAssignee(Collection<IssueEntity> issues) {
+        return JoinUtil.joinToOne(
+            issues,
+            userRepository::joinByIssue, // Select пользователей, которые назначены на issues
+            UserFetcherImpl::new, // Конструктор экземпляра Fetcher для заджойненных пользователей
+            IssueEntity::getKey, // Возвращает идентификатор левой стороны отношения (в данном случае -- идентификатор issue)
+            issueEntity -> issueEntity.getAssignee() == null ? null : issueEntity.getAssignee().getId(), // Возвращает foreign key, по которому происходит соединение
+            IssueEntity.UserEntity::getId // Возвращает идентификатор правой стороны отношения (в данном случае -- пользователя)
+        );
+    }
 
-Как видно реализации `Selection` и `Fetcher` достаточно похожи по структуре.
+}
+----
 
-Имея данные реализации их можно использовать через метод `net.n2oapp.platform.selection.core.Selector.resolve(Fetcher<T>, Selector<T>)`.
+Теперь полностью реализовав необходимые интерфейсы определим наш сервис
 
-Данный метод в начале проверит, что переменную типа `E` интерфейса `Selection<T>` можно присвоить переменной типа `E` интерфейса `Fetcher<T>`.
+[source,java]
+----
+@Service
+@Path("/issues")
+public class IssueService {
 
-Так же он проверит все парные методы fetcher-а на типобезопасность (с учетом дженериков).
-Если где - то будет несоответствие -- будет брошено исключение.
+    private final IssueRepository repository;
+    private final IssueJoinerImpl issueJoiner;
 
-Так же если в `Selection` указан `@SelectionKey`, о котором неизвестно fetcher-у -- будет брошено исключение.
+    public IssueService(
+        IssueRepository repository,
+        IssueJoinerImpl issueJoiner
+    ) {
+        this.repository = repository;
+        this.issueJoiner = issueJoiner;
+    }
 
-Так же если у `Fetcher`-а (или у `Selection`-а) будет вложенный `Fetcher` (или `Selection`), но у соответствующего по
-`@SelectionKey` `Selection`-а (или `Fetcher`-а) не будет вложенного `Selection`-а (или `Fetcher`-а) -- будет брошено исключение.
+    @GET
+    @Path("/")
+    public List<Issue> getIssues(@BeanParam IssueSelection selection) {
+        return joiner.resolveCollection(
+            repository.findAll().map(EmployeeFetcherImpl::new),
+            selection
+        );
+    }
 
-После этого будет произведена выборка полей. Для вложенных полей данный метод будет вызван рекурсивно.
+}
+----
+
+Пример клиентского кода для данного сервиса:
+
+[source,java]
+----
+public void processIssues() {
+    IssueService service = ...;
+    IssueSelection selection = IssueSelection.create().key().project(); // Нам нужны только идентификатор и проект
+    List<Issue> issues = service.getIssues(selection);
+//    ...
+    selection.unselectProject().assignee(
+        UserSelection.create()
+    ); // Добавим assignee и удалим проект из результата
+    issues = service.getIssues(selection);
+//    ...
+    selection.unselectAssignee().propagate(ALL); // Удалим assignee из результата и возьмем все поля с первого уровня вложенности (в данном случае это идентификатор, проект и статус)
+    issues = service.getIssues(selection);
+//    ...
+    selection.propagate(NESTED); // NESTED указывает, что нам нужны все поля модели и любой вложенной модели
+    issues = service.getIssues(selection);
+//    ...
+}
+----
 
 == Ограничения
 
@@ -268,6 +572,7 @@ URI и параметрами (QueryParam) запроса. Так как пар�
 (по сути это отображение `ключ` -> `список значений`) -- очень сложно описать в них иерархическую модель (подобную JSON).
 
 Например, допустим у нас есть класс `Organisation`, в котором есть два поля типа `Address`, юридический и фактический адреса.
+
 [source,java]
 ----
 @Selective
@@ -286,6 +591,7 @@ public class Organisation {
 }
 ----
 Выборки из обоих полей описываются одним и тем же `AddressSelection`:
+
 [source,java]
 ----
 public class OrganisationSelection {
@@ -343,6 +649,7 @@ public class OrganisationSelection {
 В целом у вас есть 3 опции:
 
 * Описывать выборку параметрами запроса, например так:
+
 [source,java]
 ----
 public class SomeCriteria extends RestCriteria {
@@ -368,6 +675,7 @@ public class SomeCriteria extends RestCriteria {
 Это самый правильный и чистый подход
 
 * Описывать выборку в JSON и передавать ее в параметре запроса:
+
 [source,java]
 ----
 public class SomeCriteria extends RestCriteria {
@@ -397,6 +705,7 @@ public class SomeCriteria extends RestCriteria {
 Они кодируют JSON так, чтобы избежать кодирования процентами в строке запроса URI и экономят место (помните, что безопасным лимитом длины URI является 2048 символов). Метод `decode` так же может работать и с не кодированным JSON (для не Java-клиентов).
 
 * Передавать выборку в теле запроса:
+
 [source,java]
 ----
 @Path("/example")
@@ -417,299 +726,7 @@ public class SomeService {
 
 Иначе не стоит использовать данный API.
 
-Так же есть ограничение на присутствие циклов в отображаемых сущностях (будет StackOverflowError). Пока решать ее можно с помощью аннотации `net.n2oapp.platform.selection.api.SelectionIgnore`. В будущем возможно будет механизм, позволяющий отображать двусторонние отношения.
-
-== Проблема N+1
-
-Описание проблемы:
-https://stackoverflow.com/questions/97197/what-is-the-n1-selects-problem-in-orm-object-relational-mapping
-
-Данная проблема сильно ухудшает производительность и уменьшает кол-во пользователей, которых приложение можно обслужить в единицу времени.
-
-Ее решение стандартными средствами `JPA` это API `EntityGraph` и `Criteria API`.
-Однако у данных подходов есть несколько особенностей:
-
-1. Интеграция `Spring` с `JPA` не позволяет определять `EntityGraph` в рантайме. То есть он является статичным и указывается над методом `JpaRepository` (например `findAll`). Это не ложится на модель доступа, предлагаемую данным модулем, в котором клиент сам определяет, какие данные ему нужны (и, следовательно, сам задает `EntityGraph`).
-
-2. Так же оба из них достают данные одним запросом, то есть используют большое кол-во `join`-ов в пределах одного запроса. В БД есть оптимизатор запросов и стоимость построения оптимального плана выполнения возрастает очень быстро с количеством `join`-ов в нем (сложность `O(n!)`).
-
-3. Оба из них работают на уровне сущностей, а не на уровне моделей `DTO`, то есть если предположить типичный каркас сервиса типа (`api`, `impl`, `web`), мы по сути раскрываем реализацию, так как сущности хранятся в модуле `impl`.
-
-4. Оба подхода перестают работать при наличии двух и более `ToMany` отношений (в случае использования `List` будет брошено исключение `MultipleBagFetchException`, в случае `Set` исключения не будет, но производительность очень сильно пострадает из-за `Cartesian Product` (https://stackoverflow.com/a/51055523))
-
-Поэтому данный модуль так же содержит интерфейс `Joiner<T, ID, E, F>`. Подход, предлагаемый им, свободен от приведенных выше особенностей (однако стоит отдельно сказать про второй пункт, что это не всегда плохо. При адекватном количестве `join`-ов в запросе это будет скорее всего быстрее, чем работать через `Joiner`. При 5 `join`-ах в бенчмарке `Joiner` на 28% медленнее (5 миллисекунд против 7 миллисекунд). Если БД и приложение находятся не в одной локальной сети -- этот показатель будет намного хуже).
-
-У него объявлены четыре переменных типа:
-
-* `T` -- тип `DTO`, по аналогии с `T` в интерфейсах `Fetcher` и `Selection`
-
-* `F extends Fetcher<T>` -- `Fetcher`, с которым может работать `Joiner`
-
-* `E` -- Сущность, которую отображает `F` (то есть `Fetcher<T>`)
-
-* `ID` -- идентификатор сущностей `E`
-
-Методы данного интерфейса так же помечаются аннотацией `@SelectionKey` и могут быть двух видов:
-
-* Метод, принимающий `Collection<E>` и возвращающий `Map<ID, Fetcher<X>>`, где `X` -- это тип `DTO` с другой стороны отношения (в примере с сотрудниками выше, для `EmployeeJoiner` и `@SelectionKey("organisation")` в качестве `X` выступала бы `Organisation`)
-
-* Метод в пределах того же `SelectionKey`, возвращающий вложенный `Joiner<X, ?, ?, ?>`. Этот метод является опциональным и дополняет первый. Для примера выше `EmployeeJoiner` возвращал бы для `@SelectionKey("organisation)` `OrganisationJoiner`, который бы смог заджойнить контакты организаций.
-
-Экземпляр `Joiner`-а в общем случае должен быть `stateless`, потому что он не хранит данный, а лишь предоставляет функциональность.
-
-Типичная реализация `Joiner`-а для примера выше может выглядеть так:
-
-[source,java]
-----
-public class EmployeeJoinerImpl implements EmployeeJoiner<Integer, Employee, EmployeeFetcherImpl> {
-
-    @Autowired
-    private OrganisationRepository organisationRepository;
-
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
-    @Autowired
-    private OrganisationJoiner organisationJoiner;
-
-    @SelectionKey("organisation")
-    public Map<Integer, Fetcher<Organisation>> joinOrganisation(Collection<Employee> employees) {
-//      делаем prefetch организаций.
-//      Так как это ToOne отношение и Employee является является его owner-ом
-//      (потому что на нем объявлен JoinColumn) --
-//      hibernate закеширует его в Employee и при вызове Employee#getOrganisation запроса в базу не будет
-        organisationRepository.findEmployeeOrganisations(employees);
-        Map<Integer, Fetcher<Organisation>> result = new HashMap<>();
-        for (Employee owner : employees) {
-            Organisation prefetchedOtherSide = owner.getOrganisation(); // запроса в базу не будет
-            if (prefetchedOtherSide != null) {
-                Fetcher<Organisation> fetcher = new OrganisationFetcherImpl(prefetchedOtherSide);
-                result.put(owner.getId(), fetcher);
-            }
-        }
-        return result;
-    }
-
-    @SelectionKey("organisation")
-    public OrganisationJoinerImpl organisationJoiner() {
-        return organisationJoiner;
-    }
-
-    @SelectionKey("contacts")
-//  Так как это ToMany отношение (у сотрудника есть несколько контактов) --
-//  мы должны вернуть   список Fetcher<Contact> для каждого Employee
-    public Map<Integer, List<Fetcher<Contact>>> joinContacts(Collection<Employee> employees) {
-        Map<Integer, List<Fetcher<Contact>>> result = new HashMap<>();
-        Iterable<Contact> contacts = contactRepository.findContactsOfEmployees(employees); // запрос за контактами в БД
-        for (Contact child : contacts) {
-            Fetcher<Contact> fetcher = new EmployeeFetcherImpl.ContactFetcherImpl(child);
-            Integer ownerEmployeeId = child.getOwner().getId();
-            result.computeIfAbsent(ownerEmployeeId, ignored -> new ArrayList<>(1)).add(fetcher);
-        }
-        return result;
-    }
-
-    @Override
-    public Integer getId(Employee entity) {
-        return entity.getId();
-    }
-
-    @Override
-    public Employee getUnderlyingEntity(EmployeeFetcherImpl fetcher) {
-        return fetcher.src;
-    }
-
-}
-----
-
-Код выше является довольно шаблонным и поэтому, вместо его написания каждый раз стоит пользоваться статическими методами класса `net.n2oapp.platform.selection.api.JoinUtil`. Переписав `join` методы выше, это будет выглядеть следующим образом:
-[source,java]
-----
-@SelectionKey("organisation")
-public Map<Integer, Fetcher<Organisation>> joinOrganisation(Collection<Employee> employees) {
-    return JoinUtil.joinUnidirectionalToOnePrefetching(
-            employees,
-            organisationRepository::findEmployeeOrganisations,
-            OrganisationFetcherImpl::new,
-            Employee::getOrganisation,
-            Employee::getId
-    );
-}
-
-@SelectionKey("contacts")
-public Map<Integer, List<Fetcher<Contact>>> joinContacts(Collection<Employee> employees) {
-    return JoinUtil.joinBidirectionalOneToMany(
-            employees,
-            contactRepository::findContactsOfEmployees,
-            EmployeeFetcherImpl.ContactFetcherImpl::new,
-            contact -> contact.getOwner().getId()
-    );
-}
-----
-
-Напоследок нужно сказать, что при использовании `Joiner`-а вам следует делать больщую часть своих отношений `lazy`. Исключение можно сделать для случаев, когда с другой стороны отношения стоит небольшая по размеру таблица (например справочник регионов РФ и тому подобное).
-
-== Генерация интерфейсов `Fetcher`, `Selection` и `Joiner` по `DTO`
-
-Добавьте зависимость
-[source,xml]
-----
-<dependency>
-    <groupId>net.n2oapp.platform</groupId>
-    <artifactId>n2o-platform-selection-processor</artifactId>
-    <scope>compile</scope>
-</dependency>
-----
-
-И укажите
-[source,xml]
-----
-<build>
-    <plugins>
-        <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <executions>
-                <execution>
-                    <id>generate-sources</id>
-                    <phase>generate-sources</phase>
-                    <goals>
-                        <goal>compile</goal>
-                    </goals>
-                    <configuration>
-                        <annotationProcessors>
-                            <annotationProcessor>net.n2oapp.platform.selection.processor.SelectionProcessor</annotationProcessor>
-                        </annotationProcessors>
-                        <compilerArgs>
-                            <arg>-Anet.n2oapp.platform.selection.addJacksonTyping=?</arg>
-                            <arg>-Anet.n2oapp.platform.selection.addJaxRsAnnotations=?</arg>
-                            <arg>-Anet.n2oapp.platform.selection.overrideSelectionKeys</arg>
-                        </compilerArgs>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
-    </plugins>
-</build>
-----
-
-В `n2o-platform-selection-api` есть аннотация `@Selective`.
-Она указывается над классом `DTO` и говорит о том, что выборка полей данного `DTO` происходит выборочно,
-то есть через механизм, описанный выше.
-
-Генератор кода распознает данную аннотацию и сгенерирует интерфейсы `Selection`, `Fetcher` и `Joiner` для каждого `DTO`.
-
-Для отдельных полей `DTO` так же можно указать аннотацию `@Joined(withNestedJoiner = true/false)`.
-
-Также он сгенерирует дефолтную реализацию для каждого интерфейса `Selection`.
-
-У генератора кода есть три опции `net.n2oapp.platform.selection.addJacksonTyping`, `net.n2oapp.platform.selection.addJaxRsAnnotations` и `net.n2oapp.platform.selection.overrideSelectionKeys`.
-
-Первая добавляет типизацию для Jackson-а. По-умолчанию `true`, если при компиляции присутствует аннотация `JsonTypeInfo`.
-
-Вторая добавляет аннотации JAX-RS. Это позволяет передавать `Selection`-ы в параметрах запроса HTTP. По-умолчанию `true`, если при компиляции присутствует аннотация `QueryParam`.
-
-Последняя (по-умолчанию `true`) указывает, что в дефолтных реализациях `Selection` при наличии наследования между ними в подклассах следует переопределять методы. Например, если есть:
-[source,java]
-----
-public class BaseModel {
-    private Integer id;
-}
-----
-
-Для нее, помимо интерфейса, будет сгенерирован дефолтный `Selection`
-[source,java]
-----
-public class DefaultBaseModelSelection<A extends BaseModel> implements BaseModelSelection<A> {
-
-	@QueryParam("baseModelPropagation")
-	protected SelectionPropagationEnum propagation;
-
-	public SelectionPropagationEnum getPropagation() {
-		return propagation;
-	}
-
-	public void setPropagation(SelectionPropagationEnum propagation) {
-		this.propagation = propagation;
-	}
-
-	@Override
-	public SelectionPropagationEnum propagation() {
-		return propagation;
-	}
-
-	public DefaultBaseModelSelection<A> propagate(SelectionPropagationEnum propagation) {
-		this.propagation = propagation;
-		return this;
-	}
-
-	@QueryParam("baseModelId")
-	private SelectionEnum id;
-
-	@Override
-	public SelectionEnum getId() {
-		return id;
-	}
-
-	public void setId(SelectionEnum id) {
-		this.id = id;
-	}
-
-	/**
-    * Будет переопределен
-    */
-	public DefaultBaseModelSelection<A> id() {
-		this.id = SelectionEnum.T;
-		return this;
-	}
-
-	/**
-    * Будет переопределен
-    */
-	public DefaultBaseModelSelection<A> unselectId() {
-		this.id = SelectionEnum.F;
-		return this;
-	}
-
-}
-----
-
-Если у BaseModel есть наследник `SomeModel`, и указана опция `overrideSelectionKeys`, то для `SomeModel` дефолтная реализация будет такой:
-[source,java]
-----
-public class DefaultSomeModelSelection extends DefaultBaseModelSelection<SomeModel> implements SomeModelSelection {
-
-	public DefaultSomeModelSelection propagate(SelectionPropagationEnum propagation) {
-		this.propagation = propagation;
-		return this;
-	}
-
-	/**
-    * Переопределено из DefaultBaseModelSelection
-    */
-	@Override
-	public DefaultSomeModelSelection id() {
-		return (DefaultSomeModelSelection) super.id();
-	}
-
-
-	/**
-    * Переопределено из DefaultBaseModelSelection
-    */
-	@Override
-	public DefaultSomeModelSelection unselectId() {
-		return (DefaultSomeModelSelection) super.unselectId();
-	}
-
-}
-----
-
-Это позволяет использовать `call-chain` (по аналогии с методами `append` класса `StringBuilder`) без явных кастов. Например:
-[source,java]
-----
-DefaultSomeModelSelection selection = SomeModelSelection.create().id(); // тут потребуется явный каст, если бы переопределения не было
-----
-
-Главное преимущество в использовании генератора кода -- типобезопасность.
+Так же есть ограничение на присутствие циклов в отображаемых сущностях (будет StackOverflowError). Пока решать ее можно с помощью аннотации `net.n2oapp.platform.selection.api.SelectionIgnore`. В будущем это возможно будет реализовано.
 
 == Почему не GraphQL
 

@@ -1,38 +1,45 @@
 package net.n2oapp.platform.selection.processor;
 
 import net.n2oapp.platform.selection.api.Fetcher;
+import net.n2oapp.platform.selection.api.Selection;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.*;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 class SelectionMeta {
-
-    public static final String EXTENDS = "? extends ";
 
     private final TypeElement target;
     private final SelectionMeta parent;
     private final List<SelectionMeta> children = new ArrayList<>();
-    private final GenericSignature genericSignature;
+    private final GenericSignature selectionGenericSignature;
+    private final GenericSignature fetcherGenericSignature;
     private final GenericSignature joinerGenericSignature;
     private final TypeMirror extendsType;
-    private final String extendsSignature;
+    private final String selectionExtendsSignature;
     private final String joinerExtendsSignature;
+    private final String fetcherExtendsSignature;
     private final String idTypeVariable;
     private final String entityTypeVariable;
-    private final List<SelectionProperty> properties;
-    private final String fetcherTarget;
+    private final String modelType;
+    private final String fetcherTypeVariable;
+    private final String selectionTypeVariable;
+    private final String selectionType;
+    private final String fetcherType;
+    private final LinkedHashMap<String, SelectionProperty> properties;
+    private final LinkedHashMap<String, SelectionProperty> unresolvedProperties;
     private final boolean isAbstract;
     private final String prefix;
-
-    private boolean rawUse;
 
     private String jacksonTypeTag;
 
@@ -40,39 +47,55 @@ class SelectionMeta {
             TypeElement target,
             SelectionMeta parent,
             boolean hasChildren,
-            GenericSignature genericSignature,
+            GenericSignature selectionGenericSignature,
             Types types,
             String prefix
     ) {
         this.target = target;
         this.parent = parent;
-        this.genericSignature = genericSignature;
+        this.selectionGenericSignature = selectionGenericSignature;
         if (prefix == null) {
             String str = target.getSimpleName().toString();
             prefix = Character.toLowerCase(str.charAt(0)) + str.substring(1);
         }
         this.prefix = prefix.strip();
-        this.properties = new ArrayList<>(0);
+        this.properties = new LinkedHashMap<>();
+        this.unresolvedProperties = new LinkedHashMap<>();
         this.isAbstract = target.getModifiers().stream().anyMatch(Modifier.ABSTRACT::equals);
         this.extendsType = getExtendsType(types);
-        if (
-                (isAbstract || hasChildren) && (
-                        parent == null ||
-                                (parent.genericSignature.getSelfVariable() != null && (parent.genericSignature.noGenericsDeclared() || !extendsTypeEmpty()))
-                )
-        ) {
-            genericSignature.createSelfVariable();
+        if (isAbstract || hasChildren) {
+            selectionGenericSignature.createSelfVariable();
         }
-        this.extendsSignature = resolveExtendsSignature();
-        this.fetcherTarget = resolveFetcherTarget();
-        this.joinerGenericSignature = genericSignature.copy();
+        this.selectionExtendsSignature = resolveExtendsSignature();
+        this.modelType = resolveModelType();
+        this.fetcherGenericSignature = selectionGenericSignature.copy();
+        if (selectionGenericSignature.getSelfVariable() != null) {
+            this.selectionTypeVariable = fetcherGenericSignature.allocateVar("S");
+            this.fetcherGenericSignature.addTypeVariable(this.selectionTypeVariable, resolveSelectionType());
+            this.selectionType = selectionTypeVariable;
+        } else {
+            selectionTypeVariable = null;
+            this.selectionType = resolveSelectionType();
+        }
+        this.entityTypeVariable = fetcherGenericSignature.allocateVar("E");
+        this.fetcherGenericSignature.addTypeVariable(entityTypeVariable, null);
+        this.fetcherExtendsSignature = join(selectionExtendsSignature, selectionTypeVariable == null ? selectionType : selectionTypeVariable, entityTypeVariable);
+        this.joinerGenericSignature = fetcherGenericSignature.copy();
+        if (selectionGenericSignature.getSelfVariable() != null) {
+            this.fetcherTypeVariable = joinerGenericSignature.allocateVar("F");
+            this.fetcherType = fetcherTypeVariable;
+            this.joinerGenericSignature.addTypeVariable(fetcherTypeVariable, resolveFetcherType());
+        } else {
+            this.fetcherType = resolveFetcherType();
+            this.fetcherTypeVariable = null;
+        }
         this.idTypeVariable = joinerGenericSignature.allocateVar("ID");
-        this.entityTypeVariable = joinerGenericSignature.allocateVar("E");
-        String fetcherTypeVariable = joinerGenericSignature.allocateVar("F");
         this.joinerGenericSignature.addTypeVariable(idTypeVariable, null);
-        this.joinerGenericSignature.addTypeVariable(entityTypeVariable, null);
-        this.joinerGenericSignature.addTypeVariable(fetcherTypeVariable, Fetcher.class.getCanonicalName() + "<" + fetcherTarget + ">");
-        this.joinerExtendsSignature = String.join(", ", extendsSignature, idTypeVariable, entityTypeVariable, fetcherTypeVariable);
+        this.joinerExtendsSignature = join(fetcherExtendsSignature, fetcherTypeVariable == null ? fetcherType : fetcherTypeVariable, idTypeVariable);
+    }
+
+    private String join(String...strs) {
+        return String.join(", ", strs);
     }
 
     String getPrefix() {
@@ -87,14 +110,20 @@ class SelectionMeta {
         return prefix;
     }
 
-    boolean isRawUse() {
-        return rawUse;
+    private String resolveModelType() {
+        if (selectionGenericSignature.getSelfVariable() != null)
+            return selectionGenericSignature.getSelfVariable();
+        return target.getQualifiedName().toString() + selectionGenericSignature.varsToString(false);
     }
 
-    private String resolveFetcherTarget() {
-        if (genericSignature.getSelfVariable() != null)
-            return genericSignature.getSelfVariable();
-        return target.getQualifiedName().toString() + genericSignature.varsToString(false);
+    private String resolveSelectionType() {
+        PackageElement targetPackage = getTargetPackage();
+        return targetPackage + "." + getTarget().getSimpleName().toString() + Selection.class.getSimpleName() + selectionGenericSignature.varsToString(true);
+    }
+
+    private String resolveFetcherType() {
+        PackageElement targetPackage = getTargetPackage();
+        return targetPackage + "." + getTarget().getSimpleName().toString() + Fetcher.class.getSimpleName() + fetcherGenericSignature.varsToString(true);
     }
 
     private boolean extendsTypeEmpty() {
@@ -103,42 +132,37 @@ class SelectionMeta {
 
     private String resolveExtendsSignature() {
         if (parent == null) {
-            if (genericSignature.getSelfVariable() != null)
-                return genericSignature.getSelfVariable(); // first class in the hierarchy of selectors/fetchers
+            if (selectionGenericSignature.getSelfVariable() != null)
+                return selectionGenericSignature.getSelfVariable(); // first class in the hierarchy
             return target.getQualifiedName().toString(); // no children and not abstract class
         } else {
-            if (!parent.genericSignature.noGenericsDeclared()) { // parent's generic signature contains self variable and at least one type variable
+            if (!parent.selectionGenericSignature.noGenericsDeclared()) { // parent's generic signature contains self variable and at least one type variable
                 if (extendsTypeEmpty()) { // raw use
-                    rawUse = true;
-                    return "";
+                    throw new RawUseException();
                 } else {
-                    if (this.genericSignature.noGenericsDeclared()) { // no type variables declared on this class
-                        String var = this.genericSignature.getSelfVariable();
+                    if (this.selectionGenericSignature.noGenericsDeclared()) { // no type variables declared on this class
+                        String var = this.selectionGenericSignature.getSelfVariable();
                         String temp = getGenerics(extendsType.toString());
                         if (var == null) { // no children and not abstract class
-                            return (parent.genericSignature.getSelfVariable() == null ? "" : target.getQualifiedName().toString() + ", ") + temp;
+                            return target.getQualifiedName().toString() + ", " + temp;
                         } else {
                             return var + ", " + temp;
                         }
                     } else {
-                        String var = this.genericSignature.getSelfVariable();
-                        String temp = var == null ? target.getQualifiedName().toString() + genericSignature.varsToString(true) : var;
-                        return (parent.genericSignature.getSelfVariable() == null ? "" : temp + ", ") + getGenerics(extendsType.toString());
+                        String var = this.selectionGenericSignature.getSelfVariable();
+                        String temp = var == null ? target.getQualifiedName().toString() + selectionGenericSignature.varsToString(true) : var;
+                        return temp + ", " + getGenerics(extendsType.toString());
                     }
                 }
-            } else { // parent's generic signature contains either no type variables or only self variable
-                if (parent.genericSignature.isEmpty()) // no variables...
-                    return "";
-                else { // parent's generic signature contains only self variable
-                    if (this.genericSignature.isEmpty()) { // this class is not abstract, doesn't have children and no type variables declared on it
-                        return target.getQualifiedName().toString();
-                    } else {
-                        String var = this.genericSignature.getSelfVariable();
-                        if (var == null) { // no children and not abstract
-                            return target.getQualifiedName().toString() + genericSignature.varsToString(true);
-                        } else { // has children or abstract
-                            return var;
-                        }
+            } else { // parent's generic signature contains only self variable
+                if (this.selectionGenericSignature.isEmpty()) { // this class is not abstract, doesn't have children and no type variables declared on it
+                    return target.getQualifiedName().toString();
+                } else {
+                    String var = this.selectionGenericSignature.getSelfVariable();
+                    if (var == null) { // no children and not abstract
+                        return target.getQualifiedName().toString() + selectionGenericSignature.varsToString(true);
+                    } else { // has children or abstract
+                        return var;
                     }
                 }
             }
@@ -188,67 +212,57 @@ class SelectionMeta {
         return target;
     }
 
-    void addProperty(String key, TypeMirror originalType, TypeMirror type, SelectionMeta nested, TypeMirror collectionRawType, boolean joined, boolean withNestedJoiner) {
-        if (nested == null)
-            properties.add(new SelectionProperty(key));
+    void addProperty(
+        String name,
+        Element member,
+        TypeMirror originalType,
+        TypeMirror modelType,
+        SelectionMeta selection,
+        TypeMirror collectionType,
+        boolean joined,
+        boolean withNestedJoiner
+    ) {
+        if (selection == null)
+            properties.put(name, new SelectionProperty(name, originalType, member, joined));
         else {
-            boolean raw = false;
-            boolean wildcard = false;
-            String nestedGenericSignature;
-            if (type instanceof WildcardType) {
-                wildcard = true;
-                type = ((WildcardType) type).getExtendsBound();
+            String generics;
+            if (modelType instanceof WildcardType) {
+                modelType = ((WildcardType) modelType).getExtendsBound();
             }
-            if (type instanceof TypeVariable) {
-                String var = type.toString();
-                if (nested.genericSignature.noGenericsDeclared()) {
-                    if (nested.genericSignature.getSelfVariable() != null)
-                        nestedGenericSignature = (wildcard || collectionRawType == null ? EXTENDS : "") + var;
-                    else
-                        nestedGenericSignature = "";
-                } else {
-                    String generics = getGenerics(genericSignature.getVariableBounds(var)[0]);
-                    if (nested.genericSignature.getSelfVariable() == null) {
-                        nestedGenericSignature = generics;
-                    } else {
-                        if (generics.isEmpty()) {
-                            // raw use, fallback to wildcards
-                            generics = IntStream.range(0, nested.genericSignature.size() - 1).mapToObj(i -> "?").collect(Collectors.joining(", "));
-                            raw = true;
-                        }
-                        nestedGenericSignature = (wildcard || collectionRawType == null ? EXTENDS : "") + var + ", " + generics;
-                    }
-                }
+            LinkedHashMap<String, SelectionProperty> targetProperties;
+            if (TypeUtil.containsTypeVariables(modelType)) {
+                targetProperties = unresolvedProperties;
+                generics = null;
             } else {
-                if (nested.genericSignature.noGenericsDeclared()) {
-                    if (nested.genericSignature.getSelfVariable() != null)
-                        nestedGenericSignature = (wildcard || collectionRawType == null ? EXTENDS : "") + nested.target.getQualifiedName().toString();
+                targetProperties = properties;
+                if (selection.selectionGenericSignature.noGenericsDeclared()) {
+                    if (selection.selectionGenericSignature.getSelfVariable() != null)
+                        generics = selection.target.getQualifiedName().toString();
                     else
-                        nestedGenericSignature = "";
+                        generics = "";
                 } else {
-                    DeclaredType declaredType = (DeclaredType) type;
+                    DeclaredType declaredType = (DeclaredType) modelType;
                     if (declaredType.getTypeArguments().isEmpty()) {
-                        nestedGenericSignature = ""; // raw use
-                        raw = true;
+                        throw new RawUseException();
                     } else {
-                        if (nested.genericSignature.getSelfVariable() != null) {
-                            nestedGenericSignature = (wildcard || collectionRawType == null ? EXTENDS : "") + type.toString() + ", " + getGenerics(type.toString());
+                        if (selection.selectionGenericSignature.getSelfVariable() != null) {
+                            generics = modelType.toString() + ", " + getGenerics(modelType.toString());
                         } else {
-                            nestedGenericSignature = getGenerics(type.toString());
+                            generics = getGenerics(modelType.toString());
                         }
                     }
                 }
             }
-            properties.add(new SelectionProperty(key, nestedGenericSignature, nested, type, originalType, collectionRawType, this, joined, withNestedJoiner, raw));
+            targetProperties.put(name, new SelectionProperty(name, member, originalType, modelType, selection, generics, collectionType, joined, withNestedJoiner));
         }
     }
 
-    GenericSignature getGenericSignature() {
-        return genericSignature;
+    Collection<SelectionProperty> getProperties() {
+        return properties.values();
     }
 
-    List<SelectionProperty> getProperties() {
-        return properties;
+    public Collection<SelectionProperty> getUnresolvedProperties() {
+        return unresolvedProperties.values();
     }
 
     SelectionMeta getParent() {
@@ -256,17 +270,29 @@ class SelectionMeta {
     }
 
     String getExtendsSignatureNoBrackets() {
-        return extendsSignature;
+        return selectionExtendsSignature;
     }
 
-    String getExtendsSignature() {
-        if (extendsSignature.isEmpty())
+    String getSelectionExtendsSignature() {
+        return getExtendsSignature(selectionExtendsSignature);
+    }
+
+    String getFetcherExtendsSignature() {
+        return getExtendsSignature(fetcherExtendsSignature);
+    }
+
+    String getJoinerExtendsSignature() {
+        return getExtendsSignature(joinerExtendsSignature);
+    }
+
+    private String getExtendsSignature(String signature) {
+        if (signature.isEmpty())
             return "";
-        return "<" + extendsSignature + ">";
+        return "<" + signature + ">";
     }
 
-    String getFetcherTarget() {
-        return fetcherTarget;
+    String getModelType() {
+        return modelType;
     }
 
     String getJacksonTypeTag() {
@@ -297,12 +323,24 @@ class SelectionMeta {
         return isAbstract;
     }
 
+    GenericSignature getSelectionGenericSignature() {
+        return selectionGenericSignature;
+    }
+
+    GenericSignature getFetcherGenericSignature() {
+        return fetcherGenericSignature;
+    }
+
     GenericSignature getJoinerGenericSignature() {
         return joinerGenericSignature;
     }
 
-    String getJoinerExtendsSignature() {
-        return joinerExtendsSignature.isBlank() ? "" : "<" + joinerExtendsSignature + ">";
+    String getSelectionTypeVariable() {
+        return selectionTypeVariable;
+    }
+
+    String getFetcherTypeVariable() {
+        return fetcherTypeVariable;
     }
 
     String getIdTypeVariable() {
@@ -311,6 +349,18 @@ class SelectionMeta {
 
     String getEntityTypeVariable() {
         return entityTypeVariable;
+    }
+
+    String getFetcherType() {
+        return fetcherType;
+    }
+
+    String getSelectionType() {
+        return selectionType;
+    }
+
+    boolean containsResolvedProperty(String name) {
+        return properties.containsKey(name);
     }
 
 }

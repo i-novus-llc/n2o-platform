@@ -1,79 +1,106 @@
 package net.n2oapp.platform.selection.api;
 
+import org.springframework.data.util.Streamable;
 import org.springframework.lang.NonNull;
 
+import java.util.*;
+import java.util.function.Supplier;
+
+import static java.util.stream.Collectors.toCollection;
+
 /**
- * Интерфейс, который группирует запросы и тем самым позволяет избежать проблемы {@code N+1}<br><br>
- *
- * Методы, помеченные {@link SelectionKey} могут быть двух видов:<br><br>
- * 1) Обязательный метод, возвращающий {@link java.util.Map}.<br>
- * Ключом в Map является идентификатор отображаемой сущности, а значением -- либо Fetcher, либо список Fetcher-ов.<br><br>
- *
- * 2) Опциональный метод в пределах того же {@link SelectionKey}, который возвращает вложеннный {@link Joiner}.<br><br>
- *
- * Так же методы, помеченные {@link SelectionKey}, предпочтительно должны быть as-lazy-as-possible.
- * Например, для сущностей {@code JPA} и их репозиториев это означает,
- *  что все ассоциации должны быть lazy. Например:
- *  <pre>
- *       &#064;Entity
- *       public class ParentEntity {
- *           &#064;JoinColumn
- *           &#064;ManyToOne(fetch = FetchType.LAZY)
- *           private ChildEntity child;
- *       }
- *  </pre>
- *  Иногда можно сделать исключение (для JPA это например если в JOIN-ed таблице небольшое кол-во записей)<br><br>
- *
- *  Пример простого Joiner-а:
- *  <pre>
- *      // Предположим, что первичным ключом сотрудника является Integer.
- *      // Так же у сотрудника есть организация, которой он принадлежит и отношение определено как LAZY
- *      public class EmployeeJoiner&lt;EmployeeDTO, Integer, EmployeeEntity, EmployeeFetcher&gt; {
- *
- *          private final OrganisationRepository repository;
- *
- *          public EmployeeJoiner(OrganisationRepository repository) {
- *              this.repository = repository;
- *          }
- *
- *          &#064;SelectionKey("organisation")
- *          public Map&lt;Integer, Fetcher&lt;Organisation&gt;&gt; joinOrganisation(Collection&lt;Employee&gt; employees) {
- *             organisationRepository.findEmployeeOrganisations(employees); // Делаем prefetch организаций
- *             Map&lt;Integer, Fetcher&lt;Organisation&gt;&gt; result = new HashMap&lt;&gt;();
- *             for (Employee employee : employees) {
- *                 if (employee.getOrganisation() != null) { // так как мы сделали prefetch -- hibernate проставил их в нашу сущность EmployeeEntity и запроса в базу при доступе к организации уже не будет
- *                     result.put(employee.getId(), new OrganisationFetcherImpl(employee.getOrganisation()));
- *                 }
- *             }
- *             return result;
- *         }
- *
- *         //Вложенный joiner (он сделает join полей организации)
- *         &#064;SelectionKey("organisation")
- *         public OrganisationJoiner organisationJoiner() {
- *             return new OrganisationJoinerImpl();
- *         }
- *
- *      }
- *  </pre>
- *  <br>
- *
- *  @param <T> Тип элементов (моделей DTO)
- *  @param <ID> Тип идентификаторов сущностей
- *  @param <E> Тип отображаемой сущности
- *  @param <F> {@link Fetcher}, с которым может работать этот Joiner
+ * Группировщик запросов
+ * @param <T> Тип модели (DTO)
+ * @param <S> Тип выборки {@link Selection}
+ * @param <E> Тип отображаемой сущности
+ * @param <F> Тип {@link Fetcher}
+ * @param <ID> Тип, по которому идентифицируются сущности
  */
-public interface Joiner<T, ID, E, F extends Fetcher<T>> {
+public interface Joiner<T, S extends Selection<T>, E, F extends Fetcher<T, S, E>, ID> {
 
     /**
-     * @param entity Сущность, полученная через {@link #getUnderlyingEntity(Fetcher)}
-     * @return Идентификатор, по которому будет происходить группировка результатов запроса (не {@code null})
+     * @return Идентификатор отображаемой сущности
      */
-    @NonNull ID getId(@NonNull E entity);
+    @NonNull
+    ID getId(E entity);
 
     /**
-     * @return Сущность, которую отображает {@code fetcher}
+     * Данный метод не должен использоваться напрямую.
+     * Вместо него следует использовать методы {@code resolve*}, определенные ниже
      */
-    @NonNull E getUnderlyingEntity(@NonNull F fetcher);
+    Joiner.Resolution<T, E, ID> resolveIterable(Iterable<? extends F> fetchers, S selection, SelectionPropagation propagation);
+
+    default T resolve(F fetcher, S selection) {
+        List<T> resolved = resolveCollection(Collections.singleton(fetcher), selection);
+        if (resolved == null)
+            return null;
+        return resolved.get(0);
+    }
+
+    default <C extends Collection<T>> C resolveCollection(
+        Collection<? extends F> fetchers,
+        S selection,
+        Supplier<? extends C> collectionSupplier
+    ) {
+        if (selection == null)
+            return null;
+        Resolution<T, E, ID> resolution = resolveIterable(fetchers, selection, selection.propagation());
+        if (resolution == null)
+            return null;
+        return fetchers.stream().map(fetcher ->
+            getFromResolvedMap(resolution.models, fetcher)
+        ).collect(toCollection(collectionSupplier));
+    }
+
+    default List<T> resolveCollection(Collection<? extends F> fetchers, S selection) {
+        return resolveCollection(fetchers, selection, ArrayList::new);
+    }
+
+    @SuppressWarnings("unchecked")
+    default<I extends Streamable<T>> I resolveStreamable(
+        Streamable<? extends F> fetchers,
+        S selection
+    ) {
+        if (selection == null)
+            return null;
+        Resolution<T, E, ID> resolution = resolveIterable(fetchers, selection, selection.propagation());
+        if (resolution == null)
+            return null;
+        Streamable<T> resolved = fetchers.map(fetcher ->
+            getFromResolvedMap(resolution.models, fetcher)
+        );
+        return (I) resolved;
+    }
+
+    private T getFromResolvedMap(Map<ID, T> map, F f) {
+        return map.get(Objects.requireNonNull(getId(f.getUnderlyingEntity())));
+    }
+
+    class Resolution<T, E, ID> {
+
+        private static final Resolution<?, ?, ?> EMPTY = new Resolution<>(Collections.emptyList(), Collections.emptyMap());
+
+        public final Collection<E> entities;
+        @SuppressWarnings("java:S1319")
+        public final Map<ID, T> models;
+
+        private Resolution(Collection<E> entities, Map<ID, T> models) {
+            this.entities = entities;
+            this.models = models;
+        }
+
+        public static <T, E, ID> Resolution<T, E, ID> from(
+            Collection<E> entities,
+            @SuppressWarnings("java:S1319") LinkedHashMap<ID, T> models
+        ) {
+            return new Resolution<>(entities, models);
+        }
+
+        @SuppressWarnings("unchecked")
+        public static <T, E, ID> Resolution<T, E, ID> empty() {
+            return (Resolution<T, E, ID>) EMPTY;
+        }
+
+    }
 
 }
