@@ -89,6 +89,28 @@ class SelectionSerializer extends AbstractSerializer {
         if (overrideSelectionKeys)
             overrideSelectionKeys(meta, out, self);
         overrideIsEmptyMethod(meta, out);
+        overrideCopyMethod(meta, self, out);
+    }
+
+    private void overrideCopyMethod(
+        final SelectionMeta meta,
+        final String self,
+        final Writer out
+    ) throws IOException {
+        if (meta.getParent() != null) {
+            appendOverride(out);
+        }
+        out.append("\tpublic ").append(self).append(" copy(").append(Selection.class.getCanonicalName()).append(" selection) {\n");
+        out.append("\t\tif (selection instanceof ").append(getQualifiedName(meta)).append(") {\n");
+        out.append("\t\t\t").append(getQualifiedName(meta)).append(" source = (").append(getQualifiedName(meta)).append(") selection;\n");
+        for (final SelectionProperty property : meta.getProperties()) {
+            out.append("\t\t\tthis.").append(property.getName()).append(" = ").append("source.").append(property.getName()).append(";\n");
+        }
+        out.append("\t\t}\n");
+        if (meta.getParent() != null)
+            out.append("\t\tsuper.copy(selection);\n");
+        out.append("\t\treturn this;\n");
+        out.append("\t}\n\n");
     }
 
     private void appendSelectionEnumAccessors(Writer out, SelectionMeta meta) throws IOException {
