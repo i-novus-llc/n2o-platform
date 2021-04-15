@@ -8,7 +8,7 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-boot-dependencies</artifactId>
-        <version>4.2.7-SNAPSHOT</version>
+        <version>4.2.7</version>
         <relativePath>../n2o-platform-dependencies</relativePath>
     </parent>
 
