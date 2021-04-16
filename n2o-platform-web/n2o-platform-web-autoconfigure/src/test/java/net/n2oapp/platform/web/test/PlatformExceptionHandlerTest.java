@@ -4,6 +4,7 @@ import net.n2oapp.framework.api.exception.N2oException;
 import net.n2oapp.framework.api.exception.N2oUserException;
 import net.n2oapp.framework.api.exception.ValidationMessage;
 import net.n2oapp.framework.api.metadata.global.dao.object.N2oObject;
+import net.n2oapp.framework.api.metadata.global.dao.object.field.ObjectSimpleField;
 import net.n2oapp.framework.api.metadata.local.CompiledObject;
 import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.RestException;
@@ -124,12 +125,12 @@ public class PlatformExceptionHandlerTest {
     public void handleMultipleErrorsFromJaxRsClient() {
         PlatformExceptionHandler handler = new PlatformExceptionHandler();
 
-        N2oObject.Parameter inParam1 = new N2oObject.Parameter();
+        ObjectSimpleField inParam1 = new ObjectSimpleField();
         inParam1.setValidationFailKey("create.arg0.name");
-        N2oObject.Parameter inParam2 = new N2oObject.Parameter();
+        ObjectSimpleField inParam2 = new ObjectSimpleField();
         inParam2.setValidationFailKey("create.arg0.age");
-        CompiledObject.Operation operation = new CompiledObject.Operation(
-                Map.of("name", inParam1, "age", inParam2), null);
+        CompiledObject.Operation operation = new CompiledObject.Operation();
+        operation.setInParametersMap(Map.of("name", inParam1, "age", inParam2));
 
         RestMessage restMessage = new RestMessage(Arrays.asList(
                 new RestMessage.ConstraintViolationError("Не должно равняться нулю", "create.arg0.name", null, null, null),
