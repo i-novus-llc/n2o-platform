@@ -25,10 +25,12 @@ class SelectionMeta {
     private final GenericSignature selectionGenericSignature;
     private final GenericSignature fetcherGenericSignature;
     private final GenericSignature joinerGenericSignature;
+    private final GenericSignature spyGenericSignature;
     private final TypeMirror extendsType;
     private final String selectionExtendsSignature;
     private final String joinerExtendsSignature;
     private final String fetcherExtendsSignature;
+    private final String spyExtendsSignature;
     private final String idTypeVariable;
     private final String entityTypeVariable;
     private final String modelType;
@@ -68,18 +70,20 @@ class SelectionMeta {
         }
         this.selectionExtendsSignature = resolveExtendsSignature();
         this.modelType = resolveModelType();
-        this.fetcherGenericSignature = selectionGenericSignature.copy();
+        this.spyGenericSignature = selectionGenericSignature.copy();
         if (selectionGenericSignature.getSelfVariable() != null) {
-            this.selectionTypeVariable = fetcherGenericSignature.allocateVar("S");
-            this.fetcherGenericSignature.addTypeVariable(this.selectionTypeVariable, resolveSelectionType());
+            this.selectionTypeVariable = spyGenericSignature.allocateVar("S");
+            this.spyGenericSignature.addTypeVariable(this.selectionTypeVariable, resolveSelectionType());
             this.selectionType = selectionTypeVariable;
         } else {
             selectionTypeVariable = null;
             this.selectionType = resolveSelectionType();
         }
+        this.spyExtendsSignature = join(selectionExtendsSignature, selectionTypeVariable == null ? selectionType : selectionTypeVariable);
+        this.fetcherGenericSignature = spyGenericSignature.copy();
         this.entityTypeVariable = fetcherGenericSignature.allocateVar("E");
         this.fetcherGenericSignature.addTypeVariable(entityTypeVariable, null);
-        this.fetcherExtendsSignature = join(selectionExtendsSignature, selectionTypeVariable == null ? selectionType : selectionTypeVariable, entityTypeVariable);
+        this.fetcherExtendsSignature = join(spyExtendsSignature, entityTypeVariable);
         this.joinerGenericSignature = fetcherGenericSignature.copy();
         if (selectionGenericSignature.getSelfVariable() != null) {
             this.fetcherTypeVariable = joinerGenericSignature.allocateVar("F");
@@ -285,6 +289,10 @@ class SelectionMeta {
         return getExtendsSignature(joinerExtendsSignature);
     }
 
+    String getSpyExtendsSignature() {
+        return getExtendsSignature(spyExtendsSignature);
+    }
+
     private String getExtendsSignature(String signature) {
         if (signature.isEmpty())
             return "";
@@ -333,6 +341,10 @@ class SelectionMeta {
 
     GenericSignature getJoinerGenericSignature() {
         return joinerGenericSignature;
+    }
+
+    GenericSignature getSpyGenericSignature() {
+        return spyGenericSignature;
     }
 
     String getSelectionTypeVariable() {

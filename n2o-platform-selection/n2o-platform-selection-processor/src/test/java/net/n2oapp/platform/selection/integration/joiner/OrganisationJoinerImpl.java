@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 import java.util.Map;
 
-import static net.n2oapp.platform.selection.integration.Util.mapNullable;
+import static net.n2oapp.platform.selection.unit.Util.mapNullable;
 
 @Component
 public class OrganisationJoinerImpl implements OrganisationJoiner<Organisation, Integer> {

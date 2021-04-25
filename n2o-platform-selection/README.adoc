@@ -88,7 +88,7 @@ DTO -- это мост между сервисом и остальным мир�
 
 == Как использовать
 
-В API есть три интерфейса `Selection`, `Fetcher` и `Joiner`, которые нужно реализовать, чтобы использовать преимущества Selection API.
+В API есть четыре интерфейса `Selection`, `Fetcher`, `Joiner` и `Spy`, которые нужно реализовать, чтобы использовать преимущества Selection API.
 
 `Selection` описывает поля, необходимые клиенту.
 Делается это через методы, возвращающие `SelectionEnum` (в котором есть всего два значения,
@@ -97,6 +97,8 @@ DTO -- это мост между сервисом и остальным мир�
 `Fetcher` отвечает за извлечение полей из персистентной сущности и отображение их на модель (DTO).
 
 `Joiner` группирует запросы и тем самым позволяет избежать проблемы **N + 1**.
+
+`Spy` позволяет обнаруживать несогласованность выборки на ранних стадиях разработки. Несогласованность означает обращение к свойствам модели, которые не были указаны в выборке.
 
 Базовые реализации этих интерфейсов для каждой из моделей в проекте могут быть сгенерированы следующим образом:
 
@@ -175,7 +177,7 @@ public class IssueEntity {
 
 [source,java]
 ----
-@Selective // Указывает, что для модели должны быть сгенерированы интерфейсы Selection, Fetcher и Joiner
+@Selective // Указывает, что для модели должны быть сгенерированы интерфейсы Selection, Fetcher, Joiner и Spy
 public class Issue {
 
     @JsonProperty
@@ -427,6 +429,54 @@ public interface IssueJoiner<E, ID> extends Joiner<Issue, IssueSelection, E, Iss
 }
 ----
 
+* IssueSpy
+
+[source,java]
+----
+public class IssueSpy implements Spy<Issue, IssueSelection> {
+
+    protected final Issue model;
+    protected final IssueSelection selection;
+    protected final SelectionPropagation propagation;
+
+    private final UserSpy assignee;
+
+    public IssueSpy(Issue model, IssueSelection selection, SelectionPropagation propagation) {
+        if (model == null)
+            throw new NullPointerException();
+        this.model = model;
+        this.selection = selection;
+        this.propagation = propagation == null ? SelectionPropagation.NORMAL : propagation;
+        if (model.getAssignee() != null) {
+            if (propagation == SelectionPropagation.NESTED || (selection.getAssignee() != null && !selection.getAssignee().empty())) {
+                this.assignee = new UserSpy(
+                    model.getAssignee(),
+                    selection == null ? null : selection.getAssignee(),
+                    propagation == SelectionPropagation.NESTED ? propagation : selection.getAssignee().getPropagation()
+                );
+            } else assignee = null;
+        } else assignee = null;
+    }
+
+    public static IssueSpy spy(Issue model, IssueSelection selection) {
+        if (selection == null || selection.empty())
+            return null;
+        return new IssueSpy(model, selection, selection.getPropagation());
+    }
+
+//  Делегирует модели, при этом проверяя, что свойство указано в выборке
+    public String getKey() {
+        if ((propagation == SelectionPropagation.ALL || propagation == SelectionPropagation.NESTED) || (selection.getKey() != null && selection.getKey().asBoolean())) {
+            return model.getKey();
+        }
+        throw new IllegalStateException("'key' property was not initialized");
+    }
+
+//  Другие методы доступа к свойствам Issue аналогичны
+
+}
+----
+
 Для начала нужно реализовать интерфейс `IssueFetcher`
 
 [source,java]
@@ -545,18 +595,18 @@ public class IssueService {
 public void processIssues() {
     IssueService service = ...;
     IssueSelection selection = IssueSelection.create().key().project(); // Нам нужны только идентификатор и проект
-    List<Issue> issues = service.getIssues(selection);
+    List<IssueSpy> issues = service.getIssues(selection).stream().map(issue -> IssueSpy.spy(issue, selection)).collect(toList());
 //    ...
     selection.unselectProject().assignee(
         UserSelection.create()
     ); // Добавим assignee и удалим проект из результата
-    issues = service.getIssues(selection);
+    issues = service.getIssues(selection).stream().map(issue -> IssueSpy.spy(issue, selection)).collect(toList());
 //    ...
     selection.unselectAssignee().propagate(ALL); // Удалим assignee из результата и возьмем все поля с первого уровня вложенности (в данном случае это идентификатор, проект и статус)
-    issues = service.getIssues(selection);
+    issues = service.getIssues(selection).stream().map(issue -> IssueSpy.spy(issue, selection)).collect(toList());
 //    ...
     selection.propagate(NESTED); // NESTED указывает, что нам нужны все поля модели и любой вложенной модели
-    issues = service.getIssues(selection);
+    issues = service.getIssues(selection).stream().map(issue -> IssueSpy.spy(issue, selection)).collect(toList());
 //    ...
 }
 ----

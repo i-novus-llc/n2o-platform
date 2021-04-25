@@ -102,6 +102,9 @@ class SelectionSerializer extends AbstractSerializer {
         }
         out.append("\tpublic ").append(self).append(" copy(").append(Selection.class.getCanonicalName()).append(" selection) {\n");
         out.append("\t\tif (selection instanceof ").append(getQualifiedName(meta)).append(") {\n");
+        if (meta.getParent() == null) {
+            out.append("\t\t\tthis.propagation = selection.propagation();\n");
+        }
         out.append("\t\t\t").append(getQualifiedName(meta)).append(" source = (").append(getQualifiedName(meta)).append(") selection;\n");
         for (final SelectionProperty property : meta.getProperties()) {
             out.append("\t\t\tthis.").append(property.getName()).append(" = ").append("source.").append(property.getName()).append(";\n");
