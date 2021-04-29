@@ -49,7 +49,15 @@ import static java.util.Collections.emptyList;
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     classes = SelectionTest.class,
-    webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT
+    webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
+    properties = {
+        "cxf.path=/api",
+        "cxf.jaxrs.component-scan=true",
+        "server.port=54614",
+        "spring.jpa.properties.hibernate.show_sql=false",
+        "spring.jpa.properties.javax.persistence.validation.mode=none",
+        "spring.jpa.properties.hibernate.check_nullability=false"
+    }
 )
 @EnableJaxRsProxyClient(value = SelectiveRest.class, address = "http://localhost:54614/api")
 @Import(SelectionTest.Config.class)
