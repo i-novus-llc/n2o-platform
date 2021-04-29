@@ -9,7 +9,7 @@ import static java.util.stream.Collectors.toList;
 
 public class SortParameterConverter implements TypedParamConverter<Sort> {
 
-    private final OrderParameterConverter delegate = new OrderParameterConverter();
+    private final OrderParameterConverter orderConverter = new OrderParameterConverter();
 
     @Override
     public Class<Sort> getType() {
@@ -18,12 +18,14 @@ public class SortParameterConverter implements TypedParamConverter<Sort> {
 
     @Override
     public Sort fromString(final String value) {
-        return Sort.by(Arrays.stream(value.split("-")).map(delegate::fromString).collect(toList()));
+        if (value == null || value.isBlank())
+            return Sort.unsorted();
+        return Sort.by(Arrays.stream(value.split(",")).map(orderConverter::fromString).collect(toList()));
     }
 
     @Override
     public String toString(final Sort value) {
-        return value.stream().map(delegate::toString).collect(joining("-"));
+        return value.stream().map(orderConverter::toString).collect(joining(","));
     }
 
 }

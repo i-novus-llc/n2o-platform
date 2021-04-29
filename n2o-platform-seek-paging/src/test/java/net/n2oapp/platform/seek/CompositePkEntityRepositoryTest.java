@@ -40,10 +40,10 @@ public class CompositePkEntityRepositoryTest extends SeekPagingTest {
 
     @Test
     public void test() {
-        SeekRequest criteria = new SeekRequest();
-        criteria.setSize(1);
-        criteria.setPage(RequestedPageEnum.FIRST);
-        criteria.setSort(
+        SeekRequest request = new SeekRequest();
+        request.setSize(1);
+        request.setPage(RequestedPageEnum.FIRST);
+        request.setSort(
             Sort.by(
                 List.of(
                     Sort.Order.asc(SOME_FIELD),
@@ -56,7 +56,7 @@ public class CompositePkEntityRepositoryTest extends SeekPagingTest {
         int count = 0;
         SeekedPage<CompositePkEntity> prev = null;
         while (true) {
-            SeekedPage<CompositePkEntity> page = repository.findAll(criteria);
+            SeekedPage<CompositePkEntity> page = repository.findAll(request);
             if (prev == null) {
                 prev = page;
             } else {
@@ -80,18 +80,18 @@ public class CompositePkEntityRepositoryTest extends SeekPagingTest {
             }
             if (!page.hasNext())
                 break;
-            criteria.setPivots(List.of(
+            request.setPivots(List.of(
                     SeekPivot.of(SOME_FIELD, String.valueOf(last.getSomeField())),
                     SeekPivot.of(FIRST, String.valueOf(last.getId().getFirst())),
                     SeekPivot.of(SECOND, String.valueOf(last.getId().getSecond()))
             ));
-            criteria.setPage(RequestedPageEnum.NEXT);
+            request.setPage(RequestedPageEnum.NEXT);
         }
         assertEquals(N * M, count);
-        criteria.setPage(RequestedPageEnum.LAST);
+        request.setPage(RequestedPageEnum.LAST);
         SeekedPageIterator<CompositePkEntity, SeekRequest> iter = SeekedPageIterator.from(
             repository::findAll,
-            criteria
+            request
         );
         count = 0;
         while (iter.hasNext()) {

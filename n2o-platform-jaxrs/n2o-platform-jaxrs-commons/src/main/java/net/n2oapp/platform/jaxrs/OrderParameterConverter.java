@@ -14,18 +14,16 @@ public class OrderParameterConverter implements TypedParamConverter<Sort.Order> 
 
     @Override
     public Sort.Order fromString(String value) {
-        String[] split;
-        if (value.contains(":")) { // Так отправляет сортировку движок n2o
-            split = value.split(": ");
-        } else { // Так отправляет реализация toString данного конвертера
-            split = value.split(",");
-        }
-        return new Sort.Order(Sort.Direction.fromString(split[1]), split[0]);
+        String[] split = value.split(": ");
+        return new Sort.Order(
+            Sort.Direction.fromString(split[1]),
+            split[0]
+        );
     }
 
     @Override
     public String toString(Sort.Order value) {
-        return value.getProperty() + "," + value.getDirection().name().toLowerCase();
+        return value.getProperty() + ": " + value.getDirection().name().toLowerCase();
     }
 
 }

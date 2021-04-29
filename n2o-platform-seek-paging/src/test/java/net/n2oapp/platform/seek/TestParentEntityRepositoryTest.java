@@ -81,14 +81,14 @@ public class TestParentEntityRepositoryTest extends SeekPagingTest {
         Integer prevId = null;
         SeekedPage<TestParentEntity> prevPage = null;
         List<SeekedPage<TestParentEntity>> pageSequence = new ArrayList<>();
-        SeekRequest criteria = new SeekRequest();
-        criteria.setPage(RequestedPageEnum.FIRST);
-        criteria.setSize(1);
-        criteria.setSort(Sort.by(ORDERS));
+        SeekRequest request = new SeekRequest();
+        request.setPage(RequestedPageEnum.FIRST);
+        request.setSize(1);
+        request.setSort(Sort.by(ORDERS));
         Iterator<TestParentEntity> parentEntitiesIterator = this.parentEntities.iterator();
         while (true) {
-            SeekedPage<TestParentEntity> page = repository.findAll(criteria);
-            criteria.setPage(RequestedPageEnum.NEXT);
+            SeekedPage<TestParentEntity> page = repository.findAll(request);
+            request.setPage(RequestedPageEnum.NEXT);
             if (!page.isEmpty()) {
                 if (prevPage != null) {
                     assertTrue(prevPage.hasNext());
@@ -111,7 +111,7 @@ public class TestParentEntityRepositoryTest extends SeekPagingTest {
             }
             pageSequence.add(page);
             prevPage = page;
-            setPivots(prevField2, prevChildField1, prevParentField1, prevField3, prevId, criteria);
+            setPivots(prevField2, prevChildField1, prevParentField1, prevField3, prevId, request);
         }
         assertEquals(0, this.parentEntities.size());
         prevPage = pageSequence.remove(pageSequence.size() - 1);
@@ -122,12 +122,12 @@ public class TestParentEntityRepositoryTest extends SeekPagingTest {
         prevParentField1 = mapNullable(entity.getParent(), TestParentEntity::getField1);
         prevField3 = entity.getField3();
         prevId = entity.getId();
-        setPivots(prevField2, prevChildField1, prevParentField1, prevField3, prevId, criteria);
-        criteria.setPage(RequestedPageEnum.PREV);
+        setPivots(prevField2, prevChildField1, prevParentField1, prevField3, prevId, request);
+        request.setPage(RequestedPageEnum.PREV);
         while (true) {
-            SeekedPage<TestParentEntity> page = repository.findAll(criteria);
+            SeekedPage<TestParentEntity> page = repository.findAll(request);
             if (!page.hasNext()) {
-                repository.findAll(criteria);
+                repository.findAll(request);
             }
             assertTrue(page.hasNext());
             if (!page.isEmpty()) {
@@ -153,13 +153,13 @@ public class TestParentEntityRepositoryTest extends SeekPagingTest {
                 assertFalse(page.hasPrev());
                 break;
             }
-            setPivots(prevField2, prevChildField1, prevParentField1, prevField3, prevId, criteria);
+            setPivots(prevField2, prevChildField1, prevParentField1, prevField3, prevId, request);
         }
         assertEquals(N, this.parentEntities.size());
-        criteria.setPage(RequestedPageEnum.FIRST);
+        request.setPage(RequestedPageEnum.FIRST);
         SeekedPageIterator<TestParentEntity, SeekRequest> pageIterator = SeekedPageIterator.from(
             c -> repository.findAll(c),
-            criteria
+            request
         );
         int count = 0;
         pageSequence.clear();
@@ -178,10 +178,10 @@ public class TestParentEntityRepositoryTest extends SeekPagingTest {
             pageIterator.next();
             fail("Exception expected");
         } catch (NoSuchElementException ignored) {}
-        criteria.setPage(RequestedPageEnum.LAST);
+        request.setPage(RequestedPageEnum.LAST);
         pageIterator = SeekedPageIterator.from(
             c -> repository.findAll(c),
-            criteria
+            request
         );
         count = 0;
         while (pageIterator.hasNext()) {
@@ -194,20 +194,20 @@ public class TestParentEntityRepositoryTest extends SeekPagingTest {
 
     @Test
     public void testBoundaries() {
-        SeekRequest criteria = new SeekRequest();
-        criteria.setSort(Sort.by(List.of(Sort.Order.asc(ID))));
-        criteria.setPage(RequestedPageEnum.FIRST);
-        criteria.setSize(7);
+        SeekRequest request = new SeekRequest();
+        request.setSort(Sort.by(List.of(Sort.Order.asc(ID))));
+        request.setPage(RequestedPageEnum.FIRST);
+        request.setSize(7);
         Function<Seekable, SeekedPage<TestParentEntity>> pageSource = c -> repository.findAll(c);
-        SeekedPageIterator<TestParentEntity, SeekRequest> iter = SeekedPageIterator.from(pageSource, criteria);
+        SeekedPageIterator<TestParentEntity, SeekRequest> iter = SeekedPageIterator.from(pageSource, request);
         long total = 0;
         while (iter.hasNext()) {
             SeekedPage<TestParentEntity> page = iter.next();
             total += page.size();
         }
         assertEquals(N, total);
-        criteria.setPage(RequestedPageEnum.LAST);
-        iter = SeekedPageIterator.from(pageSource, criteria);
+        request.setPage(RequestedPageEnum.LAST);
+        iter = SeekedPageIterator.from(pageSource, request);
         total = 0;
         while (iter.hasNext()) {
             SeekedPage<TestParentEntity> page = iter.next();
@@ -228,9 +228,9 @@ public class TestParentEntityRepositoryTest extends SeekPagingTest {
             Integer prevParentField1,
             Integer prevField3,
             Integer prevId,
-            SeekRequest criteria
+            SeekRequest request
     ) {
-        criteria.setPivots(getPivots(prevField2, prevChildField1, prevParentField1, prevField3, prevId));
+        request.setPivots(getPivots(prevField2, prevChildField1, prevParentField1, prevField3, prevId));
     }
 
     private List<SeekPivot> getPivots(

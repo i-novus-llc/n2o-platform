@@ -251,12 +251,14 @@ public class JaxRsClientTest {
             SeekRequest request = new SeekRequest();
             request.setPivots(SomeRestImpl.EXPECTED_PIVOTS);
             request.setPage(RequestedPageEnum.NEXT);
-            request.setSize(2077);
-            request.setSort(Sort.by(List.of(Sort.Order.asc("id"))));
+            request.setSize(1000);
+            request.setSort(Sort.by(List.of(Sort.Order.asc("id"), Sort.Order.desc("name"))));
             SeekedPage<String> page = client.searchSeeking(request);
             assertThat(page.getContent(), is(List.of("ok!")));
             assertThat(page.hasNext(), is(true));
             assertThat(page.hasPrev(), is(false));
+            request.setSort(Sort.unsorted());
+            client.searchSeeking(request);
         });
     }
 

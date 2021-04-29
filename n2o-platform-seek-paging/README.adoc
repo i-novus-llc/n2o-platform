@@ -1,4 +1,9 @@
-= Возможность seek (keyset) - пагинации используя QueryDSL (по ключу, без офсетов и count-запросов)
+= Возможность seek (keyset) - пагинации используя QueryDSL
+
+Данный модуль предоставляет возможность seek-пагинации.
+Этот способ пагинации работает намного быстрее, чем пагинация с использованием limit/offset.
+Более подробно можно прочитать здесь:
+https://habr.com/ru/company/tinkoff/blog/485036/
 
 == Как использовать
 1) Добавьте зависимость
@@ -50,50 +55,7 @@ http://rest-service/rest/search?sort=id,asc&piv=id,54&size=10&page=NEXT
 == Какие ограничения
 Основное ограничение -- то что хотя бы одно поле или комбинация полей в указанной сортировке должны быть уникальными.
 
-Есть ограничения на NULL-значения `*ToOne` полей.
-
-Например, если есть `ParentEntity`:
-[source,java]
-----
-@Entity
-public class ParentEntity {
-
-    @Id
-    private Integer id;
-
-    @ManyToOne
-    @JoinColumn
-    private ChildEntity child;
-
-}
-----
-
-И `ChildEntity`:
-[source,java]
-----
-@Entity
-public class ChildEntity {
-
-    @Id
-    private Integer id;
-
-    @Column
-    private String name;
-
-}
-----
-
-Тогда если выборка выглядит так (JPQL):
-[source]
-----
-SELECT e FROM ParentEntity e WHERE e.child.name >= 'aaa'
-----
-Hibernate сгенерирует `CROSS JOIN` с `WHERE child_id = ChildEntity.id`, что по сути является `INNER JOIN`.
-Следствием этого является то, что если у `ParentEntity` нет `ChildEntity` (то есть `child_id IS NULL`) --
-нельзя производить seek-пагинацию по `child.name` (эти записи будут просто отбросаны).
-На это скорее всего нельзя повлиять (разве что писать запросы самому).
-Можно избежать этой проблемы, если убедиться, что все элементы в `ToOne` цепочке являются `NOT NULL`
-или использовать денормализацию (см. ниже).
+Так же есть ограничения на NULL-значения `*ToOne` полей (по ним нельзя делать пагинацию).
 
 == Программная пагинация
 Для программной пагинации следует использовать `net.n2oapp.platform.seek.SeekedPageIterator`.
@@ -102,13 +64,13 @@ Hibernate сгенерирует `CROSS JOIN` с `WHERE child_id = ChildEntity.i
 
 [source,java]
 ----
-<T, C extends SeekRequest> SeekedPageIterator.from(
-    Function<? super C, SeekedPage<T>> pageSource,
+<T, S extends SeekRequest> SeekedPageIterator.from(
+    Function<? super S, SeekedPage<T>> pageSource,
     Function<? super T, List<SeekPivot>> pivotsMaker,
-    C criteria
+    S request
 )
 ----
-Функция `pageSource` возвращает страницу данных. Параметр `criteria` -- это критерий выборки. А функция `pivotsMaker` возвращает список `SeekPivot`-ов, извлекая каждый из них из `T`.
+Функция `pageSource` возвращает страницу данных. Параметр `request` -- это seek-запрос. А функция `pivotsMaker` возвращает список `SeekPivot`-ов, извлекая каждый из них из `T`.
 
 Пример использования:
 
@@ -121,13 +83,13 @@ class Animal {
 
 interface AnimalRest {
     @GET
-    SeekedPage<Animal> search(SeekRequest criteria);
+    SeekedPage<Animal> search(SeekRequest request);
 }
 
-void paginateOverAnimals(AnimalRest rest, SeekRequest criteria) {
+void paginateOverAnimals(AnimalRest rest, SeekRequest request) {
 //  Хотим сортировку по "name" и потом по "id"
-    criteria.setOrders(List.of(Sort.Order.asc("name"), Sort.Order.asc("id")));
-    SeekedPageIterator<T,C> iterator = SeekedPageIterator.from(
+    request.setOrders(List.of(Sort.Order.asc("name"), Sort.Order.asc("id")));
+    SeekedPageIterator<Animal, SeekRequest> iterator = SeekedPageIterator.from(
         rest::search,
         animal ->   List.of(
 //                      Так как сортировка у нас по (name ASC, id ASC),
@@ -135,7 +97,7 @@ void paginateOverAnimals(AnimalRest rest, SeekRequest criteria) {
                         SeekPivot.of("name", animal.name),
                         SeekPivot.of("id", Integer.toString(animal.id))
                     ),
-        criteria
+        request
     );
     while (iterator.hasNext()) {
         SeekedPage<Animal> next = iterator.next();
