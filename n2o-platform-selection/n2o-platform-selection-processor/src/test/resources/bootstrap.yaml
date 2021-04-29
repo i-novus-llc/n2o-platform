@@ -1,6 +1,4 @@
 spring:
-  application:
-    name: n2o-selection
   cloud:
     consul:
       config:
