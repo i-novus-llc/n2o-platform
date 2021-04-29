@@ -1,6 +1,6 @@
 spring:
   application:
-    name: lkzeo-service
+    name: n2o-selection
   cloud:
     consul:
       config:
