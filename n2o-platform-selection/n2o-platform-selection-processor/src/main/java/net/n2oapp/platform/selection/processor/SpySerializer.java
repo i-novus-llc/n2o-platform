@@ -6,6 +6,7 @@ import net.n2oapp.platform.selection.api.Spy;
 import java.io.IOException;
 import java.io.Writer;
 
+@SuppressWarnings("java:S1192")
 public class SpySerializer extends AbstractSerializer {
 
     @Override
@@ -72,15 +73,7 @@ public class SpySerializer extends AbstractSerializer {
                 out.append("\t\tif (model.get");
                 out.append(capitalized);
                 out.append("() != null) {\n");
-                out.append("\t\t\tif (propagation == ");
-                out.append(SelectionPropagation.class.getCanonicalName());
-                out.append(".");
-                out.append(SelectionPropagation.NESTED.name());
-                out.append(" || (selection.get");
-                out.append(capitalized);
-                out.append("() != null && !selection.get");
-                out.append(capitalized);
-                out.append("().empty())) {\n");
+                nestedSelectionPredicate(out, "\t", capitalized);
                 if (property.getCollectionType() == null) {
                     out.append("\t\t\t\tthis.");
                     out.append(property.getName());
@@ -128,6 +121,22 @@ public class SpySerializer extends AbstractSerializer {
         out.append(" ? propagation : selection.get");
         out.append(capitalized);
         out.append("().getPropagation())");
+    }
+
+    private void nestedSelectionPredicate(
+        Writer out,
+        String tabs,
+        String capitalizedProperty
+    ) throws IOException {
+        out.append(tabs).append("\t\tif (propagation == ");
+        out.append(SelectionPropagation.class.getCanonicalName());
+        out.append(".");
+        out.append(SelectionPropagation.NESTED.name());
+        out.append(" || (selection.get");
+        out.append(capitalizedProperty);
+        out.append("() != null && !selection.get");
+        out.append(capitalizedProperty);
+        out.append("().empty())) {\n");
     }
 
     private void appendNestedSpies(final SelectionMeta meta, final Writer out) throws IOException {
@@ -223,15 +232,7 @@ public class SpySerializer extends AbstractSerializer {
             out.append(" get");
             out.append(capitalized);
             out.append("() {\n");
-            out.append("\t\tif (propagation == ");
-            out.append(SelectionPropagation.class.getCanonicalName());
-            out.append(".");
-            out.append(SelectionPropagation.NESTED.name());
-            out.append(" || (selection.get");
-            out.append(capitalized);
-            out.append("() != null && !selection.get");
-            out.append(capitalized);
-            out.append("().empty())) {\n");
+            nestedSelectionPredicate(out, "", capitalized);
             out.append("\t\t\treturn ");
             out.append(property.getName());
             out.append(";\n");
