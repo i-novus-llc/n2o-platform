@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: lkzeo-service
+  cloud:
+    consul:
+      config:
+        enabled: false
