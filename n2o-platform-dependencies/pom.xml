@@ -179,11 +179,6 @@
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
-                <artifactId>n2o-platform-selection-core</artifactId>
-                <version>4.2.7-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-selection-processor</artifactId>
                 <version>4.3.1-SNAPSHOT</version>
             </dependency>
