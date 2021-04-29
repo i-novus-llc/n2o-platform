@@ -3,7 +3,8 @@ package net.n2oapp.platform.seek;
 import com.querydsl.core.types.dsl.ComparableExpressionBase;
 
 /**
- * Использование данного интерфейса позволяет ускорить SQL запросы, так как чем больше в таблице {@code nullable} колонок,
+ * Для каждого из свойств определяет, может ли оно принимать значения {@code null}.
+ * Использование данного интерфейса позволяет немного ускорить SQL запросы, так как чем больше в таблице {@code nullable} колонок,
  * тем более сложные WHERE-условия для seek-пагинации.
  */
 public interface NullabilityProvider {
