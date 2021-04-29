@@ -51,7 +51,7 @@ import static org.junit.jupiter.api.Assertions.*;
     classes = SelectionTest.class,
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT
 )
-@EnableJaxRsProxyClient(value = SelectiveRest.class, address = "http://localhost:8425/api")
+@EnableJaxRsProxyClient(value = SelectiveRest.class, address = "http://localhost:54614/api")
 @Import(SelectionTest.Config.class)
 public class SelectionTest {
 
