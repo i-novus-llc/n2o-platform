@@ -10,6 +10,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
@@ -73,22 +74,24 @@ public class SelectionProcessor extends AbstractProcessor {
         List<? extends Element> elements = new ArrayList<>(roundEnv.getElementsAnnotatedWith(selective));
         if (elements.isEmpty())
             return false;
-        List<SelectionMeta> metalist = new ArrayList<>(elements.size());
         for (Element element : elements) {
             if (!valid(element))
                 return false;
         }
+        List<SelectionMeta> metalist = new ArrayList<>(elements.size());
         LinkedList<Map.Entry<Element, List<Element>>> toposort = toposort(elements);
+        Map<Element, SelectionMeta> index = new HashMap<>();
         for (Map.Entry<Element, List<Element>> entry : toposort) {
             if (init(metalist, entry))
                 return false;
+            index.put(entry.getKey(), metalist.get(metalist.size() - 1));
         }
         for (SelectionMeta meta : metalist) {
             List<Element> children = toposort.stream().filter(elem -> elem.getKey().equals(meta.getTarget())).findFirst().orElseThrow().getValue();
             meta.addChildren(metalist.stream().filter(other -> children.contains(other.getTarget())).collect(toList()));
         }
         for (SelectionMeta meta : metalist) {
-            processFields(metalist, meta);
+            processProperties(metalist, meta, index);
         }
         if (addJacksonTyping) {
             for (SelectionMeta meta : metalist) {
@@ -103,37 +106,102 @@ public class SelectionProcessor extends AbstractProcessor {
         return false;
     }
 
-    private void processFields(List<SelectionMeta> metalist, SelectionMeta meta) {
+    private void processProperties(List<SelectionMeta> metalist, SelectionMeta meta, Map<Element, SelectionMeta> index) {
         Element target = meta.getTarget();
         for (Element member : target.getEnclosedElements()) {
             if (member.getKind() == ElementKind.FIELD && member.getModifiers().stream().noneMatch(Modifier.STATIC::equals)) {
                 if (member.getAnnotation(SelectionIgnore.class) != null)
                     continue;
-                TypeMirror collectionRawType = null;
-                final TypeMirror originalType = member.asType();
-                TypeMirror type = originalType;
-                TypeMirror erased = types.erasure(type);
-                SelectionMeta nested = null;
-                if (!types.isAssignable(erased, collection)) {
-                    nested = findNestedSelection(metalist, erased);
-                } else {
-                    DeclaredType declaredType = (DeclaredType) member.asType();
-                    List<? extends TypeMirror> args = declaredType.getTypeArguments();
-                    if (!args.isEmpty()) {
-                        TypeMirror arg = args.get(0);
-                        nested = findNestedSelection(metalist, types.erasure(arg));
-                        type = arg;
-                        collectionRawType = erased;
-                    }
-                }
-                Joined joinedAnno = member.getAnnotation(Joined.class);
-                boolean isJoined = joinedAnno != null;
-                boolean withNestedJoiner = isJoined && joinedAnno.withNestedJoiner();
-                if (isJoined && nested == null)
-                    processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, Joined.class.getSimpleName() + " can be placed only on nested properties", member);
-                meta.addProperty(member.getSimpleName().toString(), originalType, type, nested, collectionRawType, isJoined, withNestedJoiner);
+                processProperty(metalist, meta, member);
             }
         }
+        SelectionMeta curr = meta.getParent();
+        DeclaredType declaredType = ((DeclaredType) meta.getTarget().asType());
+        while (curr != null) {
+            resolveUnresolvedProperties(meta, index, curr, declaredType);
+            curr = curr.getParent();
+        }
+    }
+
+    private void resolveUnresolvedProperties(SelectionMeta meta, Map<Element, SelectionMeta> index, SelectionMeta curr, DeclaredType declaredType) {
+        for (SelectionProperty property : curr.getUnresolvedProperties()) {
+            TypeMirror mirror = processingEnv.getTypeUtils().asMemberOf(declaredType, property.getMember());
+            if (property.getCollectionType() != null) {
+                mirror = ((DeclaredType) mirror).getTypeArguments().get(0);
+                if (mirror instanceof WildcardType)
+                    mirror = ((WildcardType) mirror).getExtendsBound();
+            }
+            SelectionMeta nested = index.get(types.asElement(mirror));
+            if (nested == null || TypeUtil.containsTypeVariables(mirror) || containsResolvedProperty(meta, property.getName(), curr))
+                continue;
+            try {
+                meta.addProperty(
+                    property.getName(),
+                    property.getMember(),
+                    property.getOriginalType(),
+                    mirror,
+                    nested,
+                    property.getCollectionType(),
+                    property.isJoined(),
+                    property.isWithNestedJoiner()
+                );
+            } catch (RawUseException ignored) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Raw use unsupported", meta.getTarget());
+            }
+        }
+    }
+
+    private void processProperty(List<SelectionMeta> metalist, SelectionMeta meta, Element member) {
+        TypeMirror collectionType = null;
+        final TypeMirror originalType = member.asType();
+        TypeMirror type = originalType;
+        TypeMirror erased = types.erasure(type);
+        SelectionMeta nested = null;
+        if (!types.isAssignable(erased, collection)) {
+            nested = findNestedSelection(metalist, erased);
+        } else {
+            if (!erased.toString().equals("java.util.List") && !erased.toString().equals("java.util.Set")) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Unsupported collection. java.util.List or java.util.Set must be used", member);
+            }
+            DeclaredType declaredType = (DeclaredType) member.asType();
+            List<? extends TypeMirror> args = declaredType.getTypeArguments();
+            if (!args.isEmpty()) {
+                TypeMirror arg = args.get(0);
+                nested = findNestedSelection(metalist, types.erasure(arg));
+                type = arg;
+                collectionType = erased;
+            }
+        }
+        Joined joinedAnno = member.getAnnotation(Joined.class);
+        boolean isJoined = joinedAnno != null;
+        boolean withNestedJoiner = isJoined && joinedAnno.withNestedJoiner();
+        if (withNestedJoiner && nested == null)
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Nested joiner can be placed only on nested SELECTIVE properties", member);
+        String name = member.getSimpleName().toString();
+        try {
+            meta.addProperty(
+                name,
+                member,
+                originalType,
+                type,
+                nested,
+                collectionType,
+                isJoined,
+                withNestedJoiner
+            );
+        } catch (RawUseException ignored) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Raw use unsupported", member);
+        }
+    }
+
+    private boolean containsResolvedProperty(SelectionMeta target, String propertyName, SelectionMeta searchUpTo) {
+        SelectionMeta curr = target;
+        do {
+            if (curr.containsResolvedProperty(propertyName))
+                return true;
+            curr = curr.getParent();
+        } while (curr != searchUpTo);
+        return false;
     }
 
     private SelectionMeta findNestedSelection(List<SelectionMeta> metalist, TypeMirror type) {
@@ -177,11 +245,23 @@ public class SelectionProcessor extends AbstractProcessor {
             }
             parent = opt.get();
         }
-        GenericSignature signature = getGenericSignature(element, (DeclaredType) element.asType());
+        GenericSignature signature;
+        try {
+            signature = getGenericSignature(element, (DeclaredType) element.asType());
+        } catch (RawUseException ignored) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Raw type usage not supported", element);
+            return true;
+        }
         String prefix = element.getAnnotation(Selective.class).prefix();
         if (prefix.equals(Selective.NULL))
             prefix = null;
-        SelectionMeta result = new SelectionMeta(element, parent, !entry.getValue().isEmpty(), signature, types, prefix);
+        SelectionMeta result;
+        try {
+            result = new SelectionMeta(element, parent, !entry.getValue().isEmpty(), signature, types, prefix);
+        } catch (RawUseException ignored) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Raw type inheritance not permitted", element);
+            return true;
+        }
         metalist.add(result);
         return false;
     }
@@ -191,11 +271,31 @@ public class SelectionProcessor extends AbstractProcessor {
         if (!type.getTypeArguments().isEmpty()) {
             for (TypeMirror arg : type.getTypeArguments()) {
                 TypeVariable var = (TypeVariable) arg;
+                if (raw(var, new HashSet<>()))
+                    throw new RawUseException();
                 TypeMirror bound = var.getUpperBound();
                 signature.addTypeVariable(var.toString(), bound.toString());
             }
         }
         return signature;
+    }
+
+    private boolean raw(TypeVariable var, Set<TypeMirror> seen) {
+        if (seen.contains(var))
+            return false;
+        seen.add(var);
+        TypeMirror t = var.getUpperBound();
+        if (t instanceof TypeVariable)
+            return raw((TypeVariable) t, seen);
+        DeclaredType provided = (DeclaredType) t;
+        DeclaredType declared = (DeclaredType) types.asElement(t).asType();
+        if (!declared.getTypeArguments().isEmpty() && provided.getTypeArguments().isEmpty())
+            return true;
+        for (TypeMirror mirror : provided.getTypeArguments()) {
+            if (mirror instanceof TypeVariable && raw((TypeVariable) mirror, seen))
+                return true;
+        }
+        return false;
     }
 
     private boolean valid(Element element) {
@@ -213,6 +313,5 @@ public class SelectionProcessor extends AbstractProcessor {
         }
         return result;
     }
-
 
 }
