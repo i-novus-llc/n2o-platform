@@ -1,4 +1,4 @@
-package net.n2oapp.platform.selection;
+package net.n2oapp.platform.selection.compile;
 
 import com.google.testing.compile.Compilation;
 import com.google.testing.compile.CompilationSubject;

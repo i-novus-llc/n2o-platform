@@ -1,4 +1,4 @@
-package net.n2oapp.platform.selection.integration;
+package net.n2oapp.platform.selection.unit;
 
 import java.util.ArrayList;
 import java.util.Collection;

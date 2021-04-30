@@ -10,7 +10,7 @@ import java.util.List;
 public class Model<M extends BaseModel, E extends M> extends BaseModel {
 
     @Joined
-    private List<? extends M> model;
+    private List<? extends M> bodel;
 
     @Joined
     private E model2;
@@ -22,12 +22,12 @@ public class Model<M extends BaseModel, E extends M> extends BaseModel {
     @NotNull
     private @NotNull List<@NotNull Long> longs;
 
-    public List<? extends M> getModel() {
-        return model;
+    public List<? extends M> getBodel() {
+        return bodel;
     }
 
-    public void setModel(List<? extends M> model) {
-        this.model = model;
+    public void setBodel(List<? extends M> bodel) {
+        this.bodel = bodel;
     }
 
     public E getModel2() {
@@ -44,6 +44,10 @@ public class Model<M extends BaseModel, E extends M> extends BaseModel {
 
     public void setALong(Long aLong) {
         this.aLong = aLong;
+    }
+
+    public List<Long> getLongs() {
+        return longs;
     }
 
     public void setLongs(List<Long> longs) {

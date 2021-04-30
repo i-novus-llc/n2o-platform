@@ -1,14 +1,14 @@
 package net.n2oapp.platform.selection.integration.fetcher;
 
-import net.n2oapp.platform.selection.integration.Util;
 import net.n2oapp.platform.selection.integration.model.*;
+import net.n2oapp.platform.selection.unit.Util;
 import org.springframework.lang.NonNull;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static net.n2oapp.platform.selection.integration.Util.mapCollection;
+import static net.n2oapp.platform.selection.unit.Util.mapCollection;
 
 public class EmployeeFetcherImpl extends BaseModelFetcherImpl<Employee, EmployeeSelection> implements EmployeeFetcher<Employee> {
 

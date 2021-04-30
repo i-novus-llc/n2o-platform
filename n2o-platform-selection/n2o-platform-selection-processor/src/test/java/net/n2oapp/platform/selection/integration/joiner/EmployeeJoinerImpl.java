@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-import static net.n2oapp.platform.selection.integration.Util.mapNullable;
+import static net.n2oapp.platform.selection.unit.Util.mapNullable;
 
 @Component
 public class EmployeeJoinerImpl implements EmployeeJoiner<Employee, Integer> {

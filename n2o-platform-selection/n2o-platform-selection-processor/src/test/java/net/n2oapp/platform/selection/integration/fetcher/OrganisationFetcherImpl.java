@@ -3,7 +3,7 @@ package net.n2oapp.platform.selection.integration.fetcher;
 import net.n2oapp.platform.selection.integration.model.*;
 import org.springframework.lang.NonNull;
 
-import static net.n2oapp.platform.selection.integration.Util.mapNullable;
+import static net.n2oapp.platform.selection.unit.Util.mapNullable;
 
 public class OrganisationFetcherImpl extends BaseModelFetcherImpl<Organisation, OrganisationSelection> implements OrganisationFetcher<Organisation> {
 

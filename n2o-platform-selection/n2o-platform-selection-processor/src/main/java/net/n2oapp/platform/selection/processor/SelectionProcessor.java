@@ -42,6 +42,7 @@ public class SelectionProcessor extends AbstractProcessor {
     private SelectionSerializer selectionSerializer;
     private FetcherSerializer fetcherSerializer;
     private JoinerSerializer joinerSerializer;
+    private SpySerializer spySerializer;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -59,6 +60,7 @@ public class SelectionProcessor extends AbstractProcessor {
         this.selectionSerializer = new SelectionSerializer(addJacksonTyping, addJaxRsAnnotations, overrideSelectionKeys, jsonTypeInfo, jsonSubTypes, requestParam, beanParam);
         this.fetcherSerializer = new FetcherSerializer();
         this.joinerSerializer = new JoinerSerializer();
+        this.spySerializer = new SpySerializer();
     }
 
     @Override
@@ -222,6 +224,7 @@ public class SelectionProcessor extends AbstractProcessor {
             selectionSerializer.serialize(meta, filer);
             fetcherSerializer.serialize(meta, filer);
             joinerSerializer.serialize(meta, filer);
+            spySerializer.serialize(meta, filer);
         } catch (IOException e) {
             System.err.println(e.getMessage());
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, e.getMessage());

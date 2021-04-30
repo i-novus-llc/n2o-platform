@@ -9,6 +9,7 @@ import net.n2oapp.platform.selection.integration.repository.OrganisationReposito
 import net.n2oapp.platform.selection.integration.repository.ProjectRepository;
 import net.n2oapp.platform.selection.integration.rest.EmployeeCriteria;
 import net.n2oapp.platform.selection.integration.rest.SelectiveRest;
+import net.n2oapp.platform.test.autoconfigure.DefinePort;
 import net.ttddyy.dsproxy.QueryCount;
 import net.ttddyy.dsproxy.listener.ChainListener;
 import net.ttddyy.dsproxy.listener.DataSourceQueryCountListener;
@@ -53,14 +54,14 @@ import static java.util.Collections.emptyList;
     properties = {
         "cxf.path=/api",
         "cxf.jaxrs.component-scan=true",
-        "server.port=54614",
         "spring.jpa.properties.hibernate.show_sql=false",
         "spring.jpa.properties.javax.persistence.validation.mode=none",
         "spring.jpa.properties.hibernate.check_nullability=false"
     }
 )
-@EnableJaxRsProxyClient(value = SelectiveRest.class, address = "http://localhost:54614/api")
+@EnableJaxRsProxyClient(value = SelectiveRest.class, address = "http://localhost:${server.port}/api")
 @Import(SelectionTest.Config.class)
+@DefinePort
 public class SelectionTest {
 
     private static QueryCount queryCount;
