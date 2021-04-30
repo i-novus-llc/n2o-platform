@@ -349,6 +349,12 @@
                 <scope>runtime</scope>
             </dependency>
 
+            <dependency>
+                <groupId>org.joda</groupId>
+                <artifactId>joda-convert</artifactId>
+                <version>2.2.1</version>
+            </dependency>
+
             <!-- Liquibase patched for working classpath*: -->
             <dependency>
                 <groupId>ru.i-novus.components</groupId>
