@@ -7,7 +7,7 @@ import net.n2oapp.platform.selection.integration.repository.AddressRepository;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import static net.n2oapp.platform.selection.unit.Util.mapNullable;
@@ -27,10 +27,10 @@ public class OrganisationJoinerImpl implements OrganisationJoiner<Organisation, 
     }
 
     @Override
-    public Map<Integer, AddressFetcher<?>> joinLegalAddress(Collection<Organisation> organisations) {
+    public Map<Integer, AddressFetcher<?>> joinLegalAddress(List<Organisation> organisations, List<Integer> ids) {
         return JoinUtil.joinToOne(
             organisations,
-            addressRepository::findLegalAddressesOfOrganisations,
+            () -> addressRepository.findLegalAddressesOfOrganisations(ids),
             AddressFetcherImpl::new,
             Organisation::getId,
             organisation -> mapNullable(organisation.getLegalAddress(), BaseModel::getId),
@@ -39,10 +39,10 @@ public class OrganisationJoinerImpl implements OrganisationJoiner<Organisation, 
     }
 
     @Override
-    public Map<Integer, AddressFetcher<?>> joinFactualAddress(Collection<Organisation> organisations) {
+    public Map<Integer, AddressFetcher<?>> joinFactualAddress(List<Organisation> organisations, List<Integer> ids) {
         return JoinUtil.joinToOne(
             organisations,
-            addressRepository::findFactualAddressesOfOrganisations,
+            () -> addressRepository.findFactualAddressesOfOrganisations(ids),
             AddressFetcherImpl::new,
             Organisation::getId,
             organisation -> mapNullable(organisation.getFactualAddress(), BaseModel::getId),

@@ -5,8 +5,7 @@ import org.springframework.lang.NonNull;
 
 import java.util.*;
 import java.util.function.Supplier;
-
-import static java.util.stream.Collectors.toCollection;
+import java.util.stream.Collectors;
 
 /**
  * Группировщик запросов
@@ -17,6 +16,9 @@ import static java.util.stream.Collectors.toCollection;
  * @param <ID> Тип, по которому идентифицируются сущности
  */
 public interface Joiner<T, S extends Selection<T>, E, F extends Fetcher<T, S, E>, ID> {
+
+    @SuppressWarnings("rawtypes")
+    Supplier<ArrayList> ARRAY_LIST_SUPPLIER = ArrayList::new;
 
     /**
      * @return Идентификатор отображаемой сущности
@@ -31,7 +33,7 @@ public interface Joiner<T, S extends Selection<T>, E, F extends Fetcher<T, S, E>
     Joiner.Resolution<T, E, ID> resolveIterable(Iterable<? extends F> fetchers, S selection, SelectionPropagation propagation);
 
     default T resolve(F fetcher, S selection) {
-        List<T> resolved = resolveCollection(Collections.singleton(fetcher), selection);
+        List<T> resolved = resolveCollection(Collections.singletonList(fetcher), selection);
         if (resolved == null)
             return null;
         return resolved.get(0);
@@ -44,56 +46,84 @@ public interface Joiner<T, S extends Selection<T>, E, F extends Fetcher<T, S, E>
     ) {
         if (selection == null)
             return null;
-        Resolution<T, E, ID> resolution = resolveIterable(fetchers, selection, selection.propagation());
-        if (resolution == null)
-            return null;
-        return fetchers.stream().map(fetcher ->
-            getFromResolvedMap(resolution.models, fetcher)
-        ).collect(toCollection(collectionSupplier));
+        Fetcher.CTX.set(new IdentityHashMap<>());
+        try {
+            Resolution<T, E, ID> resolution = resolveIterable(fetchers, selection, selection.propagation());
+            if (resolution == null)
+                return null;
+            //noinspection unchecked
+            return collectionSupplier.equals(ARRAY_LIST_SUPPLIER) ? (C) resolution.models : resolution.models.stream().collect(Collectors.toCollection(collectionSupplier));
+        } finally {
+            Fetcher.CTX.remove();
+        }
     }
 
     default List<T> resolveCollection(Collection<? extends F> fetchers, S selection) {
-        return resolveCollection(fetchers, selection, ArrayList::new);
+        //noinspection unchecked
+        return resolveCollection(
+            fetchers,
+            selection,
+            ARRAY_LIST_SUPPLIER
+        );
     }
 
-    @SuppressWarnings("unchecked")
     default<I extends Streamable<T>> I resolveStreamable(
         Streamable<? extends F> fetchers,
         S selection
     ) {
         if (selection == null)
             return null;
-        Resolution<T, E, ID> resolution = resolveIterable(fetchers, selection, selection.propagation());
-        if (resolution == null)
-            return null;
-        Streamable<T> resolved = fetchers.map(fetcher ->
-            getFromResolvedMap(resolution.models, fetcher)
-        );
-        return (I) resolved;
-    }
-
-    private T getFromResolvedMap(Map<ID, T> map, F f) {
-        return map.get(Objects.requireNonNull(getId(f.getUnderlyingEntity())));
+        Fetcher.CTX.set(new IdentityHashMap<>());
+        try {
+            Resolution<T, E, ID> resolution = resolveIterable(fetchers, selection, selection.propagation());
+            if (resolution == null)
+                return null;
+            final int[] idx = {0};
+            Streamable<T> resolved = fetchers.map(
+                fetcher -> resolution.models.get(idx[0]++)
+            );
+            //noinspection unchecked
+            return (I) resolved;
+        } finally {
+            Fetcher.CTX.remove();
+        }
     }
 
     class Resolution<T, E, ID> {
 
-        private static final Resolution<?, ?, ?> EMPTY = new Resolution<>(Collections.emptyList(), Collections.emptyMap());
+        private static final Resolution<?, ?, ?> EMPTY = new Resolution<>(
+            Collections.emptyList(),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            new boolean[] {}
+        );
 
-        public final Collection<E> entities;
-        @SuppressWarnings("java:S1319")
-        public final Map<ID, T> models;
+        public final List<E> unresolvedEntities;
+        public final List<ID> unresolvedIds;
+        public final List<ID> allIds;
+        public final List<T> models;
+        public final boolean[] resolvedIds;
 
-        private Resolution(Collection<E> entities, Map<ID, T> models) {
-            this.entities = entities;
+        private Resolution(
+            final List<E> unresolvedEntities,
+            final List<ID> allIds,
+            final List<T> models,
+            final boolean[] resolvedIds
+        ) {
+            this.unresolvedEntities = unresolvedEntities;
+            this.allIds = allIds;
             this.models = models;
+            this.resolvedIds = resolvedIds;
+            this.unresolvedIds = new FilteredImmutableList<>(resolvedIds, allIds);
         }
 
         public static <T, E, ID> Resolution<T, E, ID> from(
-            Collection<E> entities,
-            @SuppressWarnings("java:S1319") LinkedHashMap<ID, T> models
+            final List<E> unresolvedEntities,
+            final List<ID> allIds,
+            final List<T> models,
+            final boolean[] resolvedIds
         ) {
-            return new Resolution<>(entities, models);
+            return new Resolution<>(unresolvedEntities, allIds, models, resolvedIds);
         }
 
         @SuppressWarnings("unchecked")
