@@ -3,7 +3,10 @@ package net.n2oapp.platform.selection.api;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.NonNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -46,16 +49,11 @@ public interface Joiner<T, S extends Selection<T>, E, F extends Fetcher<T, S, E>
     ) {
         if (selection == null)
             return null;
-        Fetcher.CTX.set(new IdentityHashMap<>());
-        try {
-            Resolution<T, E, ID> resolution = resolveIterable(fetchers, selection, selection.propagation());
-            if (resolution == null)
-                return null;
-            //noinspection unchecked
-            return collectionSupplier.equals(ARRAY_LIST_SUPPLIER) ? (C) resolution.models : resolution.models.stream().collect(Collectors.toCollection(collectionSupplier));
-        } finally {
-            Fetcher.CTX.remove();
-        }
+        Resolution<T, E, ID> resolution = resolveIterable(fetchers, selection, selection.propagation());
+        if (resolution == null)
+            return null;
+        //noinspection unchecked
+        return collectionSupplier.equals(ARRAY_LIST_SUPPLIER) ? (C) resolution.models : resolution.models.stream().collect(Collectors.toCollection(collectionSupplier));
     }
 
     default List<T> resolveCollection(Collection<? extends F> fetchers, S selection) {
@@ -73,20 +71,15 @@ public interface Joiner<T, S extends Selection<T>, E, F extends Fetcher<T, S, E>
     ) {
         if (selection == null)
             return null;
-        Fetcher.CTX.set(new IdentityHashMap<>());
-        try {
-            Resolution<T, E, ID> resolution = resolveIterable(fetchers, selection, selection.propagation());
-            if (resolution == null)
-                return null;
-            final int[] idx = {0};
-            Streamable<T> resolved = fetchers.map(
-                fetcher -> resolution.models.get(idx[0]++)
-            );
-            //noinspection unchecked
-            return (I) resolved;
-        } finally {
-            Fetcher.CTX.remove();
-        }
+        Resolution<T, E, ID> resolution = resolveIterable(fetchers, selection, selection.propagation());
+        if (resolution == null)
+            return null;
+        final int[] idx = {0};
+        Streamable<T> resolved = fetchers.map(
+            fetcher -> resolution.models.get(idx[0]++)
+        );
+        //noinspection unchecked
+        return (I) resolved;
     }
 
     class Resolution<T, E, ID> {
@@ -98,32 +91,30 @@ public interface Joiner<T, S extends Selection<T>, E, F extends Fetcher<T, S, E>
             new boolean[] {}
         );
 
-        public final List<E> unresolvedEntities;
-        public final List<ID> unresolvedIds;
-        public final List<ID> allIds;
+        public final List<E> uniqueEntities;
+        public final List<ID> uniqueIds;
         public final List<T> models;
-        public final boolean[] resolvedIds;
+        public final boolean[] duplicate;
 
         private Resolution(
-            final List<E> unresolvedEntities,
-            final List<ID> allIds,
+            final List<E> uniqueEntities,
+            final List<ID> uniqueIds,
             final List<T> models,
-            final boolean[] resolvedIds
+            final boolean[] duplicate
         ) {
-            this.unresolvedEntities = unresolvedEntities;
-            this.allIds = allIds;
+            this.uniqueEntities = uniqueEntities;
+            this.uniqueIds = uniqueIds;
             this.models = models;
-            this.resolvedIds = resolvedIds;
-            this.unresolvedIds = new FilteredImmutableList<>(resolvedIds, allIds);
+            this.duplicate = duplicate;
         }
 
         public static <T, E, ID> Resolution<T, E, ID> from(
-            final List<E> unresolvedEntities,
-            final List<ID> allIds,
+            final List<E> uniqueEntities,
+            final List<ID> uniqueIds,
             final List<T> models,
-            final boolean[] resolvedIds
+            final boolean[] duplicate
         ) {
-            return new Resolution<>(unresolvedEntities, allIds, models, resolvedIds);
+            return new Resolution<>(uniqueEntities, uniqueIds, models, duplicate);
         }
 
         @SuppressWarnings("unchecked")
