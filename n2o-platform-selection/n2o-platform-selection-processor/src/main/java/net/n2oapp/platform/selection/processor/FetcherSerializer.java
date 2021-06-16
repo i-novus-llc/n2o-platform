@@ -67,17 +67,12 @@ class FetcherSerializer extends AbstractSerializer {
         out.append(SelectionPropagation.class.getCanonicalName());
         out.append(" propagation");
         out.append(") {\n");
-        out.append("\t\tfinal java.lang.Object obj = net.n2oapp.platform.selection.api.Fetcher.CTX.get().get(getUnderlyingEntity());\n");
-        out.append("\t\tif (obj != null) return (");
-        out.append(meta.getModelType());
-        out.append(") obj;\n");
         if (meta.getParent() == null) {
             appendExplicitPropagation(out);
             appendReturnNullIfSelectionEmpty(out);
             out.append("\t\t");
             out.append(meta.getModelType());
             out.append(" model = create();\n");
-            out.append("\t\tnet.n2oapp.platform.selection.api.Fetcher.CTX.get().put(getUnderlyingEntity(), model);\n");
         } else {
             out.append("\t\t");
             out.append(meta.getModelType());
