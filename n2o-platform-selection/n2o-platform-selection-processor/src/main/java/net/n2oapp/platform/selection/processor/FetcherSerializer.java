@@ -144,7 +144,7 @@ class FetcherSerializer extends AbstractSerializer {
                 out.append(nestedFetcher);
                 out.append("> nestedFetchers = ");
                 appendFetch(out, selfReference, tabs, capitalizedKey);
-                out.append("\t\t\tif (nestedFetchers != null && !nestedFetchers.isEmpty()) {\n");
+                out.append("\t\t\tif (nestedFetchers != null) {\n");
                 out.append(tabs);
                 out.append("\t\t\t\t");
                 out.append(property.getCollectionType().toString());
@@ -168,6 +168,7 @@ class FetcherSerializer extends AbstractSerializer {
                 out.append(");\n");
                 out.append(tabs);
                 out.append("\t\t\t\t}\n");
+                out.append(tabs).append("\t\t\t\t").append("model.set").append(capitalizedKey).append("(result);\n");
             }
             out.append(tabs);
             out.append("\t\t\t}\n");
