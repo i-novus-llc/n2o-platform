@@ -81,7 +81,7 @@ public class SelectionProcessor extends AbstractProcessor {
                 return false;
         }
         List<SelectionMeta> metalist = new ArrayList<>(elements.size());
-        LinkedList<Map.Entry<Element, List<Element>>> toposort = toposort(elements);
+        List<Map.Entry<Element, List<Element>>> toposort = toposort(elements);
         Map<Element, SelectionMeta> index = new HashMap<>();
         for (Map.Entry<Element, List<Element>> entry : toposort) {
             if (init(metalist, entry))

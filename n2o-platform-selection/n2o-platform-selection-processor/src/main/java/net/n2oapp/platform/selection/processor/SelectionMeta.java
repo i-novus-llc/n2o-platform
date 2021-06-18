@@ -12,10 +12,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 class SelectionMeta {
 
@@ -202,6 +199,7 @@ class SelectionMeta {
 
     void addChildren(List<SelectionMeta> children) {
         this.children.addAll(children);
+        this.children.sort(Comparator.comparing(meta -> meta.getTarget().getSimpleName().toString()));
     }
 
     PackageElement getTargetPackage() {

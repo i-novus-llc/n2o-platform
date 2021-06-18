@@ -14,7 +14,7 @@ final class ProcessorUtil {
     private ProcessorUtil() {
     }
 
-    static LinkedList<Map.Entry<Element, List<Element>>> toposort(List<? extends Element> elements) {
+    static List<Map.Entry<Element, List<Element>>> toposort(List<? extends Element> elements) {
         Map<Element, List<Element>> graph = new HashMap<>();
         for (Element elem : elements) {
             graph.putIfAbsent(elem, null);
