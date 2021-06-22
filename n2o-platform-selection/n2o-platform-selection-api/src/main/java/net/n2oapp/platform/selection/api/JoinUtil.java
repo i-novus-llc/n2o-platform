@@ -3,7 +3,6 @@ package net.n2oapp.platform.selection.api;
 import org.springframework.util.Assert;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -17,25 +16,22 @@ public final class JoinUtil {
      * Для двусторонних отношений типа {@code OneToMany}, когда {@code leftSide} не является владельцем отношения
      * (в терминах JPA это означает, что на {@code leftSide} объявлено {@code OneToMany(mappedBy = "...")},
      * а на правой стороне {@code JoinColumn})
-     * @param leftSide Левая сторона отношения
      * @param innerJoinRightSide Функция, возвращающая правую сторону отношения по левой стороне (inner-join)
      * @param fetcherConstructor Функция, возвращающая {@link Fetcher} {@code <F>} по экземпляру с правой стороны отношения
      * @param getLeftSideIdFromRightSide Функция, возвращающая идентификатор левой стороны отношения по правой стороне отношения (не {@code null})
      * @param <ID> Идентификатор левой стороны отношения
      * @param <F> Тип {@link Fetcher}-а
-     * @param <E1> Левая сторона отношения
-     * @param <E2> Правая сторона отношения
+     * @param <R> Правая сторона отношения
      */
-    public static <ID, F extends Fetcher<?, ?, ?>, E1, E2, C extends Collection<F>> Map<ID, C> joinOneToMany(
-            Collection<E1> leftSide,
-            Function<Collection<E1>, Collection<E2>> innerJoinRightSide,
-            Function<? super E2, ? extends F> fetcherConstructor,
-            Function<? super E2, ? extends ID> getLeftSideIdFromRightSide,
-            Supplier<? extends C> targetCollectionSupplier
+    public static <ID, F extends Fetcher<?, ?, ?>, R, C extends Collection<F>> Map<ID, C> joinOneToMany(
+        Supplier<Collection<R>> innerJoinRightSide,
+        Function<? super R, ? extends F> fetcherConstructor,
+        Function<? super R, ? extends ID> getLeftSideIdFromRightSide,
+        Supplier<? extends C> targetCollectionSupplier
     ) {
         Map<ID, C> result = new HashMap<>();
-        Collection<E2> childEntities = innerJoinRightSide.apply(leftSide);
-        for (E2 child : childEntities) {
+        Collection<R> childEntities = innerJoinRightSide.get();
+        for (R child : childEntities) {
             F fetcher = Objects.requireNonNull(fetcherConstructor.apply(child));
             ID leftSideId = Objects.requireNonNull(getLeftSideIdFromRightSide.apply(child), () -> "Missing left side for INNER join for " + child);
             result.computeIfAbsent(leftSideId, ignored -> targetCollectionSupplier.get()).add(fetcher);
@@ -43,20 +39,18 @@ public final class JoinUtil {
         return result;
     }
 
-    public static <ID, F extends Fetcher<?, ?, ?>, E1, E2> Map<ID, List<F>> joinOneToMany(
-        Collection<E1> leftSide,
-        Function<Collection<E1>, Collection<E2>> joinRightSide,
-        Function<? super E2, ? extends F> fetcherConstructor,
-        Function<? super E2, ? extends ID> getLeftSideIdFromRightSide
+    public static <ID, F extends Fetcher<?, ?, ?>, R> Map<ID, List<F>> joinOneToMany(
+        Supplier<Collection<R>> joinRightSide,
+        Function<? super R, ? extends F> fetcherConstructor,
+        Function<? super R, ? extends ID> getLeftSideIdFromRightSide
     ) {
-        return joinOneToMany(leftSide, joinRightSide, fetcherConstructor, getLeftSideIdFromRightSide, ArrayList::new);
+        return joinOneToMany(joinRightSide, fetcherConstructor, getLeftSideIdFromRightSide, ArrayList::new);
     }
 
     /**
      * Для общего типа отношений ToMany (unidirectional/bidirectional, OneToMany/ManyToMany).
      * Специфичен для JPA
      * (для OneToMany отношений лучше использовать {@link #joinOneToMany})
-     * @param leftSide Левая сторона отношения
      * @param innerJoinRightSide Функция, которая произведет inner join с правой стороной отношения и
      *                  вернет distinct-подмножество {@code leftSide} (отфильтрованное по inner join).<br>
      *                  Ожидается, что после вызова этой функции JPA-провайдер проставит правую сторону отношения
@@ -76,23 +70,22 @@ public final class JoinUtil {
      * @param targetCollectionSupplier {@link Supplier}, возвращающий нужный тип коллекции {@code <C>}
      * @param <ID> Тип идентификатора сущностей с левой стороны отношения
      * @param <F> Тип {@link Fetcher}
-     * @param <E1> Тип сущностей с левой стороны отношения
-     * @param <E2> Тип сущностей с правой стороны отношения
+     * @param <L> Тип сущностей с левой стороны отношения
+     * @param <R> Тип сущностей с правой стороны отношения
      * @param <C> Тип нужной коллекции
      */
-    public static <ID, F extends Fetcher<?, ?, ?>, E1, E2, C extends Collection<F>> Map<ID, C> joinToMany(
-        Collection<E1> leftSide,
-        Function<Collection<E1>, Set<E1>> innerJoinRightSide,
-        Function<? super E2, ? extends F> fetcherConstructor,
-        Function<? super E1, ? extends ID> getLeftSideId,
-        Function<? super E1, Collection<E2>> getRightSideByLeftSide,
+    public static <ID, F extends Fetcher<?, ?, ?>, L, R, C extends Collection<F>> Map<ID, C> joinToMany(
+        Supplier<Set<L>> innerJoinRightSide,
+        Function<? super R, ? extends F> fetcherConstructor,
+        Function<? super L, ? extends ID> getLeftSideId,
+        Function<? super L, Collection<R>> getRightSideByLeftSide,
         Supplier<? extends C> targetCollectionSupplier
     ) {
         Map<ID, C> result = new HashMap<>();
-        Set<? extends E1> joined = innerJoinRightSide.apply(leftSide);
-        for (E1 leftSideEntity : joined) {
+        Set<? extends L> joined = innerJoinRightSide.get();
+        for (L leftSideEntity : joined) {
             ID leftSideId = Objects.requireNonNull(getLeftSideId.apply(leftSideEntity));
-            Collection<? extends E2> rightSide = getRightSideByLeftSide.apply(leftSideEntity);
+            Collection<? extends R> rightSide = getRightSideByLeftSide.apply(leftSideEntity);
             Assert.notEmpty(
                 rightSide,
                 () -> "Empty collection provided for INNER join. Left side entity: " + leftSideEntity + ", ID: " + leftSideId
@@ -100,7 +93,7 @@ public final class JoinUtil {
             checkDuplicates(leftSideId, leftSideEntity, result);
             C manySideFetchers = targetCollectionSupplier.get();
             result.put(leftSideId, manySideFetchers);
-            for (E2 rightSideEntity : rightSide) {
+            for (R rightSideEntity : rightSide) {
                 F fetcher = Objects.requireNonNull(fetcherConstructor.apply(rightSideEntity));
                 manySideFetchers.add(fetcher);
             }
@@ -108,14 +101,13 @@ public final class JoinUtil {
         return result;
     }
 
-    public static <ID, F extends Fetcher<?, ?, ?>, E1, E2> Map<ID, List<F>> joinToMany(
-        Collection<E1> leftSide,
-        Function<Collection<E1>, Set<E1>> innerJoin,
-        Function<? super E2, ? extends F> fetcherConstructor,
-        Function<? super E1, ? extends ID> getLeftSideId,
-        Function<? super E1, Collection<E2>> getRightSideByLeftSide
+    public static <ID, F extends Fetcher<?, ?, ?>, L, R> Map<ID, List<F>> joinToMany(
+        Supplier<Set<L>> innerJoin,
+        Function<? super R, ? extends F> fetcherConstructor,
+        Function<? super L, ? extends ID> getLeftSideId,
+        Function<? super L, Collection<R>> getRightSideByLeftSide
     ) {
-        return joinToMany(leftSide, innerJoin, fetcherConstructor, getLeftSideId, getRightSideByLeftSide, ArrayList::new);
+        return joinToMany(innerJoin, fetcherConstructor, getLeftSideId, getRightSideByLeftSide, ArrayList::new);
     }
 
     /**
@@ -127,36 +119,36 @@ public final class JoinUtil {
      * @param getLeftSideId Функция, возвращающая идентификатор экземпляра с левой стороны отношения
      * @param getForeignKey Функция, возвращающая идентификатор, по которому происходит {@code join} отношения (или {@code null}, если отношения нет)
      * @param getRightSideId Функция, возвращающая идентификатор сущности с правой стороны отношения
-     * @param <ID1> Идентификатор сущности с левой стороны отношения
-     * @param <ID2> Идентификатор сущности с правой стороны отношения
+     * @param <LID> Идентификатор сущности с левой стороны отношения
+     * @param <RID> Идентификатор сущности с правой стороны отношения
      * @param <F> Тип {@link Fetcher}
-     * @param <E1> Левая сторона отношения
-     * @param <E2> Правая сторона отношения
+     * @param <L> Левая сторона отношения
+     * @param <R> Правая сторона отношения
      */
-    public static <ID1, ID2, F extends Fetcher<?, ?, ?>, E1, E2> Map<ID1, F> joinToOne(
-            Collection<E1> leftSide,
-            Function<Collection<E1>, Collection<E2>> fetchRightSide,
-            Function<? super E2, ? extends F> fetcherConstructor,
-            Function<? super E1, ? extends ID1> getLeftSideId,
-            Function<? super E1, ? extends ID2> getForeignKey,
-            Function<? super E2, ? extends ID2> getRightSideId
+    public static <LID, RID, F extends Fetcher<?, ?, ?>, L, R> Map<LID, F> joinToOne(
+        Collection<L> leftSide,
+        Supplier<Collection<R>> fetchRightSide,
+        Function<? super R, ? extends F> fetcherConstructor,
+        Function<? super L, ? extends LID> getLeftSideId,
+        Function<? super L, ? extends RID> getForeignKey,
+        Function<? super R, ? extends RID> getRightSideId
     ) {
-        Map<ID1, F> result = new HashMap<>();
-        Map<ID2, E2> joined = new HashMap<>();
-        for (E2 e21 : fetchRightSide.apply(leftSide)) {
-            joined.putIfAbsent(getRightSideId.apply(e21), e21);
+        Map<LID, F> result = new HashMap<>();
+        Map<RID, R> joined = new HashMap<>();
+        for (R rightSide : fetchRightSide.get()) {
+            joined.putIfAbsent(getRightSideId.apply(rightSide), rightSide);
         }
-        for (E1 owner : leftSide) {
-            ID2 fk = getForeignKey.apply(owner);
+        for (L owner : leftSide) {
+            RID fk = getForeignKey.apply(owner);
             if (fk != null) {
-                E2 e2 = joined.get(fk);
-                ID1 leftSideId = Objects.requireNonNull(getLeftSideId.apply(owner));
+                R r = joined.get(fk);
+                LID leftSideId = Objects.requireNonNull(getLeftSideId.apply(owner));
                 checkDuplicates(leftSideId, owner, result);
                 Objects.requireNonNull(
-                    e2,
+                    r,
                     () -> "Relationship present on " + owner + " for right side via foreign key " + fk + ", but could not be found on joined right side"
                 );
-                F fetcher = Objects.requireNonNull(fetcherConstructor.apply(e2));
+                F fetcher = Objects.requireNonNull(fetcherConstructor.apply(r));
                 result.put(leftSideId, fetcher);
             }
         }
@@ -177,20 +169,20 @@ public final class JoinUtil {
      * @param getLeftSideId Функция, возвращающая идентификатор владельца отношения
      * @param <ID> Идентификатор владельца отношения
      * @param <F> Тип {@link Fetcher}
-     * @param <E1> Владелец отношения
-     * @param <E2> Правая сторона отношения
+     * @param <L> Владелец отношения
+     * @param <R> Правая сторона отношения
      */
-    public static <ID, F extends Fetcher<?, ?, ?>, E1, E2> Map<ID, F> joinToOnePrefetching(
-            Collection<E1> leftSide,
-            Consumer<Collection<E1>> prefetchRightSide,
-            Function<? super E2, ? extends F> fetcherConstructor,
-            Function<? super E1, ? extends E2> getOtherSideFromLeftSide,
-            Function<? super E1, ? extends ID> getLeftSideId
+    public static <ID, F extends Fetcher<?, ?, ?>, L, R> Map<ID, F> joinToOnePrefetching(
+        Collection<L> leftSide,
+        Runnable prefetchRightSide,
+        Function<? super R, ? extends F> fetcherConstructor,
+        Function<? super L, ? extends R> getOtherSideFromLeftSide,
+        Function<? super L, ? extends ID> getLeftSideId
     ) {
-       prefetchRightSide.accept(leftSide);
+       prefetchRightSide.run();
        Map<ID, F> result = new HashMap<>();
-        for (E1 owner : leftSide) {
-            E2 prefetchedOtherSide = getOtherSideFromLeftSide.apply(owner);
+        for (L owner : leftSide) {
+            R prefetchedOtherSide = getOtherSideFromLeftSide.apply(owner);
             if (prefetchedOtherSide != null) {
                 ID leftSideId = Objects.requireNonNull(getLeftSideId.apply(owner));
                 F fetcher = Objects.requireNonNull(fetcherConstructor.apply(prefetchedOtherSide));
@@ -210,24 +202,21 @@ public final class JoinUtil {
      * правая сторона так же всегда будет подгружаться, создавая проблему {@code N+1}).<br>
      * Если только не используется инструментация байт-кода:<br>
      * <a href="https://stackoverflow.com/a/47768154">Ссылка</a>
-     * @param leftSide Левая сторона отношения
      * @param fetchRightSide Метод, делающий {@code join} с правой стороной отношения
      * @param fetcherConstructor Метод, возвращающий {@link Fetcher} {@code F} по экземпляру правой стороны отношения
      * @param getLeftSideIdFromRightSide Метод, возвращающий идентификатор левой стороны отношения по правой стороне отношения (или {@code null}, если отношения нет)
      * @param <ID> Идентификатор левой стороны отношения
      * @param <F> Тип {@link Fetcher}
-     * @param <E1> Левая сторона отношения
-     * @param <E2> Правая сторона отношения
+     * @param <R> Правая сторона отношения
      */
-    public static <ID, F extends Fetcher<?, ?, ?>, E1, E2> Map<ID, F> joinOneToOne(
-        Collection<E1> leftSide,
-        Function<Collection<E1>, Collection<E2>> fetchRightSide,
-        Function<? super E2, ? extends F> fetcherConstructor,
-        Function<? super E2, ? extends ID> getLeftSideIdFromRightSide
+    public static <ID, F extends Fetcher<?, ?, ?>, R> Map<ID, F> joinOneToOne(
+        Supplier<Collection<R>> fetchRightSide,
+        Function<? super R, ? extends F> fetcherConstructor,
+        Function<? super R, ? extends ID> getLeftSideIdFromRightSide
     ) {
         Map<ID, F> result = new HashMap<>();
-        Collection<E2> owners = fetchRightSide.apply(leftSide);
-        for (E2 owner : owners) {
+        Collection<R> owners = fetchRightSide.get();
+        for (R owner : owners) {
             ID leftSideId = getLeftSideIdFromRightSide.apply(owner);
             if (leftSideId != null) {
                 checkDuplicates(leftSideId, owner, result);

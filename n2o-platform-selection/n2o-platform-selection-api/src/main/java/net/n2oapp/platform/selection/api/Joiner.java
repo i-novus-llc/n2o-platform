@@ -3,10 +3,12 @@ package net.n2oapp.platform.selection.api;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.NonNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Supplier;
-
-import static java.util.stream.Collectors.toCollection;
+import java.util.stream.Collectors;
 
 /**
  * Группировщик запросов
@@ -17,6 +19,9 @@ import static java.util.stream.Collectors.toCollection;
  * @param <ID> Тип, по которому идентифицируются сущности
  */
 public interface Joiner<T, S extends Selection<T>, E, F extends Fetcher<T, S, E>, ID> {
+
+    @SuppressWarnings("rawtypes")
+    Supplier<ArrayList> ARRAY_LIST_SUPPLIER = ArrayList::new;
 
     /**
      * @return Идентификатор отображаемой сущности
@@ -31,7 +36,7 @@ public interface Joiner<T, S extends Selection<T>, E, F extends Fetcher<T, S, E>
     Joiner.Resolution<T, E, ID> resolveIterable(Iterable<? extends F> fetchers, S selection, SelectionPropagation propagation);
 
     default T resolve(F fetcher, S selection) {
-        List<T> resolved = resolveCollection(Collections.singleton(fetcher), selection);
+        List<T> resolved = resolveCollection(Collections.singletonList(fetcher), selection);
         if (resolved == null)
             return null;
         return resolved.get(0);
@@ -47,16 +52,19 @@ public interface Joiner<T, S extends Selection<T>, E, F extends Fetcher<T, S, E>
         Resolution<T, E, ID> resolution = resolveIterable(fetchers, selection, selection.propagation());
         if (resolution == null)
             return null;
-        return fetchers.stream().map(fetcher ->
-            getFromResolvedMap(resolution.models, fetcher)
-        ).collect(toCollection(collectionSupplier));
+        //noinspection unchecked
+        return collectionSupplier.equals(ARRAY_LIST_SUPPLIER) ? (C) resolution.models : resolution.models.stream().collect(Collectors.toCollection(collectionSupplier));
     }
 
     default List<T> resolveCollection(Collection<? extends F> fetchers, S selection) {
-        return resolveCollection(fetchers, selection, ArrayList::new);
+        //noinspection unchecked
+        return resolveCollection(
+            fetchers,
+            selection,
+            ARRAY_LIST_SUPPLIER
+        );
     }
 
-    @SuppressWarnings("unchecked")
     default<I extends Streamable<T>> I resolveStreamable(
         Streamable<? extends F> fetchers,
         S selection
@@ -66,34 +74,47 @@ public interface Joiner<T, S extends Selection<T>, E, F extends Fetcher<T, S, E>
         Resolution<T, E, ID> resolution = resolveIterable(fetchers, selection, selection.propagation());
         if (resolution == null)
             return null;
-        Streamable<T> resolved = fetchers.map(fetcher ->
-            getFromResolvedMap(resolution.models, fetcher)
+        final int[] idx = {0};
+        Streamable<T> resolved = fetchers.map(
+            fetcher -> resolution.models.get(idx[0]++)
         );
+        //noinspection unchecked
         return (I) resolved;
-    }
-
-    private T getFromResolvedMap(Map<ID, T> map, F f) {
-        return map.get(Objects.requireNonNull(getId(f.getUnderlyingEntity())));
     }
 
     class Resolution<T, E, ID> {
 
-        private static final Resolution<?, ?, ?> EMPTY = new Resolution<>(Collections.emptyList(), Collections.emptyMap());
+        private static final Resolution<?, ?, ?> EMPTY = new Resolution<>(
+            Collections.emptyList(),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            new boolean[] {}
+        );
 
-        public final Collection<E> entities;
-        @SuppressWarnings("java:S1319")
-        public final Map<ID, T> models;
+        public final List<E> uniqueEntities;
+        public final List<ID> uniqueIds;
+        public final List<T> models;
+        public final boolean[] duplicate;
 
-        private Resolution(Collection<E> entities, Map<ID, T> models) {
-            this.entities = entities;
+        private Resolution(
+            final List<E> uniqueEntities,
+            final List<ID> uniqueIds,
+            final List<T> models,
+            final boolean[] duplicate
+        ) {
+            this.uniqueEntities = uniqueEntities;
+            this.uniqueIds = uniqueIds;
             this.models = models;
+            this.duplicate = duplicate;
         }
 
         public static <T, E, ID> Resolution<T, E, ID> from(
-            Collection<E> entities,
-            @SuppressWarnings("java:S1319") LinkedHashMap<ID, T> models
+            final List<E> uniqueEntities,
+            final List<ID> uniqueIds,
+            final List<T> models,
+            final boolean[] duplicate
         ) {
-            return new Resolution<>(entities, models);
+            return new Resolution<>(uniqueEntities, uniqueIds, models, duplicate);
         }
 
         @SuppressWarnings("unchecked")

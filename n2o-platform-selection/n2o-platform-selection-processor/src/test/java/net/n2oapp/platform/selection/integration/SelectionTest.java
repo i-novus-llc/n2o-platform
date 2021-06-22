@@ -37,7 +37,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.CollectionUtils;
 
 import javax.sql.DataSource;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -86,9 +85,11 @@ public class SelectionTest {
     private PlatformTransactionManager txManager;
 
     private static String randString() {
-        byte[] bytes = new byte[10];
-        ThreadLocalRandom.current().nextBytes(bytes);
-        return new String(bytes, StandardCharsets.UTF_8);
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < 10; i++) {
+            builder.append((char) ThreadLocalRandom.current().nextInt('a', 'z' + 1));
+        }
+        return builder.toString();
     }
 
     private static boolean randBoolean() {
@@ -105,12 +106,18 @@ public class SelectionTest {
             projects.add(projectRepository.save(project));
         }
         int numAddresses = 20;
-        List<Integer> addresses = new ArrayList<>(numAddresses);
+        List<Integer> legalAddresses = new ArrayList<>(numAddresses / 2);
+        List<Integer> factualAddresses = new ArrayList<>(numAddresses / 2);
         for (int i = 0; i < numAddresses; i++) {
             Address address = new Address();
             address.setPostcode(randString());
             address.setRegion(randString());
-            addresses.add(addressRepository.save(address).getId());
+            final Integer id = addressRepository.save(address).getId();
+            if (randBoolean()) {
+                legalAddresses.add(id);
+            } else {
+                factualAddresses.add(id);
+            }
         }
         int numOrgs = 5;
         List<Integer> orgs = new ArrayList<>(numOrgs);
@@ -118,9 +125,9 @@ public class SelectionTest {
             Organisation org = new Organisation();
             org.setName(randString());
             if (randBoolean())
-                org.setLegalAddress(new Address(addresses.get(ThreadLocalRandom.current().nextInt(numAddresses))));
+                org.setLegalAddress(new Address(legalAddresses.get(ThreadLocalRandom.current().nextInt(legalAddresses.size()))));
             if (randBoolean())
-                org.setFactualAddress(new Address(addresses.get(ThreadLocalRandom.current().nextInt(numAddresses))));
+                org.setFactualAddress(new Address(factualAddresses.get(ThreadLocalRandom.current().nextInt(factualAddresses.size()))));
             orgs.add(organisationRepository.save(org).getId());
         }
         for (int i = 0; i < 100; i++) {

@@ -7,7 +7,6 @@ import net.n2oapp.platform.selection.api.SelectionPropagation;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Collection;
 
 @SuppressWarnings("java:S1192")
 class JoinerSerializer extends AbstractSerializer {
@@ -19,13 +18,16 @@ class JoinerSerializer extends AbstractSerializer {
         out.append(" ");
         out.append("join");
         out.append(capitalize(property.getName()));
-        out.append("(");
-        out.append(Collection.class.getCanonicalName());
+        out.append("(java.util.List");
         out.append("<");
         out.append(meta.getEntityTypeVariable());
         out.append(">");
         out.append(" ");
-        out.append("entities");
+        out.append("entities, ");
+        out.append("java.util.List");
+        out.append("<");
+        out.append(meta.getIdTypeVariable());
+        out.append("> ids");
         out.append(");");
         if (property.isWithNestedJoiner()) {
             out.append("\n\t");
@@ -95,31 +97,30 @@ class JoinerSerializer extends AbstractSerializer {
         if (meta.getParent() == null) {
             appendExplicitPropagation(out);
             appendReturnNullIfSelectionEmpty(out);
-            out.append("\t\tjava.util.Collection<");
-            out.append(meta.getEntityTypeVariable());
-            out.append("> entities = new java.util.ArrayList<>();\n");
-            out.append("\t\tjava.util.LinkedHashMap<");
-            out.append(meta.getIdTypeVariable());
-            out.append(", ");
-            out.append(meta.getModelType());
-            out.append("> models = new java.util.LinkedHashMap<>();\n");
-            out.append("\t\tfor (java.util.Iterator<? extends ").append(meta.getFetcherType()).append("> iter = fetchers.iterator(); iter.hasNext(); ) {\n");
-            out.append("\t\t\t");
-            out.append(meta.getFetcherType()).append(" fetcher = iter.next();\n");
-            out.append("\t\t\t");
-            out.append(meta.getEntityTypeVariable());
-            out.append(" entity = fetcher.getUnderlyingEntity();\n");
-            out.append("\t\t\t");
-            out.append(meta.getIdTypeVariable()).append(" id = getId(entity);\n");
-            out.append("\t\t\tif (models.containsKey(id)) iter.remove();\n");
-            out.append("\t\t\telse {\n");
-            out.append("\t\t\t\tmodels.put(getId(entity), fetcher.create());\n");
-            out.append("\t\t\t\tentities.add(entity);\n");
+            out.append("\t\tfinal int size = com.google.common.collect.Iterables.size(fetchers);\n");
+            out.append("\t\tfinal java.util.List<").append(meta.getModelType()).append("> models = new java.util.ArrayList<>(size);\n");
+            out.append("\t\tfinal java.util.List<").append(meta.getIdTypeVariable()).append("> uniqueIds = new java.util.ArrayList<>(size);\n");
+            out.append("\t\tfinal java.util.List<").append(meta.getEntityTypeVariable()).append("> entities = new java.util.ArrayList<>(size);\n");
+            out.append("\t\tfinal boolean[] duplicate = new boolean[size];\n");
+            out.append("\t\tint fetcherIdx = 0;\n");
+            out.append("\t\tfor (java.util.Iterator<? extends ").append(meta.getFetcherType()).append("> iter = fetchers.iterator(); iter.hasNext();) {\n");
+            out.append("\t\t\t").append(meta.getFetcherType()).append(" fetcher = iter.next();\n");
+            out.append("\t\t\tfinal ").append(meta.getIdTypeVariable()).append(" id = getId(fetcher.getUnderlyingEntity());\n");
+            out.append("\t\t\tfinal int duplicateIdx = uniqueIds.indexOf(id);\n");
+            out.append("\t\t\tif (duplicateIdx < 0) {\n");
+            out.append("\t\t\t\tmodels.add(fetcher.create());\n");
+            out.append("\t\t\t\tuniqueIds.add(id);\n");
+            out.append("\t\t\t\tentities.add(fetcher.getUnderlyingEntity());\n");
+            out.append("\t\t\t} else {\n");
+            out.append("\t\t\t\tduplicate[fetcherIdx] = true;\n");
             out.append("\t\t\t}\n");
+            out.append("\t\t\tfetcherIdx++;\n");
             out.append("\t\t}\n");
             out.append("\t\t");
             appendResolution(meta, out);
-            out.append(" resolution = ").append(Joiner.Resolution.class.getCanonicalName()).append(".from(entities, models);\n");
+            out.append(" resolution = ").append(Joiner.Resolution.class.getCanonicalName()).append(".from(entities, uniqueIds, models, duplicate);\n");
+            out.append("\t\tint modelIdx = 0;\n");
+            out.append("\t\tfetcherIdx = 0;\n");
         } else {
             out.append("\t\t");
             appendResolution(meta, out);
@@ -127,19 +128,21 @@ class JoinerSerializer extends AbstractSerializer {
             out.append(getQualifiedName(meta.getParent()));
             out.append(".super.resolveIterable(fetchers, selection, propagation);\n");
             out.append("\t\tif (resolution == null) return null;\n");
+            out.append("\t\tfinal java.util.List<").append(meta.getIdTypeVariable()).append("> uniqueIds = resolution.uniqueIds;\n");
+            out.append("\t\tfinal java.util.List<").append(meta.getEntityTypeVariable()).append("> entities = resolution.uniqueEntities;\n");
+            out.append("\t\tfinal java.util.List<").append(meta.getModelType()).append("> models = resolution.models;\n");
+            out.append("\t\tfinal boolean[] duplicate = resolution.duplicate;\n");
+            out.append("\t\tint modelIdx = 0;\n");
+            out.append("\t\tint fetcherIdx = 0;\n");
             appendExplicitPropagation(out);
         }
-        out.append("\t\tjava.util.Iterator<java.util.Map.Entry<");
-        out.append(meta.getIdTypeVariable());
-        out.append(", ");
-        out.append(meta.getModelType());
-        out.append(">> iter = resolution.models.entrySet().iterator();\n");
         out.append("\t\tfor (");
         out.append(meta.getFetcherType());
         out.append(" fetcher : fetchers) {\n");
+        out.append("\t\t\tif (duplicate[fetcherIdx++]) continue;\n");
         out.append("\t\t\t");
         out.append(meta.getModelType());
-        out.append(" model = iter.next().getValue();\n");
+        out.append(" model = models.get(modelIdx++);\n");
         for (SelectionProperty property : meta.getProperties()) {
             if (!property.isJoined()) {
                 FetcherSerializer.appendProperty(out, property, "fetcher", "\t");
@@ -151,35 +154,45 @@ class JoinerSerializer extends AbstractSerializer {
                 out.append("\t\t");
                 appendSelectionPredicate(out, property);
                 out.append(" {\n");
+                out.append("\t\t\tmodelIdx = 0;\n");
+                out.append("\t\t\tfetcherIdx = 0;\n");
                 if (!property.isWithNestedJoiner()) {
                     out.append("\t\t\tfinal ");
                     out.append(SelectionPropagation.class.getCanonicalName());
                     out.append(" fPropagation = propagation;\n");
                     out.append("\t\t\t");
                     NestedSelectionFetcher nested = appendJoined(meta, property, out);
-                    out.append(" joined = join").append(capitalize(property.getName())).append("(resolution.entities);\n");
-                    out.append("\t\t\tfor (java.util.Map.Entry<");
-                    out.append(meta.getIdTypeVariable());
-                    out.append(", ");
+                    out.append(" joined = join").append(capitalize(property.getName())).append("(entities, uniqueIds);\n");
+                    out.append("\t\t\tfor (").append(meta.getFetcherType()).append(" fetcher : fetchers) {\n");
+                    out.append("\t\t\tif (duplicate[fetcherIdx++]) continue;\n");
+                    out.append("\t\t\t\t").append(meta.getModelType()).append(" model = models.get(modelIdx++);\n");
+                    out.append("\t\t\t\t").append(meta.getIdTypeVariable()).append(" id = getId(fetcher.getUnderlyingEntity());\n");
+                    out.append("\t\t\t\t");
+                    final String varName;
                     if (property.selective()) {
                         if (property.getCollectionType() != null) {
                             out.append(property.getCollectionType().toString()).append("<");
                         }
                         out.append(nested.fetcher);
                         if (property.getCollectionType() != null) {
-                            out.append(">");
+                            varName = "nestedFetchers";
+                            out.append("> nestedFetchers");
+                        } else {
+                            varName = "nestedFetcher";
+                            out.append(" nestedFetcher");
                         }
-                    } else
-                        out.append(property.getOriginalTypeStr());
-                    out.append("> entry : joined.entrySet()) {\n");
-                    out.append("\t\t\t\tresolution.models.get(entry.getKey()).set");
-                    out.append(capitalize(property.getName()));
-                    out.append("(entry.getValue()");
+                    } else {
+                        varName = "nested";
+                        out.append(property.getOriginalTypeStr()).append(" nested");
+                    }
+                    out.append(" = joined.get(id);\n");
+                    out.append("\t\t\t\tif (").append(varName).append(" == null) continue;\n");
+                    out.append("\t\t\t\tmodel.set").append(capitalize(property.getName())).append("(");
                     if (!property.selective()) {
-                        out.append(");\n");
+                        out.append(varName).append(");\n");
                     } else {
                         if (property.getCollectionType() != null) {
-                            out.append(".stream().map(nestedFetcher -> nestedFetcher.resolve(selection == null ? null : selection.get");
+                            out.append(varName).append(".stream().map(nestedFetcher -> nestedFetcher.resolve(selection == null ? null : selection.get");
                             out.append(capitalize(property.getName()));
                             out.append("(), fPropagation == ");
                             out.append(SelectionPropagation.class.getCanonicalName());
@@ -193,7 +206,7 @@ class JoinerSerializer extends AbstractSerializer {
                             else if (property.getCollectionType().toString().equals("java.util.List"))
                                 out.append(".toList()));\n");
                         } else {
-                            out.append(".resolve(selection == null ? null : selection.get");
+                            out.append(varName).append(".resolve(selection == null ? null : selection.get");
                             out.append(capitalize(property.getName()));
                             out.append("(), fPropagation == ");
                             out.append(SelectionPropagation.class.getCanonicalName());
@@ -205,9 +218,9 @@ class JoinerSerializer extends AbstractSerializer {
                         }
                     }
                 } else {
-                    out.append("\t\t\tjava.util.Map joined = join");
-                    out.append(capitalize(property.getName()));
-                    out.append("(resolution.entities); // raw use here\n");
+                    out.append("\t\t\t");
+                    NestedSelectionFetcher nested = appendJoined(meta, property, out);
+                    out.append(" joined = join").append(capitalize(property.getName())).append("(entities, uniqueIds);\n");
                     out.append("\t\t\t");
                     out.append(getQualifiedName(property.getSelection()));
                     out.append(" nestedJoiner = ");
@@ -215,12 +228,12 @@ class JoinerSerializer extends AbstractSerializer {
                     out.append(getSuffix());
                     out.append("();\n");
                     out.append("\t\t\t");
-                    out.append(Joiner.Resolution.class.getCanonicalName());
+                    out.append(Joiner.Resolution.class.getCanonicalName()).append("<").append(property.getTypeStr()).append(", ?, ?>");
                     out.append(" nestedResolution = nestedJoiner.resolveIterable(");
                     if (property.getCollectionType() == null) {
-                        out.append("new java.util.ArrayList(joined.values())");
+                        out.append("joined.values()");
                     } else {
-                        out.append("(java.util.Collection) joined.values().stream().flatMap(o -> ((java.util.Collection) o).stream()).collect(java.util.stream.Collectors.toList())");
+                        out.append("new net.n2oapp.platform.selection.api.FlatteningIterable(joined.values())");
                     }
                     out.append(", selection == null ? null : selection.get");
                     out.append(capitalize(property.getName()));
@@ -234,26 +247,21 @@ class JoinerSerializer extends AbstractSerializer {
                     out.append("\t\t\tfor (");
                     out.append(meta.getFetcherType());
                     out.append(" fetcher : fetchers) {\n");
+                    out.append("\t\t\tif (duplicate[fetcherIdx++]) continue;\n");
+                    out.append("\t\t\t\t");
+                    out.append(meta.getModelType());
+                    out.append(" model = models.get(modelIdx++);\n");
                     out.append("\t\t\t\t");
                     out.append(meta.getIdTypeVariable());
                     out.append(" id = getId(fetcher.getUnderlyingEntity());\n");
-                    out.append("\t\t\t\t");
-                    out.append(meta.getModelType());
-                    out.append(" model = resolution.models.get(id);\n");
-                    String nestedFetcherRaw = getQualifiedName(property.getSelection(), Fetcher.class.getSimpleName());
                     if (property.getCollectionType() == null) {
                         out.append("\t\t\t\t");
-                        out.append(nestedFetcherRaw);
-                        out.append(" nestedFetcher = (");
-                        out.append(nestedFetcherRaw);
-                        out.append(") joined.get(id);\n");
+                        out.append(nested.fetcher);
+                        out.append(" nestedFetcher = joined.get(id);\n");
                         out.append("\t\t\t\tif (nestedFetcher == null) continue;\n");
                         out.append("\t\t\t\tjava.lang.Object nestedId = nestedJoiner.getId(nestedFetcher.getUnderlyingEntity());\n");
-                        out.append("\t\t\t\t");
-                        out.append(property.getSelection().getTarget().toString());
-                        out.append(" nestedModel = (");
-                        out.append(property.getSelection().getTarget().toString());
-                        out.append(") nestedResolution.models.get(nestedId);\n");
+                        out.append("\t\t\t\tfinal int nestedIdx = nestedResolution.uniqueIds.indexOf(nestedId);\n");
+                        out.append("\t\t\t\t").append(property.getTypeStr()).append(" nestedModel = nestedResolution.models.get(nestedIdx);\n");
                         out.append("\t\t\t\tmodel.set");
                         out.append(capitalize(property.getName()));
                         out.append("(nestedModel);\n");
@@ -261,28 +269,20 @@ class JoinerSerializer extends AbstractSerializer {
                         out.append("\t\t\t\t");
                         out.append(property.getCollectionType().toString());
                         out.append("<");
-                        out.append(nestedFetcherRaw);
-                        out.append("> nestedFetchers = (");
-                        out.append(property.getCollectionType().toString());
-                        out.append("<");
-                        out.append(nestedFetcherRaw);
-                        out.append(">) joined.get(id);\n");
+                        out.append(nested.fetcher);
+                        out.append("> nestedFetchers = joined.get(id);\n");
                         out.append("\t\t\t\tif (nestedFetchers == null) continue;\n");
-                        out.append("\t\t\t\t");
-                        out.append(property.getCollectionType().toString());
-                        out.append(" nestedModels = new ");
+                        out.append("\t\t\t\t").append(property.getCollectionType().toString()).append("<").append(property.getTypeStr()).append(">").append(" nestedModels = new ");
                         if (property.getCollectionType().toString().equals("java.util.List"))
-                            out.append("java.util.ArrayList();\n");
+                            out.append("java.util.ArrayList<>(nestedFetchers.size());\n");
                         else if (property.getCollectionType().toString().equals("java.util.Set"))
-                            out.append("java.util.HashSet();\n");
+                            out.append("java.util.HashSet<>(nestedFetchers.size());\n");
                         out.append("\t\t\t\tfor (");
-                        out.append(nestedFetcherRaw);
+                        out.append(nested.fetcher);
                         out.append(" nestedFetcher : nestedFetchers) {\n");
-                        out.append("\t\t\t\t\t");
-                        out.append(property.getSelection().getTarget().toString());
-                        out.append(" nestedModel = (");
-                        out.append(property.getSelection().getTarget().toString());
-                        out.append(") nestedResolution.models.get(nestedJoiner.getId(nestedFetcher.getUnderlyingEntity()));\n");
+                        out.append("\t\t\t\t\tjava.lang.Object nestedId = nestedJoiner.getId(nestedFetcher.getUnderlyingEntity());\n");
+                        out.append("\t\t\t\t\tfinal int nestedIdx = nestedResolution.uniqueIds.indexOf(nestedId);\n");
+                        out.append("\t\t\t\t\t").append(property.getTypeStr()).append(" nestedModel = nestedResolution.models.get(nestedIdx);\n");
                         out.append("\t\t\t\t\tnestedModels.add(nestedModel);\n");
                         out.append("\t\t\t\t}\n");
                         out.append("\t\t\t\tmodel.set");

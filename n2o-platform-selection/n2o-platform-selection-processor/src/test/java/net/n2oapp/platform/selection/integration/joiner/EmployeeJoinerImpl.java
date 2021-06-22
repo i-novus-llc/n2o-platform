@@ -11,7 +11,10 @@ import net.n2oapp.platform.selection.integration.repository.OrganisationReposito
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static net.n2oapp.platform.selection.unit.Util.mapNullable;
 
@@ -39,10 +42,10 @@ public class EmployeeJoinerImpl implements EmployeeJoiner<Employee, Integer> {
     }
 
     @Override
-    public Map<Integer, OrganisationFetcher<?>> joinOrganisation(Collection<Employee> employees) {
+    public Map<Integer, OrganisationFetcher<?>> joinOrganisation(List<Employee> employees, List<Integer> ids) {
         return JoinUtil.joinToOnePrefetching(
             employees,
-            organisationRepository::joinOrganisation,
+            () -> organisationRepository.joinOrganisation(ids),
             OrganisationFetcherImpl::new,
             Employee::getOrganisation,
             Employee::getId
@@ -55,20 +58,18 @@ public class EmployeeJoinerImpl implements EmployeeJoiner<Employee, Integer> {
     }
 
     @Override
-    public Map<Integer, List<ContactFetcher<?>>> joinContacts(Collection<Employee> employees) {
+    public Map<Integer, List<ContactFetcher<?>>> joinContacts(List<Employee> employees, List<Integer> ids) {
         return JoinUtil.joinOneToMany(
-            employees,
-            employeeRepository::joinContacts,
+            () -> employeeRepository.joinContacts(ids),
             ContactFetcherImpl::new,
             contact -> contact.getOwner().getId()
         );
     }
 
     @Override
-    public Map<Integer, Set<ProjectFetcher<?>>> joinProjects(Collection<Employee> employees) {
+    public Map<Integer, Set<ProjectFetcher<?>>> joinProjects(List<Employee> employees, List<Integer> ids) {
         return JoinUtil.joinToMany(
-            employees,
-            employeeRepository::joinProjects,
+            () -> employeeRepository.joinProjects(ids),
             ProjectFetcherImpl::new,
             Employee::getId,
             Employee::getProjects,
@@ -77,10 +78,10 @@ public class EmployeeJoinerImpl implements EmployeeJoiner<Employee, Integer> {
     }
 
     @Override
-    public Map<Integer, PassportFetcher<?>> joinPassport(Collection<Employee> entities) {
+    public Map<Integer, PassportFetcher<?>> joinPassport(List<Employee> employees, List<Integer> ids) {
         return JoinUtil.joinToOne(
-            entities,
-            employeeRepository::joinPassport,
+            employees,
+            () -> employeeRepository.joinPassport(ids),
             PassportFetcherImpl::new,
             Employee::getId,
             employee -> mapNullable(employee.getPassport(), BaseModel::getId),
