@@ -26,6 +26,9 @@ public class RandomPortEnvPostProcessor implements EnvironmentPostProcessor {
         if(clazz.getAnnotation(EnableEmbeddedPg.class) != null) {
             map.put("test.embedded-pg", true);
         }
+        if(clazz.getAnnotation(EnableTestcontainersPg.class) != null) {
+            map.put("test.testcontainers-pg", true);
+        }
 
         if(!map.isEmpty()) {
             addOrReplace(configurableEnvironment.getPropertySources(), map);

@@ -1,5 +1,7 @@
 net.n2oapp.platform.test.autoconfigure.EnableEmbeddedPg=\
 net.n2oapp.platform.test.autoconfigure.EmbeddedPgAutoConfiguration
+net.n2oapp.platform.test.autoconfigure.EnableTestcontainersPg=\
+net.n2oapp.platform.test.autoconfigure.TestcontainersPgAutoConfiguration
 
 org.springframework.boot.env.EnvironmentPostProcessor=\
 net.n2oapp.platform.test.autoconfigure.RandomPortEnvPostProcessor
