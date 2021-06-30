@@ -13,6 +13,7 @@ import org.apache.cxf.spring.boot.autoconfigure.CxfProperties;
 import org.apache.cxf.tracing.brave.jaxrs.BraveFeature;
 import org.apache.cxf.validation.BeanValidationInInterceptor;
 import org.apache.cxf.validation.BeanValidationProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -103,19 +104,9 @@ public class JaxRsServerAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(name = {"n2o.ui.message.stacktrace"}, havingValue = "true")
-    RestServerExceptionMapper restServerExceptionMapperWithStackTrace() {
-        RestServerExceptionMapper restServerExceptionMapper = new RestServerExceptionMapper();
-        restServerExceptionMapper.setCanExportStack(true);
-        return restServerExceptionMapper;
-    }
-
-    @Bean
-    @ConditionalOnProperty(name = {"n2o.ui.message.stacktrace"}, havingValue = "false", matchIfMissing = true)
-    RestServerExceptionMapper restServerExceptionMapperWithoutStackTrace() {
-        RestServerExceptionMapper restServerExceptionMapper = new RestServerExceptionMapper();
-        restServerExceptionMapper.setCanExportStack(false);
-        return restServerExceptionMapper;
+    @ConditionalOnClass(Messages.class)
+    RestServerExceptionMapper restServerExceptionMapper(Messages messages, @Value("${n2o.ui.message.stacktrace}") Boolean canExportStack) {
+        return new RestServerExceptionMapper(canExportStack, messages);
     }
 
     @Bean

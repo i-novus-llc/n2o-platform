@@ -8,13 +8,8 @@ public class CodeGenerator {
      * Should be between 1 and 9
      */
     private static final int SHIFT_OFFSET = 5;
-    private String prefix;
 
-    public CodeGenerator(String prefix) {
-        this.prefix = prefix;
-    }
-
-    public String generate() {
+    public static String generate(String prefix) {
         LocalDateTime dateTime = LocalDateTime.now();
         int yearOffset = dateTime.getYear() - 2021;
         int secondOfDay = 3600 * dateTime.getHour()  + 60 * dateTime.getMinute() + dateTime.getSecond();
@@ -35,5 +30,9 @@ public class CodeGenerator {
 
     private static char shift(char input) {
         return input + SHIFT_OFFSET > '9'? (char)(input + SHIFT_OFFSET - 10) : (char)(input + SHIFT_OFFSET);
+    }
+
+    private CodeGenerator() {
+        throw new UnsupportedOperationException();
     }
 }
