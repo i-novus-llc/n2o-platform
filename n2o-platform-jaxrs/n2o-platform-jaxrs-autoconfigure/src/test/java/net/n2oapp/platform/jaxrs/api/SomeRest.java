@@ -4,6 +4,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import net.n2oapp.platform.jaxrs.seek.SeekRequest;
+import net.n2oapp.platform.jaxrs.seek.SeekedPage;
 import org.springframework.data.domain.Page;
 
 import javax.validation.Valid;
@@ -116,5 +118,9 @@ public interface SomeRest {
     @GET
     @Path("/genericList")
     List<ListModel> getListModels();
+
+    @GET
+    @Path("/seek")
+    SeekedPage<String> searchSeeking(@BeanParam @Valid SeekRequest request);
 
 }

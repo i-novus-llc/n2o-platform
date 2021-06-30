@@ -1,0 +1,227 @@
+= Возможность seek (keyset) - пагинации используя QueryDSL
+
+Данный модуль предоставляет возможность seek-пагинации.
+Этот способ пагинации работает намного быстрее, чем пагинация с использованием limit/offset.
+Более подробно можно прочитать здесь:
+https://habr.com/ru/company/tinkoff/blog/485036/
+
+== Как использовать
+1) Добавьте зависимость
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-seek-paging</artifactId>
+</dependency>
+----
+2) В своем приложении укажите
+[source,java]
+----
+@EnableJpaRepositories(repositoryFactoryBeanClass = SeekableJpaRepositoryFactoryBean.class)
+----
+3) Репозитории, которые должны поддерживать seek-пагинацию, наследуйте от SeekableRepository.
+
+Пример:
+
+[source,java]
+----
+class SomeCriteria extends SeekRequest {
+//  Фильтры
+}
+
+// Dto
+class SomeModel {}
+
+@Path("/rest")
+class RestService {
+    @GET
+    @Path("/search")
+    SeekedPage<SomeModel> search(@BeanParam SomeCriteria criteria);
+}
+----
+
+Используя такой сервис, можно делать запросы типа:
+
+----
+http://rest-service/rest/search?sort=id,asc&piv=id,54&size=10&page=NEXT
+Хотим следующую страницу с сортировкой по id
+На предыдущей странице у последней записи id был 54, поэтому указываем его в параметре "piv"
+----
+
+== SeekableRepository
+
+Данный интерфейс сам наследует QueryDslPredicateExecutor, поэтому все его методы доступны.
+
+== Какие ограничения
+Основное ограничение -- то что хотя бы одно поле или комбинация полей в указанной сортировке должны быть уникальными.
+
+Так же есть ограничения на NULL-значения `*ToOne` полей (по ним нельзя делать пагинацию).
+
+== Программная пагинация
+Для программной пагинации следует использовать `net.n2oapp.platform.seek.SeekedPageIterator`.
+В этом классе есть статичные методы, возвращающие итератор для разных случаев.
+Например для того, чтобы скачать постранично данные типа `<T>` с некоторого сервиса, подойдет такой:
+
+[source,java]
+----
+<T, S extends SeekRequest> SeekedPageIterator.from(
+    Function<? super S, SeekedPage<T>> pageSource,
+    Function<? super T, List<SeekPivot>> pivotsMaker,
+    S request
+)
+----
+Функция `pageSource` возвращает страницу данных. Параметр `request` -- это seek-запрос. А функция `pivotsMaker` возвращает список `SeekPivot`-ов, извлекая каждый из них из `T`.
+
+Пример использования:
+
+[source,java]
+----
+class Animal {
+    int id;
+    String name;
+}
+
+interface AnimalRest {
+    @GET
+    SeekedPage<Animal> search(SeekRequest request);
+}
+
+void paginateOverAnimals(AnimalRest rest, SeekRequest request) {
+//  Хотим сортировку по "name" и потом по "id"
+    request.setOrders(List.of(Sort.Order.asc("name"), Sort.Order.asc("id")));
+    SeekedPageIterator<Animal, SeekRequest> iterator = SeekedPageIterator.from(
+        rest::search,
+        animal ->   List.of(
+//                      Так как сортировка у нас по (name ASC, id ASC),
+//                      поля в списке pivot-ов должны быть точно такими же
+                        SeekPivot.of("name", animal.name),
+                        SeekPivot.of("id", Integer.toString(animal.id))
+                    ),
+        request
+    );
+    while (iterator.hasNext()) {
+        SeekedPage<Animal> next = iterator.next();
+//          Обработка
+    }
+}
+
+----
+
+== Советы
+Для эффективного использования seek пагинации нужно придерживаться следующих советов.
+
+=== 1.
+
+Для всех возможных сортировок в вашем приложении определите свой индекс.
+
+Рассмотрим пример.
+Пусть есть простая таблица animal:
+
+[source]
+----
+(id, name)
+ 1   Bobik
+ 2   Murzik
+ 3   ....
+ .........
+----
+
+Пусть мы хотим создать произвести seek-пагинацию с сортировкой по id ASC.
+
+[source]
+----
+SELECT * FROM animal WHERE id > :lastSeenId ORDER BY id ASC LIMIT 10
+----
+При наличии индекса на колонке `id` это будет очень быстро и что более важно,
+результат от запроса к запросу будет постоянным (в отличие от `OFFSET`, который ухудшается все сильнее с увеличением `OFFSET`).
+
+Вот сравнение результатов для seek-пагинации и offset пагинации на приведенной выше таблице (кол-во строк - 1 000 000):
+[source]
+----
+SEEK: total=4792, min=2, average=47,445545, max=366
+OFFSET: total=38072, min=47, average=376,950495, max=798
+----
+Все величины в миллисекундах. Как видим OFFSET пагинации потребовалось в 8 раз больше времени и среднее время запроса
+намного выше. И это с размером страницы равным `10 000`. При размере страницы `100` или привычные `10` время OFFSET пагинации
+было бы на несколько порядков (в тысячи и больше раз) больше, чем время seek-пагинации.
+
+Но допустим нам необходима также сортировка по `name`.
+[source]
+----
+SELECT * FROM animal WHERE name > :lastSeenName OR (name = :lastSeenName AND id > :lastSeenId) ORDER BY name ASC, id ASC LIMIT 10
+----
+Можно предположить, что этот запрос будет отрабатывать так же быстро, как и первый (при условии наличия индекса на колонке `name`),
+но в действительности он отрабатывает примерно в 4000 раз медленнее. В чем же проблема?
+
+Проблема в том, что БД не может использовать для сортировок отдельные индексы
+(в отличие от условий `WHERE`, для которых можно использовать несвязанные индексы).
+Поэтому ей приходится каждый раз производить сортировку всех строк, подходящих под условие, только чтобы отдать 10 записей.
+
+Решение этой проблемы -- создание составного индекса (name, id).
+Без такого индекса весь профит от использования данного модуля теряется.
+Причем нужно отметить, что направление сортировки должно полностью соответствовать направлению индекса (или быть обратным ему).
+То есть если индекс имеет вид (name ASC, id ASC) и вы решили пройтись по таблице с сортировкой (name DESC, id ASC) -- все опять - таки сведется к `seq-scan`
+(для (name DESC, id DESC) все будет так же эффективно).
+Для обращения порядка сортировки следует использовать методы в классе `net.n2oapp.platform.seek.SortUtil`.
+
+=== 2.
+
+Учитывая вышесказанное вы не сможете эффективно сортировать по JOIN-ed полям (потому что на них нельзя создать индекс).
+Поэтому совет такой: используйте денормализацию для поиска (и только для него).
+
+=== 3.
+
+Не стоит позволять клиенту указывать произвольные поля для сортировки.
+Нужно выделить ключевые сортировки (время, цена, популярность или некий составной бизнес-ключ) и сортировать по ним.
+
+Например, у вас есть поля `x1, x2, id` и вы хотите произвольную и быструю сортировку по любой комбинации (исключая id, так как это суррогатный ключ и клиенту нет дела, какая у него сортировка, поэтому его везде можно сделать ASC) --
+вам придется создать индексы:
+
+* x1 ASC, id ASC
+* x2 ASC, id ASC
+* x1 ASC, x2 ASC, id ASC
+* x1 ASC, x2 DESC, id ASC
+* x2 ASC, x1 ASC, id ASC
+* x2 ASC, x1 DESC, id ASC
+
+И вы сможете, используя их, сортировать по:
+
+* x1 ASC, id ASC
+* x1 DESC, id DESC
+* x2 ASC, id ASC
+* x2 DESC, id DESC
+* x1 ASC, x2 ASC, id ASC
+* x1 DESC, x2 DESC, id DESC
+* x1 ASC, x2 DESC, id ASC
+* x1 DESC, x2 ASC, id DESC
+* x2 ASC, x1 ASC, id ASC
+* x2 DESC, x1 DESC, id DESC
+* x2 ASC, x1 DESC, id ASC
+* x2 DESC, x1 ASC, id DESC
+
+Как видите, затраты на произвольную и эффективную сортировку даже по двум колонкам *очень* большие и
+увеличиваются экспоненциально.
+
+=== 4.
+
+По возможности всегда определяйте `NullabilityProvider`.
+
+Условия для seek-пагинации становятся несколько проще, если заранее известно, что поле не может принимать значение `NULL`.
+Для указания `nullability` есть интерфейс `net.n2oapp.platform.seek.NullabilityProvider`.
+Определите его реализацию и укажите над репозиторием `@NullabilityProvided(by = MyCustomNullabilityProvider.class)`.
+Например, если известно, что в таблице `animal` выше поле `name` объявлено как `NOT NULL` -- реализация этого интерфейса может выглядеть так:
+
+[source,java]
+----
+import com.querydsl.core.types.dsl.ComparableExpressionBase;
+import net.n2oapp.platform.seek.NullabilityProvider;
+
+public class AnimalNullabilityProvider implements NullabilityProvider {
+
+    @Override
+    public boolean nullable(ComparableExpressionBase<?> property) {
+        return property != QAnimal.animal.name; // Все поля кроме name могут принимать значение null
+    }
+
+}
+----

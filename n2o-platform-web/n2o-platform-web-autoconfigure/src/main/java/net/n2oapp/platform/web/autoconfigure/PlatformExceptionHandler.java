@@ -7,6 +7,7 @@ import net.n2oapp.framework.api.data.QueryExceptionHandler;
 import net.n2oapp.framework.api.exception.N2oException;
 import net.n2oapp.framework.api.exception.N2oUserException;
 import net.n2oapp.framework.api.exception.ValidationMessage;
+import net.n2oapp.framework.api.metadata.global.dao.object.field.ObjectSimpleField;
 import net.n2oapp.framework.api.metadata.local.CompiledObject;
 import net.n2oapp.framework.api.metadata.local.CompiledQuery;
 import net.n2oapp.framework.engine.data.N2oOperationExceptionHandler;
@@ -147,8 +148,8 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
         List<ValidationMessage> validationMessages = new ArrayList<>();
         StringBuilder message = new StringBuilder();
         Map<String, String> fieldIdByValidationFailKey = operation.getInParametersMap().entrySet().stream()
-                .filter(entry -> entry.getValue().getValidationFailKey() != null)
-                .collect(Collectors.toMap(entry -> entry.getValue().getValidationFailKey(), Map.Entry::getKey));
+                .filter(entry -> entry.getValue() instanceof ObjectSimpleField && ((ObjectSimpleField)entry.getValue()).getValidationFailKey() != null)
+                .collect(Collectors.toMap(entry -> ((ObjectSimpleField)entry.getValue()).getValidationFailKey(), Map.Entry::getKey));
 
         int counter = 1;
         for (RestMessage.BaseError error : ((RestException) e.getCause()).getErrors()) {

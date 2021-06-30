@@ -1,7 +1,5 @@
 package net.n2oapp.platform.jaxrs.api;
 
-import lombok.Getter;
-import lombok.Setter;
 import net.n2oapp.platform.jaxrs.RestCriteria;
 import org.springframework.data.domain.Sort;
 
@@ -12,8 +10,6 @@ import java.util.List;
 
 import static java.util.Collections.singletonList;
 
-@Getter
-@Setter
 public class SomeCriteria extends RestCriteria {
 
     @QueryParam("name")
@@ -39,4 +35,27 @@ public class SomeCriteria extends RestCriteria {
         super(page, size, sort);
     }
 
+    public String getLikeName() {
+        return this.likeName;
+    }
+
+    public Date getDateBegin() {
+        return this.dateBegin;
+    }
+
+    public LocalDateTime getDateEnd() {
+        return this.dateEnd;
+    }
+
+    public void setLikeName(String likeName) {
+        this.likeName = likeName;
+    }
+
+    public void setDateBegin(Date dateBegin) {
+        this.dateBegin = dateBegin;
+    }
+
+    public void setDateEnd(LocalDateTime dateEnd) {
+        this.dateEnd = dateEnd;
+    }
 }

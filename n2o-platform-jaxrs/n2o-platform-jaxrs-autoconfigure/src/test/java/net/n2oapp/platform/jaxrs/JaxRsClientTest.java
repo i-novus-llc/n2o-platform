@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.api.*;
 import net.n2oapp.platform.jaxrs.impl.SomeRestImpl;
+import net.n2oapp.platform.jaxrs.seek.*;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -238,6 +239,27 @@ public class JaxRsClientTest {
                     assertThat(((IntegerModel) obj).getValue(), equalTo(i++));
                 }
             }
+        });
+    }
+
+    /**
+     * Проверка сериализации/десериализации классов
+     * {@link Seekable}, {@link SeekRequest}, {@link SeekedPageImpl}
+     */
+    @Test
+    public void testSeek() {
+        forEachHeaderCombination(() -> {
+            SeekRequest request = new SeekRequest();
+            request.setPivots(SomeRestImpl.EXPECTED_PIVOTS);
+            request.setPage(RequestedPageEnum.NEXT);
+            request.setSize(1000);
+            request.setSort(Sort.by(List.of(Sort.Order.asc("id"), Sort.Order.desc("name"))));
+            SeekedPage<String> page = client.searchSeeking(request);
+            assertThat(page.getContent(), is(List.of("ok!")));
+            assertThat(page.hasNext(), is(true));
+            assertThat(page.hasPrev(), is(false));
+            request.setSort(Sort.unsorted());
+            client.searchSeeking(request);
         });
     }
 
