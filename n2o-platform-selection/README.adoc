@@ -1,0 +1,801 @@
+= Selection API
+
+== Для чего это
+
+REST-сервисы страдают тем свойством, что зачастую отдают данных клиенту намного больше,
+чем ему на самом деле нужно. Это приводит к неоптимальному использованию пропускной
+способности сети, а так же усугубляют проблемы, связанные с БД и ORM - фреймворками,
+такими, как `N + 1`.
+
+Например в привычной архитектуре сервиса есть сущности, мапперы и DTO.
+Сущности являются ядром сервиса, которые знают свою предметную область.
+DTO -- это мост между сервисом и остальным миром,
+а маппер -- это мост между сущностью и DTO, которые отображает поля сущности на поля DTO.
+
+В большинстве сервисов так же есть некая центральная сущность (или несколько),
+которые содержат в себе много полей и другие (дочерние) сущности. Например, в `JIRA`
+такой сущностью является `issue`, то есть задача или проблема.
+
+Проблема маппера в том, что он производит отображение безусловно,
+в независимости от того, нужны ли клиенту сервиса эти данные или нет.
+
+К примеру если клиентом сервиса выступает веб-модуль и он хочет отобразить в таблице
+краткую сводку по центральной сущности приложения -- для этого ему нужно какое — то небольшое
+кол — во ключевых полей. Но если клиент не может указать, какие поля ему нужны --
+сервис будет каждый раз проделывать много бесполезной работы,
+и сеть будет использоваться неоптимально.
+
+Например, такой ответ сервиса сотрудников:
+
+[source,json]
+----
+{"content":
+  [
+    {
+      "id": "e57c4993-aed4-40f4-8f3f-3a640ed4491a",
+      "username": "example@gmail.com",
+      "email": "example@gmail.com",
+      "surname": "Smith",
+      "name": "John",
+      "accountStatus": "ACTIVE",
+      "organisations": [...],
+      "contacts": [...]
+    },
+    ...
+    ...
+    ...
+  ],
+  "totalElements": 50,
+  "sort": [
+    {
+      "property": "id",
+      "direction": "desc"
+    }
+  ]
+}
+----
+
+При желании отобразить только имя/фамилию и статус аккаунта на форме можно сократить до такого:
+
+[source,json]
+----
+{"content":
+  [
+    {
+      "surname": "Smith",
+      "name": "John",
+      "accountStatus": "ACTIVE"
+    },
+    ...
+    ...
+    ...
+  ],
+  "totalElements": 50,
+  "sort": [
+    {
+      "property": "id",
+      "direction": "desc"
+    }
+  ]
+}
+----
+
+При таких параметрах запроса:
+
+`http://employee-service.com/api/employees?employeeSurname=T&employeeName=T&employeeAccountStatus=T&page=0&size=10`
+
+Есть реальные примеры, в которых веб модуль приложения запрашивает данные от апи модуля с размером страницы 10 элементов и получает ответ размером 1 мегабайт, в котором содержится чуть ли не вся бизнес-модель, и использует из него несколько полей верхнего уровня. Поэтому в особо запущенных случаях общий профит может составить более 90%.
+
+== Как использовать
+
+В API есть четыре интерфейса `Selection`, `Fetcher`, `Joiner` и `Spy`, которые нужно реализовать, чтобы использовать преимущества Selection API.
+
+`Selection` описывает поля, необходимые клиенту.
+Делается это через методы, возвращающие `SelectionEnum` (в котором есть всего два значения,
+`T` и `F` от `true` и `false` соответственно).
+
+`Fetcher` отвечает за извлечение полей из персистентной сущности и отображение их на модель (DTO).
+
+`Joiner` группирует запросы и тем самым позволяет избежать проблемы **N + 1**.
+
+`Spy` позволяет обнаруживать несогласованность выборки на ранних стадиях разработки. Несогласованность означает обращение к свойствам модели, которые не были указаны в выборке.
+
+Базовые реализации этих интерфейсов для каждой из моделей в проекте могут быть сгенерированы следующим образом:
+
+Подключите зависимости:
+[source,xml]
+----
+<dependencies>
+    <dependency>
+        <groupId>net.n2oapp.platform</groupId>
+        <artifactId>n2o-platform-selection-api</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>net.n2oapp.platform</groupId>
+        <artifactId>n2o-platform-selection-processor</artifactId>
+    </dependency>
+</dependencies>
+----
+
+Добавьте информацию для сборки:
+[source,xml]
+----
+<build>
+    <plugins>
+        <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>process-annotations</id>
+                    <phase>generate-sources</phase>
+                    <goals>
+                        <goal>compile</goal>
+                    </goals>
+                    <configuration>
+                        <annotationProcessors>
+                            <annotationProcessor>net.n2oapp.platform.selection.processor.SelectionProcessor</annotationProcessor>
+                        </annotationProcessors>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+----
+
+=== Пример
+
+Пусть есть сущность `IssueEntity` из **JIRA**.
+
+[source,java]
+----
+@Entity
+public class IssueEntity {
+
+    @Id
+    private String key;
+
+    @Column
+    private String status;
+
+    @Column
+    private String project;
+
+    @JoinColumn
+    @ManyToOne(fetch = FetchType.LAZY)
+    private UserEntity assignee;
+
+    @Entity
+    private static class UserEntity {
+//        ...
+    }
+
+}
+----
+
+Для нее так же должна быть своя модель, которую видит клиент **API JIRA**
+
+[source,java]
+----
+@Selective // Указывает, что для модели должны быть сгенерированы интерфейсы Selection, Fetcher, Joiner и Spy
+public class Issue {
+
+    @JsonProperty
+    private String key;
+
+    @JsonProperty
+    private String status;
+
+    @JsonProperty
+    private String project;
+
+    @Joined(withNestedJoiner = false) // Указывает, что поле группируется
+    @JsonProperty
+    private User assignee;
+
+    @Selective
+    private static class User {
+//        ...
+    }
+
+}
+----
+
+После сборки будут сгенерированы следующие интерфейсы:
+
+* IssueFetcher:
+
+[source,java]
+----
+public interface IssueFetcher<E> extends Fetcher<Issue, IssueSelection, E> {
+
+	@Override
+	default Issue resolve(final IssueSelection selection, SelectionPropagation propagation) {
+		propagation = propagation == null ? NORMAL : propagation;
+		if (propagation == NORMAL && (selection == null || selection.empty())) return null;
+		Issue model = create();
+		if ((propagation == NESTED || propagation == ALL) || (selection != null && selection.getKey() != null && selection.getKey().asBoolean())) {
+			model.setKey(this.fetchKey());
+		}
+		if ((propagation == NESTED || propagation == ALL) || (selection != null && selection.getStatus() != null && selection.getStatus().asBoolean())) {
+			model.setStatus(this.fetchStatus());
+		}
+		if ((propagation == NESTED || propagation == ALL) || (selection != null && selection.getProject() != null && selection.getProject().asBoolean())) {
+			model.setProject(this.fetchProject());
+		}
+		if ((propagation == NESTED) || (selection != null && selection.getAssignee() != null && !selection.getAssignee().empty())) {
+			UserFetcher<?> nestedFetcher = this.fetchAssignee();
+			if (nestedFetcher != null) {
+				model.setAssignee(nestedFetcher.resolve(selection == null ? null : selection.getAssignee(), propagation == NESTED ? propagation : selection.getAssignee().propagation()));
+			}
+		}
+		return model;
+	}
+
+	/*
+        Эти методы нужно реализовать
+	 */
+	String fetchKey();
+	String fetchStatus();
+	String fetchProject();
+	UserFetcher<?> fetchAssignee();
+
+}
+----
+
+* IssueSelection:
+
+[source,java]
+----
+public class IssueSelection implements Selection<Issue> {
+
+    protected SelectionPropagation propagation;
+	protected SelectionEnum key;
+	protected SelectionEnum status;
+	protected SelectionEnum project;
+
+	@BeanParam
+	protected UserSelection assignee;
+
+    @QueryParam("issuePropagation")
+    public SelectionPropagation getPropagation() {
+        return propagation;
+    }
+
+    @QueryParam("issuePropagation")
+    public void setPropagation(SelectionPropagation propagation) {
+        this.propagation = propagation;
+    }
+
+    @QueryParam("issueKey")
+    public SelectionEnum getKey() {
+        return key;
+    }
+
+    @QueryParam("issueKey")
+    public void setKey(SelectionEnum key) {
+        this.key = key;
+    }
+
+    @QueryParam("issueStatus")
+    public SelectionEnum getStatus() {
+        return status;
+    }
+
+    @QueryParam("issueStatus")
+    public void setStatus(SelectionEnum status) {
+        this.status = status;
+    }
+
+    @QueryParam("issueProject")
+    public SelectionEnum getProject() {
+        return project;
+    }
+
+    @QueryParam("issueProject")
+    public void setProject(SelectionEnum project) {
+        this.project = project;
+    }
+
+    public UserSelection getAssignee() {
+        return assignee;
+    }
+
+    public void setAssignee(UserSelection selection) {
+        this.assignee = selection;
+    }
+
+	@Override
+    public SelectionPropagation propagation() {
+        return propagation;
+    }
+
+    @Override
+    public boolean empty() {
+        return (propagation() == null || propagation() == SelectionPropagation.NORMAL) &&
+            (key == null || key == SelectionEnum.F) &&
+            (status == null || status == SelectionEnum.F) &&
+            (project == null || project == SelectionEnum.F) &&
+            (assignee == null || assignee.empty());
+    }
+
+    public IssueSelection propagate(SelectionPropagation propagation) {
+        this.propagation = propagation;
+        return this;
+    }
+
+    public IssueSelection key() {
+        this.key = SelectionEnum.T;
+        return this;
+    }
+
+    public IssueSelection unselectKey() {
+        this.key = SelectionEnum.F;
+        return this;
+    }
+
+    public IssueSelection status() {
+        this.status = SelectionEnum.T;
+        return this;
+    }
+
+    public IssueSelection unselectStatus() {
+        this.status = SelectionEnum.F;
+        return this;
+    }
+
+    public IssueSelection project() {
+        this.project = SelectionEnum.T;
+        return this;
+    }
+
+    public IssueSelection unselectProject() {
+        this.project = SelectionEnum.F;
+        return this;
+    }
+
+    public IssueSelection assignee(UserSelection selection) {
+        this.assignee = selection;
+        return this;
+    }
+
+    public IssueSelection unselectAssignee() {
+        this.assignee = null;
+        return this;
+    }
+
+    public static IssueSelection create() {
+        return new IssueSelection();
+    }
+
+}
+----
+
+* IssueJoiner
+
+[source,java]
+----
+public interface IssueJoiner<E, ID> extends Joiner<Issue, IssueSelection, E, IssueFetcher<E>, ID> {
+
+	@Override
+	default Joiner.Resolution<Issue, E, ID> resolveIterable(
+		final Iterable<? extends IssueFetcher<E>> fetchers,
+		final IssueSelection selection,
+		SelectionPropagation propagation
+	) {
+		propagation = propagation == null ? SelectionPropagation.NORMAL : propagation;
+		if (propagation == SelectionPropagation.NORMAL && (selection == null || selection.empty())) return null;
+		Collection<E> entities = new ArrayList<>();
+		LinkedHashMap<ID, Issue> models = new LinkedHashMap<>();
+		for (Iterator<? extends IssueFetcher<E>> iter = fetchers.iterator(); iter.hasNext(); ) {
+			IssueFetcher<E> fetcher = iter.next();
+			E entity = fetcher.getUnderlyingEntity();
+			ID id = getId(entity);
+			if (models.containsKey(id)) iter.remove();
+			else {
+				models.put(getId(entity), fetcher.create());
+				entities.add(entity);
+			}
+		}
+		Joiner.Resolution<Issue, E, ID> resolution = Joiner.Resolution.from(entities, models);
+		Iterator<Map.Entry<ID, Issue>> iter = resolution.models.entrySet().iterator();
+		for (IssueFetcher<E> fetcher : fetchers) {
+			Issue model = iter.next().getValue();
+			if ((propagation == SelectionPropagation.NESTED || propagation == SelectionPropagation.ALL) || (selection != null && selection.getKey() != null && selection.getKey().asBoolean())) {
+				model.setKey(fetcher.fetchKey());
+			}
+			if ((propagation == SelectionPropagation.NESTED || propagation == SelectionPropagation.ALL) || (selection != null && selection.getStatus() != null && selection.getStatus().asBoolean())) {
+				model.setStatus(fetcher.fetchStatus());
+			}
+			if ((propagation == SelectionPropagation.NESTED || propagation == SelectionPropagation.ALL) || (selection != null && selection.getProject() != null && selection.getProject().asBoolean())) {
+				model.setProject(fetcher.fetchProject());
+			}
+		}
+		if ((propagation == SelectionPropagation.NESTED) || (selection != null && selection.getAssignee() != null && !selection.getAssignee().empty())) {
+			final SelectionPropagation fPropagation = propagation;
+			Map<ID, UserFetcher<?>> joined = joinAssignee(resolution.entities);
+			for (Map.Entry<ID, UserFetcher<?>> entry : joined.entrySet()) {
+				resolution.models.get(entry.getKey()).setAssignee(entry.getValue().resolve(selection == null ? null : selection.getAssignee(), fPropagation == SelectionPropagation.NESTED ? fPropagation : selection.getAssignee().propagation()));
+			}
+		}
+		return resolution;
+	}
+
+	/*
+		Этот метод нужно реализовать
+	 */
+	Map<ID, UserFetcher<?>> joinAssignee(Collection<E> entities);
+
+}
+----
+
+* IssueSpy
+
+[source,java]
+----
+public class IssueSpy implements Spy<Issue, IssueSelection> {
+
+    protected final Issue model;
+    protected final IssueSelection selection;
+    protected final SelectionPropagation propagation;
+
+    private final UserSpy assignee;
+
+    public IssueSpy(Issue model, IssueSelection selection, SelectionPropagation propagation) {
+        if (model == null)
+            throw new NullPointerException();
+        this.model = model;
+        this.selection = selection;
+        this.propagation = propagation == null ? SelectionPropagation.NORMAL : propagation;
+        if (model.getAssignee() != null) {
+            if (propagation == SelectionPropagation.NESTED || (selection.getAssignee() != null && !selection.getAssignee().empty())) {
+                this.assignee = new UserSpy(
+                    model.getAssignee(),
+                    selection == null ? null : selection.getAssignee(),
+                    propagation == SelectionPropagation.NESTED ? propagation : selection.getAssignee().getPropagation()
+                );
+            } else assignee = null;
+        } else assignee = null;
+    }
+
+    public static IssueSpy spy(Issue model, IssueSelection selection) {
+        if (selection == null || selection.empty())
+            return null;
+        return new IssueSpy(model, selection, selection.getPropagation());
+    }
+
+//  Делегирует модели, при этом проверяя, что свойство указано в выборке
+    public String getKey() {
+        if ((propagation == SelectionPropagation.ALL || propagation == SelectionPropagation.NESTED) || (selection.getKey() != null && selection.getKey().asBoolean())) {
+            return model.getKey();
+        }
+        throw new IllegalStateException("'key' property was not initialized");
+    }
+
+//  Другие методы доступа к свойствам Issue аналогичны
+
+}
+----
+
+Для начала нужно реализовать интерфейс `IssueFetcher`
+
+[source,java]
+----
+public class IssueFetcherImpl implements IssueFetcher<IssueEntity> {
+
+    /*
+    Персистентная сущность
+     */
+    private final IssueEntity src;
+
+    public IssueFetcherImpl(IssueEntity src) {
+        this.src = src;
+    }
+
+    @Override
+    public @NonNull Issue create() {
+        return new Issue();
+    }
+
+    @Override
+    public @NonNull IssueEntity getUnderlyingEntity() {
+        return src;
+    }
+
+    @Override
+    public String fetchKey() {
+        return src.getKey();
+    }
+
+    @Override
+    public String fetchStatus() {
+        return src.getStatus();
+    }
+
+    @Override
+    public String fetchProject() {
+        return src.getProject();
+    }
+
+    @Override
+    public UserFetcher<?> fetchAssignee() {
+        return src.getAssignee() == null ? null : new UserFetcherImpl(src.getAssignee());
+    }
+
+}
+----
+
+После этого `IssueJoiner`
+[source,java]
+----
+@Component
+public class IssueJoinerImpl implements IssueJoiner<IssueEntity, String> {
+
+    private final UserRepository userRepository;
+
+    public IssueJoinerImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public @NonNull String getId(IssueEntity entity) {
+        return entity.getKey();
+    }
+
+    @Override
+    public Map<String, UserFetcher<?>> joinAssignee(Collection<IssueEntity> issues) {
+        return JoinUtil.joinToOne(
+            issues,
+            userRepository::joinByIssue, // Select пользователей, которые назначены на issues
+            UserFetcherImpl::new, // Конструктор экземпляра Fetcher для заджойненных пользователей
+            IssueEntity::getKey, // Возвращает идентификатор левой стороны отношения (в данном случае -- идентификатор issue)
+            issueEntity -> issueEntity.getAssignee() == null ? null : issueEntity.getAssignee().getId(), // Возвращает foreign key, по которому происходит соединение
+            IssueEntity.UserEntity::getId // Возвращает идентификатор правой стороны отношения (в данном случае -- пользователя)
+        );
+    }
+
+}
+----
+
+Теперь полностью реализовав необходимые интерфейсы определим наш сервис
+
+[source,java]
+----
+@Service
+@Path("/issues")
+public class IssueService {
+
+    private final IssueRepository repository;
+    private final IssueJoinerImpl issueJoiner;
+
+    public IssueService(
+        IssueRepository repository,
+        IssueJoinerImpl issueJoiner
+    ) {
+        this.repository = repository;
+        this.issueJoiner = issueJoiner;
+    }
+
+    @GET
+    @Path("/")
+    public List<Issue> getIssues(@BeanParam IssueSelection selection) {
+        return joiner.resolveCollection(
+            repository.findAll().map(EmployeeFetcherImpl::new),
+            selection
+        );
+    }
+
+}
+----
+
+Пример клиентского кода для данного сервиса:
+
+[source,java]
+----
+public void processIssues() {
+    IssueService service = ...;
+    IssueSelection selection = IssueSelection.create().key().project(); // Нам нужны только идентификатор и проект
+    List<IssueSpy> issues = service.getIssues(selection).stream().map(issue -> IssueSpy.spy(issue, selection)).collect(toList());
+//    ...
+    selection.unselectProject().assignee(
+        UserSelection.create()
+    ); // Добавим assignee и удалим проект из результата
+    issues = service.getIssues(selection).stream().map(issue -> IssueSpy.spy(issue, selection)).collect(toList());
+//    ...
+    selection.unselectAssignee().propagate(ALL); // Удалим assignee из результата и возьмем все поля с первого уровня вложенности (в данном случае это идентификатор, проект и статус)
+    issues = service.getIssues(selection).stream().map(issue -> IssueSpy.spy(issue, selection)).collect(toList());
+//    ...
+    selection.propagate(NESTED); // NESTED указывает, что нам нужны все поля модели и любой вложенной модели
+    issues = service.getIssues(selection).stream().map(issue -> IssueSpy.spy(issue, selection)).collect(toList());
+//    ...
+}
+----
+
+== Ограничения
+
+Чтобы соответствовать HTTP соглашениям по поводу получения данных и в то же время эффективно использовать данный API --
+нужно проектировать свою модель правильно.
+
+По соглашениям получение данных должно осуществляться через GET запрос.
+Тело может присутствовать в запросе, но оно не должно влиять на результат, он полностью определяется
+URI и параметрами (QueryParam) запроса. Так как параметры запроса имеют плоскую модель
+(по сути это отображение `ключ` -> `список значений`) -- очень сложно описать в них иерархическую модель (подобную JSON).
+
+Например, допустим у нас есть класс `Organisation`, в котором есть два поля типа `Address`, юридический и фактический адреса.
+
+[source,java]
+----
+@Selective
+public class Organisation {
+
+    Address legal; // Юридический адрес
+    Address factual; // Фактический адрес
+
+    @Selective
+    public static class Address {
+        String postcode; // Почтовый код
+        String region; // Регион
+//      ...
+    }
+
+}
+----
+Выборки из обоих полей описываются одним и тем же `AddressSelection`:
+
+[source,java]
+----
+public class OrganisationSelection {
+
+    @QueryParam("selectLegal")
+    SelectionEnum selectLegal;
+
+    @QueryParam("selectLegal")
+    SelectionEnum selectFactual;
+
+    @BeanParam
+    AddressSelection legalSelection; // Вложенная выборка
+
+    @BeanParam
+    AddressSelection factualSelection; // Вложенная выборка
+
+    public static class AddressSelection {
+
+        @QueryParam("selectPostcode")
+        SelectionEnum selectPostcode;
+
+        @QueryParam("selectRegion")
+        SelectionEnum selectRegion;
+
+//      ...
+    }
+
+}
+----
+
+Невозможно через параметры запроса указать (по крайней мере в JAX-RS, через `@BeanParam`),
+что из юридического адреса нам нужен почтовый код, а из фактического регион, так как
+в строке запроса это выглядит так:
+`http://rest-api/organisations?selectLegal=T&selectFactual=T&selectPostcode=T&selectRegion=T`
+
+В итоге сервис отдаст оба адреса, с заполненными почтовым кодом и регионом.
+
+Это лишь один пример того, что нужно иметь в виду при проектировании модели данных.
+В общем случае нужно делать так, чтобы ваши `DTO` были максимально плоскими.
+Так же не используйте наследование, используйте композицию.
+
+Но можно избежать этих трудностей, если передавать выборку в параметре запроса в формате JSON.
+
+Если же описания выборок становятся очень большими, единственный выход -- нарушить соглашения по построению REST-сервисов и отдавать
+данные по POST запросу с Body. Так вы можете описать произвольно сложную и большую выборку в формате JSON.
+Примеры известных систем, использующих подобный подход:
+
+* GraphQL
+* ElasticSearch
+* JIRA REST API
+
+Но нужно понимать, что оверхед на передачу выборки не должен превышать профит от ее использования. Иначе вам не стоит
+использовать данный API.
+
+В целом у вас есть 3 опции:
+
+* Описывать выборку параметрами запроса, например так:
+
+[source,java]
+----
+public class SomeCriteria extends RestCriteria {
+
+    @BeanParam
+    private SomeSelection selection;
+
+//  Фильтры опущены
+
+    public class SomeSelection implements Selection<SomeModel> {
+
+        @QueryParam("selectField1")
+        private SelectionEnum selectField1;
+
+        @QueryParam("selectField2")
+        private SelectionEnum selectField2;
+//      ...
+    }
+
+}
+----
+
+Это самый правильный и чистый подход
+
+* Описывать выборку в JSON и передавать ее в параметре запроса:
+
+[source,java]
+----
+public class SomeCriteria extends RestCriteria {
+
+    @QueryParam("selection")
+    private String selection; // Здесь лежит JSON
+
+    public String getSelection() {
+        return selection;
+    }
+
+    public void setSelection(String selection) {
+        this.selection = selection;
+    }
+
+    public void setSelection(SomeSelection selection) {
+        this.selection = Selection.toString(selection);
+    }
+
+    public SomeSelection selection() {
+        return Selection.parse(selection, SomeSelection.class);
+    }
+
+}
+----
+Вам следует использовать статические методы `net.n2oapp.platform.selection.api.Selection.encode` и `net.n2oapp.platform.selection.api.Selection.decode` для этого (они `null-safe`).
+Они кодируют JSON так, чтобы избежать кодирования процентами в строке запроса URI и экономят место (помните, что безопасным лимитом длины URI является 2048 символов). Метод `decode` так же может работать и с не кодированным JSON (для не Java-клиентов).
+
+* Передавать выборку в теле запроса:
+
+[source,java]
+----
+@Path("/example")
+public class SomeService {
+    @POST
+    @Path("/search")
+    Page<SomeModel> search(@BeanParam SomeCriteria criteria, SomeSelection selection); // Второй параметр -- это тело запроса
+}
+----
+
+В начале стоит использовать первый подход.
+
+Если его начинает не хватать по гибкости -- перейти на второй.
+
+И только если выборка становится настолько большой, что не умещается в параметре запроса
+(и профит от ее использования не превышает оверхед на ее передачу) --
+нужно использовать третий.
+
+Иначе не стоит использовать данный API.
+
+Так же есть ограничение на присутствие циклов в `DTO` (будет StackOverflowError). Пока решать ее можно с помощью аннотации `net.n2oapp.platform.selection.api.SelectionIgnore`. В будущем это возможно будет реализовано.
+
+Так же есть ограничение на имена полей в `DTO`. Нельзя использовать:
+
+* `model`
+* `selection`
+
+Так же `DTO` должны иметь стандартные геттеры/сеттеры вида `get{CamelCasePropertyName}`/`set{CamelCasePropertyName}`.
+Заметьте, что это так же распространяется на `boolean` значения (то есть `is{CamelCasePropertyName}` не поддерживается).
+
+Так же вы не можете использовать `@Joined` аннотацию на примитивах (нужно использовать обертки).
+
+== Почему не GraphQL
+
+GraphQL -- это мощный фреймворк, созданный для тех же целей. Почему бы не использовать его?
+
+На самом деле причин не использовать его немного. Просто данный API дает возможность сохранить привычную модель REST-сервисов, в котором есть множество эндпоинтов, каждый из которых имеет свою ограниченную зону ответственности. В GraphQL же на все приходится один POST-эндпоинт, отвечающий за все.
+
+Также данный API более удобен для Java-разработчика, потому что достаточно лишь описать свои POJO модели. В GraphQL же нужно в начале описать схему (помимо той, что уже есть в БД) и после этого воспользоваться генератором кода для создания POJO моделей и интерфейсов.
+
+В существующие сервисы можно легко встроить данный API, в то время как с GraphQL потребуется достаточно глобальный рефакторинг.
+
+Ну и в последних выразительная сила GraphQL выходит далеко за рамки того, чтобы просто указать, что "мне нужны такие — то поля". По сути это целый язык запросов. И использование его лишь для описания полей в выборке кому — то может показать большим оверхедом.

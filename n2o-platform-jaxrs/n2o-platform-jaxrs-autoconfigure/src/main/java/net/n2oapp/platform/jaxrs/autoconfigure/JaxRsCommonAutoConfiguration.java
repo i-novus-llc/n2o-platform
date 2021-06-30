@@ -5,10 +5,12 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import net.n2oapp.platform.jaxrs.*;
+import net.n2oapp.platform.jaxrs.seek.SeekPivotParameterConverter;
 import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.*;
 import org.springframework.data.domain.Sort;
@@ -67,7 +69,12 @@ public class JaxRsCommonAutoConfiguration {
     }
 
     @Bean
-    public TypedParamConverter<Sort.Order> sortParameterConverter() {
+    public TypedParamConverter<Sort.Order> orderParamConverter() {
+        return new OrderParameterConverter();
+    }
+
+    @Bean
+    public TypedParamConverter<Sort> sortParamConverter() {
         return new SortParameterConverter();
     }
 
@@ -81,4 +88,11 @@ public class JaxRsCommonAutoConfiguration {
     TypedParametersProvider typedParametersProvider(Set<TypedParamConverter<?>> converters) {
         return new TypedParametersProvider(converters);
     }
+
+    @Bean
+    @ConditionalOnClass(name = "net.n2oapp.platform.seek.SeekableRepository")
+    public SeekPivotParameterConverter seekPivotParameterConverter() {
+        return new SeekPivotParameterConverter();
+    }
+
 }

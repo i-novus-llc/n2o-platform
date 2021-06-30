@@ -3,8 +3,13 @@ package net.n2oapp.platform.jaxrs.impl;
 import net.n2oapp.platform.i18n.Message;
 import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.api.*;
+import net.n2oapp.platform.jaxrs.seek.RequestedPageEnum;
+import net.n2oapp.platform.jaxrs.seek.SeekPivot;
+import net.n2oapp.platform.jaxrs.seek.SeekRequest;
+import net.n2oapp.platform.jaxrs.seek.SeekedPageImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.core.Context;
@@ -22,6 +27,13 @@ public class SomeRestImpl implements SomeRest {
 
     @Context
     private HttpHeaders httpHeaders;
+
+    public static final List<SeekPivot> EXPECTED_PIVOTS = List.of(
+        SeekPivot.of("id", "54,3"),
+        SeekPivot.of("date", "1,970-01-01"),
+        SeekPivot.of("plain-text", ",ABRACA:::::DAB:::::RA\\Хыхыхы"),
+        SeekPivot.of("triplesix", ",異体字")
+    );
 
     @Override
     public Page<SomeModel> search(SomeCriteria criteria) {
@@ -117,6 +129,19 @@ public class SomeRestImpl implements SomeRest {
         return List.of(
                 new ListModel(List.of(new IntegerModel(0), new IntegerModel(1), new IntegerModel(2))),
                 new ListModel(List.of(new IntegerModel(3), new IntegerModel(4), new IntegerModel(5))));
+    }
+
+    @Override
+    public SeekedPageImpl<String> searchSeeking(SeekRequest request) {
+        if (
+            request.getPage() == RequestedPageEnum.NEXT &&
+            request.getSize() == 1000 &&
+            request.getSort().equals(Sort.by(List.of(Sort.Order.asc("id"), Sort.Order.desc("name")))) &&
+            request.getPivots().equals(EXPECTED_PIVOTS)
+        ) {
+            return SeekedPageImpl.of(List.of("ok!"), true, false);
+        }
+        return null;
     }
 
     @Override

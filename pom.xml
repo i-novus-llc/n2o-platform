@@ -5,7 +5,7 @@
     <groupId>net.n2oapp.platform</groupId>
     <artifactId>n2o-boot-platform</artifactId>
     <packaging>pom</packaging>
-    <version>4.2.7-SNAPSHOT</version>
+    <version>4.3.2-SNAPSHOT</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -53,6 +53,8 @@
         <module>n2o-platform-web</module>
         <module>n2o-platform-test</module>
         <module>n2o-platform-initializr</module>
+        <module>n2o-platform-selection</module>
+        <module>n2o-platform-seek-paging</module>
     </modules>
 
     <profiles>
