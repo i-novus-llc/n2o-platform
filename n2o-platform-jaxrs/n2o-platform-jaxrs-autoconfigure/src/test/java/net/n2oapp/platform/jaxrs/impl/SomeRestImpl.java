@@ -144,6 +144,16 @@ public class SomeRestImpl implements SomeRest {
         return null;
     }
 
+    @Override
+    public Map<String, String> mapQueryParam(Map<String, String> map) {
+        return map;
+    }
+
+    @Override
+    public Map<String, String> mapQueryParamViaHolder(MapParamHolder holder) {
+        return holder.getMap();
+    }
+
     private List<SomeModel> findAll(SomeCriteria criteria) {
         return LongStream.range(criteria.getOffset(), criteria.getOffset() + criteria.getPageSize())
                 .mapToObj(id -> model(id, criteria))

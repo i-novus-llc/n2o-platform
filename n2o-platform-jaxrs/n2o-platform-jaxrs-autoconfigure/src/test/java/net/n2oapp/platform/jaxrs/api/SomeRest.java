@@ -123,4 +123,12 @@ public interface SomeRest {
     @Path("/seek")
     SeekedPage<String> searchSeeking(@BeanParam @Valid SeekRequest request);
 
+    @GET
+    @Path("/mapQueryParam")
+    Map<String, String> mapQueryParam(@QueryParam("map") Map<String, String> map);
+
+    @GET
+    @Path("/mapQueryParamViaHolder")
+    Map<String, String> mapQueryParamViaHolder(@BeanParam MapParamHolder holder);
+
 }
