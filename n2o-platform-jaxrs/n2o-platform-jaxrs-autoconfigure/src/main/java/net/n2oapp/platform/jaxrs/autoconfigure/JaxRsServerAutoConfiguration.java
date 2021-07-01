@@ -13,6 +13,7 @@ import org.apache.cxf.spring.boot.autoconfigure.CxfProperties;
 import org.apache.cxf.tracing.brave.jaxrs.BraveFeature;
 import org.apache.cxf.validation.BeanValidationInInterceptor;
 import org.apache.cxf.validation.BeanValidationProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -103,8 +104,9 @@ public class JaxRsServerAutoConfiguration {
     }
 
     @Bean
-    RestServerExceptionMapper restServerExceptionMapper() {
-        return new RestServerExceptionMapper();
+    @ConditionalOnClass(Messages.class)
+    RestServerExceptionMapper restServerExceptionMapper(Messages messages, @Value("${n2o.ui.message.stacktrace}") Boolean canExportStack) {
+        return new RestServerExceptionMapper(canExportStack, messages);
     }
 
     @Bean

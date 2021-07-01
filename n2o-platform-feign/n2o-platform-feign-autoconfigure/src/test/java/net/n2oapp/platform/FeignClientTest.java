@@ -37,6 +37,7 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
@@ -50,7 +51,8 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
                 "net.n2oapp.platform.jaxrs.impl," +
                 "net.n2oapp.platform.jaxrs.api," +
                 "net.n2oapp.platform.jaxrs.autoconfigure," +
-                "org.apache.cxf.jaxrs.validation"})
+                "org.apache.cxf.jaxrs.validation",
+                "n2o.ui.message.stacktrace=true"})
 public class FeignClientTest {
 
     @MockBean
@@ -140,7 +142,7 @@ public class FeignClientTest {
         } catch (Exception e) {
             assertThat(e, instanceOf(RestException.class));
             RestException restException = (RestException) e;
-            assertThat(restException.getMessage(), is("Field [id] mustn't be null"));
+            assertNotNull(restException.getMessage());
             assertThat(restException.getCause(), instanceOf(RemoteException.class));
             assertThat(restException.getCause().getMessage(), is("java.lang.IllegalArgumentException: Field [id] mustn't be null"));
             Optional<StackTraceElement> causeLine = Stream.of(restException.getCause().getStackTrace()).filter(ste ->
