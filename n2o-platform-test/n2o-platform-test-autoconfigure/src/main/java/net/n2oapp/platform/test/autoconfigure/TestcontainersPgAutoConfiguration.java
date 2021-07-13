@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -28,12 +27,16 @@ import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
 @AutoConfigureBefore(DataSourceAutoConfiguration.class)
 @Configuration
@@ -44,7 +47,11 @@ public class TestcontainersPgAutoConfiguration {
     private final static String USERNAME = "postgres";
     private final static String PASSWORD = "postgres";
     private final static int PSQL_PORT = 5432;
-    private final static int PG_DOCKER_IMAGE_DEFAULT_VERSION = 12;
+
+    private final static WaitStrategy PG_WAIT_STRATEGY = new LogMessageWaitStrategy()
+            .withRegEx(".*database system is ready to accept connections.*\\s")
+            .withTimes(2)
+            .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
 
     private static int testcontainersPgImageVersion;
 
@@ -72,10 +79,12 @@ public class TestcontainersPgAutoConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "test", name = "testcontainers-pg", havingValue = "true")
     static GenericContainer psqlContainer() {
-        return new GenericContainer<>(DockerImageName.parse(generatePgImageName()))
+        final GenericContainer gc = new GenericContainer<>(DockerImageName.parse(generatePgImageName()))
                 .withEnv("POSTGRES_USER", USERNAME)
                 .withEnv("POSTGRES_PASSWORD", PASSWORD)
                 .withExposedPorts(PSQL_PORT);
+        gc.setWaitStrategy(PG_WAIT_STRATEGY);
+        return gc;
     }
 
     private final static String generatePgImageName(){
@@ -208,9 +217,10 @@ public class TestcontainersPgAutoConfiguration {
                 logger.error("cannot build testcontainers PG", e);
                 throw new BeanCreationException("cannot create dataSource", e);
             }
+            final String host = pg.getHost();
             final int port = pg.getMappedPort(psqlPort);
             final String dbName = "db_" + port;
-            final DataSource dataSource = generateDatasource(port, "postgres", username, password);
+            final DataSource dataSource = generateDatasource(host, port, "postgres", username, password);
             try (final Connection connection = dataSource.getConnection();
                  final PreparedStatement preparedStatement = connection.prepareStatement(
                          "DROP TEXT SEARCH CONFIGURATION IF EXISTS ru; " +
@@ -229,7 +239,7 @@ public class TestcontainersPgAutoConfiguration {
                                  "DROP DATABASE IF EXISTS " + dbName + "; CREATE DATABASE " + dbName + ";"
                  )) {
                 preparedStatement.executeUpdate();
-                final DataSource ds = generateDatasource(port, dbName, username, password);
+                final DataSource ds = generateDatasource(host, port, dbName, username, password);
                 try (
                         final Connection userDbCon = ds.getConnection();
                         final PreparedStatement dictPreparedStatement = userDbCon.prepareStatement(
@@ -253,12 +263,12 @@ public class TestcontainersPgAutoConfiguration {
                 logger.error("cannot init db", e);
                 throw new BeanCreationException("cannot create datasource", e);
             }
-            return generateDatasource(port, dbName, username, password);
+            return generateDatasource(host, port, dbName, username, password);
         }
 
-        public final DataSource generateDatasource(final Integer port, final String dbName, final String username, final String password) {
+        public final DataSource generateDatasource(final String host, final Integer port, final String dbName, final String username, final String password) {
             final PGSimpleDataSource ds = new PGSimpleDataSource();
-            ds.setServerName("localhost");
+            ds.setServerName(host);
             ds.setPortNumber(port);
             ds.setDatabaseName(dbName);
             ds.setUser(username);
