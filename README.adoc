@@ -10,7 +10,7 @@ image:https://img.shields.io/hexpm/l/plug.svg?style=flat[link="http://www.apache
 * link:/n2o-platform-initializr/README.adoc[initializr] - spring initializr для генерации исходного кода приложения на платформе
 * link:/n2o-platform-jaxrs/README.adoc[jaxrs] - *_partially deprecated (use feign proxy clients)_* стартеры для создания REST клиентов и REST сервисов, отвечающих требованиям соглашений N2O Framework
 * link:/n2o-platform-ms/README.adoc[ms] - стартер для создания микросервисов на основе платформы
-* link:/n2o-platform-ms/README.adoc[parent] - родительский pom для создания приложений на основе платформы
+* link:/n2o-platform-parent/README.adoc[parent] - родительский pom для создания приложений на основе платформы
 * link:/n2o-platform-test/README.adoc[test] - стартер для создания тестов
 
 = Требования
