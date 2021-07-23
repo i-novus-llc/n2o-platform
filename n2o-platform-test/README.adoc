@@ -6,14 +6,14 @@
 = Возможности
 Эта библиотека позволяет упростить интеграционное тестирование с помощью `Spring Boot`.
 
-* Автоматическое разворачивание Postgresql с рандомной бд и на рандомном порту, что решает проблему разворачивания отдельной БД для тестирования.
+* Автоматическое разворачивание Postgresql с рандомной БД и на рандомном порту, что решает проблему разворачивания отдельной БД для тестирования с возможностью разворачивания БД через Docker
 * Автоматическое подключение REST прокси клиентов по рандомному свободному порту, что решает проблему явного указания свободного порта при большом кол-ве тестов
 
 
 
 = Инструкции
 
-== Разворачивание Postgresql
+== Разворачивание Postgresql без использования Docker
 
 === Подключение
 
@@ -75,5 +75,37 @@ public class DefinePortTest {
 
 В этом случае поднимутся сервер и клиент на произвольном порту.
 
+== Разворачивание Postgresql c использованием Docker
 
+=== Подключение
 
+https://www.testcontainers.org/supported_docker_environment/[*Системные требования*] для использования такого подхода.
+
+Добавьте зависимость:
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-starter-test</artifactId>
+</dependency>
+----
+
+=== Инициализация
+
+Над классом теста указываете аннотацию EnableEmbeddedPg:
+[source,java]
+----
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = Application.class)
+@EnableTestcontainersPg
+public class TestcontainersPgTest {
+    ...
+}
+----
+
+[NOTE]
+Создастся DataSource spring-bean с подключением с супер пользователем к БД с сгенерированным названием.
+
+[NOTE]
+На данный момент возможно использование Docker образа *inovus/postgres* с тегами *10-textsearch-ru*, *11-textsearch-ru*, *12-textsearch-ru*.
+Тег Docker образа задаётся настройкой *testcontainers.pg.version* с возможными значениями 10/11/12 (по умолчанию 12).
