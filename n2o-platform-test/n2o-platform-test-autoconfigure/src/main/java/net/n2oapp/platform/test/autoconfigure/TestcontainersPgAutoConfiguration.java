@@ -44,9 +44,9 @@ public class TestcontainersPgAutoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(TestcontainersPgAutoConfiguration.class);
 
-    private final static String USERNAME = "postgres";
-    private final static String PASSWORD = "postgres";
-    private final static int PSQL_PORT = 5432;
+    private static final String USERNAME = "postgres";
+    private static final String PASSWORD = "postgres";
+    private static final int PSQL_PORT = 5432;
 
     private final static WaitStrategy PG_WAIT_STRATEGY = new LogMessageWaitStrategy()
             .withRegEx(".*database system is ready to accept connections.*\\s")
@@ -96,76 +96,59 @@ public class TestcontainersPgAutoConfiguration {
     }
 
     @Order(Ordered.LOWEST_PRECEDENCE)
-    private static class TestcontainersPgDataSourceBeanFactoryPostProcessor
-            implements BeanDefinitionRegistryPostProcessor {
+    private static class TestcontainersPgDataSourceBeanFactoryPostProcessor implements BeanDefinitionRegistryPostProcessor {
 
-        private static final Logger logger = LoggerFactory
-                .getLogger(TestcontainersPgDataSourceBeanFactoryPostProcessor.class);
+        private static final Logger logger = LoggerFactory.getLogger(TestcontainersPgDataSourceBeanFactoryPostProcessor.class);
 
         @Override
         public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
-            Assert.isInstanceOf(ConfigurableListableBeanFactory.class, registry,
-                    "Testcontainers PG Database Auto-configuration can only be "
-                            + "used with a ConfigurableListableBeanFactory");
+            Assert.isInstanceOf(ConfigurableListableBeanFactory.class, registry, "Testcontainers PG Database Auto-configuration can only be used with a ConfigurableListableBeanFactory");
             process(registry, (DefaultListableBeanFactory) registry);
         }
 
         @Override
-        public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
-            // Do nothing
-        }
+        public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {}
 
-        private void process(BeanDefinitionRegistry registry,
-                             DefaultListableBeanFactory beanFactory) {
+        private void process(BeanDefinitionRegistry registry, DefaultListableBeanFactory beanFactory) {
             beanFactory.setAllowBeanDefinitionOverriding(true);
-            BeanDefinitionHolder holder = getDataSourceBeanDefinition(beanFactory);
+            final BeanDefinitionHolder holder = getDataSourceBeanDefinition(beanFactory);
             if (holder != null) {
-                String beanName = holder.getBeanName();
-                boolean primary = holder.getBeanDefinition().isPrimary();
+                final String beanName = holder.getBeanName();
+                final boolean primary = holder.getBeanDefinition().isPrimary();
                 logger.info("Replacing '{}' DataSource bean with {} testcontainers pg version", beanName, primary ? "primary " : "");
-                registry.registerBeanDefinition(beanName,
-                        createTestcontainersPgBeanDefinition(primary));
+                registry.registerBeanDefinition(beanName, createTestcontainersPgBeanDefinition(primary));
             }
         }
 
         private BeanDefinition createTestcontainersPgBeanDefinition(boolean primary) {
-            BeanDefinition beanDefinition = new RootBeanDefinition(
-                    TestContainersPgDataSourceFactoryBean.class);
+            final BeanDefinition beanDefinition = new RootBeanDefinition(TestContainersPgDataSourceFactoryBean.class);
             beanDefinition.setPrimary(primary);
             return beanDefinition;
         }
 
-        private BeanDefinitionHolder getDataSourceBeanDefinition(
-                ConfigurableListableBeanFactory beanFactory) {
-            String[] beanNames = beanFactory.getBeanNamesForType(DataSource.class);
+        private BeanDefinitionHolder getDataSourceBeanDefinition(ConfigurableListableBeanFactory beanFactory) {
+            final String[] beanNames = beanFactory.getBeanNamesForType(DataSource.class);
             if (ObjectUtils.isEmpty(beanNames)) {
-                logger.warn("No DataSource beans found, "
-                        + "testcontainers version will not be used");
+                logger.warn("No DataSource beans found, testcontainers version will not be used");
                 return null;
             }
             if (beanNames.length == 1) {
-                String beanName = beanNames[0];
-                BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
+                final String beanName = beanNames[0];
+                final BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
                 return new BeanDefinitionHolder(beanDefinition, beanName);
             }
-            for (String beanName : beanNames) {
-                BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
-                if (beanDefinition.isPrimary()) {
-                    return new BeanDefinitionHolder(beanDefinition, beanName);
-                }
+            for (final String beanName : beanNames) {
+                final BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
+                if (beanDefinition.isPrimary()) { return new BeanDefinitionHolder(beanDefinition, beanName); }
             }
-            logger.warn("No primary DataSource found, "
-                    + "testcontainers pg version will not be used");
+            logger.warn("No primary DataSource found, testcontainers pg version will not be used");
             return null;
         }
-
     }
 
-    private static class TestContainersPgDataSourceFactoryBean
-            implements FactoryBean<DataSource>, EnvironmentAware, InitializingBean {
+    private static class TestContainersPgDataSourceFactoryBean implements FactoryBean<DataSource>, EnvironmentAware, InitializingBean {
 
         private TestcontainersPgDataSourceFactory factory;
-
         private DataSource testcontainersPgDatabase;
 
         @Override
