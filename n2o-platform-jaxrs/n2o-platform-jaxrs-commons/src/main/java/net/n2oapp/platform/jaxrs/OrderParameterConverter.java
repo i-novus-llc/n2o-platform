@@ -14,7 +14,12 @@ public class OrderParameterConverter implements TypedParamConverter<Sort.Order> 
 
     @Override
     public Sort.Order fromString(String value) {
-        String[] split = value.split(": ");
+        final String[] split;
+        if (value.contains(":")) {
+            split = value.split(": ");
+        } else {
+            split = value.split(",");
+        }
         return new Sort.Order(
             Sort.Direction.fromString(split[1]),
             split[0]
