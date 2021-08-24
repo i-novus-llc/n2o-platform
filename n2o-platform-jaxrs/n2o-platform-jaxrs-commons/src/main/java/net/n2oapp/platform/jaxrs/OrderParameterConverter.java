@@ -16,8 +16,10 @@ public class OrderParameterConverter implements TypedParamConverter<Sort.Order> 
     public Sort.Order fromString(String value) {
         final String[] split;
         if (value.contains(":")) {
-            split = value.split(": ");
+            split = value.split(": "); // Так отправляет сортировку n2o
         } else {
+//          Так раньше отправлял сортировку данный конвертер,
+//          а так же в некоторых проектах используется такой формат
             split = value.split(",");
         }
         return new Sort.Order(
