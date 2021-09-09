@@ -116,7 +116,6 @@ class JoinerSerializer extends AbstractSerializer {
             out.append("\t\t\t}\n");
             out.append("\t\t\tfetcherIdx++;\n");
             out.append("\t\t}\n");
-            out.append("\t\ttree = null;\n");
             out.append("\t\t");
             appendResolution(meta, out);
             out.append(" resolution = ").append(Joiner.Resolution.class.getCanonicalName()).append(".from(entities, uniqueIds, models, duplicate);\n");
