@@ -101,7 +101,6 @@ class JoinerSerializer extends AbstractSerializer {
             out.append("\t\tfinal java.util.List<").append(meta.getModelType()).append("> models = new java.util.ArrayList<>(size);\n");
             out.append("\t\tfinal java.util.List<").append(meta.getIdTypeVariable()).append("> uniqueIds = new java.util.ArrayList<>(size);\n");
             out.append("\t\tfinal java.util.List<").append(meta.getEntityTypeVariable()).append("> entities = new java.util.ArrayList<>(size);\n");
-            out.append("\t\tnet.n2oapp.platform.selection.api.FenwickTree tree = new net.n2oapp.platform.selection.api.FenwickTree(size + 1);\n");
             out.append("\t\tfinal boolean[] duplicate = new boolean[size];\n");
             out.append("\t\tint fetcherIdx = 0;\n");
             out.append("\t\tfor (java.util.Iterator<? extends ").append(meta.getFetcherType()).append("> iter = fetchers.iterator(); iter.hasNext();) {\n");
@@ -113,8 +112,6 @@ class JoinerSerializer extends AbstractSerializer {
             out.append("\t\t\t\tuniqueIds.add(id);\n");
             out.append("\t\t\t\tentities.add(fetcher.getUnderlyingEntity());\n");
             out.append("\t\t\t} else {\n");
-            out.append("\t\t\t\tmodels.add(models.get(duplicateIdx + tree.sum(duplicateIdx)));\n");
-            out.append("\t\t\t\ttree.increment(uniqueIds.size());\n");
             out.append("\t\t\t\tduplicate[fetcherIdx] = true;\n");
             out.append("\t\t\t}\n");
             out.append("\t\t\tfetcherIdx++;\n");
