@@ -101,6 +101,7 @@ class JoinerSerializer extends AbstractSerializer {
             out.append("\t\tfinal java.util.List<").append(meta.getModelType()).append("> models = new java.util.ArrayList<>(size);\n");
             out.append("\t\tfinal java.util.List<").append(meta.getIdTypeVariable()).append("> uniqueIds = new java.util.ArrayList<>(size);\n");
             out.append("\t\tfinal java.util.List<").append(meta.getEntityTypeVariable()).append("> entities = new java.util.ArrayList<>(size);\n");
+            out.append("\t\tnet.n2oapp.platform.selection.api.FenwickTree tree = new net.n2oapp.platform.selection.api.FenwickTree(size + 1);\n");
             out.append("\t\tfinal boolean[] duplicate = new boolean[size];\n");
             out.append("\t\tint fetcherIdx = 0;\n");
             out.append("\t\tfor (java.util.Iterator<? extends ").append(meta.getFetcherType()).append("> iter = fetchers.iterator(); iter.hasNext();) {\n");
@@ -112,10 +113,13 @@ class JoinerSerializer extends AbstractSerializer {
             out.append("\t\t\t\tuniqueIds.add(id);\n");
             out.append("\t\t\t\tentities.add(fetcher.getUnderlyingEntity());\n");
             out.append("\t\t\t} else {\n");
+            out.append("\t\t\t\tmodels.add(models.get(duplicateIdx + tree.sum(duplicateIdx)));\n");
+            out.append("\t\t\t\ttree.increment(uniqueIds.size());\n");
             out.append("\t\t\t\tduplicate[fetcherIdx] = true;\n");
             out.append("\t\t\t}\n");
             out.append("\t\t\tfetcherIdx++;\n");
             out.append("\t\t}\n");
+            out.append("\t\ttree = null;\n");
             out.append("\t\t");
             appendResolution(meta, out);
             out.append(" resolution = ").append(Joiner.Resolution.class.getCanonicalName()).append(".from(entities, uniqueIds, models, duplicate);\n");
@@ -164,7 +168,7 @@ class JoinerSerializer extends AbstractSerializer {
                     NestedSelectionFetcher nested = appendJoined(meta, property, out);
                     out.append(" joined = join").append(capitalize(property.getName())).append("(entities, uniqueIds);\n");
                     out.append("\t\t\tfor (").append(meta.getFetcherType()).append(" fetcher : fetchers) {\n");
-                    out.append("\t\t\tif (duplicate[fetcherIdx++]) continue;\n");
+                    out.append("\t\t\t\tif (duplicate[fetcherIdx++]) continue;\n");
                     out.append("\t\t\t\t").append(meta.getModelType()).append(" model = models.get(modelIdx++);\n");
                     out.append("\t\t\t\t").append(meta.getIdTypeVariable()).append(" id = getId(fetcher.getUnderlyingEntity());\n");
                     out.append("\t\t\t\t");
@@ -247,7 +251,7 @@ class JoinerSerializer extends AbstractSerializer {
                     out.append("\t\t\tfor (");
                     out.append(meta.getFetcherType());
                     out.append(" fetcher : fetchers) {\n");
-                    out.append("\t\t\tif (duplicate[fetcherIdx++]) continue;\n");
+                    out.append("\t\t\t\tif (duplicate[fetcherIdx++]) continue;\n");
                     out.append("\t\t\t\t");
                     out.append(meta.getModelType());
                     out.append(" model = models.get(modelIdx++);\n");
