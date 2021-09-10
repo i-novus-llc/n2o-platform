@@ -164,7 +164,7 @@ class JoinerSerializer extends AbstractSerializer {
                     NestedSelectionFetcher nested = appendJoined(meta, property, out);
                     out.append(" joined = join").append(capitalize(property.getName())).append("(entities, uniqueIds);\n");
                     out.append("\t\t\tfor (").append(meta.getFetcherType()).append(" fetcher : fetchers) {\n");
-                    out.append("\t\t\tif (duplicate[fetcherIdx++]) continue;\n");
+                    out.append("\t\t\t\tif (duplicate[fetcherIdx++]) continue;\n");
                     out.append("\t\t\t\t").append(meta.getModelType()).append(" model = models.get(modelIdx++);\n");
                     out.append("\t\t\t\t").append(meta.getIdTypeVariable()).append(" id = getId(fetcher.getUnderlyingEntity());\n");
                     out.append("\t\t\t\t");
@@ -247,7 +247,7 @@ class JoinerSerializer extends AbstractSerializer {
                     out.append("\t\t\tfor (");
                     out.append(meta.getFetcherType());
                     out.append(" fetcher : fetchers) {\n");
-                    out.append("\t\t\tif (duplicate[fetcherIdx++]) continue;\n");
+                    out.append("\t\t\t\tif (duplicate[fetcherIdx++]) continue;\n");
                     out.append("\t\t\t\t");
                     out.append(meta.getModelType());
                     out.append(" model = models.get(modelIdx++);\n");
