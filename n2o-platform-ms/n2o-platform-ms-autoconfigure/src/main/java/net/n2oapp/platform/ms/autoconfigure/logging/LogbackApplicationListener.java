@@ -78,7 +78,7 @@ public class LogbackApplicationListener implements ApplicationListener<Applicati
         labelCfg.setPattern("app=" + appName + ",host=" + hostname);
         encoder.setLabel(labelCfg);
         AbstractLoki4jEncoder.MessageCfg messageCfg = new AbstractLoki4jEncoder.MessageCfg();
-        String messagePatternResolved = MESSAGE_PATTERN.replaceAll("\\$\\{appName}", appName).replaceAll("\\$\\{PID}", String.valueOf(ProcessHandle.current().pid()));
+        String messagePatternResolved = MESSAGE_PATTERN.replace("${appName}", appName).replace("${PID}", String.valueOf(ProcessHandle.current().pid()));
         messageCfg.setPattern(messagePatternResolved);
         encoder.setMessage(messageCfg);
         encoder.setSortByTime(true);
