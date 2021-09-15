@@ -1,4 +1,12 @@
-org.springframework.cloud.bootstrap.BootstrapConfiguration=net.n2oapp.platform.ms.autoconfigure.CloudBootstrapAutoConfiguration
+# AutoConfiguration
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 net.n2oapp.platform.ms.autoconfigure.SleuthAutoConfiguration,\
 net.n2oapp.platform.ms.autoconfigure.ApplicationInfoAutoConfiguration
+
+# Application Listeners
+org.springframework.context.ApplicationListener=\
+net.n2oapp.platform.ms.autoconfigure.logging.LogbackApplicationListener
+
+# Bootstrap components
+org.springframework.cloud.bootstrap.BootstrapConfiguration=net.n2oapp.platform.ms.autoconfigure.CloudBootstrapAutoConfiguration,\
+net.n2oapp.platform.ms.autoconfigure.logging.LogbackApplicationListener

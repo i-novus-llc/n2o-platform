@@ -1,4 +1,4 @@
-package net.n2oapp.platform.ms.autoconfigure;
+package net.n2oapp.platform.ms.autoconfigure.app;
 
 import ch.qos.logback.core.CoreConstants;
 import org.junit.jupiter.api.BeforeAll;

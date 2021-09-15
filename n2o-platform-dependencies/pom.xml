@@ -466,6 +466,13 @@
                 <classifier>test</classifier>
                 <scope>test</scope>
             </dependency>
+
+            <!-- Grafana Loki direct log sender-->
+            <dependency>
+                <groupId>com.github.loki4j</groupId>
+                <artifactId>loki-logback-appender</artifactId>
+                <version>1.2.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>

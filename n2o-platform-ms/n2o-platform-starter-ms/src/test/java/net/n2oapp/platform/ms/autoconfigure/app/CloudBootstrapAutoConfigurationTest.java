@@ -1,6 +1,5 @@
-package net.n2oapp.platform.ms.autoconfigure;
+package net.n2oapp.platform.ms.autoconfigure.app;
 
-import net.n2oapp.platform.actuate.autoconfigure.ActuatorAutoConfiguration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
