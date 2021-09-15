@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Loki4j appender logback configuration provided for import, equivalent to the programmatic
+initialization performed by N2O Platform LogbackApplicationListener
+-->
+
+<included>
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="n2o-app"/>
+    <springProperty scope="context" name="lokiUrl" source="n2o.ms.loki.url" defaultValue="http://loki:3100/loki/api/v1/push"/>
+    <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+        <http>
+            <url>${lokiUrl}</url>
+        </http>
+        <format>
+            <label>
+                <pattern>app=${appName},host=${HOSTNAME}</pattern>
+            </label>
+            <message>
+                <pattern>%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([${appName},%X{traceId},%X{spanId}]) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m %n%wEx</pattern>
+            </message>
+            <sortByTime>true</sortByTime>
+        </format>
+    </appender>
+</included>
