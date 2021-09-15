@@ -1,6 +1,8 @@
-package net.n2oapp.platform.ms.autoconfigure;
+package net.n2oapp.platform.ms.autoconfigure.app;
 
 import ch.qos.logback.classic.Level;
+import net.n2oapp.platform.ms.autoconfigure.ApplicationInfoPrinterTestConfiguration;
+import net.n2oapp.platform.ms.autoconfigure.MemoryAppender;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

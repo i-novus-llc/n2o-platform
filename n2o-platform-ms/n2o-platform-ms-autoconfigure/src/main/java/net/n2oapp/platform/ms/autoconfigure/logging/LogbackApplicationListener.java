@@ -26,6 +26,7 @@ import org.springframework.util.StringUtils;
  * <li> After initializing(or reinitializing) the Spring context.
  * This phase is used for compatibility with the spring cloud bootstrap configuration.</li>
  * </ol>
+ *
  * @author RMakhmutov
  * @since 09.09.2021
  */
