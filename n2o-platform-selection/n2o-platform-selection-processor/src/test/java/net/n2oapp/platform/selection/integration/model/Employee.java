@@ -16,22 +16,22 @@ public class Employee extends BaseModel {
     @Column
     private String name;
 
-    @Joined
+    @Joined(joinOnly = true)
     @JoinColumn
     @ManyToOne(fetch = FetchType.LAZY)
     private Organisation organisation;
 
-    @Joined(withNestedJoiner = false)
+    @Joined(withNestedJoiner = false, joinOnly = true)
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner")
     private @NotNull List<@NotNull Contact> contacts;
 
     @JoinTable
-    @Joined(withNestedJoiner = false)
+    @Joined(withNestedJoiner = false, joinOnly = true)
     @ManyToMany
     private Set<Project> projects = new HashSet<>();
 
     @JoinColumn
-    @Joined(withNestedJoiner = false)
+    @Joined(withNestedJoiner = false, joinOnly = true)
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Passport passport;
 

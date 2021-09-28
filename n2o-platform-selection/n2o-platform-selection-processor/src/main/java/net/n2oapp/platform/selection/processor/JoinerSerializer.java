@@ -144,7 +144,7 @@ class JoinerSerializer extends AbstractSerializer {
         out.append(meta.getModelType());
         out.append(" model = models.get(modelIdx++);\n");
         for (SelectionProperty property : meta.getProperties()) {
-            if (!property.isJoined()) {
+            if (!property.isJoined() && !property.joinOnly()) {
                 FetcherSerializer.appendProperty(out, property, "fetcher", "\t");
             }
         }

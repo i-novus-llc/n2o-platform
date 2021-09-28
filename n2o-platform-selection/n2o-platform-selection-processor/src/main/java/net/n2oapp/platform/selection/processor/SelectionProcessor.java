@@ -145,7 +145,8 @@ public class SelectionProcessor extends AbstractProcessor {
                     nested,
                     property.getCollectionType(),
                     property.isJoined(),
-                    property.isWithNestedJoiner()
+                    property.isWithNestedJoiner(),
+                    property.joinOnly()
                 );
             } catch (RawUseException ignored) {
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Raw use unsupported", meta.getTarget());
@@ -177,6 +178,7 @@ public class SelectionProcessor extends AbstractProcessor {
         Joined joinedAnno = member.getAnnotation(Joined.class);
         boolean isJoined = joinedAnno != null;
         boolean withNestedJoiner = isJoined && joinedAnno.withNestedJoiner();
+        boolean joinOnly = isJoined && joinedAnno.joinOnly();
         if (withNestedJoiner && nested == null)
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Nested joiner can be placed only on nested SELECTIVE properties", member);
         String name = member.getSimpleName().toString();
@@ -189,7 +191,8 @@ public class SelectionProcessor extends AbstractProcessor {
                 nested,
                 collectionType,
                 isJoined,
-                withNestedJoiner
+                withNestedJoiner,
+                joinOnly
             );
         } catch (RawUseException ignored) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Raw use unsupported", member);

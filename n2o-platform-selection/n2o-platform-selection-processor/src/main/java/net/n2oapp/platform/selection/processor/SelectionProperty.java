@@ -19,14 +19,16 @@ class SelectionProperty {
     private final TypeMirror collectionType;
     private final boolean isJoined;
     private final boolean withNestedJoiner;
+    private final boolean joinOnly;
 
     SelectionProperty(
         String name,
         TypeMirror originalType,
         Element member,
-        boolean joined
+        boolean joined,
+        final boolean joinOnly
     ) {
-        this(name, member, originalType, null, null, null, null, joined, false);
+        this(name, member, originalType, null, null, null, null, joined, false, joinOnly);
     }
 
     SelectionProperty(
@@ -38,13 +40,15 @@ class SelectionProperty {
         String generics,
         TypeMirror collectionType,
         boolean isJoined,
-        boolean withNestedJoiner
+        boolean withNestedJoiner,
+        final boolean joinOnly
     ) {
         this.originalType = originalType;
         this.name = name;
         this.generics = generics;
         this.selection = selection;
         this.member = member;
+        this.joinOnly = joinOnly;
         if (type != null)
             this.typeStr = stripAnnotations(type);
         else
@@ -140,6 +144,10 @@ class SelectionProperty {
 
     boolean isWithNestedJoiner() {
         return withNestedJoiner;
+    }
+
+    boolean joinOnly() {
+        return joinOnly;
     }
 
 }

@@ -222,10 +222,11 @@ class SelectionMeta {
         SelectionMeta selection,
         TypeMirror collectionType,
         boolean joined,
-        boolean withNestedJoiner
+        boolean withNestedJoiner,
+        boolean joinOnly
     ) {
         if (selection == null)
-            properties.put(name, new SelectionProperty(name, originalType, member, joined));
+            properties.put(name, new SelectionProperty(name, originalType, member, joined, joinOnly));
         else {
             String generics;
             if (modelType instanceof WildcardType) {
@@ -255,7 +256,7 @@ class SelectionMeta {
                     }
                 }
             }
-            targetProperties.put(name, new SelectionProperty(name, member, originalType, modelType, selection, generics, collectionType, joined, withNestedJoiner));
+            targetProperties.put(name, new SelectionProperty(name, member, originalType, modelType, selection, generics, collectionType, joined, withNestedJoiner, joinOnly));
         }
     }
 
