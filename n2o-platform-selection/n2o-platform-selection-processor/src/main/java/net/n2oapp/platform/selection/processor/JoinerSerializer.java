@@ -164,7 +164,7 @@ class JoinerSerializer extends AbstractSerializer {
         out.append("\t\t\tfor (");
         out.append(meta.getFetcherType());
         out.append(" fetcher : fetchers) {\n");
-        out.append("\t\t\tif (duplicate[fetcherIdx++]) continue;\n");
+        out.append("\t\t\t\tif (duplicate[fetcherIdx++]) continue;\n");
         out.append("\t\t\t\t");
         out.append(meta.getModelType());
         out.append(" model = models.get(modelIdx++);\n");
@@ -303,7 +303,7 @@ class JoinerSerializer extends AbstractSerializer {
         out.append("\t\tfor (");
         out.append(meta.getFetcherType());
         out.append(" fetcher : fetchers) {\n");
-        out.append("\t\t\tif (duplicate[fetcherIdx++]) continue;\n");
+        out.append("\t\t\t\tif (duplicate[fetcherIdx++]) continue;\n");
         out.append("\t\t\t");
         out.append(meta.getModelType());
         out.append(" model = models.get(modelIdx++);\n");

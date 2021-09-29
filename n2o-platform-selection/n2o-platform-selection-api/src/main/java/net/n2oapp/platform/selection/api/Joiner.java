@@ -37,25 +37,36 @@ public interface Joiner<T, S extends Selection<T>, E, F extends Fetcher<T, S, E>
 
     default T resolve(F fetcher, S selection) {
         List<T> resolved = resolveCollection(Collections.singletonList(fetcher), selection);
-        if (resolved == null)
+        if (resolved == null) {
             return null;
+        }
         return resolved.get(0);
     }
 
+    /**
+     * Модели дублирующихся {@code fetcher}-ов (для которых {@link Fetcher#getUnderlyingEntity()} вернул одну и ту же сущность)
+     * в результирующей коллекции продублированы не будут
+     */
     default <C extends Collection<T>> C resolveCollection(
         Collection<? extends F> fetchers,
         S selection,
         Supplier<? extends C> collectionSupplier
     ) {
-        if (selection == null)
+        if (selection == null) {
             return null;
+        }
         Resolution<T, E, ID> resolution = resolveIterable(fetchers, selection, selection.propagation());
-        if (resolution == null)
+        if (resolution == null) {
             return null;
+        }
         //noinspection unchecked
         return collectionSupplier.equals(ARRAY_LIST_SUPPLIER) ? (C) resolution.models : resolution.models.stream().collect(Collectors.toCollection(collectionSupplier));
     }
 
+    /**
+     * Модели дублирующихся {@code fetcher}-ов (для которых {@link Fetcher#getUnderlyingEntity()} вернул одну и ту же сущность)
+     * в результирующем списке продублированы не будут
+     */
     default List<T> resolveCollection(Collection<? extends F> fetchers, S selection) {
         //noinspection unchecked
         return resolveCollection(
@@ -65,15 +76,21 @@ public interface Joiner<T, S extends Selection<T>, E, F extends Fetcher<T, S, E>
         );
     }
 
+    /**
+     * @throws IndexOutOfBoundsException если в {@code fetchers} два или более {@code fetcher}-а вернули
+     * одну и ту же сущность (метод {@link Fetcher#getUnderlyingEntity()})
+     */
     default<I extends Streamable<T>> I resolveStreamable(
         Streamable<? extends F> fetchers,
         S selection
     ) {
-        if (selection == null)
+        if (selection == null) {
             return null;
+        }
         Resolution<T, E, ID> resolution = resolveIterable(fetchers, selection, selection.propagation());
-        if (resolution == null)
+        if (resolution == null) {
             return null;
+        }
         final int[] idx = {0};
         Streamable<T> resolved = fetchers.map(
             fetcher -> resolution.models.get(idx[0]++)

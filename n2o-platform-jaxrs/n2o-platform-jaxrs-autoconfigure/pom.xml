@@ -9,7 +9,7 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-platform-jaxrs</artifactId>
-        <version>4.4.1-SNAPSHOT</version>
+        <version>4.5.1-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -94,6 +94,11 @@
             <artifactId>jaxws-api</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-context</artifactId>
+        </dependency>
+
         <!-- TEST -->
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -122,12 +127,6 @@
         <dependency>
             <groupId>net.n2oapp.platform</groupId>
             <artifactId>n2o-platform-i18n-autoconfigure</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
             <scope>test</scope>
         </dependency>
 

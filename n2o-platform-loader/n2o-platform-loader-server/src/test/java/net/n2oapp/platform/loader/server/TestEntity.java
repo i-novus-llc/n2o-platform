@@ -1,14 +1,11 @@
 package net.n2oapp.platform.loader.server;
 
-import lombok.Data;
-import org.springframework.context.annotation.Primary;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
 @Entity
-@Data
 class TestEntity {
     @Id
     private String code;
@@ -16,4 +13,28 @@ class TestEntity {
     private String name;
     @Column
     private String client;
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
+    }
 }

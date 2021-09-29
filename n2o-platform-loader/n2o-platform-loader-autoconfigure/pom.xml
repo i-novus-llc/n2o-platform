@@ -9,7 +9,7 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-platform-loader</artifactId>
-        <version>4.4.1-SNAPSHOT</version>
+        <version>4.5.1-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -58,12 +58,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- /TEST -->

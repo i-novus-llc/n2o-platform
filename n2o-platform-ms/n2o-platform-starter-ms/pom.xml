@@ -7,7 +7,7 @@
     <parent>
         <artifactId>n2o-platform-ms</artifactId>
         <groupId>net.n2oapp.platform</groupId>
-        <version>4.4.1-SNAPSHOT</version>
+        <version>4.5.1-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -27,9 +27,15 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-consul-config</artifactId>
         </dependency>
+
+        <!-- Observability -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-sleuth</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-sleuth-zipkin</artifactId>
         </dependency>
 
         <!-- Test -->
