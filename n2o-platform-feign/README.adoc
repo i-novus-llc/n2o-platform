@@ -46,14 +46,18 @@ public class ExampleConfiguration {
 
 [source,java]
 ----
-@FeignClient(name = "sampleClient", url = "https://example.com/api")
-public interface SampleClient extends SomeRest {
-}
+@FeignClient(name = "someService")
+public interface SampleClient extends SomeRest { }
 ----
+, где `name` - имя сервиса.
+Адрес сервиса определится автоматически по его имени через службу Service Discovery.
+Если Service Discovery в окружении нет, то нужно прописать адрес сервиса вручную с помощью атрибута `url`:
 
-, где
-`name` - имя бина,
-`url` - адрес сервиса (возможно использование плейсхолдеров настроек)
+[source,java]
+----
+@FeignClient(name = "someService", url = "https://example.com/api")
+public interface SampleClient extends SomeRest { }
+----
 
 === Использование
 
