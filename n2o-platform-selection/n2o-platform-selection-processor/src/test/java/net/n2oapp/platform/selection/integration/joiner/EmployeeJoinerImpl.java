@@ -36,8 +36,7 @@ public class EmployeeJoinerImpl implements EmployeeJoiner<Employee, Integer> {
     }
 
     @Override
-    public @NonNull
-    Integer getId(Employee entity) {
+    public @NonNull Integer getId(Employee entity) {
         return entity.getId();
     }
 

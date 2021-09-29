@@ -83,6 +83,9 @@ class FetcherSerializer extends AbstractSerializer {
             appendExplicitPropagation(out);
         }
         for (SelectionProperty property : meta.getProperties()) {
+            if (property.joinOnly()) {
+                continue;
+            }
             appendProperty(out, property, "this", "");
         }
         out.append("\t\treturn model;\n");
@@ -192,6 +195,11 @@ class FetcherSerializer extends AbstractSerializer {
         out.append("selection.");
         out.append(nestedSelectionGetter);
         out.append(".propagation())");
+    }
+
+    @Override
+    boolean shouldSerialize(final SelectionProperty property) {
+        return !property.joinOnly();
     }
 
     @Override

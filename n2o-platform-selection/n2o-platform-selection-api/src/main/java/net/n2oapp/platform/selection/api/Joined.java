@@ -17,4 +17,11 @@ public @interface Joined {
      */
     boolean withNestedJoiner() default true;
 
+    /**
+     *
+     * @return {@code true}, если для данного атрибута {@code attributeName} не поддерживается выборка НЕ через {@link net.n2oapp.platform.selection.api.Joiner}.
+     * При создании интерфейса {@link Fetcher} метода {@code fetchAttributeName} не будет
+     */
+    boolean joinOnly() default false;
+
 }
