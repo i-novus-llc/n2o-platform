@@ -28,7 +28,7 @@
 
 === Создание клентов
 
-Чтобы создавать клиенты с помощью `@FeignClient`, нужно добавить аннотацию `@EnableFeignClients` в конфигурацию Spring:
+Чтобы создавать прокси клиенты, нужно добавить аннотацию `@EnableFeignClients` в конфигурацию Spring:
 [source,java]
 ----
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -39,15 +39,21 @@ public class ExampleConfiguration {
   ...
 }
 ----
+Аннотация сканирует созданные feign клиенты в проекте.
+Указать конкретные классы без сканирования можно с помощью атрибута `clients`.
 
-Чтобы создать клиента, нужно повесить аннотацию `@FeignClient` на интерфейс с аннотациями jaxrs.
+Чтобы создать клиента, нужно повесить аннотацию `@FeignClient` на интерфейс с аннотациями jaxrs:
 
 [source,java]
 ----
-@FeignClient(name = "example")
+@FeignClient(name = "sampleClient", url = "https://example.com/api")
 public interface SampleClient extends SomeRest {
 }
 ----
+
+, где
+`name` - имя бина,
+`url` - адрес сервиса (возможно использование плейсхолдеров настроек)
 
 === Использование
 
@@ -57,7 +63,7 @@ public interface SampleClient extends SomeRest {
 @Service
 public class ConsumerServiceImpl {
   @Autowired
-  private Samplelient client;
+  private SampleClient client;
 
   ...
 }
