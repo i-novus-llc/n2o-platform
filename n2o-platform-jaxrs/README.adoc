@@ -135,7 +135,10 @@ Long create(@Valid SomeModel model);
 
 === Исключения и локализация
 
-Все исключения возвращаются клиенту в виде json:
+Для возвращения исключения клиенту в виде json укажите настройку:
+----
+n2o.ui.message.stacktrace=true
+----
 
 [source,json]
 ----
