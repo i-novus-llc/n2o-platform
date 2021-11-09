@@ -9,7 +9,7 @@
     <appender name="InLineConsoleOutput" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
             <layout class="net.n2oapp.platform.ms.autoconfigure.logging.OneLinePatternLayout">
-                <pattern>{ "value" : "${CONSOLE_LOG_PATTERN}" }</pattern>
+                <pattern>${CONSOLE_LOG_PATTERN}</pattern>
             </layout>
         </encoder>
     </appender>
