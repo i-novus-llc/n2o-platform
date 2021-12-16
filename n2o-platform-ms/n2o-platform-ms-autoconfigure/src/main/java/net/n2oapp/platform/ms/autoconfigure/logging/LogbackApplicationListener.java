@@ -2,6 +2,8 @@ package net.n2oapp.platform.ms.autoconfigure.logging;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
 import com.github.loki4j.logback.*;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
@@ -12,6 +14,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.util.StringUtils;
+
+import static java.util.Objects.nonNull;
 
 /**
  * {@code LogbackApplicationListener} is a programmatic logging system configuration, faster alternative to a standard logback xml file configuration.
@@ -36,6 +40,7 @@ public class LogbackApplicationListener implements ApplicationListener<Applicati
     public static final String LOKI_ENABLED_PROPERTY = "n2o.ms.loki.enabled";
     public static final String LOKI_URL_PROPERTY = "n2o.ms.loki.url";
     public static final String LOKI_URL_DEFAULT_VALUE = "http://loki:3100/loki/api/v1/push";
+    public static final String LOKI_APPENDER_NAME = "LOKI";
     public static final String APP_NAME_PROPERTY = "spring.application.name";
     public static final String DEFAULT_APP_NAME = "n2o-app";
     public static final String MESSAGE_PATTERN = "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([${appName},%X{traceId},%X{spanId}]) %clr(${PID}){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m %n%wEx";
@@ -68,7 +73,20 @@ public class LogbackApplicationListener implements ApplicationListener<Applicati
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 
-        Loki4jAppender loki4jAppender = new Loki4jAppender();
+        Appender<ILoggingEvent> lokiAppender = root.getAppender(LOKI_APPENDER_NAME);
+        if (nonNull(lokiAppender)) {
+            Loki4jAppender loki4jAppender = (Loki4jAppender) lokiAppender;
+            loki4jAppender.stop();
+            configureLokiAppender(loki4jAppender, lokiUrl, appName, lc);
+        } else {
+            Loki4jAppender loki4jAppender = new Loki4jAppender();
+            loki4jAppender.setName(LOKI_APPENDER_NAME);
+            configureLokiAppender(loki4jAppender, lokiUrl, appName, lc);
+            root.addAppender(loki4jAppender);
+        }
+    }
+
+    private void configureLokiAppender(Loki4jAppender loki4jAppender, String lokiUrl, String appName, LoggerContext lc) {
         HttpSender httpSender = new JavaHttpSender();
         httpSender.setUrl(lokiUrl);
         loki4jAppender.setHttp(httpSender);
@@ -86,8 +104,6 @@ public class LogbackApplicationListener implements ApplicationListener<Applicati
         loki4jAppender.setFormat(encoder);
         loki4jAppender.setContext(lc);
         loki4jAppender.start();
-
-        root.addAppender(loki4jAppender);
     }
 
     private String resolveEnvProperty(ConfigurableEnvironment env, String propertyKey, String defaultValue) {
