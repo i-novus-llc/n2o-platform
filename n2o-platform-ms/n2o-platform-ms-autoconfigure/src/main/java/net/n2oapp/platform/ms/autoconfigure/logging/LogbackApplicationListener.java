@@ -13,8 +13,6 @@ import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.util.StringUtils;
 
-import static java.util.Objects.isNull;
-
 /**
  * {@code LogbackApplicationListener} is a programmatic logging system configuration, faster alternative to a standard logback xml file configuration.
  * <p>
@@ -72,12 +70,13 @@ public class LogbackApplicationListener implements ApplicationListener<Applicati
         Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 
         Loki4jAppender loki4jAppender = (Loki4jAppender) root.getAppender(LOKI_APPENDER_NAME);
-        if (isNull(loki4jAppender)) {
+        if (loki4jAppender == null) {
             loki4jAppender = new Loki4jAppender();
             loki4jAppender.setName(LOKI_APPENDER_NAME);
             root.addAppender(loki4jAppender);
         } else loki4jAppender.stop();
         configureLokiAppender(loki4jAppender, lokiUrl, appName, lc);
+        loki4jAppender.start();
     }
 
     private void configureLokiAppender(Loki4jAppender loki4jAppender, String lokiUrl, String appName, LoggerContext lc) {
@@ -97,7 +96,6 @@ public class LogbackApplicationListener implements ApplicationListener<Applicati
         encoder.setContext(lc);
         loki4jAppender.setFormat(encoder);
         loki4jAppender.setContext(lc);
-        loki4jAppender.start();
     }
 
     private String resolveEnvProperty(ConfigurableEnvironment env, String propertyKey, String defaultValue) {
