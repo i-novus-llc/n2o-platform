@@ -36,6 +36,7 @@ public class LogbackApplicationListener implements ApplicationListener<Applicati
     public static final String LOKI_ENABLED_PROPERTY = "n2o.ms.loki.enabled";
     public static final String LOKI_URL_PROPERTY = "n2o.ms.loki.url";
     public static final String LOKI_URL_DEFAULT_VALUE = "http://loki:3100/loki/api/v1/push";
+    public static final String LOKI_APPENDER_NAME = "LOKI_APPENDER";
     public static final String APP_NAME_PROPERTY = "spring.application.name";
     public static final String DEFAULT_APP_NAME = "n2o-app";
     public static final String MESSAGE_PATTERN = "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([${appName},%X{traceId},%X{spanId}]) %clr(${PID}){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m %n%wEx";
@@ -68,7 +69,17 @@ public class LogbackApplicationListener implements ApplicationListener<Applicati
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 
-        Loki4jAppender loki4jAppender = new Loki4jAppender();
+        Loki4jAppender loki4jAppender = (Loki4jAppender) root.getAppender(LOKI_APPENDER_NAME);
+        if (loki4jAppender == null) {
+            loki4jAppender = new Loki4jAppender();
+            loki4jAppender.setName(LOKI_APPENDER_NAME);
+            root.addAppender(loki4jAppender);
+        } else loki4jAppender.stop();
+        configureLokiAppender(loki4jAppender, lokiUrl, appName, lc);
+        loki4jAppender.start();
+    }
+
+    private void configureLokiAppender(Loki4jAppender loki4jAppender, String lokiUrl, String appName, LoggerContext lc) {
         HttpSender httpSender = new JavaHttpSender();
         httpSender.setUrl(lokiUrl);
         loki4jAppender.setHttp(httpSender);
@@ -85,9 +96,6 @@ public class LogbackApplicationListener implements ApplicationListener<Applicati
         encoder.setContext(lc);
         loki4jAppender.setFormat(encoder);
         loki4jAppender.setContext(lc);
-        loki4jAppender.start();
-
-        root.addAppender(loki4jAppender);
     }
 
     private String resolveEnvProperty(ConfigurableEnvironment env, String propertyKey, String defaultValue) {
