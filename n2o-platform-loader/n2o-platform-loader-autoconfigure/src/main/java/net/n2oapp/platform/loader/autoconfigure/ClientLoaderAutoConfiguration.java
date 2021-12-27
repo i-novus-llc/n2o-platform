@@ -146,12 +146,8 @@ public class ClientLoaderAutoConfiguration {
             @Override
             @EventListener(ApplicationReadyEvent.class)
             public void start() {
-                if (properties.getDelay() > 0) {
-                    ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-                    service.schedule(super::start, properties.getDelay(), TimeUnit.SECONDS);
-                    return;
-                }
-                super.start();
+                ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+                service.schedule(super::start, properties.getDelay(), TimeUnit.SECONDS);
             }
         };
     }
