@@ -145,7 +145,7 @@ public class ClientLoaderAutoConfiguration {
         return new LoaderStarter(runner, properties.getRetries(), properties.getRetriesInterval()) {
             @Override
             @EventListener(ApplicationReadyEvent.class)
-            public void start() {
+            public synchronized void start() {
                 ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
                 service.schedule(super::start, properties.getDelay(), TimeUnit.SECONDS);
             }
