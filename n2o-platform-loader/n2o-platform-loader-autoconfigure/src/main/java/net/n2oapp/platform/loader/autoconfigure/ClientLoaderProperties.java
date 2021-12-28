@@ -43,7 +43,6 @@ public class ClientLoaderProperties {
      */
     private boolean healthCheck = true;
 
-
     enum StartingTime {
         DEPLOY,
         UP,
