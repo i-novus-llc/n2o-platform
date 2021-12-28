@@ -145,8 +145,8 @@ public class ClientLoaderAutoConfiguration {
         }
 
         @Bean
-        ClientLoaderHealthIndicator clientLoaderHealthIndicator(LoaderStarter starter) {
-            return new ClientLoaderHealthIndicator(starter);
+        ClientLoaderHealthIndicator clientLoaderHealthIndicator(LoaderStarter starter, ClientLoaderProperties properties) {
+            return new ClientLoaderHealthIndicator(starter, properties.isHealthCheck());
         }
     }
 }

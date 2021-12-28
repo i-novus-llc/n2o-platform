@@ -38,6 +38,10 @@ public class ClientLoaderProperties {
      */
     private int retriesInterval = 60;
 
+    /**
+     * Учитывать успех загрузок при мониторинге состояния сервиса
+     */
+    private boolean healthCheck = true;
 
     enum StartingTime {
         DEPLOY,
@@ -87,5 +91,13 @@ public class ClientLoaderProperties {
 
     public List<ClientLoaderCommand> getCommands() {
         return commands;
+    }
+
+    public boolean isHealthCheck() {
+        return healthCheck;
+    }
+
+    public void setHealthCheck(boolean healthCheck) {
+        this.healthCheck = healthCheck;
     }
 }
