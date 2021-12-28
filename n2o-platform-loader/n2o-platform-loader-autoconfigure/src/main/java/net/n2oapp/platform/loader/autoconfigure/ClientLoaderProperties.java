@@ -38,6 +38,11 @@ public class ClientLoaderProperties {
      */
     private int retriesInterval = 60;
 
+    /**
+     * Учитывать успех загрузок при мониторинге состояния сервиса
+     */
+    private boolean checkLoaderFails = true;
+
 
     enum StartingTime {
         DEPLOY,
@@ -87,5 +92,13 @@ public class ClientLoaderProperties {
 
     public List<ClientLoaderCommand> getCommands() {
         return commands;
+    }
+
+    public boolean isCheckLoaderFails() {
+        return checkLoaderFails;
+    }
+
+    public void setCheckLoaderFails(boolean checkLoaderFails) {
+        this.checkLoaderFails = checkLoaderFails;
     }
 }
