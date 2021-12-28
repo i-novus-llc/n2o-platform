@@ -41,7 +41,7 @@ public class ClientLoaderProperties {
     /**
      * Учитывать успех загрузок при мониторинге состояния сервиса
      */
-    private boolean checkLoaderFails = true;
+    private boolean healthCheck = true;
 
 
     enum StartingTime {
@@ -94,11 +94,11 @@ public class ClientLoaderProperties {
         return commands;
     }
 
-    public boolean isCheckLoaderFails() {
-        return checkLoaderFails;
+    public boolean isHealthCheck() {
+        return healthCheck;
     }
 
-    public void setCheckLoaderFails(boolean checkLoaderFails) {
-        this.checkLoaderFails = checkLoaderFails;
+    public void setHealthCheck(boolean healthCheck) {
+        this.healthCheck = healthCheck;
     }
 }

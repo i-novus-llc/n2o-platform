@@ -7,20 +7,19 @@ import org.springframework.boot.actuate.health.HealthIndicator;
 
 public class ClientLoaderHealthIndicator implements HealthIndicator {
     private LoaderStarter starter;
-    private ClientLoaderProperties properties;
+    private boolean healthCheck;
 
-    public ClientLoaderHealthIndicator(LoaderStarter starter, ClientLoaderProperties properties) {
+    public ClientLoaderHealthIndicator(LoaderStarter starter, boolean healthCheck) {
         this.starter = starter;
-        this.properties = properties;
+        this.healthCheck = healthCheck;
     }
 
     @Override
     public Health health() {
         LoaderReport report = starter.getReport();
-        if (report == null)
+        if (report == null || !healthCheck)
             return Health.unknown().build();
-
-        else if ((properties == null || properties.isCheckLoaderFails()) && !report.isSuccess())
+        else if (!report.isSuccess())
             return Health.down()
                     .withDetail("Loaders failed", report).build();
         else
