@@ -148,6 +148,7 @@ public class ClientLoaderAutoConfiguration {
             public synchronized void start() {
                 ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
                 service.schedule(super::start, properties.getDelay(), TimeUnit.SECONDS);
+                service.shutdown();
             }
         };
     }

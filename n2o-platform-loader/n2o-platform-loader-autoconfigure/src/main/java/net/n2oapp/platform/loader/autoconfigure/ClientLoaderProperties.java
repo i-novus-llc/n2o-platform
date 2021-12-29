@@ -40,7 +40,7 @@ public class ClientLoaderProperties {
     /**
      * Время отложенного запуска (сек)
      */
-    private int delay = 5;
+    private int delay = 60;
 
     /**
      * Учитывать успех загрузок при мониторинге состояния сервиса

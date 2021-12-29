@@ -45,12 +45,15 @@ public class LoaderStarter {
                             fail.getCommand().getTarget(), fail.getException().getMessage()),
                             fail.getException()));
             if (retries > 0) {
+                logger.info("Failed loaders will start again in {} seconds. {} tries remaining..",
+                        retriesInterval, retries);
                 runner.setCommands(report.getFails().stream()
                         .map(LoaderReport.Fail::getCommand)
                         .collect(Collectors.toList()));
                 retries--;
                 ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
                 service.schedule(this::start, retriesInterval, TimeUnit.SECONDS);
+                service.shutdown();
             }
         }
 
