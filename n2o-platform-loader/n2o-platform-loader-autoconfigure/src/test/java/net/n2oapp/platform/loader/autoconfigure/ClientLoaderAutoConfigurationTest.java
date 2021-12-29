@@ -3,6 +3,7 @@ package net.n2oapp.platform.loader.autoconfigure;
 import net.n2oapp.platform.loader.client.ClientLoader;
 import net.n2oapp.platform.loader.client.ClientLoaderRunner;
 import org.junit.Test;
+import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -114,6 +115,24 @@ public class ClientLoaderAutoConfigurationTest {
                     assertThat(runner.getCommands().get(0).getAuth().getTokenUri()).isEqualTo("token_url");
                     assertThat(runner.getCommands().get(1).getAuth().getUsername()).isEqualTo("test_user");
                     assertThat(runner.getCommands().get(1).getAuth().getPassword()).isEqualTo("test_password");
+                });
+    }
+
+    @Test
+    public void health() {
+        this.contextRunner
+                .withPropertyValues(
+                        "n2o.loader.client.health-check=false")
+                .run((context) -> {
+                    assertThat(context).hasSingleBean(ClientLoaderHealthIndicator.class);
+                    ClientLoaderHealthIndicator healthIndicator = context.getBean(ClientLoaderHealthIndicator.class);
+                    assertThat(healthIndicator.health().getStatus()).isEqualTo(Status.UNKNOWN);
+                });
+        this.contextRunner
+                .run((context) -> {
+                    assertThat(context).hasSingleBean(ClientLoaderHealthIndicator.class);
+                    ClientLoaderHealthIndicator healthIndicator = context.getBean(ClientLoaderHealthIndicator.class);
+                    assertThat(healthIndicator.health().getStatus()).isEqualTo(Status.UP);
                 });
     }
 }
