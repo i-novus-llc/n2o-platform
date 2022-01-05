@@ -30,6 +30,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 @ConditionalOnClass(ClientLoader.class)
@@ -101,10 +104,10 @@ public class ClientLoaderAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "n2o.loader.client", name="start", havingValue = "UP", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "n2o.loader.client", name = "start", havingValue = "UP", matchIfMissing = true)
     @ConditionalOnMissingBean
-    public LoaderStarter startAfterUp(ClientLoaderRunner runner) {
-        return new LoaderStarter(runner) {
+    public LoaderStarter startAfterUp(ClientLoaderRunner runner, ClientLoaderProperties properties) {
+        return new LoaderStarter(runner, properties.getRetries(), properties.getRetriesInterval()) {
             @Override
             @EventListener(ApplicationReadyEvent.class)
             public void start() {
@@ -114,10 +117,10 @@ public class ClientLoaderAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "n2o.loader.client", name="start", havingValue = "DEPLOY")
+    @ConditionalOnProperty(prefix = "n2o.loader.client", name = "start", havingValue = "DEPLOY")
     @ConditionalOnMissingBean
     public LoaderStarter startOnDeploy(ClientLoaderRunner runner, ClientLoaderProperties properties) {
-        return new LoaderStarter(runner) {
+        return new LoaderStarter(runner, properties.getRetries(), properties.getRetriesInterval()) {
             @Override
             @PostConstruct
             public void start() {
@@ -129,10 +132,25 @@ public class ClientLoaderAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "n2o.loader.client", name="start", havingValue = "MANUAL")
+    @ConditionalOnProperty(prefix = "n2o.loader.client", name = "start", havingValue = "MANUAL")
     @ConditionalOnMissingBean
-    public LoaderStarter startManual(ClientLoaderRunner runner) {
-        return new LoaderStarter(runner);
+    public LoaderStarter startManual(ClientLoaderRunner runner, ClientLoaderProperties properties) {
+        return new LoaderStarter(runner, properties.getRetries(), properties.getRetriesInterval());
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "n2o.loader.client", name = "start", havingValue = "DELAYED")
+    @ConditionalOnMissingBean
+    public LoaderStarter startDelayed(ClientLoaderRunner runner, ClientLoaderProperties properties) {
+        return new LoaderStarter(runner, properties.getRetries(), properties.getRetriesInterval()) {
+            @Override
+            @EventListener(ApplicationReadyEvent.class)
+            public synchronized void start() {
+                ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+                service.schedule(super::start, properties.getDelay(), TimeUnit.SECONDS);
+                service.shutdown();
+            }
+        };
     }
 
     @Configuration

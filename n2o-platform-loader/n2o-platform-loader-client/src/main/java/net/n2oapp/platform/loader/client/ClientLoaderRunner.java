@@ -133,6 +133,10 @@ public class ClientLoaderRunner {
         }
     }
 
+    public void setCommands(List<ClientLoaderCommand> commands) {
+        this.commands = commands;
+    }
+
     public void setFailFast(boolean failFast) {
         this.failFast = failFast;
     }

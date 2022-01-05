@@ -34,6 +34,7 @@ public class ClientLoaderAutoConfigurationTest {
                     assertThat(context).hasBean("startAfterUp");
                     assertThat(context).doesNotHaveBean("startOnDeploy");
                     assertThat(context).doesNotHaveBean("startManual");
+                    assertThat(context).doesNotHaveBean("startDelayed");
                 });
     }
 
@@ -46,6 +47,7 @@ public class ClientLoaderAutoConfigurationTest {
                     assertThat(context).hasBean("startOnDeploy");
                     assertThat(context).doesNotHaveBean("startAfterUp");
                     assertThat(context).doesNotHaveBean("startManual");
+                    assertThat(context).doesNotHaveBean("startDelayed");
                 });
     }
 
@@ -58,6 +60,20 @@ public class ClientLoaderAutoConfigurationTest {
                     assertThat(context).hasBean("startManual");
                     assertThat(context).doesNotHaveBean("startOnDeploy");
                     assertThat(context).doesNotHaveBean("startAfterUp");
+                    assertThat(context).doesNotHaveBean("startDelayed");
+                });
+    }
+
+    @Test
+    public void startDelayed() {
+        this.contextRunner
+                .withPropertyValues("n2o.loader.client.start=DELAYED")
+                .run((context) -> {
+                    assertThat(context).hasSingleBean(ClientLoaderRunner.class);
+                    assertThat(context).hasBean("startDelayed");
+                    assertThat(context).doesNotHaveBean("startOnDeploy");
+                    assertThat(context).doesNotHaveBean("startAfterUp");
+                    assertThat(context).doesNotHaveBean("startManual");
                 });
     }
 

@@ -37,6 +37,10 @@ public class ClientLoaderProperties {
      *  Интервал между повторными попытками (сек)
      */
     private int retriesInterval = 60;
+    /**
+     * Время отложенного запуска (сек)
+     */
+    private int delay = 60;
 
     /**
      * Учитывать успех загрузок при мониторинге состояния сервиса
@@ -46,7 +50,8 @@ public class ClientLoaderProperties {
     enum StartingTime {
         DEPLOY,
         UP,
-        MANUAL
+        MANUAL,
+        DELAYED
     }
 
     public void setFailFast(boolean failFast) {
@@ -87,6 +92,14 @@ public class ClientLoaderProperties {
 
     public void setRetriesInterval(int retriesInterval) {
         this.retriesInterval = retriesInterval;
+    }
+
+    public int getDelay() {
+        return delay;
+    }
+
+    public void setDelay(int delay) {
+        this.delay = delay;
     }
 
     public List<ClientLoaderCommand> getCommands() {
