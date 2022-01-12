@@ -57,6 +57,25 @@
         <module>n2o-platform-seek-paging</module>
     </modules>
 
+    <properties>
+        <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>${maven-release-plugin.version}</version>
+                <configuration>
+                    <tagNameFormat>@{project.version}</tagNameFormat>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <releaseProfiles>releases</releaseProfiles>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <profiles>
         <profile>
             <id>n2o-platform-release</id>
@@ -105,16 +124,6 @@
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
                             <stagingProgressTimeoutMinutes>15</stagingProgressTimeoutMinutes>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-release-plugin</artifactId>
-                        <version>${maven-release-plugin.version}</version>
-                        <configuration>
-                            <tagNameFormat>@{project.version}</tagNameFormat>
-                            <autoVersionSubmodules>true</autoVersionSubmodules>
-                            <releaseProfiles>releases</releaseProfiles>
                         </configuration>
                     </plugin>
                 </plugins>
