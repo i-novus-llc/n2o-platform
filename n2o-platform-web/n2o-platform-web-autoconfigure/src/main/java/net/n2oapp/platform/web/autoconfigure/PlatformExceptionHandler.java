@@ -86,11 +86,17 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
 
     private N2oException handleUserException(Exception e) {
         UserException userException = unwrapEx(e, UserException.class);
-        if (userException != null)
-            return new N2oUserException(messages != null ?
-                    messages.getMessage(userException.getMessage()) :
-                    userException.getMessage());
-        return null;
+        return (userException != null) ? new N2oUserException(getMessage(userException)) : null;
+    }
+
+    private String getMessage(UserException userException) {
+        if (messages != null) {
+            return userException.getArgs() == null
+                    ? messages.getMessage(userException.getMessage())
+                    : messages.getMessage(userException.getMessage(), userException.getArgs());
+        }
+
+        return userException.getMessage();
     }
 
     private N2oException handleRestClientException(Exception e) {
