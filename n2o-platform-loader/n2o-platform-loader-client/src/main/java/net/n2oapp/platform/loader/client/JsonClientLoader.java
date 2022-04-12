@@ -59,13 +59,12 @@ public class JsonClientLoader extends RestClientLoader<String> {
 
     private String resolvePlaceholders(String data) {
         Properties allProperties = new Properties();
-        MutablePropertySources propertySources = environment.getPropertySources();
-        propertySources.stream()
+        environment.getPropertySources()
+                .stream()
                 .filter(ps -> ps instanceof EnumerablePropertySource)
                 .map(ps -> ((EnumerablePropertySource) ps).getPropertyNames())
                 .flatMap(Arrays::stream)
                 .forEach(propertyName -> allProperties.setProperty(propertyName, environment.getProperty(propertyName)));
-        PropertyPlaceholderHelper helper = new PropertyPlaceholderHelper(PLACEHOLDER_PREFIX, PLACEHOLDER_SUFFIX);
-        return helper.replacePlaceholders(data, allProperties);
+        return new PropertyPlaceholderHelper(PLACEHOLDER_PREFIX, PLACEHOLDER_SUFFIX).replacePlaceholders(data, allProperties);
     }
 }
