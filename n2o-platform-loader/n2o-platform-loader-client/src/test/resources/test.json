@@ -1,6 +1,6 @@
 [
   {
-    "code" : "code1",
+    "code" : "${test}",
     "name" : "name1"
   },
   {
