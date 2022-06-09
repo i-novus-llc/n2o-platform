@@ -23,7 +23,7 @@
         <dependency>
             <groupId>io.spring.initializr</groupId>
             <artifactId>initializr-web</artifactId>
-            <version>0.6.0.RELEASE</version>
+            <version>0.9.2</version>
         </dependency>
 
         <dependency>
