@@ -183,4 +183,9 @@ public abstract class RestCriteria implements Pageable {
     public int hashCode() {
         return Objects.hash(pageNumber, pageSize, orders);
     }
+
+    @Override
+    public RestCriteria withPage(int pageNumber) {
+        return constructNew(pageNumber, pageSize, orders);
+    }
 }
