@@ -17,7 +17,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.cloud.openfeign.ribbon.FeignRibbonClientAutoConfiguration;
+import org.springframework.cloud.openfeign.loadbalancer.FeignLoadBalancerAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -36,7 +36,7 @@ import static feign.Util.emptyToNull;
 
 @Configuration
 @ConditionalOnClass(Feign.class)
-@AutoConfigureBefore(FeignRibbonClientAutoConfiguration.class)
+@AutoConfigureBefore(FeignLoadBalancerAutoConfiguration.class)
 @AutoConfigureAfter(JaxRsCommonAutoConfiguration.class)
 public class FeignClientAutoConfiguration {
 
