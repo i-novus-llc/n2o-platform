@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.function.Function;
 
 import static java.util.Comparator.*;
+import static net.n2oapp.platform.seek.CollectionUtil.listOf;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestParentEntityRepositoryTest extends SeekPagingTest {
@@ -29,7 +30,7 @@ public class TestParentEntityRepositoryTest extends SeekPagingTest {
     private static final String FIELD_3 = stripUntilFirstDot(QTestParentEntity.testParentEntity.field3.toString());
     private static final String ID = stripUntilFirstDot(QTestParentEntity.testParentEntity.id.toString());
 
-    private static final List<Sort.Order> ORDERS = List.of(
+    private static final List<Sort.Order> ORDERS = listOf(
             Sort.Order.desc(FIELD_2).nullsLast(),
             Sort.Order.asc(CHILD_FIELD_1).nullsFirst(),
             Sort.Order.desc(PARENT_FIELD_1).nullsFirst(),
@@ -195,7 +196,7 @@ public class TestParentEntityRepositoryTest extends SeekPagingTest {
     @Test
     public void testBoundaries() {
         SeekRequest request = new SeekRequest();
-        request.setSort(Sort.by(List.of(Sort.Order.asc(ID))));
+        request.setSort(Sort.by(listOf(Sort.Order.asc(ID))));
         request.setPage(RequestedPageEnum.FIRST);
         request.setSize(7);
         Function<Seekable, SeekedPage<TestParentEntity>> pageSource = c -> repository.findAll(c);

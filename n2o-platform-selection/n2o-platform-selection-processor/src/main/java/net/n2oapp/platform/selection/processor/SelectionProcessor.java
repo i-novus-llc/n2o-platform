@@ -16,19 +16,20 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static net.n2oapp.platform.selection.processor.ProcessorUtil.toposort;
 
 @SupportedAnnotationTypes("net.n2oapp.platform.selection.api.Selective")
-@SupportedSourceVersion(SourceVersion.RELEASE_11)
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class SelectionProcessor extends AbstractProcessor {
 
     private static final String ADD_JACKSON_TYPING = "net.n2oapp.platform.selection.addJacksonTyping";
     private static final String ADD_JAXRS_ANNOTATIONS = "net.n2oapp.platform.selection.addJaxRsAnnotations";
     private static final String OVERRIDE_SELECTION_KEYS = "net.n2oapp.platform.selection.overrideSelectionKeys";
 
-    private static final Set<String> SUPPORTED_OPTIONS = Set.of(
+    private static final Set<String> SUPPORTED_OPTIONS = setOf(
         ADD_JACKSON_TYPING,
         ADD_JAXRS_ANNOTATIONS,
         OVERRIDE_SELECTION_KEYS
@@ -89,7 +90,7 @@ public class SelectionProcessor extends AbstractProcessor {
             index.put(entry.getKey(), metalist.get(metalist.size() - 1));
         }
         for (SelectionMeta meta : metalist) {
-            List<Element> children = toposort.stream().filter(elem -> elem.getKey().equals(meta.getTarget())).findFirst().orElseThrow().getValue();
+            List<Element> children = toposort.stream().filter(elem -> elem.getKey().equals(meta.getTarget())).findFirst().orElseThrow(RuntimeException::new).getValue();
             meta.addChildren(metalist.stream().filter(other -> children.contains(other.getTarget())).collect(toList()));
         }
         for (SelectionMeta meta : metalist) {
@@ -245,7 +246,7 @@ public class SelectionProcessor extends AbstractProcessor {
             !((TypeElement) superType).getQualifiedName().toString().equals("java.lang.Object")
         ) {
             Optional<SelectionMeta> opt = metalist.stream().filter(meta -> types.isSameType(superErasure, types.erasure(meta.getTarget().asType()))).findAny();
-            if (opt.isEmpty()) {
+            if (!opt.isPresent()) {
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Superclass is missing " + Selective.class + " annotation", entry.getKey());
                 return true;
             }
@@ -320,4 +321,8 @@ public class SelectionProcessor extends AbstractProcessor {
         return result;
     }
 
+    @SafeVarargs
+    public static <E> Set<E> setOf(E... values) {
+        return Arrays.stream(values).collect(Collectors.toSet());
+    }
 }

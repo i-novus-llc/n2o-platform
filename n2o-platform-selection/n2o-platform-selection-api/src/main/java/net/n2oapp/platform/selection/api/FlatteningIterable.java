@@ -13,7 +13,7 @@ public class FlatteningIterable<E> implements Iterable<E> {
 
     @Override
     public Iterator<E> iterator() {
-        return new Iterator<>() {
+        return new Iterator<E>() {
 
             private final Iterator<? extends Iterable<E>> iterablesIter = iterables.iterator();
             private Iterator<E> elementIter = next0();

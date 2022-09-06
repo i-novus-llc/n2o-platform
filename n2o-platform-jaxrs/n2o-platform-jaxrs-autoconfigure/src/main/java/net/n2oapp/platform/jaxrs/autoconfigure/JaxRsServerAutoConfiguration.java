@@ -2,6 +2,7 @@ package net.n2oapp.platform.jaxrs.autoconfigure;
 
 import brave.Tracing;
 import io.swagger.models.auth.OAuth2Definition;
+import io.swagger.models.auth.SecuritySchemeDefinition;
 import net.n2oapp.platform.i18n.Messages;
 import net.n2oapp.platform.jaxrs.MessageExceptionMapper;
 import net.n2oapp.platform.jaxrs.ViolationRestExceptionMapper;
@@ -23,6 +24,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.validation.ValidatorFactory;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -58,7 +60,9 @@ public class JaxRsServerAutoConfiguration {
             OAuth2Definition oAuth2Definition = new OAuth2Definition();
             oAuth2Definition.setFlow(auth.getFlow());
             oAuth2Definition.setTokenUrl(auth.getTokenUri());
-            result.setSecurityDefinitions(Map.of(auth.getName(), oAuth2Definition));
+            Map<String, SecuritySchemeDefinition> securityDefinitions = new HashMap<>();
+            securityDefinitions.put(auth.getName(), oAuth2Definition);
+            result.setSecurityDefinitions(securityDefinitions);
         }
         result.setResourcePackage(jaxRsProperties.getSwagger().getResourcePackage());
         result.setScan(true);

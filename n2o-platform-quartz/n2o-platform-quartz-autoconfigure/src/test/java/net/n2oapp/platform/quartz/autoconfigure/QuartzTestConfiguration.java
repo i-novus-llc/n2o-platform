@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.quartz.SchedulerFactoryBeanCustomi
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
@@ -39,7 +40,13 @@ public class QuartzTestConfiguration {
     @Bean
     public SchedulerFactoryBeanCustomizer schedulerContextCustomizer() {
         return (schedulerFactoryBean) -> {
-            schedulerFactoryBean.setSchedulerContextAsMap(Map.of("context", "test_context"));
+            schedulerFactoryBean.setSchedulerContextAsMap(mapOf("context", "test_context"));
         };
+    }
+
+    public static <K, V> Map<K, V> mapOf(K key, V value) {
+        Map<K, V> map = new HashMap<>();
+        map.put(key, value);
+        return map;
     }
 }

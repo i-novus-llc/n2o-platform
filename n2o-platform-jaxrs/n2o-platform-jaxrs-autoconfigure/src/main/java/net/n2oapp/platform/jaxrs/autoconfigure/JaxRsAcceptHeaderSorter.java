@@ -60,7 +60,7 @@ public class JaxRsAcceptHeaderSorter extends AbstractPhaseInterceptor<Message> {
 
     private void processAcceptHeader(Message message) {
         Object o = message.get(ACCEPT);
-        if (o instanceof String && !((String) o).isBlank()) {
+        if (o instanceof String && !"".equals(((String) o).trim())) {
             message.put(ACCEPT, sort((String) o));
         }
     }

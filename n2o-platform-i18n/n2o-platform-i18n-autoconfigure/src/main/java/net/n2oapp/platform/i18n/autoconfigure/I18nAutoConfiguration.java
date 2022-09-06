@@ -57,7 +57,7 @@ public class I18nAutoConfiguration {
                 messageSource.setDefaultEncoding(messageSourceProperties().getEncoding().name());
             }
             messageSource.setFallbackToSystemLocale(messageSourceProperties().isFallbackToSystemLocale());
-            Optional.ofNullable(messageSourceProperties().getCacheDuration()).ifPresent(duration -> messageSource.setCacheSeconds((int)duration.toSeconds()));
+            Optional.ofNullable(messageSourceProperties().getCacheDuration()).ifPresent(duration -> messageSource.setCacheSeconds((int)duration.getSeconds()));
             messageSource.setAlwaysUseMessageFormat(messageSourceProperties().isAlwaysUseMessageFormat());
             return messageSource;
         }

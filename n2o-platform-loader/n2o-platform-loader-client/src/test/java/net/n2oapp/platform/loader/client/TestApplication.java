@@ -10,6 +10,8 @@ import org.springframework.web.client.RestTemplate;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
+import static net.n2oapp.platform.loader.client.CollectionUtil.mapOf;
+
 @SpringBootApplication
 @RestController
 class TestApplication {
@@ -29,7 +31,7 @@ class TestApplication {
     public Map<String, Object> tokenEndpoint(HttpServletRequest request) {
         if ("client_credentials".equals(request.getParameter("grant_type"))
                 && "Basic dGVzdENsaWVudDp0ZXN0Q2xpZW50U2VjcmV0".equals(request.getHeader("Authorization"))) {
-            return Map.of("access_token", "test_token",
+            return mapOf("access_token", "test_token",
                     "token_type", "bearer");
         }
 

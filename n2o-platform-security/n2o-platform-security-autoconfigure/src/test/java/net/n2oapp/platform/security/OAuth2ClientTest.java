@@ -73,7 +73,7 @@ public class OAuth2ClientTest {
         assertThat(token, notNullValue());
         assertThat(token.getTokenType(), equalToIgnoringCase("Bearer"));
         assertThat(token.getAdditionalInformation().get("username"), is("test"));
-        assertThat(LocalDate.ofInstant(token.getExpiration().toInstant(), ZoneId.systemDefault()),
+        assertThat(LocalDate.of(token.getExpiration().getYear()+1900, token.getExpiration().getMonth()+1, token.getExpiration().getDate()),
                 Matchers.is(LocalDate.of(2019, 7, 16)));
     }
 

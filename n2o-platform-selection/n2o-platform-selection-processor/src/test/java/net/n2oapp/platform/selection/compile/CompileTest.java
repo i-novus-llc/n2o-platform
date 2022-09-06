@@ -11,16 +11,18 @@ import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.testing.compile.Compiler.javac;
+import static net.n2oapp.platform.selection.CollectionUtil.listOf;
 
 public class CompileTest {
 
     @Test
     public void testCompileNoErrors() throws IOException {
-        List<String> classes = List.of(
+        List<String> classes = listOf(
             Address.class.getSimpleName(),
             AddressModel.class.getSimpleName(),
             AModel.class.getSimpleName(),
@@ -49,8 +51,7 @@ public class CompileTest {
     }
 
     private String getModelSourceCode(String sourceFile) throws IOException {
-        Path path = Path.of("src", "test", "java", "net", "n2oapp", "platform", "selection", "integration", "model", sourceFile + ".java");
-        return Files.readString(path);
+        return new String(Files.readAllBytes(Paths.get("src", "test", "java", "net", "n2oapp", "platform", "selection", "integration", "model", sourceFile + ".java")));
     }
 
 }

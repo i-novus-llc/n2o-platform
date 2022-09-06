@@ -12,6 +12,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.util.StringUtils;
+import sun.management.VMManagement;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * {@code LogbackApplicationListener} is a programmatic logging system configuration, faster alternative to a standard logback xml file configuration.
@@ -80,7 +87,7 @@ public class LogbackApplicationListener implements ApplicationListener<Applicati
     }
 
     private void configureLokiAppender(Loki4jAppender loki4jAppender, String lokiUrl, String appName, LoggerContext lc) {
-        HttpSender httpSender = new JavaHttpSender();
+        HttpSender httpSender = new com.github.loki4j.logback.ApacheHttpSender();
         httpSender.setUrl(lokiUrl);
         loki4jAppender.setHttp(httpSender);
         JsonEncoder encoder = new JsonEncoder();
@@ -89,7 +96,7 @@ public class LogbackApplicationListener implements ApplicationListener<Applicati
         labelCfg.setPattern("app=" + appName + ",host=" + hostname);
         encoder.setLabel(labelCfg);
         AbstractLoki4jEncoder.MessageCfg messageCfg = new AbstractLoki4jEncoder.MessageCfg();
-        String messagePatternResolved = MESSAGE_PATTERN.replace("${appName}", appName).replace("${PID}", String.valueOf(ProcessHandle.current().pid()));
+        String messagePatternResolved = MESSAGE_PATTERN.replace("${appName}", appName).replace("${PID}", String.valueOf(getCurrentProcessId()));
         messageCfg.setPattern(messagePatternResolved);
         encoder.setMessage(messageCfg);
         encoder.setSortByTime(true);
@@ -103,5 +110,22 @@ public class LogbackApplicationListener implements ApplicationListener<Applicati
         if (!StringUtils.hasLength(appName))
             appName = defaultValue;
         return appName;
+    }
+
+    private static int getCurrentProcessId() {
+        RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+        Field jvm;
+        try {
+            jvm = runtime.getClass().getDeclaredField("jvm");
+            jvm.setAccessible(true);
+
+            VMManagement management = (VMManagement) jvm.get(runtime);
+            Method method = management.getClass().getDeclaredMethod("getProcessId");
+            method.setAccessible(true);
+
+            return (Integer) method.invoke(management);
+        } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -19,6 +19,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
+import static net.n2oapp.platform.jaxrs.CollectionUtil.listOf;
+import static net.n2oapp.platform.jaxrs.CollectionUtil.mapOf;
+
 /**
  * Реализация REST сервиса для демонстрации возможностей библиотеки
  */
@@ -28,7 +31,7 @@ public class SomeRestImpl implements SomeRest {
     @Context
     private HttpHeaders httpHeaders;
 
-    public static final List<SeekPivot> EXPECTED_PIVOTS = List.of(
+    public static final List<SeekPivot> EXPECTED_PIVOTS = listOf(
         SeekPivot.of("id", "54,3"),
         SeekPivot.of("date", "1,970-01-01"),
         SeekPivot.of("plain-text", ",ABRACA:::::DAB:::::RA\\Хыхыхы"),
@@ -116,19 +119,19 @@ public class SomeRestImpl implements SomeRest {
 
     @Override
     public Map<String, String> authHeader() {
-        return Map.of("Authorization", httpHeaders.getHeaderString("Authorization"));
+        return mapOf("Authorization", httpHeaders.getHeaderString("Authorization"));
     }
 
     @Override
     public List<AbstractModel<?>> getListOfAbstractModels() {
-        return List.of(new StringModel("1"), new IntegerModel(2));
+        return listOf(new StringModel("1"), new IntegerModel(2));
     }
 
     @Override
     public List<ListModel> getListModels() {
-        return List.of(
-                new ListModel(List.of(new IntegerModel(0), new IntegerModel(1), new IntegerModel(2))),
-                new ListModel(List.of(new IntegerModel(3), new IntegerModel(4), new IntegerModel(5))));
+        return listOf(
+                new ListModel(listOf(new IntegerModel(0), new IntegerModel(1), new IntegerModel(2))),
+                new ListModel(listOf(new IntegerModel(3), new IntegerModel(4), new IntegerModel(5))));
     }
 
     @Override
@@ -136,10 +139,10 @@ public class SomeRestImpl implements SomeRest {
         if (
             request.getPage() == RequestedPageEnum.NEXT &&
             request.getSize() == 1000 &&
-            request.getSort().equals(Sort.by(List.of(Sort.Order.asc("id"), Sort.Order.desc("name")))) &&
+            request.getSort().equals(Sort.by(listOf(Sort.Order.asc("id"), Sort.Order.desc("name")))) &&
             request.getPivots().equals(EXPECTED_PIVOTS)
         ) {
-            return SeekedPageImpl.of(List.of("ok!"), true, false);
+            return SeekedPageImpl.of(listOf("ok!"), true, false);
         }
         return null;
     }

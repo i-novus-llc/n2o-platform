@@ -9,6 +9,8 @@ import javax.ws.rs.BeanParam;
 import javax.ws.rs.QueryParam;
 import java.util.List;
 
+import static net.n2oapp.platform.selection.CollectionUtil.listOf;
+
 public class EmployeeCriteria extends RestCriteria {
 
     @QueryParam("selection")
@@ -43,7 +45,7 @@ public class EmployeeCriteria extends RestCriteria {
 
     @Override
     protected List<Sort.Order> getDefaultOrders() {
-        return List.of(Sort.Order.asc("id"));
+        return listOf(Sort.Order.asc("id"));
     }
 
 }

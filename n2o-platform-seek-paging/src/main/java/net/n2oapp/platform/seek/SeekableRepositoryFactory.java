@@ -33,7 +33,7 @@ public class SeekableRepositoryFactory extends JpaRepositoryFactory {
         RepositoryComposition.RepositoryFragments modifiedFragment = RepositoryComposition.RepositoryFragments.empty();
         for (RepositoryFragment<?> fragment : fragments) {
             Optional<?> implementation = fragment.getImplementation();
-            if (implementation.isEmpty() || implementation.get().getClass() != QuerydslJpaPredicateExecutor.class) {
+            if (!implementation.isPresent() || implementation.get().getClass() != QuerydslJpaPredicateExecutor.class) {
                 modifiedFragment = modifiedFragment.append(fragment);
             } else {
                 JpaEntityInformation<?, Object> entityInformation = getEntityInformation(metadata.getDomainType());

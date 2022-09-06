@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static net.n2oapp.platform.loader.client.CollectionUtil.listOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -29,7 +30,7 @@ public class LoaderStarterTest {
 
     @Test
     public void testFailRetries() throws InterruptedException {
-        ClientLoaderRunner runner = new ClientLoaderRunner(List.of(simpleClientLoader));
+        ClientLoaderRunner runner = new ClientLoaderRunner(listOf(simpleClientLoader));
         runner.add("http://localhost:8787", "sub", "test1", "test.txt", SimpleClientLoader.class);
         stubFor(post(urlMatching("/simple/sub/test1")).willReturn(aResponse().withStatus(500)));
 

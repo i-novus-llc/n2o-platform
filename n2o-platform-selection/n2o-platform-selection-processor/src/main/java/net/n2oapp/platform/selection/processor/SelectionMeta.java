@@ -57,7 +57,7 @@ class SelectionMeta {
             String str = target.getSimpleName().toString();
             prefix = Character.toLowerCase(str.charAt(0)) + str.substring(1);
         }
-        this.prefix = prefix.strip();
+        this.prefix = prefix.trim();
         this.properties = new LinkedHashMap<>();
         this.unresolvedProperties = new LinkedHashMap<>();
         this.isAbstract = target.getModifiers().stream().anyMatch(Modifier.ABSTRACT::equals);
@@ -104,7 +104,7 @@ class SelectionMeta {
     }
 
     String getPrefixOrGenerate() {
-        if (prefix == null || prefix.isBlank()) {
+        if (prefix == null || "".equals(prefix.trim())) {
             String str = target.getSimpleName().toString();
             return Character.toLowerCase(str.charAt(0)) + str.substring(1);
         }
@@ -171,7 +171,7 @@ class SelectionMeta {
     }
 
     private String getGenerics(String type) {
-        if (type.isBlank())
+        if (type == null || "".equals(type.trim()))
             return "";
         int i = type.indexOf('<');
         if (i == -1)

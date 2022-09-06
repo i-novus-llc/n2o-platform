@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
+import static net.n2oapp.platform.jaxrs.CollectionUtil.listOf;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(JUnit4.class)
@@ -49,7 +50,7 @@ public class RestCriteriaTest {
         LocalDateTime dateEnd = LocalDateTime.now();
         String nameLike = "TEST_STR";
         int pageSize = 13;
-        SomeCriteria someCriteria = new SomeCriteria(pageNumber, pageSize, Sort.by(List.of(Sort.Order.asc("nameLike"), Sort.Order.desc("dateBegin"))));
+        SomeCriteria someCriteria = new SomeCriteria(pageNumber, pageSize, Sort.by(listOf(Sort.Order.asc("nameLike"), Sort.Order.desc("dateBegin"))));
         someCriteria.setLikeName(nameLike);
         someCriteria.setDateBegin(dateBegin);
         someCriteria.setDateEnd(dateEnd);

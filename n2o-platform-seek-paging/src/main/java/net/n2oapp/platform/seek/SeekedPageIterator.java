@@ -194,7 +194,7 @@ public class SeekedPageIterator<T, S extends Seekable> implements Iterator<Seeke
             List<SeekPivot> res = new ArrayList<>();
             for (Sort.Order order : orders) {
                 String property = order.getProperty();
-                Iterator<String> tokensIter = new Iterator<>() {
+                Iterator<String> tokensIter = new Iterator<String>() {
 
                     int i = 0;
 

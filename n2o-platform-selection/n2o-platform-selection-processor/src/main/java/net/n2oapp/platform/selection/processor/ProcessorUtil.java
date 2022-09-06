@@ -53,7 +53,7 @@ final class ProcessorUtil {
                     toposort(stack, visited, graph, e);
             }
         }
-        stack.push(Map.entry(elem, children == null ? emptyList() : children));
+        stack.push(new AbstractMap.SimpleEntry<>(elem, children == null ? emptyList() : children));
     }
 
 }

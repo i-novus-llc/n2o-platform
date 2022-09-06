@@ -32,7 +32,7 @@ public class JsonClientLoader extends RestClientLoader<String> {
 
     @Override
     protected String getData(Resource file) {
-        if (getExtension(file.getFilename()).filter("json"::equalsIgnoreCase).isEmpty())
+        if (!getExtension(file.getFilename()).filter("json"::equalsIgnoreCase).isPresent())
             throw new IllegalArgumentException("File " + file.getFilename() + " not a json");
         String data;
         try {

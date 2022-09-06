@@ -53,7 +53,7 @@ public interface Selection<T> {
      * @return Выборка типа {@code <S>}
      */
     static <S extends Selection<?>> S decode(String encodedJson, Class<S> target) {
-        if (encodedJson == null || encodedJson.isBlank())
+        if (encodedJson == null || "".equals(encodedJson.trim()))
             return null;
         try {
             return Util.MAPPER.readValue(Util.decode(encodedJson), target);

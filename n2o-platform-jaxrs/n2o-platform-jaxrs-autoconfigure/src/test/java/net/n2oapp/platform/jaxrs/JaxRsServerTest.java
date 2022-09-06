@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static net.n2oapp.platform.jaxrs.Application.HEADERS;
+import static net.n2oapp.platform.jaxrs.CollectionUtil.listOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -235,7 +236,7 @@ public class JaxRsServerTest {
 
     @Test
     public void testDefaultContentTypeIsJson() {
-        WebClient client = WebClient.create("http://localhost:" + port, List.of(jsonProvider, xmlProvider))
+        WebClient client = WebClient.create("http://localhost:" + port, listOf(jsonProvider, xmlProvider))
                 .accept(MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON)
                 .type(MediaType.APPLICATION_JSON)
                 .path("api");
@@ -260,7 +261,7 @@ public class JaxRsServerTest {
         for (int i = 0; i < clients.length; i++) {
             String accept = HEADERS[i].get(HttpHeaders.ACCEPT);
             String contentType = HEADERS[i].get(HttpHeaders.CONTENT_TYPE);
-            clients[i] = WebClient.create("http://localhost:" + port, List.of(jsonProvider, xmlProvider))
+            clients[i] = WebClient.create("http://localhost:" + port, listOf(jsonProvider, xmlProvider))
                             .accept(accept)
                             .type(contentType)
                             .path("api");

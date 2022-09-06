@@ -471,7 +471,7 @@
             <!-- Grafana Loki direct log sender-->
             <dependency>
                 <groupId>com.github.loki4j</groupId>
-                <artifactId>loki-logback-appender</artifactId>
+                <artifactId>loki-logback-appender-jdk8</artifactId>
                 <version>1.2.0</version>
             </dependency>
         </dependencies>

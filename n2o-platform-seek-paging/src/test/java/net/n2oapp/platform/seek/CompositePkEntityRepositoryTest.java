@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static net.n2oapp.platform.seek.CollectionUtil.listOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -44,13 +45,13 @@ public class CompositePkEntityRepositoryTest extends SeekPagingTest {
         request.setSize(1);
         request.setPage(RequestedPageEnum.FIRST);
         request.setSort(
-            Sort.by(
-                List.of(
-                    Sort.Order.asc(SOME_FIELD),
-                    Sort.Order.asc(FIRST),
-                    Sort.Order.desc(SECOND)
+                Sort.by(
+                        listOf(
+                                Sort.Order.asc(SOME_FIELD),
+                                Sort.Order.asc(FIRST),
+                                Sort.Order.desc(SECOND)
+                        )
                 )
-            )
         );
         CompositePkEntity last = null;
         int count = 0;
@@ -80,7 +81,7 @@ public class CompositePkEntityRepositoryTest extends SeekPagingTest {
             }
             if (!page.hasNext())
                 break;
-            request.setPivots(List.of(
+            request.setPivots(listOf(
                     SeekPivot.of(SOME_FIELD, String.valueOf(last.getSomeField())),
                     SeekPivot.of(FIRST, String.valueOf(last.getId().getFirst())),
                     SeekPivot.of(SECOND, String.valueOf(last.getId().getSecond()))
@@ -90,8 +91,8 @@ public class CompositePkEntityRepositoryTest extends SeekPagingTest {
         assertEquals(N * M, count);
         request.setPage(RequestedPageEnum.LAST);
         SeekedPageIterator<CompositePkEntity, SeekRequest> iter = SeekedPageIterator.from(
-            repository::findAll,
-            request
+                repository::findAll,
+                request
         );
         count = 0;
         while (iter.hasNext()) {

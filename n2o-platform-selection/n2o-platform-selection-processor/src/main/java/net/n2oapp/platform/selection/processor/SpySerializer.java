@@ -107,7 +107,7 @@ public class SpySerializer extends AbstractSerializer {
     ) throws IOException {
         out.append("new ");
         out.append(nested);
-        if (!generics.isBlank()) {
+        if (generics != null && !"".equals(generics.trim())) {
             out.append("<>");
         }
         out.append("(");

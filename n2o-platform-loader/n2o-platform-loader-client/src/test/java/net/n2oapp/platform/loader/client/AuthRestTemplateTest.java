@@ -14,6 +14,7 @@ import org.springframework.web.client.RestOperations;
 
 import java.util.Map;
 
+import static net.n2oapp.platform.loader.client.CollectionUtil.mapOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
@@ -43,7 +44,7 @@ public class AuthRestTemplateTest {
     public void testAuthRestTemplate() {
         //token acquire failed
         try {
-            RestOperations template = new AuthRestTemplate(Map.of("http://localhost:" + port + "/resource", new OAuth2ClientContext("testClient", "testClientSecret", "http://localhost:" + port + "/hello")));
+            RestOperations template = new AuthRestTemplate(mapOf("http://localhost:" + port + "/resource", new OAuth2ClientContext("testClient", "testClientSecret", "http://localhost:" + port + "/hello")));
             template.getForEntity("http://localhost:" + port + "/resource", String.class);
             assert false;
         } catch (Exception e) {
@@ -51,12 +52,12 @@ public class AuthRestTemplateTest {
         }
 
         //oauth success
-        RestOperations template = new AuthRestTemplate(Map.of("http://localhost:" + port + "/resource", new OAuth2ClientContext("testClient", "testClientSecret", "http://localhost:" + port + "/token")));
+        RestOperations template = new AuthRestTemplate(mapOf("http://localhost:" + port + "/resource", new OAuth2ClientContext("testClient", "testClientSecret", "http://localhost:" + port + "/token")));
         ResponseEntity<String> token = template.getForEntity("http://localhost:" + port + "/resource", String.class);
         assertThat(token.getBody(), is("Bearer test_token"));
 
         //basic auth success
-        template = new AuthRestTemplate(Map.of("http://localhost:" + port + "/resource", new BasicAuthClientContext("user", "password")));
+        template = new AuthRestTemplate(mapOf("http://localhost:" + port + "/resource", new BasicAuthClientContext("user", "password")));
         token = template.getForEntity("http://localhost:" + port + "/resource", String.class);
         assertThat(token.getBody(), is("Basic dXNlcjpwYXNzd29yZA=="));
     }

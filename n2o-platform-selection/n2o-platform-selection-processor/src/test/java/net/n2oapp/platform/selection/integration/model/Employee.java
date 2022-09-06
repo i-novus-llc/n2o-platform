@@ -23,7 +23,7 @@ public class Employee extends BaseModel {
 
     @Joined(withNestedJoiner = false, joinOnly = true)
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner")
-    private @NotNull List<@NotNull Contact> contacts;
+    private List<Contact> contacts;
 
     @JoinTable
     @Joined(withNestedJoiner = false, joinOnly = true)

@@ -35,6 +35,7 @@ import java.util.TimeZone;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static net.n2oapp.platform.jaxrs.CollectionUtil.mapOf;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
@@ -201,7 +202,7 @@ public class FeignClientTest {
 
     @Test
     public void testMapQueryParams() {
-        Map<String, String> map = Map.of("number", "1", "code", "1");
+        Map<String, String> map = mapOf("number", "1", "code", "1");
         assertThat(client.mapQueryParam(map), is(map));
         MapParamHolder holder = new MapParamHolder();
         holder.setMap(map);

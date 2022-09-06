@@ -110,7 +110,7 @@ public class LoaderServerTest {
                 new TestModel("code2", "nameNew"));
         loader.accept(data, "me");
         assertThat(repository.count(), is(2L));
-        assertThat(repository.findById("code2").orElseThrow().getName(), is("nameNew"));
+        assertThat(repository.findById("code2").orElseThrow(RuntimeException::new).getName(), is("nameNew"));
     }
 
     /**
@@ -140,7 +140,7 @@ public class LoaderServerTest {
         assertThat(repository.findById("code1").isPresent(), is(true));
         assertThat(repository.findById("code2").isPresent(), is(true));
         assertThat(repository.findById("code2").get().getName(), is("name2"));
-        assertThat(repository.findById("code3").isEmpty(), is(true));
+        assertThat(!repository.findById("code3").isPresent(), is(true));
     }
 
     /**

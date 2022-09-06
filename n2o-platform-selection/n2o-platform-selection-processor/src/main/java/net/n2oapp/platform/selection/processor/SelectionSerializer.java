@@ -336,7 +336,7 @@ class SelectionSerializer extends AbstractSerializer {
             out.append(requestParam.toString());
             out.append("(\"");
             out.append(prefix);
-            out.append(prefix.isBlank() ? key : capitalize(key));
+            out.append("".equals(prefix.trim()) ? key : capitalize(key));
             out.append("\")\n");
         }
     }

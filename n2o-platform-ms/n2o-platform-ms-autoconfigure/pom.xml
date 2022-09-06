@@ -21,7 +21,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.loki4j</groupId>
-            <artifactId>loki-logback-appender</artifactId>
+            <artifactId>loki-logback-appender-jdk8</artifactId>
         </dependency>
     </dependencies>
 

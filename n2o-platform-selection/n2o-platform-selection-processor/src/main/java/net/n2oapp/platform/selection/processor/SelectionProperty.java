@@ -89,7 +89,7 @@ class SelectionProperty {
     String getGenerics(String...additionalGenerics) {
         String result;
         additionalGenerics = Arrays.stream(additionalGenerics).filter(Objects::nonNull).toArray(String[]::new);
-        if (generics.isBlank()) {
+        if (generics == null || "".equals(generics.trim())) {
             result = additionalGenerics.length == 0 ? "" : "<" + join(additionalGenerics) + ">";
         } else {
             String suffix = additionalGenerics.length == 0 ? "" : ", " + join(additionalGenerics);

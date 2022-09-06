@@ -18,7 +18,7 @@ public class SortParameterConverter implements TypedParamConverter<Sort> {
 
     @Override
     public Sort fromString(final String value) {
-        if (value == null || value.isBlank())
+        if (value == null || "".equals(value.trim()))
             return Sort.unsorted();
         return Sort.by(Arrays.stream(value.split(",")).map(orderConverter::fromString).collect(toList()));
     }

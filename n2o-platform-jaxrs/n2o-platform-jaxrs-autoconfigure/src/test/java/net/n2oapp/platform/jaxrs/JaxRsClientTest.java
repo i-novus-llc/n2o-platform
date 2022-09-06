@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static net.n2oapp.platform.jaxrs.Application.HEADERS;
+import static net.n2oapp.platform.jaxrs.CollectionUtil.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
@@ -201,7 +202,7 @@ public class JaxRsClientTest {
     public void testSearchByList() {
         forEachHeaderCombination(() -> {
             List<LocalDateTime> expectedList = Arrays.asList(LocalDateTime.now(), LocalDateTime.now().minusDays(2));
-            List<LocalDateTime> actual = client.searchBySetOfTypedList(Set.of(expectedList));
+            List<LocalDateTime> actual = client.searchBySetOfTypedList(setOf(expectedList));
             Assert.assertEquals(expectedList, actual);
         });
     }
@@ -212,7 +213,7 @@ public class JaxRsClientTest {
     @Test
     public void testSearchByMap() {
         forEachHeaderCombination(() -> {
-            Map<String, String> expectedMap = Map.of("key1", "value1", "key2", "value2");
+            Map<String, String> expectedMap = mapOf("key1", "value1", "key2", "value2");
             Map<String, String> actual = client.searchBySetOfTypedMap(expectedMap);
             Assert.assertEquals(expectedMap, actual);
         });
@@ -253,9 +254,9 @@ public class JaxRsClientTest {
             request.setPivots(SomeRestImpl.EXPECTED_PIVOTS);
             request.setPage(RequestedPageEnum.NEXT);
             request.setSize(1000);
-            request.setSort(Sort.by(List.of(Sort.Order.asc("id"), Sort.Order.desc("name"))));
+            request.setSort(Sort.by(listOf(Sort.Order.asc("id"), Sort.Order.desc("name"))));
             SeekedPage<String> page = client.searchSeeking(request);
-            assertThat(page.getContent(), is(List.of("ok!")));
+            assertThat(page.getContent(), is(listOf("ok!")));
             assertThat(page.hasNext(), is(true));
             assertThat(page.hasPrev(), is(false));
             request.setSort(Sort.unsorted());

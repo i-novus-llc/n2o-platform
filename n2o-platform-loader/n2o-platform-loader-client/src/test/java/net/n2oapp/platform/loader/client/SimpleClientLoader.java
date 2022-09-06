@@ -2,13 +2,8 @@ package net.n2oapp.platform.loader.client;
 
 import org.springframework.core.io.Resource;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.io.*;
+import java.net.*;
 import java.util.stream.Collectors;
 
 class SimpleClientLoader implements ClientLoader {
@@ -22,21 +17,21 @@ class SimpleClientLoader implements ClientLoader {
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
-        HttpClient httpClient = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(server.toString() + "/simple/" + subject + "/" + target))
-                .header("Content-Type", "text/plain")
-                .POST(HttpRequest.BodyPublishers.ofString(data))
-                .build();
-
-        HttpResponse<String> response;
+        HttpURLConnection connection = null;
         try {
-            response =
-                    httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
+            connection = (HttpURLConnection) new URL(server.toString() + "/simple/" + subject + "/" + target).openConnection();
+            connection.setDoOutput(true);
+            connection.setRequestProperty("Content-Type", "text/plain");
+            connection.setRequestProperty( "Content-Length", Integer.toString(data.length()));
+            connection.setRequestMethod("POST");
+            try (DataOutputStream outputStream = new DataOutputStream(connection.getOutputStream())) {
+                outputStream.write(data.getBytes());
+            }
+            int responseCode = connection.getResponseCode();
+            if (responseCode < 200 || responseCode >= 300)
+                throw new IllegalStateException("Status code " + responseCode);
+        } catch (IOException e) {
             throw new IllegalStateException(e);
         }
-        if (response.statusCode() < 200 || response.statusCode() >= 300)
-            throw new IllegalStateException("Status code " + response.statusCode());
     }
 }
