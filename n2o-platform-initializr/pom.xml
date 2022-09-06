@@ -9,7 +9,7 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-boot-platform-parent</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.0.0-java8</version>
         <relativePath>../n2o-platform-parent</relativePath>
     </parent>
 
