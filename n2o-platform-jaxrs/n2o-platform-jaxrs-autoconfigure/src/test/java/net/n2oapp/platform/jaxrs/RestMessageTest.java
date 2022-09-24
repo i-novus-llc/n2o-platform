@@ -1,6 +1,6 @@
 package net.n2oapp.platform.jaxrs;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.Set;

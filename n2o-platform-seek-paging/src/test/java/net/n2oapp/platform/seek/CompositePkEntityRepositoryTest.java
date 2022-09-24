@@ -4,8 +4,8 @@ import net.n2oapp.platform.jaxrs.seek.RequestedPageEnum;
 import net.n2oapp.platform.jaxrs.seek.SeekPivot;
 import net.n2oapp.platform.jaxrs.seek.SeekRequest;
 import net.n2oapp.platform.jaxrs.seek.SeekedPage;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 
@@ -27,7 +27,7 @@ public class CompositePkEntityRepositoryTest extends SeekPagingTest {
     @Autowired
     private CompositePkEntityRepository repository;
 
-    @Before
+    @BeforeEach
     public void setup() {
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < M; j++) {

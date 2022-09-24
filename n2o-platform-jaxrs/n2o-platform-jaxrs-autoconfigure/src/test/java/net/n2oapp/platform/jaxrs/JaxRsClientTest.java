@@ -5,9 +5,9 @@ import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.api.*;
 import net.n2oapp.platform.jaxrs.impl.SomeRestImpl;
 import net.n2oapp.platform.jaxrs.seek.*;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.ReflectionUtils;
 
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -31,12 +31,12 @@ import java.util.stream.Stream;
 import static net.n2oapp.platform.jaxrs.Application.HEADERS;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @SpringBootApplication
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = JaxRsClientTest.class,
                 webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
                 properties = {"server.port=8423",
@@ -202,7 +202,7 @@ public class JaxRsClientTest {
         forEachHeaderCombination(() -> {
             List<LocalDateTime> expectedList = Arrays.asList(LocalDateTime.now(), LocalDateTime.now().minusDays(2));
             List<LocalDateTime> actual = client.searchBySetOfTypedList(Set.of(expectedList));
-            Assert.assertEquals(expectedList, actual);
+            Assertions.assertEquals(expectedList, actual);
         });
     }
 
@@ -214,7 +214,7 @@ public class JaxRsClientTest {
         forEachHeaderCombination(() -> {
             Map<String, String> expectedMap = Map.of("key1", "value1", "key2", "value2");
             Map<String, String> actual = client.searchBySetOfTypedMap(expectedMap);
-            Assert.assertEquals(expectedMap, actual);
+            Assertions.assertEquals(expectedMap, actual);
         });
     }
 

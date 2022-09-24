@@ -1,8 +1,8 @@
 package net.n2oapp.platform.seek;
 
 import net.n2oapp.platform.jaxrs.seek.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 
@@ -46,7 +46,7 @@ public class TestParentEntityRepositoryTest extends SeekPagingTest {
     private final Set<TestParentEntity> parentEntities = new TreeSet<>(CMP);
     private final List<TestChildEntity> childEntities = new ArrayList<>();
 
-    @Before
+    @BeforeEach
     public void setup() {
         for (int i = 0; i < 50; i++) {
             TestChildEntity food = testChildEntityRepository.save(new TestChildEntity(null, randomInteger()));

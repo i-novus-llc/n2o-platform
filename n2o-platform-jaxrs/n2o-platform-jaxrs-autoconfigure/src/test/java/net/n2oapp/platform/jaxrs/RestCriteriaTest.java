@@ -1,18 +1,19 @@
 package net.n2oapp.platform.jaxrs;
 
 import net.n2oapp.platform.jaxrs.api.SomeCriteria;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(JUnit4.class)
+@ExtendWith(SpringExtension.class)
 public class RestCriteriaTest {
 
     @Test
@@ -38,10 +39,10 @@ public class RestCriteriaTest {
         assertEquals(someCriteria.getPageNumber() - 1, prev.getPageNumber());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testPaginateBackwardWhenBeginningReached() {
         SomeCriteria someCriteria = createSomeCriteria(RestCriteria.FIRST_PAGE_NUMBER);
-        someCriteria.previous();
+        Assertions.assertThrows(IllegalStateException.class, someCriteria::previous);
     }
 
     private SomeCriteria createSomeCriteria(int pageNumber) {

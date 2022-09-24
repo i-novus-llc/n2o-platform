@@ -1,7 +1,7 @@
 package net.n2oapp.platform.jaxrs;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class CodeGeneratorTest {
 
@@ -14,8 +14,8 @@ public class CodeGeneratorTest {
 
         final String code = CodeGenerator.generate(prefix);
 
-        Assert.assertNotNull(code);
-        Assert.assertTrue(code.contains(prefix));
+        Assertions.assertNotNull(code);
+        Assertions.assertTrue(code.contains(prefix));
     }
 
     /*
@@ -25,6 +25,6 @@ public class CodeGeneratorTest {
     public void generateWithoutPrefix() {
         final String code = CodeGenerator.generate(null);
 
-        Assert.assertNotNull(code);
+        Assertions.assertNotNull(code);
     }
 }

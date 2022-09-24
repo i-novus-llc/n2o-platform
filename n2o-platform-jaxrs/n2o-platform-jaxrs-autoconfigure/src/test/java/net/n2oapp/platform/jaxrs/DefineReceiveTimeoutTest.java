@@ -1,24 +1,23 @@
 package net.n2oapp.platform.jaxrs;
 
 import net.n2oapp.platform.jaxrs.api.SomeRest;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.SocketUtils;
 
 import java.net.SocketTimeoutException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Application.class,
         properties = {
                 "cxf.servlet.init.service-list-path=/info",
@@ -32,12 +31,12 @@ import static org.junit.Assert.fail;
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class DefineReceiveTimeoutTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         System.setProperty("server.port", String.valueOf(SocketUtils.findAvailableTcpPort()));
     }
 
-    @AfterClass
+    @AfterAll
     public static void destroy() {
         System.clearProperty("server.port");
     }
@@ -68,8 +67,8 @@ public class DefineReceiveTimeoutTest {
         } catch (Exception e) {
             long end = System.currentTimeMillis();
             assertTrue(e.getCause() instanceof SocketTimeoutException);
-            assertTrue("timeout must be approximately 1 sec", end - start >= 1000);
-            assertTrue("margin of error less than 1 sec", end - start < 2000);
+            assertTrue(end - start >= 1000, "timeout must be approximately 1 sec");
+            assertTrue(end - start < 2000, "margin of error less than 1 sec");
         }
     }
 

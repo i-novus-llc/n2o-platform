@@ -4,7 +4,7 @@ import net.n2oapp.platform.selection.integration.fetcher.EmployeeFetcherImpl;
 import net.n2oapp.platform.selection.integration.joiner.EmployeeJoinerImpl;
 import net.n2oapp.platform.selection.integration.model.Employee;
 import net.n2oapp.platform.selection.integration.model.EmployeeSelection;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashSet;

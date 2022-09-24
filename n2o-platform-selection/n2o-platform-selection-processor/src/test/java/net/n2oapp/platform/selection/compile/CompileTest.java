@@ -5,7 +5,7 @@ import com.google.testing.compile.CompilationSubject;
 import com.google.testing.compile.JavaFileObjects;
 import net.n2oapp.platform.selection.integration.model.*;
 import net.n2oapp.platform.selection.processor.SelectionProcessor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.tools.JavaFileObject;
 import java.io.IOException;

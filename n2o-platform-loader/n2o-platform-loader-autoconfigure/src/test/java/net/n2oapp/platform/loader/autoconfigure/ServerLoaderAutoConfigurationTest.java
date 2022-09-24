@@ -3,7 +3,7 @@ package net.n2oapp.platform.loader.autoconfigure;
 import net.n2oapp.platform.loader.server.JsonLoaderRunner;
 import net.n2oapp.platform.loader.server.ServerLoader;
 import net.n2oapp.platform.loader.server.ServerLoaderRunner;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;

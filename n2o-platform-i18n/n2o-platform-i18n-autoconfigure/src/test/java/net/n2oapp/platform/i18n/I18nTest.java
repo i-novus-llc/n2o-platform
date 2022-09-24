@@ -1,13 +1,13 @@
 package net.n2oapp.platform.i18n;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Locale;
 
@@ -18,13 +18,13 @@ import static org.hamcrest.Matchers.is;
  * Тестирование интернационализации
  */
 @SpringBootApplication
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = I18nTest.class,
         webEnvironment = SpringBootTest.WebEnvironment.NONE)
 public class I18nTest {
     private @Autowired Messages messages;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         LocaleContextHolder.setLocale(Locale.forLanguageTag("ru"));
     }

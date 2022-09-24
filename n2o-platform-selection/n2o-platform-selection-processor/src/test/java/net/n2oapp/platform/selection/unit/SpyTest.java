@@ -5,7 +5,7 @@ import net.n2oapp.platform.selection.integration.model.ContactSelection;
 import net.n2oapp.platform.selection.integration.model.Employee;
 import net.n2oapp.platform.selection.integration.model.EmployeeSelection;
 import net.n2oapp.platform.selection.integration.model.EmployeeSpy;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
