@@ -4,14 +4,12 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import net.n2oapp.platform.jaxrs.api.SomeModel;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -31,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootApplication
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = JaxRsServerTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class JaxRsServerTest {
 

@@ -2,12 +2,10 @@ package net.n2oapp.platform.i18n;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Locale;
 
@@ -18,7 +16,6 @@ import static org.hamcrest.Matchers.is;
  * Тестирование интернационализации
  */
 @SpringBootApplication
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = I18nTest.class,
         webEnvironment = SpringBootTest.WebEnvironment.NONE)
 public class I18nTest {

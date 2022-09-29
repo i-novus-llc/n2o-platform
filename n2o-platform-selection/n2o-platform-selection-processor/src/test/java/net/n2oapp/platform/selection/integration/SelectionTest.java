@@ -19,7 +19,6 @@ import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -31,7 +30,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.lang.NonNull;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.CollectionUtils;
@@ -46,7 +44,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import static java.util.Collections.emptyList;
 
 @SpringBootApplication
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(
     classes = SelectionTest.class,
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,

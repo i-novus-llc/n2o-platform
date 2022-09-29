@@ -4,17 +4,14 @@ import ch.qos.logback.classic.Level;
 import net.n2oapp.platform.ms.autoconfigure.ApplicationInfoPrinterTestConfiguration;
 import net.n2oapp.platform.ms.autoconfigure.MemoryAppender;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = ApplicationInfoPrinterTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EnableAutoConfiguration
 @Import(ApplicationInfoPrinterTestConfiguration.class)

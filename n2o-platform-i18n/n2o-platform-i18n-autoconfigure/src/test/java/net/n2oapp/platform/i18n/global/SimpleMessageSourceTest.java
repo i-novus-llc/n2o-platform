@@ -1,13 +1,11 @@
 package net.n2oapp.platform.i18n.global;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Locale;
 
@@ -16,7 +14,6 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @SpringBootApplication
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = SimpleMessageSourceTest.class,
         webEnvironment = SpringBootTest.WebEnvironment.NONE,
         properties = {"i18n.global.enabled=false"})

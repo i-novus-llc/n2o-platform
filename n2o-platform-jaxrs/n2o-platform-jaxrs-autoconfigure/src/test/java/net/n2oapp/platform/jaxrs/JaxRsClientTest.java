@@ -7,7 +7,6 @@ import net.n2oapp.platform.jaxrs.impl.SomeRestImpl;
 import net.n2oapp.platform.jaxrs.seek.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,7 +16,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.ReflectionUtils;
 
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -36,7 +34,6 @@ import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @SpringBootApplication
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = JaxRsClientTest.class,
                 webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
                 properties = {"server.port=8423",

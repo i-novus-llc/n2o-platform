@@ -8,7 +8,6 @@ import net.n2oapp.platform.jaxrs.api.*;
 import net.n2oapp.platform.jaxrs.impl.SomeRestImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,7 +22,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
@@ -44,7 +42,6 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @SpringBootApplication(exclude = SecurityAutoConfiguration.class)
 @EnableFeignClients
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = FeignClientTest.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
         properties = {"server.port=8765", "cxf.jaxrs.component-scan-packages=com.fasterxml.jackson.jaxrs.json," +
                 "net.n2oapp.platform.jaxrs," +

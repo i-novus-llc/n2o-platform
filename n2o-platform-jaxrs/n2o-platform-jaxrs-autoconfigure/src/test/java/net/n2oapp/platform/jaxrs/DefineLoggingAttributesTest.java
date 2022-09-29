@@ -5,10 +5,8 @@ import org.apache.cxf.ext.logging.LoggingInInterceptor;
 import org.apache.cxf.ext.logging.event.LogEventSender;
 import org.apache.cxf.ext.logging.event.PrettyLoggingFilter;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.lang.reflect.Field;
 
@@ -19,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author lgalimova
  * @since 02.04.2019
  */
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = Application.class,
         properties = {
                 "jaxrs.logging-in.enabled=true",
