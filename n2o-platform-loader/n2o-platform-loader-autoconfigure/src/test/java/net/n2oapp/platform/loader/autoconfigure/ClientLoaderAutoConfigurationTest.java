@@ -2,7 +2,7 @@ package net.n2oapp.platform.loader.autoconfigure;
 
 import net.n2oapp.platform.loader.client.ClientLoader;
 import net.n2oapp.platform.loader.client.ClientLoaderRunner;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.FilteredClassLoader;

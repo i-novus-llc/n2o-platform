@@ -1,11 +1,9 @@
 package net.n2oapp.platform.security;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,14 +15,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
@@ -33,7 +29,6 @@ import static org.hamcrest.Matchers.notNullValue;
 /**
  * Тесты чтения токена jwt и аутентификации
  */
-@RunWith(SpringRunner.class)
 @SpringBootApplication
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         classes = OAuth2ClientTest.class,
@@ -43,6 +38,7 @@ import static org.hamcrest.Matchers.notNullValue;
                 "n2o.platform.security.check-aud=false",
                 "n2o.platform.security.access-token-uri=http://localhost:8787/auth/token"})
 @EnableResourceServer
+@WireMockTest(httpPort = 8787)
 public class OAuth2ClientTest {
 
     private static final String TOKEN_VALUE = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJkZkRGYlJkU3FDZlVkMGV" +
@@ -61,8 +57,6 @@ public class OAuth2ClientTest {
     private String port;
     @Autowired
     private TokenStore tokenStore;
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule(options().port(8787));
 
     /**
      * Тест чтения токена через {@link TokenStore}
@@ -104,7 +98,7 @@ public class OAuth2ClientTest {
         ResponseEntity<String> exchange = null;
         try {
             restTemplate.exchange("http://localhost:" + port + "/greeting", HttpMethod.GET, entity, String.class);
-            Assert.fail();
+            Assertions.fail();
         } catch (HttpClientErrorException e) {
             assertThat(e.getStatusCode().value(), is(401));
         }

@@ -1,14 +1,12 @@
 package net.n2oapp.platform.loader.server;
 
 import net.n2oapp.platform.loader.server.repository.RepositoryServerLoader;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.*;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -20,7 +18,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * Тесты лоадеров
  */
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestDatabase

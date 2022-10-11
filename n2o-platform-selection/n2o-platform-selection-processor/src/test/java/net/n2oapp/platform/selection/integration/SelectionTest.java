@@ -16,10 +16,9 @@ import net.ttddyy.dsproxy.listener.DataSourceQueryCountListener;
 import net.ttddyy.dsproxy.listener.SingleQueryCountHolder;
 import net.ttddyy.dsproxy.listener.logging.SLF4JQueryLoggingListener;
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -31,7 +30,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.lang.NonNull;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.CollectionUtils;
@@ -46,7 +44,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import static java.util.Collections.emptyList;
 
 @SpringBootApplication
-@RunWith(SpringRunner.class)
 @SpringBootTest(
     classes = SelectionTest.class,
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
@@ -96,7 +93,7 @@ public class SelectionTest {
         return ThreadLocalRandom.current().nextBoolean();
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         int numProjects = 10;
         List<Project> projects = new ArrayList<>(numProjects);

@@ -3,8 +3,7 @@ package net.n2oapp.platform.actuate.autoconfigure;
 import net.n2oapp.platform.actuate.health.KafkaHealthIndicator;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.*;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
@@ -13,7 +12,6 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.SocketUtils;
 
 import java.util.HashMap;
@@ -23,7 +21,6 @@ import java.util.Map;
  * @author RMakhmutov
  * @since 06.09.2018
  */
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = KafkaHealthIndicatorTest.class)
 @EmbeddedKafka(
         // We're only needing to test Kafka serializing interactions, so keep partitioning simple

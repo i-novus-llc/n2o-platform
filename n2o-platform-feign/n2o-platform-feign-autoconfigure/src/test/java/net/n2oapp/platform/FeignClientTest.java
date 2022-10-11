@@ -6,9 +6,8 @@ import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.*;
 import net.n2oapp.platform.jaxrs.api.*;
 import net.n2oapp.platform.jaxrs.impl.SomeRestImpl;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,7 +22,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
@@ -37,14 +35,13 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @SpringBootApplication(exclude = SecurityAutoConfiguration.class)
 @EnableFeignClients
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = FeignClientTest.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
         properties = {"server.port=8765", "cxf.jaxrs.component-scan-packages=com.fasterxml.jackson.jaxrs.json," +
                 "net.n2oapp.platform.jaxrs," +
@@ -63,7 +60,7 @@ public class FeignClientTest {
 
     private static final String TEST_TOKEN = "Test_token";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken(TEST_TOKEN);
         token.setTokenType("Bearer");
