@@ -133,6 +133,7 @@
             <artifactId>n2o-platform-jaxrs-autoconfigure</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
+            <optional>true</optional>
         </dependency>
         <!-- /TEST -->
     </dependencies>
