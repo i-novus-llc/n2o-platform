@@ -13,19 +13,23 @@
 
     <properties>
         <n2o.version>7.16.3</n2o.version>
-        <cxf.version>3.4.0</cxf.version>
-        <swagger.version>3.30.0</swagger.version>
-        <swagger-annotations.version>1.6.2</swagger-annotations.version>
         <jaxrs-api.version>2.1.1</jaxrs-api.version>
+        <swagger.version>4.15.0</swagger.version>
+        <swagger-annotations.version>1.6.8</swagger-annotations.version>
+        <cxf.version>3.5.4</cxf.version>
+<!--
         <modelmapper.version>2.3.2</modelmapper.version>
         <commons.version>2.6</commons.version>
+-->
         <spring.cloud.version>2020.0.3</spring.cloud.version>
+<!--
         <spring-kafka.version>2.5.17.RELEASE</spring-kafka.version>
         <kafka.version>2.4.1</kafka.version>
-        <activation.version>1.1.1</activation.version>
+-->
+<!--        <activation.version>1.1.1</activation.version>-->
         <feign.version>10.10.1</feign.version>
         <feign-jaxrs-inovus.version>2.0</feign-jaxrs-inovus.version>
-        <jackson-bom.version>2.12.7</jackson-bom.version>
+<!--        <jackson-bom.version>2.12.7</jackson-bom.version>-->
     </properties>
 
     <dependencyManagement>
@@ -443,6 +447,12 @@
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka-clients</artifactId>
                 <version>${kafka.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>31.1-jre</version>
             </dependency>
 
             <dependency>
