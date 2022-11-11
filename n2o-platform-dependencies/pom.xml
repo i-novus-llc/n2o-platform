@@ -17,19 +17,12 @@
         <swagger.version>4.15.0</swagger.version>
         <swagger-annotations.version>1.6.8</swagger-annotations.version>
         <cxf.version>3.5.4</cxf.version>
-<!--
-        <modelmapper.version>2.3.2</modelmapper.version>
         <commons.version>2.6</commons.version>
--->
         <spring.cloud.version>2020.0.3</spring.cloud.version>
-<!--
-        <spring-kafka.version>2.5.17.RELEASE</spring-kafka.version>
-        <kafka.version>2.4.1</kafka.version>
--->
-<!--        <activation.version>1.1.1</activation.version>-->
+        <activation.version>1.1.1</activation.version>
         <feign.version>10.10.1</feign.version>
         <feign-jaxrs-inovus.version>2.0</feign-jaxrs-inovus.version>
-<!--        <jackson-bom.version>2.12.7</jackson-bom.version>-->
+        <jackson-jaxrs-json.version>2.12.7</jackson-jaxrs-json.version>
     </properties>
 
     <dependencyManagement>
@@ -270,7 +263,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.jaxrs</groupId>
                 <artifactId>jackson-jaxrs-json-provider</artifactId>
-                <version>${jackson-bom.version}</version>
+                <version>${jackson-jaxrs-json.version}</version>
             </dependency>
 
             <dependency>
