@@ -12,11 +12,13 @@ import org.springframework.context.annotation.Import;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@SpringBootTest(classes = ApplicationInfoPrinterTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = ApplicationInfoPrinterTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {
+                "spring.cloud.consul.config.enabled=false" /// do not read config values from consul for test stability
+        })
 @EnableAutoConfiguration
 @Import(ApplicationInfoPrinterTestConfiguration.class)
 public class ApplicationInfoPrinterTest {
-
     @Autowired
     private MemoryAppender memoryAppender;
 

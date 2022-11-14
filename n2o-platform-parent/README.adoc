@@ -13,7 +13,7 @@
 <parent>
     <groupId>net.n2oapp.platform</groupId>
     <artifactId>n2o-boot-platform-parent</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>5.0.0-SNAPSHOT</version>
 </parent>
 ----
 
@@ -34,28 +34,6 @@
     <jacoco.aggregate.report.path>${project.basedir}/target/site/jacoco-aggregate</jacoco.aggregate.report.path>
 </properties>
 ----
-
-= Включение конфигурации через Consul
-Включите профиль `consul`.
-
-Необходимые условия работы:
-1. Настройка `config.server.enable` должна переопределять значение `spring.cloud.consul.config.enabled` и `management.health.consul.enabled`.
-Например, можно добавить в bootstrap.yml:
----
-   spring:
-     cloud:
-       consul:
-         config:
-           enabled: ${config.server.enable}
-
-   management:
-     health:
-       consul:
-         enabled: ${config.server.enable}
----
-2. Должен быть подключен стартер n2o-platform-starter-ms.
-
-При запуске приложение будет запрашивать настройки из Consul по адресу consul-agent.local.
 
 = Фильтрация конфигураций Docker
 Включите профиль `docker-config-filter`.
