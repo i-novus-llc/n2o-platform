@@ -1,2 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-net.n2oapp.platform.i18n.autoconfigure.I18nAutoConfiguration
