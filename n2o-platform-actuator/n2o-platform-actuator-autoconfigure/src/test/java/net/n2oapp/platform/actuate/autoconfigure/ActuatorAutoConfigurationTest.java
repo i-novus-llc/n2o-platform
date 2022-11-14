@@ -12,7 +12,7 @@ import org.springframework.core.env.Environment;
  * @author RMakhmutov
  * @since 06.09.2018
  */
-@SpringBootTest(classes={ActuatorAutoConfigurationTest.class,TestWebSecurityConfig.class,TestKafkaConfig.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes={ActuatorAutoConfigurationTest.class,TestKafkaConfig.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EnableAutoConfiguration
 public class ActuatorAutoConfigurationTest {
     @Autowired

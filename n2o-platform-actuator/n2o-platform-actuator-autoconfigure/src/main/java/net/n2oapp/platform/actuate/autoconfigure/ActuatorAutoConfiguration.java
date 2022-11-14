@@ -22,6 +22,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.Map;
 
@@ -37,16 +38,16 @@ public class ActuatorAutoConfiguration {
 
     @Configuration
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    @ConditionalOnClass(WebSecurityConfigurerAdapter.class)
-    @ConditionalOnBean(WebSecurityConfigurerAdapter.class)
+    @ConditionalOnClass(SecurityFilterChain.class)
     @AutoConfigureAfter(SecurityAutoConfiguration.class)
-    public static class MonitoringSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
+    public static class MonitoringSecurityConfigurerAdapter {
         @Autowired
         Environment env;
 
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
+        @Bean
+        public SecurityFilterChain actuatorFilterChain(HttpSecurity http) throws Exception {
             http.csrf().disable().antMatcher(env.getProperty("management.endpoints.web.base-path") + "/**").authorizeRequests().anyRequest().permitAll();
+            return http.build();
         }
     }
 
