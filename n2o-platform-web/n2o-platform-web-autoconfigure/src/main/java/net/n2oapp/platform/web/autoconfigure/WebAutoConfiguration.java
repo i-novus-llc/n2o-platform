@@ -10,6 +10,7 @@ import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -24,7 +25,7 @@ import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResour
 
 import java.text.SimpleDateFormat;
 
-@Configuration
+@AutoConfiguration
 @AutoConfigureAfter(name = "org.springframework.boot.autoconfigure.security.oauth2.OAuth2AutoConfiguration")
 @AutoConfigureBefore(N2oFrameworkAutoConfiguration.class)
 @PropertySource("classpath:web.n2o.default.properties")

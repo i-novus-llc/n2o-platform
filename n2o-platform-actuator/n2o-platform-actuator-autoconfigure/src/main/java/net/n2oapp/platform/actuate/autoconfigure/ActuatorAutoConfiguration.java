@@ -6,6 +6,7 @@ import org.springframework.boot.actuate.autoconfigure.health.CompositeHealthCont
 import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.actuate.autoconfigure.web.servlet.ServletManagementContextAutoConfiguration;
 import org.springframework.boot.actuate.health.HealthContributor;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -30,7 +31,7 @@ import java.util.Map;
  * @author RMakhmutov
  * @since 24.08.2018
  */
-@Configuration
+@AutoConfiguration
 @ConditionalOnWebApplication
 @PropertySource("classpath:/META-INF/net/n2oapp/platform/actuate/monitoring.properties")
 @AutoConfigureBefore(ServletManagementContextAutoConfiguration.class)

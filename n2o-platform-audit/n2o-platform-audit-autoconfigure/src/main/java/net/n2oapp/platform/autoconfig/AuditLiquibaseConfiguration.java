@@ -3,6 +3,7 @@ package net.n2oapp.platform.autoconfig;
 import liquibase.integration.spring.SpringLiquibase;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
@@ -12,7 +13,7 @@ import org.springframework.context.annotation.DependsOn;
 
 import javax.sql.DataSource;
 
-@Configuration
+@AutoConfiguration
 @AutoConfigureAfter(LiquibaseAutoConfiguration.class)
 public class AuditLiquibaseConfiguration {
 

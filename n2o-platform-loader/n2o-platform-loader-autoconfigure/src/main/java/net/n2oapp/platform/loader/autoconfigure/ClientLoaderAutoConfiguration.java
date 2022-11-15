@@ -9,6 +9,7 @@ import net.n2oapp.platform.loader.client.auth.OAuth2ClientContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -34,7 +35,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-@Configuration
+@AutoConfiguration
 @ConditionalOnClass(ClientLoader.class)
 @EnableConfigurationProperties(ClientLoaderProperties.class)
 public class ClientLoaderAutoConfiguration {

@@ -13,6 +13,7 @@ import feign.jackson.JacksonEncoder;
 import feign.jaxrs.JAXRSContract;
 import net.n2oapp.platform.jaxrs.autoconfigure.JaxRsCommonAutoConfiguration;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -34,7 +35,7 @@ import java.util.Map;
 import static feign.Util.checkState;
 import static feign.Util.emptyToNull;
 
-@Configuration
+@AutoConfiguration
 @ConditionalOnClass(Feign.class)
 @AutoConfigureBefore(FeignLoadBalancerAutoConfiguration.class)
 @AutoConfigureAfter(JaxRsCommonAutoConfiguration.class)

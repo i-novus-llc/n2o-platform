@@ -14,6 +14,7 @@ import org.apache.cxf.tracing.brave.jaxrs.BraveFeature;
 import org.apache.cxf.validation.BeanValidationInInterceptor;
 import org.apache.cxf.validation.BeanValidationProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -28,7 +29,7 @@ import java.util.Map;
 /**
  * Автоматическая конфигурация REST сервисов
  */
-@Configuration
+@AutoConfiguration
 @ConditionalOnWebApplication
 @AutoConfigureBefore(org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration.class)
 @EnableConfigurationProperties(JaxRsProperties.class)

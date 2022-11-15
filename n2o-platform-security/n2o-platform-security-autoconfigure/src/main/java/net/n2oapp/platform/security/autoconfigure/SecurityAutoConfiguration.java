@@ -1,5 +1,6 @@
 package net.n2oapp.platform.security.autoconfigure;
 
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +28,7 @@ import org.springframework.util.Assert;
 import java.util.Collections;
 import java.util.Map;
 
-@Configuration
+@AutoConfiguration
 @EnableConfigurationProperties(N2oPlatformSecurityProperties.class)
 public class SecurityAutoConfiguration {
 

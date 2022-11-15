@@ -24,13 +24,13 @@
 Если Consul будет недоступен, то приложение не поднимется.
 
 Для локальной разработки можно выключить получение настроек из Consul:
-Добваьте настройку `spring.cloud.consul.config.enabled=false` в bootstrap.yml:
+Добавьте настройку `spring.cloud.consul.config.enabled=false` в bootstrap.yml:
 ---
    spring:
      cloud:
        consul:
          config:
-           enabled: ${config.server.enable}
+           enabled: false
 ---
 
 = Observability
