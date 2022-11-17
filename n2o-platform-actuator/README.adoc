@@ -21,4 +21,6 @@
 </dependency>
 ----
 
-Задать доступные endpoint'ы можно стандартной настройкой: `management.endpoints.web.exposure.include=endpointName`
+Задать доступные endpoint'ы можно стандартными настройками:
+`management.endpoints.web.exposure.include=endpointName`
+`management.endpoints.web.exposure.exclude=endpointName`
