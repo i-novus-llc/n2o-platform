@@ -14,6 +14,7 @@ import org.springframework.core.env.Environment;
  */
 @SpringBootTest(classes = CloudBootstrapAutoConfigurationTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
+                "spring.config.import=", /// do not read config values from consul for test stability
                 "spring.cloud.consul.config.enabled=false", /// do not read config values from consul for test stability
                 "n2o.ms.loki.enabled=true" /// test that enabled loki doesn't fails app context load
         })

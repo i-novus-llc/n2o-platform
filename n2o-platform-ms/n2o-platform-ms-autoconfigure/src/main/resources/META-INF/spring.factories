@@ -2,6 +2,3 @@
 org.springframework.context.ApplicationListener=\
 net.n2oapp.platform.ms.autoconfigure.logging.LogbackApplicationListener
 
-# Bootstrap components
-org.springframework.cloud.bootstrap.BootstrapConfiguration=net.n2oapp.platform.ms.autoconfigure.CloudBootstrapAutoConfiguration,\
-net.n2oapp.platform.ms.autoconfigure.logging.LogbackApplicationListener
