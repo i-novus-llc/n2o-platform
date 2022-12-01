@@ -1,4 +1,4 @@
-package net.n2oapp.platform.test.autoconfigure;
+package net.n2oapp.platform.test.autoconfigure.pg;
 
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 

@@ -1,0 +1,7 @@
+= Инструкции по миграции
+
+== 5.1
+
+* Spring Boot 2.7.5 (-bootstrap, starter optimization, @autoconfiguration etc)
+* Spring Security
+* N2O Framework 7.23

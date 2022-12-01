@@ -1,4 +1,5 @@
 # Application Listeners
 org.springframework.context.ApplicationListener=\
-net.n2oapp.platform.ms.autoconfigure.logging.LogbackApplicationListener
+net.n2oapp.platform.ms.autoconfigure.logging.LogbackApplicationListener,\
+net.n2oapp.platform.ms.autoconfigure.CloudBootstrapPropertiesApplicationListener
 

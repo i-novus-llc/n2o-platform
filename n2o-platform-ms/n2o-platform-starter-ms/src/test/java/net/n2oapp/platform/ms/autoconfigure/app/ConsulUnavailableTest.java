@@ -10,16 +10,17 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
 /**
+ * Check that application can start successfully with certain properties when Consul Config is unavailable.
+ * Test for compatibility with older platform versions.
  * @author RMakhmutov
  * @since 14.01.2019
- *
- * Check that application can start successfully with certain properties when Consul is unavailable.
- * Test for compatibility with older platform versions.
  */
 @SpringBootTest(classes = ConsulUnavailableTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
+                "spring.cloud.consul.enabled=true", /// enable consul auto configuration (disabled in platform test starter)
+                "spring.config.import=optional:consul:", /// set consul optional
+                "spring.cloud.consul.config.enabled=true", /// enable consul config
                 "spring.cloud.consul.host=invalidaddress", /// emulate unavailability
-                "spring.cloud.consul.config.fail-fast=false", /// do not fail app start if consul unavailable
                 "management.health.consul.enabled=false"}) /// do not fail healthcheck if consul unavailable
 @EnableAutoConfiguration
 public class ConsulUnavailableTest {

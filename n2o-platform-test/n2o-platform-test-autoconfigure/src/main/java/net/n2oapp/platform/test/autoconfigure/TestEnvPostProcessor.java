@@ -1,6 +1,8 @@
 package net.n2oapp.platform.test.autoconfigure;
 
 import net.n2oapp.platform.test.PortFinder;
+import net.n2oapp.platform.test.autoconfigure.pg.EnableEmbeddedPg;
+import net.n2oapp.platform.test.autoconfigure.pg.EnableTestcontainersPg;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -12,8 +14,7 @@ import org.springframework.test.context.support.TestPropertySourceUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RandomPortEnvPostProcessor implements EnvironmentPostProcessor {
-
+public class TestEnvPostProcessor implements EnvironmentPostProcessor {
     private static final String PROPERTY_SOURCE_NAME = TestPropertySourceUtils.INLINED_PROPERTIES_PROPERTY_SOURCE_NAME;
 
     @Override

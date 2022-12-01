@@ -12,14 +12,12 @@ import org.springframework.core.env.Environment;
  * @author RMakhmutov
  * @since 14.01.2019
  */
-@SpringBootTest(classes = CloudBootstrapAutoConfigurationTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+@SpringBootTest(classes = CloudDefaultPropertiesAutoConfigurationTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
-                "spring.config.import=", /// do not read config values from consul for test stability
-                "spring.cloud.consul.config.enabled=false", /// do not read config values from consul for test stability
                 "n2o.ms.loki.enabled=true" /// test that enabled loki doesn't fails app context load
         })
 @EnableAutoConfiguration
-public class CloudBootstrapAutoConfigurationTest {
+public class CloudDefaultPropertiesAutoConfigurationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
