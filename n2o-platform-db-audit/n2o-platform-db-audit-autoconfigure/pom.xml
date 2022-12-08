@@ -10,6 +10,10 @@
         <version>5.1.0-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <jacoco.skip>false</jacoco.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
