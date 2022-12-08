@@ -1,3 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-net.n2oapp.platform.loader.autoconfigure.ServerLoaderAutoConfiguration,\
-net.n2oapp.platform.loader.autoconfigure.ClientLoaderAutoConfiguration

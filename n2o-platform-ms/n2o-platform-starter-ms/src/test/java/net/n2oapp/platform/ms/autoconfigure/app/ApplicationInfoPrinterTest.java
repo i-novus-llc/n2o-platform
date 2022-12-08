@@ -16,7 +16,6 @@ import static org.hamcrest.Matchers.is;
 @EnableAutoConfiguration
 @Import(ApplicationInfoPrinterTestConfiguration.class)
 public class ApplicationInfoPrinterTest {
-
     @Autowired
     private MemoryAppender memoryAppender;
 

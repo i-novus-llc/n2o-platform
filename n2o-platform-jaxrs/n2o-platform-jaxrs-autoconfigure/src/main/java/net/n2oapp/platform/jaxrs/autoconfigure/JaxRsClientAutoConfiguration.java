@@ -4,6 +4,7 @@ import brave.Tracing;
 import org.apache.cxf.jaxrs.client.Client;
 import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration;
 import org.apache.cxf.tracing.brave.jaxrs.BraveClientProvider;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -11,7 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-@Configuration
+@AutoConfiguration
 @ConditionalOnClass(Client.class)
 @AutoConfigureBefore(CxfAutoConfiguration.class)
 public class JaxRsClientAutoConfiguration {

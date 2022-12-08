@@ -1,0 +1,4 @@
+net.n2oapp.platform.ms.autoconfigure.SleuthAutoConfiguration
+net.n2oapp.platform.ms.autoconfigure.ApplicationInfoAutoConfiguration
+net.n2oapp.platform.ms.autoconfigure.CloudDefaultPropertiesAutoConfiguration
+net.n2oapp.platform.ms.autoconfigure.logging.LogbackApplicationListener

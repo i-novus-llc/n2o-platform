@@ -1,4 +1,4 @@
-= Возможности
+== Возможности
 
 Эта библиотека обеспечивает оптимальную конфигурацию по умолчанию и открывает доступ к мониторингу приложения через Spring Actuator.
 Общая инструкция по использованию Spring Actuator: https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/
@@ -8,7 +8,7 @@
 
 В библиотеку встроена базовая проверка доступности сервера Apache Kafka. (Включена при наличии зависимости от apache-kafka)
 
-= Подключение
+== Подключение
 
 Актуатор подключается при подключении стартера link:/n2o-platform-ms/README.adoc[n2o-platform-starter-ms].
 
@@ -21,4 +21,6 @@
 </dependency>
 ----
 
-Задать доступные endpoint'ы можно стандартной настройкой: `management.endpoints.web.exposure.include=endpointName`
+Задать доступные endpoint'ы можно стандартными настройками:
+`management.endpoints.web.exposure.include=endpointName`
+`management.endpoints.web.exposure.exclude=endpointName`

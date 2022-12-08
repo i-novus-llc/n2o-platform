@@ -1,23 +1,26 @@
-= Документация
 :toc:
 :toclevels: 3
 :toc-title: Содержание
 
-= Описание
+== Описание
 Родительская maven-конфигурация для всех проектов на основе платформы.
+Задаёт настройки по умолчанию: версии базовых плагинов maven, версию java, исключения из проверки для SonarQube, другие базовые настройки.
+Наследует bom-файл платформы, который в свою очередь наследует парент pom от spring boot.
 
-= Подключение
+Также содержит профили для решения часто-возникающих проблем.
+
+== Подключение
 Пример подключения в корневой pom.xml проекта:
 [source,xml]
 ----
 <parent>
     <groupId>net.n2oapp.platform</groupId>
     <artifactId>n2o-boot-platform-parent</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>5.1.0-SNAPSHOT</version>
 </parent>
 ----
 
-= Использование JaCoCo
+== Использование JaCoCo
 Включите профиль `jacoco`.
 
 Добавьте в модули, содержащих тесты либо тестируемые классы, свойство:
@@ -29,36 +32,20 @@
 ----
 
 В одномодульных проектах переопределите свойство `jacoco.aggregate.report.path`, поставьте значение по умолчанию:
+[source,xml]
 ----
 <properties>
     <jacoco.aggregate.report.path>${project.basedir}/target/site/jacoco-aggregate</jacoco.aggregate.report.path>
 </properties>
 ----
 
-= Включение конфигурации через Consul
-Включите профиль `consul`.
+Встроенная в платформу n2o boot конфигурация JaCoCo решает проблемы подсчёта покрытия в мультимодульных maven-проектах, описанным здесь способом: +
+https://stackoverflow.com/questions/13031219/how-to-configure-multi-module-maven-sonar-jacoco-to-give-merged-coverage-rep/60639251#60639251
 
-Необходимые условия работы:
-1. Настройка `config.server.enable` должна переопределять значение `spring.cloud.consul.config.enabled` и `management.health.consul.enabled`.
-Например, можно добавить в bootstrap.yml:
----
-   spring:
-     cloud:
-       consul:
-         config:
-           enabled: ${config.server.enable}
-
-   management:
-     health:
-       consul:
-         enabled: ${config.server.enable}
----
-2. Должен быть подключен стартер n2o-platform-starter-ms.
-
-При запуске приложение будет запрашивать настройки из Consul по адресу consul-agent.local.
-
-= Фильтрация конфигураций Docker
+== Фильтрация конфигураций Docker
 Включите профиль `docker-config-filter`.
 
 При сборке во всех yml-файлах в папке docker-compose будут подставлены значения плейсхолдеров из свойств maven.
 Полученные yml-файлы будут помещены в корне сборочной директории.
+
+Удобно использовать для автоматической подстановки в конфигурацию версий зависимостей из свойств maven-проекта.

@@ -1,6 +1,7 @@
 package net.n2oapp.platform.i18n.autoconfigure;
 
 import net.n2oapp.platform.i18n.Messages;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -23,7 +24,7 @@ import java.util.*;
 /**
  * Автоматическая конфигурация интернационализации
  */
-@Configuration
+@AutoConfiguration
 @AutoConfigureBefore(MessageSourceAutoConfiguration.class)
 public class I18nAutoConfiguration {
 

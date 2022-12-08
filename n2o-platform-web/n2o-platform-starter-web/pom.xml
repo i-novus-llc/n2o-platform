@@ -8,16 +8,27 @@
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-platform-web</artifactId>
         <version>5.1.0-SNAPSHOT</version>
-        <relativePath>..</relativePath>
     </parent>
 
     <dependencies>
-
         <dependency>
             <groupId>net.n2oapp.platform</groupId>
             <artifactId>n2o-platform-web-autoconfigure</artifactId>
         </dependency>
-
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Spring-Boot-Jar-Type>dependencies-starter</Spring-Boot-Jar-Type>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

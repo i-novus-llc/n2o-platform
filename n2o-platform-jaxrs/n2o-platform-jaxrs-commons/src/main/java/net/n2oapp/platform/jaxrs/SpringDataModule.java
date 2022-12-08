@@ -39,7 +39,7 @@ abstract class SpringDataModule extends SimpleModule {
         SimpleAbstractTypeResolver resolver = new SimpleAbstractTypeResolver();
         resolver.addMapping(Pageable.class, RestCriteria.class);
         this.setAbstractTypes(resolver);
-        this.setMixInAnnotation(Page.class, PageMixin.class);
+        this.setMixInAnnotation(Page.class, PageMixin.class); /// todo use instead new annotation @JsonMixin
     }
 
     static class SpringDataJsonModule extends SpringDataModule {

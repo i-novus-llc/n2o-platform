@@ -9,13 +9,14 @@ import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.RestException;
 import net.n2oapp.platform.jaxrs.RestMessage;
 import net.n2oapp.platform.web.autoconfigure.PlatformExceptionHandler;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class PlatformExceptionHandlerTest {
                         "Bad request",
                         HttpHeaders.EMPTY,
                         body.getBytes(),
-                        Charset.forName("UTF-8")));
+                        StandardCharsets.UTF_8));
         assertThat(e, instanceOf(N2oUserException.class));
         N2oUserException userException = (N2oUserException) e;
         assertThat(userException.getUserMessage(), is("Wrong data"));
@@ -88,7 +89,7 @@ public class PlatformExceptionHandlerTest {
                         "Bad request",
                         HttpHeaders.EMPTY,
                         body.getBytes(),
-                        Charset.forName("UTF-8")));
+                        StandardCharsets.UTF_8));
 
         assertThat(e, instanceOf(N2oException.class));
         assertThat(e.getCause(), instanceOf(RestException.class));

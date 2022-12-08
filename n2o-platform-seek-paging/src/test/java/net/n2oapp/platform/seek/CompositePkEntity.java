@@ -42,10 +42,10 @@ public class CompositePkEntity {
     @Embeddable
     public static class Id implements Serializable {
 
-        @Column
+        @Column(name = "first_column")
         private int first;
 
-        @Column
+        @Column(name = "second_column")
         private int second;
 
         protected Id() {
