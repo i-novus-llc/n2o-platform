@@ -10,8 +10,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 
 @SpringBootApplication
-@SpringBootTest(classes = {AuditLiquibaseConfigurationTests.class, AuditLiquibaseConfiguration.class})
-public class AuditLiquibaseConfigurationTests {
+@SpringBootTest(classes = {DbAuditLiquibaseConfigurationTests.class, DbAuditLiquibaseConfiguration.class})
+public class DbAuditLiquibaseConfigurationTests {
     @Autowired
     JdbcTemplate jdbcTemplate;
     @Autowired

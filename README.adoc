@@ -1,22 +1,29 @@
-Платформа для создания микросервисов и веб-приложений на основе Spring Boot, Spring Cloud, Spring Data, CXF.
+Платформа для создания микросервисов и веб-приложений на основе Spring Boot, Spring Cloud, Spring Security, и опционально Spring Data, CXF, OpenFeign, N2O UI Framework, Quartz, Postgresql, Testcontainers.
 
 image:https://img.shields.io/hexpm/l/plug.svg?style=flat[link="http://www.apache.org/licenses/LICENSE-2.0",title="License: Apache License 2"]
 
-= Состав
+== Состав
 * link:/n2o-platform-actuator/README.adoc[actuator] - стартер мониторинга, подключает преднастроенный spring boot actuator
-* bom - общий dependency management приложений на платформе, основан на spring boot
+* link:/n2o-platform-db-audit/README.adoc[db-audit] - стартер для подключения аудита данных в БД
+* dependencies - общий dependency management приложений на платформе, основан на spring boot
 * link:/n2o-platform-feign/README.adoc[feign] - стартер feign client, преднастроенная бибилиотека для создания REST-клиентов в микросервисной среде
 * link:/n2o-platform-i18n/README.adoc[i18n] - общие настройки интернационализации приложений на платформе
 * link:/n2o-platform-initializr/README.adoc[initializr] - spring initializr для генерации исходного кода приложения на платформе
-* link:/n2o-platform-jaxrs/README.adoc[jaxrs] - *_partially deprecated (use feign proxy clients)_* стартеры для создания REST клиентов и REST сервисов, отвечающих требованиям соглашений N2O Framework
+* link:/n2o-platform-jaxrs/README.adoc[jaxrs] - *_partially deprecated (use feign proxy clients)_* стартеры для создания REST клиентов и REST сервисов, отвечающих требованиям соглашений N2O UI Framework
+* link:/n2o-platform-loader/README.adoc[loader] - стартер для обмена предопределёнными метаданными между микросервисами
 * link:/n2o-platform-ms/README.adoc[ms] - стартер для создания микросервисов на основе платформы
 * link:/n2o-platform-parent/README.adoc[parent] - родительский pom для создания приложений на основе платформы
+* link:/n2o-platform-quartz/README.adoc[quartz] - стартер-обёртка над spring quartz, с конфигурацией по умолчанию и автонакатом БД
+* link:/n2o-platform-security/README.adoc[security] - стартер, который даёт возможность валидации токена JWT и его прозрачной передачи между микросервисами при использовании инструментов платформы
+* link:/n2o-platform-seek-paging/README.adoc[seek-paging] - библиотека предоставляет возможность seek-пагинации
+* link:/n2o-platform-selection/README.adoc[selection] - фреймворк, реализующий выборочное получение только необходимых данных из БД
 * link:/n2o-platform-test/README.adoc[test] - стартер для создания тестов
+* link:/n2o-platform-web/README.adoc[web] - стандартный способ подключения N2O UI Framework
 
-= Требования
-Данная версия платформы протестирована с использованием OpenJDK 11, OpenJDK 14
+== Требования
+Данная версия платформы протестирована с использованием OpenJDK 11-17
 
-= Подключение
+== Подключение
 Устанавливаем родителький maven артефакт:
 [source,xml]
 ----
@@ -46,7 +53,7 @@ image:https://img.shields.io/hexpm/l/plug.svg?style=flat[link="http://www.apache
     <dependency>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-boot-dependencies</artifactId>
-        <version>4.0.0-SNAPSHOT</version>
+        <version>5.1.0-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
     </dependency>

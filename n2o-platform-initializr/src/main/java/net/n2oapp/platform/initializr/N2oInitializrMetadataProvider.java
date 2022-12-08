@@ -47,7 +47,7 @@ public class N2oInitializrMetadataProvider implements InitializrMetadataProvider
                 dependency.setId(jsonDependency.getString("id"));
                 dependency.setName(jsonDependency.optString("name"));
                 dependency.setDescription(jsonDependency.optString("description"));
-                dependency.setVersionRange(jsonDependency.optString("versionRange"));
+                dependency.setVersionRequirement(jsonDependency.optString("versionRange"));
                 dependencyGroup.getContent().add(dependency);
             }
             dependencyGroups.add(dependencyGroup);

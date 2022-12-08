@@ -8,19 +8,18 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 
 import javax.sql.DataSource;
 
 @AutoConfiguration
 @AutoConfigureAfter(LiquibaseAutoConfiguration.class)
-public class AuditLiquibaseConfiguration {
+public class DbAuditLiquibaseConfiguration {
 
     private final DataSource dataSource;
 
     @Autowired
-    public AuditLiquibaseConfiguration(ObjectProvider<DataSource> dataSource) {
+    public DbAuditLiquibaseConfiguration(ObjectProvider<DataSource> dataSource) {
         this.dataSource = dataSource.getIfUnique();
     }
 

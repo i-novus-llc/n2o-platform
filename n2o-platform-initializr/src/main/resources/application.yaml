@@ -2,11 +2,11 @@ initializr:
   groupId:
     value: net.n2oapp.microservice
   artifactId:
-    value: n2o-microservice-demo
+    value: n2o-microservice-app
   version:
     value: ${project.version}
   packageName:
-    value: net.n2oapp.microservice.demo
+    value: net.n2oapp.microservice.app
   name:
     value:
   description:
@@ -32,8 +32,8 @@ initializr:
       default: true
       action: /starter.zip
   bootVersions:
-    - name: 2.1.1
-      id: 2.1.1.RELEASE
+    - name: 2.7.5
+      id: 2.7.5
   dependencies:
     - name: N2O
       content:
@@ -46,7 +46,7 @@ initializr:
           aliases:
             - n2o
             - frontend
-            - web
+            - webapp
         - name: JaxRs Server
           id: n2o-jaxrs-server
           groupId: net.n2oapp.platform
@@ -80,7 +80,16 @@ initializr:
           bom: n2o-platform-bom
           aliases:
             - jwt
-            - security
+            - auth
+        - name: MS
+          id: n2o-ms
+          groupId: net.n2oapp.platform
+          artifactId: n2o-platform-starter-ms
+          description: Observability and cloud configuration for microservices
+          bom: n2o-platform-bom
+          aliases:
+            - ms
+            - microservice
   env:
     repositories:
       i-novus-releases:
@@ -89,6 +98,6 @@ initializr:
     boms:
       n2o-platform-bom:
         groupId: net.n2oapp.platform
-        artifactId: n2o-platform-bom
+        artifactId: n2o-boot-dependencies
         version: ${project.version}
         repositories: i-novus-releases

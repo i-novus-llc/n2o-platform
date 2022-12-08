@@ -1,6 +1,3 @@
-= Документация
-
-
 == Возможности
 Стартер дает возможность вести аудит данных для каждой таблицы в бд, т.е фиксирует кто, когда и из какой системы создал, произвел изменения и что эти изменения из себя представляют.
 
@@ -85,7 +82,7 @@
 ----
 <dependency>
   <groupId>net.n2oapp.platform</groupId>
-  <artifactId>n2o-platform-starter-audit</artifactId>
+  <artifactId>n2o-platform-starter-db-audit</artifactId>
 </dependency>
 ----
 
