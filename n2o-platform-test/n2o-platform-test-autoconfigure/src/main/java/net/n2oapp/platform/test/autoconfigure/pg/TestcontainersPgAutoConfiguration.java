@@ -48,17 +48,13 @@ public class TestcontainersPgAutoConfiguration {
     private static final String PASSWORD = "postgres";
     private static final int PSQL_PORT = 5432;
 
-    private final static WaitStrategy PG_WAIT_STRATEGY = new LogMessageWaitStrategy()
+    private static final WaitStrategy PG_WAIT_STRATEGY = new LogMessageWaitStrategy()
             .withRegEx(".*database system is ready to accept connections.*\\s")
             .withTimes(2)
             .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
 
-    private static int testcontainersPgImageVersion;
-
     @Value("${testcontainers.pg.version:12}")
-    public void setEnv(final int version){
-        TestcontainersPgAutoConfiguration.testcontainersPgImageVersion = version;
-    }
+    private static int testcontainersPgImageVersion;
 
     @Bean
     public static TestcontainersPgDataSourceBeanFactoryPostProcessor testcontainersPgDataSourceBeanFactoryPostProcessor() {
@@ -79,16 +75,17 @@ public class TestcontainersPgAutoConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "test", name = "testcontainers-pg", havingValue = "true")
     static GenericContainer psqlContainer() {
-        final GenericContainer gc = new GenericContainer<>(DockerImageName.parse(generatePgImageName()))
-                .withEnv("POSTGRES_USER", USERNAME)
-                .withEnv("POSTGRES_PASSWORD", PASSWORD)
-                .withExposedPorts(PSQL_PORT);
-        gc.setWaitStrategy(PG_WAIT_STRATEGY);
-        return gc;
+        try (final GenericContainer gc = new GenericContainer<>(DockerImageName.parse(generatePgImageName()))) {
+            gc.withEnv("POSTGRES_USER", USERNAME)
+                    .withEnv("POSTGRES_PASSWORD", PASSWORD)
+                    .withExposedPorts(PSQL_PORT)
+                    .setWaitStrategy(PG_WAIT_STRATEGY);
+            return gc;
+        }
     }
 
-    private final static String generatePgImageName(){
-        if(testcontainersPgImageVersion >= 10 && testcontainersPgImageVersion <= 12) {
+    private static String generatePgImageName() {
+        if (testcontainersPgImageVersion >= 10 && testcontainersPgImageVersion <= 12) {
             return ("inovus/postgres:" + testcontainersPgImageVersion + "-textsearch-ru");
         } else {
             return ("inovus/postgres:12-textsearch-ru");
@@ -107,7 +104,9 @@ public class TestcontainersPgAutoConfiguration {
         }
 
         @Override
-        public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {}
+        public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+            /// No action
+        }
 
         private void process(BeanDefinitionRegistry registry, DefaultListableBeanFactory beanFactory) {
             beanFactory.setAllowBeanDefinitionOverriding(true);
@@ -139,7 +138,9 @@ public class TestcontainersPgAutoConfiguration {
             }
             for (final String beanName : beanNames) {
                 final BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
-                if (beanDefinition.isPrimary()) { return new BeanDefinitionHolder(beanDefinition, beanName); }
+                if (beanDefinition.isPrimary()) {
+                    return new BeanDefinitionHolder(beanDefinition, beanName);
+                }
             }
             logger.warn("No primary DataSource found, testcontainers pg version will not be used");
             return null;
@@ -183,7 +184,8 @@ public class TestcontainersPgAutoConfiguration {
         private final GenericContainer pg;
         private final String username;
         private final String password;
-        private final int psqlPort = 5432;
+        private static final int PSQL_PORT = 5432;
+        private static final String DEFAULT_DB_NAME = "postgres";
 
         public TestcontainersPgDataSourceFactory(final GenericContainer pg
                 , final String username
@@ -197,13 +199,12 @@ public class TestcontainersPgAutoConfiguration {
             try {
                 pg.start();
             } catch (final Exception e) {
-                logger.error("cannot build testcontainers PG", e);
                 throw new BeanCreationException("cannot create dataSource", e);
             }
             final String host = pg.getHost();
-            final int port = pg.getMappedPort(psqlPort);
+            final int port = pg.getMappedPort(PSQL_PORT);
             final String dbName = "db_" + port;
-            final DataSource dataSource = generateDatasource(host, port, "postgres", username, password);
+            final DataSource dataSource = generateDatasource(host, port, DEFAULT_DB_NAME, username, password);
             try (final Connection connection = dataSource.getConnection();
                  final PreparedStatement preparedStatement = connection.prepareStatement(
                          "DROP TEXT SEARCH CONFIGURATION IF EXISTS ru; " +
@@ -243,7 +244,6 @@ public class TestcontainersPgAutoConfiguration {
                     dictPreparedStatement.executeUpdate();
                 }
             } catch (final SQLException e) {
-                logger.error("cannot init db", e);
                 throw new BeanCreationException("cannot create datasource", e);
             }
             return generateDatasource(host, port, dbName, username, password);
@@ -251,8 +251,8 @@ public class TestcontainersPgAutoConfiguration {
 
         public final DataSource generateDatasource(final String host, final Integer port, final String dbName, final String username, final String password) {
             final PGSimpleDataSource ds = new PGSimpleDataSource();
-            ds.setServerName(host);
-            ds.setPortNumber(port);
+            ds.setServerNames(new String[]{host});
+            ds.setPortNumbers(new int[]{port});
             ds.setDatabaseName(dbName);
             ds.setUser(username);
             ds.setPassword(password);
