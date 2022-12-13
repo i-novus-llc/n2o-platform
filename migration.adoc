@@ -12,8 +12,8 @@ https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-Config-Data-Migr
 https://github.com/spring-projects/spring-security/wiki/OAuth-2.0-Migration-Guide +
 https://github.com/spring-projects/spring-security/releases (секции Breaking Changes, начиная от версии 5.3)
 * Сделать миграции до Spring Cloud 2021.0.5: +
-https://spring.io/blog/2020/12/22/spring-cloud-2020-0-0-aka-ilford-is +
-https://spring.io/blog/2021/12/02/spring-cloud-2021-0-0-codename-jubilee-has-been-released-available
+https://spring.io/blog/2020/12/22/spring-cloud-2020-0-0-aka-ilford-is-available +
+https://spring.io/blog/2021/12/02/spring-cloud-2021-0-0-codename-jubilee-has-been-released
 * Сделать миграции до N2O Framework 7.23: +
 https://n2o.i-novus.ru/docs/guides/migration/to_7_23/
 * Файлы конфигурации bootstrap.yml стали deprecated в новых версиях spring boot и spring cloud, поэтому платформа их также не поддерживает. Вся конфигурация теперь делается через application.yml. В частности для считывания конфигурации из облака используется новое свойство spring.config.import. Подробнее: +
