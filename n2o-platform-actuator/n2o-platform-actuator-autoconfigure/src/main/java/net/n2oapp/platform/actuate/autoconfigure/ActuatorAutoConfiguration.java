@@ -40,6 +40,7 @@ public class ActuatorAutoConfiguration {
     @Configuration
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @ConditionalOnClass(SecurityFilterChain.class)
+    @ConditionalOnBean(HttpSecurity.class)
     @AutoConfigureAfter(SecurityAutoConfiguration.class)
     public static class MonitoringSecurityConfigurerAdapter {
         @Autowired
