@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.context.annotation.*;
 import org.springframework.data.domain.Sort;
 
@@ -27,7 +28,7 @@ import java.util.Set;
  * @since 14.01.2019
  */
 @AutoConfiguration
-@AutoConfigureBefore({CxfAutoConfiguration.class, JaxRsServerAutoConfiguration.class, JaxRsClientAutoConfiguration.class})
+@AutoConfigureBefore({CxfAutoConfiguration.class, JaxRsServerAutoConfiguration.class, JaxRsClientAutoConfiguration.class, JacksonAutoConfiguration.class})
 @PropertySource("classpath:/META-INF/net/n2oapp/platform/jaxrs/default.properties")
 public class JaxRsCommonAutoConfiguration {
     private List<MapperConfigurer> mapperConfigurers;
