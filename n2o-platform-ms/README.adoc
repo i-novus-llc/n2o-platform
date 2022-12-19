@@ -25,13 +25,10 @@
 По умолчанию приложение при старте будет запрашивать настройки из Consul по адресу consul-agent.local.
 Если Consul будет недоступен, то приложение не поднимется.
 
-Для локальной разработки можно выключить получение настроек из Consul,
-добавьте настройку в application.yml:
-[source,yaml]
+Для локальной разработки можно сделать получение настроек из Consul необязательным. Для этого добавьте в переменные окружения настройку:
+[source,properties]
 ----
-spring:
-  config:
-    import: "optional:consul:"
+SPRING_CONFIG_IMPORT=optional:consul:
 ----
 
 == Observability

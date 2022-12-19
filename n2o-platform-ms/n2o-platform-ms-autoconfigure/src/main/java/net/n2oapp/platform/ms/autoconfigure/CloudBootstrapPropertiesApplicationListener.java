@@ -11,7 +11,7 @@ import java.util.Properties;
 
 /**
  * This configuration defines default properties for cloud environment with low priority.
- * These properties are applied before all spring environment preprocessors and spring context initialization.
+ * These properties are applied before all spring environment postprocessors and spring context initialization.
  * Use only for "bootstrap" properties, that should be defined before spring configuration begins.
  */
 public class CloudBootstrapPropertiesApplicationListener implements ApplicationListener<ApplicationEnvironmentPreparedEvent>, Ordered {
@@ -19,7 +19,7 @@ public class CloudBootstrapPropertiesApplicationListener implements ApplicationL
 
     @Override
     public int getOrder() {
-        return EnvironmentPostProcessorApplicationListener.DEFAULT_ORDER - 1; /// before all spring environment preprocessors (contain checks for the presence of specific properties)
+        return EnvironmentPostProcessorApplicationListener.DEFAULT_ORDER - 1; /// before all spring environment postprocessors (contain checks for the presence of specific properties)
     }
 
     @Override
