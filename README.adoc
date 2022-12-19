@@ -60,3 +60,5 @@ image:https://img.shields.io/hexpm/l/plug.svg?style=flat[link="http://www.apache
   </dependencies>
 </dependencyManagement>
 ----
+==  Миграции
+* link:/migration.adoc[Инструкция по миграции на новые версии платформы]

@@ -11,7 +11,7 @@ import java.util.Properties;
 
 /**
  * This configuration defines default properties for test cloud environment with low priority.
- * These properties are applied before all spring environment preprocessors and spring context initialization.
+ * These properties are applied before all spring environment postprocessors and spring context initialization.
  * Use only for "bootstrap" properties, that should be defined before spring configuration begins.
  */
 public class TestBootstrapPropertiesApplicationListener implements ApplicationListener<ApplicationEnvironmentPreparedEvent>, Ordered {
@@ -19,7 +19,7 @@ public class TestBootstrapPropertiesApplicationListener implements ApplicationLi
 
     @Override
     public int getOrder() {
-        return EnvironmentPostProcessorApplicationListener.DEFAULT_ORDER - 2; /// before environment preprocessors and CloudDefaultPropertiesApplicationListener
+        return EnvironmentPostProcessorApplicationListener.DEFAULT_ORDER - 2; /// before environment postprocessors and CloudDefaultPropertiesApplicationListener
     }
 
     @Override
