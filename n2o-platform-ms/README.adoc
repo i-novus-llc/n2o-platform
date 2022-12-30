@@ -62,4 +62,4 @@ n2o.ms.loki.url=http://хост_и_порт_локи/loki/api/v1/push
 По умолчанию `n2o.ms.loki.url=http://loki:3100/loki/api/v1/push`.
 
 === Метрики
-Метрики приложения собираются и экспонируются в формате link:https://grafana.com/oss/prometheus/[prometheus] через endpoint актуатора: `https://хост/контекст/monitoring/prometheus`.
+Метрики приложения собираются и экспонируются в формате link:https://grafana.com/oss/prometheus/[prometheus] через endpoint актуатора: `https://хост/контекст/actuator/prometheus`.
