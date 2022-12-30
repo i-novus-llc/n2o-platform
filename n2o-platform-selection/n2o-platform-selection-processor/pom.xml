@@ -3,7 +3,7 @@
     <parent>
         <artifactId>n2o-platform-selection</artifactId>
         <groupId>net.n2oapp.platform</groupId>
-        <version>5.1.1</version>
+        <version>5.1.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -17,7 +17,7 @@
         <dependency>
             <groupId>net.n2oapp.platform</groupId>
             <artifactId>n2o-platform-selection-api</artifactId>
-            <version>5.1.1</version>
+            <version>5.1.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.google.testing.compile</groupId>
