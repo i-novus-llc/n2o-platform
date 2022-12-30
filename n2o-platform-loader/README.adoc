@@ -110,10 +110,10 @@ n2o.loader.client:
 Если настройка старта `n2o.loader.client.start` имеет значение `DEPLOY` или `UP`,
 для загрузки данных в сервисы достаточно запустить приложение.
 
-Результаты загрузки можно узнать с помощью сервиса актуатора `GET /monitoring/loaders`.
+Результаты загрузки можно узнать с помощью сервиса актуатора `GET /actuator/loaders`.
 Через метод POST можно запустить загрузчики еще раз:
 ----
-curl -X POST /monitoring/loaders
+curl -X POST /actuator/loaders
 ----
 
 Загрузчики можно запускать программно через класс `ClientLoaderRunner`:

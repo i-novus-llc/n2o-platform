@@ -38,6 +38,12 @@ public class SecurityAutoConfiguration {
         this.securityProperties = securityProperties;
     }
 
+    /// - заменить на вебклиент
+    /// - изучить нужно ли передавать токен пользователя или стоит перейти на передачу его отдельно,
+    ///   а токен авторизации у каждого сервиса должен быть свой? (Игорь Лебеденко?)
+    ///   Возможно стоит найти другой способ получения информации о пользователе и его правах в микросервисах, например, через некий спец хедер,
+    ///   который можно резолвить через отдельный микросервис или через sso. Но тут могут быть проблемы с производительностью,
+    ///   так как это может кратно поднять количество запросов.
     @Bean
     @Scope(value = "request", proxyMode = ScopedProxyMode.INTERFACES)
     public PlatformRestTemplate oauth2RestTemplate(OAuth2ClientContext oauth2ClientContext,
@@ -78,6 +84,7 @@ public class SecurityAutoConfiguration {
         return context;
     }
 
+    /// ?
     /**
      * Бин простой конфертации токенов с методом decode
      */
@@ -88,6 +95,7 @@ public class SecurityAutoConfiguration {
         return platformAccessTokenConverter;
     }
 
+    /// ?
     /**
      * Информация о клиенте OAuth2 при использовании grant_type=client_credentials*
      */
@@ -100,6 +108,7 @@ public class SecurityAutoConfiguration {
         return clientCredentials;
     }
 
+    /// нужен для получения прав доступа спрингом
     /**
      * Бин конвертации аутентификации в информацию о токене и обратно
      */
@@ -113,6 +122,7 @@ public class SecurityAutoConfiguration {
         return new N2oPlatformAuthenticationConverter(securityProperties.getUsernameKey(), securityProperties.getAuthoritiesKey(), authoritiesMapper);
     }
 
+    /// реализация отключения проверки времени истечения действия токена
     @Bean
     public ResourceServerTokenServices tokenServices(TokenStore tokenStore) {
         DefaultTokenServices defaultTokenServices;
@@ -141,6 +151,7 @@ public class SecurityAutoConfiguration {
         return defaultTokenServices;
     }
 
+    /// выключение проверки поля aud
     @Bean
     @ConditionalOnMissingBean
     public TokenStore tokenStore(UserAuthenticationConverter userAuthenticationConverter) {
