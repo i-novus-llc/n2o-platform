@@ -4,6 +4,7 @@ import net.n2oapp.platform.actuate.health.KafkaHealthIndicator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.health.CompositeHealthContributorConfiguration;
 import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.actuate.autoconfigure.web.servlet.ServletManagementContextAutoConfiguration;
 import org.springframework.boot.actuate.health.HealthContributor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -47,8 +48,8 @@ public class ActuatorAutoConfiguration {
         Environment env;
 
         @Bean
-        public SecurityFilterChain actuatorFilterChain(HttpSecurity http) throws Exception {
-            http.csrf().disable().antMatcher(env.getProperty("management.endpoints.web.base-path") + "/**").authorizeRequests().anyRequest().permitAll();
+        public SecurityFilterChain actFilterChain(HttpSecurity http) throws Exception {
+            http.requestMatcher(EndpointRequest.toAnyEndpoint()).authorizeRequests(requests -> requests.anyRequest().permitAll());
             return http.build();
         }
     }
