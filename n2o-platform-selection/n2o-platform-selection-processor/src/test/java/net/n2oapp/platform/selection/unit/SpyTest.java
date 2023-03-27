@@ -10,10 +10,10 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class SpyTest {
+class SpyTest {
 
     @Test
-    public void test() {
+    void test() {
         EmployeeSelection selection = EmployeeSelection.create().id();
         Employee employee = new Employee();
         EmployeeSpy spy = EmployeeSpy.spy(employee, selection);

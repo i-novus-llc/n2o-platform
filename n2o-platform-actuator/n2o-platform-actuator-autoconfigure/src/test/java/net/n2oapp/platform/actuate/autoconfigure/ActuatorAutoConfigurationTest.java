@@ -14,7 +14,7 @@ import org.springframework.core.env.Environment;
  */
 @SpringBootTest(classes={ActuatorAutoConfigurationTest.class,TestKafkaConfig.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EnableAutoConfiguration
-public class ActuatorAutoConfigurationTest {
+class ActuatorAutoConfigurationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
@@ -22,7 +22,7 @@ public class ActuatorAutoConfigurationTest {
     private Environment env;
 
     @Test
-    public void testActuatorAutoConfiguration() {
+    void testActuatorAutoConfiguration() {
         ActuatorHealthResponse response = restTemplate.getForObject(env.getProperty("management.endpoints.web.base-path") + "/health", ActuatorHealthResponse.class);
 
         /// assert that health endpoint is up and accessible, and that kafka is down and overall application health is "DOWN"

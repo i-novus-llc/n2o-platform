@@ -15,7 +15,7 @@ import static org.hamcrest.Matchers.is;
 @SpringBootTest(classes = PackageScanMessageSourceTest.class,
         webEnvironment = SpringBootTest.WebEnvironment.NONE,
         properties = {"i18n.global.enabled=true", "i18n.global.package-name=global"})
-public class PackageScanMessageSourceTest {
+class PackageScanMessageSourceTest {
 
     private @Autowired MessageSource messageSource;
 
@@ -23,7 +23,7 @@ public class PackageScanMessageSourceTest {
      * Проверка сканирования базовых имен по пакету для {@link MessageSource}
      */
     @Test
-    public void test() {
+    void test() {
         // Это сообщение находится в global/test.properties.
         // Оно будет найдено, т.к. включено сканирование базовых имен по пакету "global".
         assertThat(messageSource.getMessage("test.message", null, Locale.forLanguageTag("ru")), is("Глобальное сообщение"));

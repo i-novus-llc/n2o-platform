@@ -17,14 +17,14 @@ import static org.junit.jupiter.api.Assertions.fail;
 @SpringBootTest(classes = SimpleMessageSourceTest.class,
         webEnvironment = SpringBootTest.WebEnvironment.NONE,
         properties = {"i18n.global.enabled=false"})
-public class SimpleMessageSourceTest {
+class SimpleMessageSourceTest {
     private @Autowired MessageSource messageSource;
 
     /**
      * Проверка отключения сканирования базовых имен для {@link MessageSource}
      */
     @Test
-    public void test() {
+    void test() {
         try {
             // Это сообщение не будет найдено, т.к. оно находится в пакете "global",
             // а подключен только messages.properties.

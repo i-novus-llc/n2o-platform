@@ -30,12 +30,12 @@ import static org.hamcrest.Matchers.instanceOf;
 /**
  * Тесты класса {@link PlatformExceptionHandler}
  */
-public class PlatformExceptionHandlerTest {
+class PlatformExceptionHandlerTest {
     /**
      * Тест обработки пользовательских сообщений из исключений выбрасываемых RestTemplate
      */
     @Test
-    public void handleUserMessageFromRestTemplate() {
+    void handleUserMessageFromRestTemplate() {
         PlatformExceptionHandler handler = new PlatformExceptionHandler();
         String body = "{\"message\":\"Wrong data\"}";
         N2oException e = handler.handle((CompiledObject.Operation) null, null,
@@ -53,7 +53,7 @@ public class PlatformExceptionHandlerTest {
      * Тест обработки пользовательских сообщений из исключений выбрасываемых JaxRs Proxy Client
      */
     @Test
-    public void handleUserMessageFromJaxRsClient() {
+    void handleUserMessageFromJaxRsClient() {
         PlatformExceptionHandler handler = new PlatformExceptionHandler();
         N2oException e = handler.handle((CompiledObject.Operation) null, null,
                 new RestException(new RestMessage("Wrong data"), 400));
@@ -66,7 +66,7 @@ public class PlatformExceptionHandlerTest {
      * Тест обработки пользовательских сообщений из исключений UserException
      */
     @Test
-    public void handleUserMessageFromUserException() {
+    void handleUserMessageFromUserException() {
         PlatformExceptionHandler handler = new PlatformExceptionHandler();
         N2oException e = handler.handle((CompiledObject.Operation) null, null,
                 new UserException("Wrong data"));
@@ -79,7 +79,7 @@ public class PlatformExceptionHandlerTest {
      * Тест обработки технических исключений выбрасываемых RestTemplate
      */
     @Test
-    public void handleStacktraceFromRestTemplate() {
+    void handleStacktraceFromRestTemplate() {
         PlatformExceptionHandler handler = new PlatformExceptionHandler();
         String body = "{\"message\":\"Unexpected error\",\"stackTrace\":" +
                 "[\"com.example.test.BusinessException: something went wrong\"," +
@@ -102,7 +102,7 @@ public class PlatformExceptionHandlerTest {
      * Тест обработки технических исключений выбрасываемых JaxRs Proxy Client
      */
     @Test
-    public void handleStacktraceFromJaxRsClient() {
+    void handleStacktraceFromJaxRsClient() {
         PlatformExceptionHandler handler = new PlatformExceptionHandler();
         RestMessage message = new RestMessage("Unexpected error");
         message.setStackTrace(new String[]{
@@ -122,7 +122,7 @@ public class PlatformExceptionHandlerTest {
      * Тест обработки пользовательских сообщений из множественных ошибок, выбрасываемых JaxRs Proxy Client
      */
     @Test
-    public void handleMultipleErrorsFromJaxRsClient() {
+    void handleMultipleErrorsFromJaxRsClient() {
         PlatformExceptionHandler handler = new PlatformExceptionHandler();
 
         ObjectSimpleField inParam1 = new ObjectSimpleField();

@@ -39,7 +39,7 @@ import static org.hamcrest.Matchers.notNullValue;
                 "n2o.platform.security.access-token-uri=http://localhost:8787/auth/token"})
 @EnableResourceServer
 @WireMockTest(httpPort = 8787)
-public class OAuth2ClientTest {
+class OAuth2ClientTest {
 
     private static final String TOKEN_VALUE = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJkZkRGYlJkU3FDZlVkMGV" +
             "vTXRQV0UzVXk2bko5UFhHRDFFN2Q3MXE5c1pNIn0.eyJqdGkiOiJiNmZjZWZhMC0yZjc1LTRlNTMtYTNjMS02M2ExZjE2ZTYzNjciLCJl" +
@@ -62,7 +62,7 @@ public class OAuth2ClientTest {
      * Тест чтения токена через {@link TokenStore}
      */
     @Test
-    public void readAccessToken() {
+    void readAccessToken() {
         OAuth2AccessToken token = tokenStore.readAccessToken(TOKEN_VALUE);
         assertThat(token, notNullValue());
         assertThat(token.getTokenType(), equalToIgnoringCase("Bearer"));
@@ -75,7 +75,7 @@ public class OAuth2ClientTest {
      * Тест запроса с токеном (клиент -> сервер)
      */
     @Test
-    public void authRequest() {
+    void authRequest() {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(TOKEN_VALUE);
@@ -90,7 +90,7 @@ public class OAuth2ClientTest {
      * Тест запроса без токена (клиент -> сервер)
      */
     @Test
-    public void noAuthRequest() {
+    void noAuthRequest() {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -108,7 +108,7 @@ public class OAuth2ClientTest {
      * Тест запроса с токеном с дальнейшим проксированием на новый запрос (клиент -> сервер -> сервер)
      */
     @Test
-    public void authProxyRequest() {
+    void authProxyRequest() {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(TOKEN_VALUE);

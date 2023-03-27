@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
                 "jaxrs.logging-in.pretty-logging=" + DefineLoggingAttributesTest.PRETTY_LOGGING
         },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class DefineLoggingAttributesTest {
+class DefineLoggingAttributesTest {
 
     static final int LIMIT = 1024;
     static final int IN_MEM_THRESHOLD = 100 * 1024;
@@ -39,31 +39,31 @@ public class DefineLoggingAttributesTest {
     private LoggingInInterceptor loggingInInterceptor;
 
     @Test
-    public void testLimit() {
+    void testLimit() {
         assertEquals(LIMIT, loggingInInterceptor.getLimit());
     }
 
     @Test
-    public void testInMemThreshold() {
+    void testInMemThreshold() {
         assertEquals(IN_MEM_THRESHOLD, loggingInInterceptor.getInMemThreshold());
     }
 
     @Test
-    public void testLogBinary() throws NoSuchFieldException, IllegalAccessException {
+    void testLogBinary() throws NoSuchFieldException, IllegalAccessException {
         Field privateLogBinaryField = AbstractLoggingInterceptor.class.getDeclaredField("logBinary");
         privateLogBinaryField.setAccessible(true);
         assertEquals(LOG_BINARY, privateLogBinaryField.get(loggingInInterceptor));
     }
 
     @Test
-    public void testLogMultipart() throws NoSuchFieldException, IllegalAccessException {
+    void testLogMultipart() throws NoSuchFieldException, IllegalAccessException {
         Field privateLogMultipartField = AbstractLoggingInterceptor.class.getDeclaredField("logMultipart");
         privateLogMultipartField.setAccessible(true);
         assertEquals(LOG_MULTIPART, privateLogMultipartField.get(loggingInInterceptor));
     }
 
     @Test
-    public void testPrettyLogging() throws NoSuchFieldException, IllegalAccessException {
+    void testPrettyLogging() throws NoSuchFieldException, IllegalAccessException {
         Field privateSenderField = AbstractLoggingInterceptor.class.getDeclaredField("sender");
         privateSenderField.setAccessible(true);
         LogEventSender sender = (LogEventSender) privateSenderField.get(loggingInInterceptor);

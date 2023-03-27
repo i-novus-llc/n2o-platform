@@ -14,10 +14,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(SpringExtension.class)
-public class RestCriteriaTest {
+class RestCriteriaTest {
 
     @Test
-    public void testMoveToFirstPage() {
+    void testMoveToFirstPage() {
         SomeCriteria someCriteria = createSomeCriteria(15);
         RestCriteria first = someCriteria.first();
         assertEquals(RestCriteria.FIRST_PAGE_NUMBER, first.getPageNumber());
@@ -25,7 +25,7 @@ public class RestCriteriaTest {
     }
 
     @Test
-    public void testPaginateForward() {
+    void testPaginateForward() {
         SomeCriteria someCriteria = createSomeCriteria(54);
         RestCriteria next = someCriteria.next();
         assertEquals(someCriteria.getPageNumber() + 1, next.getPageNumber());
@@ -33,14 +33,14 @@ public class RestCriteriaTest {
     }
 
     @Test
-    public void testPaginateBackward() {
+    void testPaginateBackward() {
         SomeCriteria someCriteria = createSomeCriteria(3);
         RestCriteria prev = someCriteria.previous();
         assertEquals(someCriteria.getPageNumber() - 1, prev.getPageNumber());
     }
 
     @Test
-    public void testPaginateBackwardWhenBeginningReached() {
+    void testPaginateBackwardWhenBeginningReached() {
         SomeCriteria someCriteria = createSomeCriteria(RestCriteria.FIRST_PAGE_NUMBER);
         Assertions.assertThrows(IllegalStateException.class, someCriteria::previous);
     }

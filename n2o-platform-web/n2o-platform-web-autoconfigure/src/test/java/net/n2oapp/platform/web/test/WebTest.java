@@ -20,7 +20,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 @SpringBootTest(classes = WebTest.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @SpringBootApplication(exclude = OAuth2AutoConfiguration.class)
-public class WebTest {
+class WebTest {
 
     @LocalServerPort
     private int port;
@@ -29,12 +29,12 @@ public class WebTest {
     private String forwardHeadersStrategy;
 
     @Test
-    public void propertiesLoaded() {
+    void propertiesLoaded() {
         assertThat(forwardHeadersStrategy, is("native"));
     }
 
     @Test
-    public void pageUp() {
+    void pageUp() {
         RestTemplate restTemplate = new RestTemplate();
         Map<?, ?> indexPage = restTemplate.getForObject("http://localhost:" + port + "/n2o/page/", Map.class);
         assertThat(indexPage, notNullValue());

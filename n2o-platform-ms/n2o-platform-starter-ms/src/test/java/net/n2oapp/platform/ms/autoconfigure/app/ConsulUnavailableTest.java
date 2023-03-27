@@ -23,7 +23,7 @@ import org.springframework.core.env.Environment;
                 "spring.cloud.consul.host=invalidaddress", /// emulate unavailability
                 "management.health.consul.enabled=false"}) /// do not fail healthcheck if consul unavailable
 @EnableAutoConfiguration
-public class ConsulUnavailableTest {
+class ConsulUnavailableTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
@@ -31,7 +31,7 @@ public class ConsulUnavailableTest {
     Environment env;
 
     @Test
-    public void testStartupApplicationWithoutConsul() {
+    void testStartupApplicationWithoutConsul() {
         ActuatorHealthResponse response = restTemplate.getForObject(env.getProperty("management.endpoints.web.base-path") + "/health", ActuatorHealthResponse.class);
         assert response.getStatus().equals(Status.UP.getCode()) : "Application startup failed";
     }

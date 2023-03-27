@@ -12,10 +12,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class JoinerTest {
+class JoinerTest {
 
     @Test
-    public void test() {
+    void test() {
         EmployeeJoinerImpl joiner = new EmployeeJoinerImpl(
             null,
             null,

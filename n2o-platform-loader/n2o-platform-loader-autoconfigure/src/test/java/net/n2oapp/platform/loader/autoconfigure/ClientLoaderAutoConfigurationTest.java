@@ -10,14 +10,14 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ClientLoaderAutoConfigurationTest {
+class ClientLoaderAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(
                     ClientLoaderAutoConfiguration.class));
 
     @Test
-    public void disabled() {
+    void disabled() {
         this.contextRunner
                 .withClassLoader(new FilteredClassLoader(ClientLoader.class))
                 .run((context) -> {
@@ -26,7 +26,7 @@ public class ClientLoaderAutoConfigurationTest {
     }
 
     @Test
-    public void startAfterUp() {
+    void startAfterUp() {
         this.contextRunner
                 .withPropertyValues("n2o.loader.client.start=UP")
                 .run((context) -> {
@@ -39,7 +39,7 @@ public class ClientLoaderAutoConfigurationTest {
     }
 
     @Test
-    public void startOnDeploy() {
+    void startOnDeploy() {
         this.contextRunner
                 .withPropertyValues("n2o.loader.client.start=DEPLOY")
                 .run((context) -> {
@@ -52,7 +52,7 @@ public class ClientLoaderAutoConfigurationTest {
     }
 
     @Test
-    public void startManual() {
+    void startManual() {
         this.contextRunner
                 .withPropertyValues("n2o.loader.client.start=MANUAL")
                 .run((context) -> {
@@ -65,7 +65,7 @@ public class ClientLoaderAutoConfigurationTest {
     }
 
     @Test
-    public void startDelayed() {
+    void startDelayed() {
         this.contextRunner
                 .withPropertyValues("n2o.loader.client.start=DELAYED")
                 .run((context) -> {
@@ -78,7 +78,7 @@ public class ClientLoaderAutoConfigurationTest {
     }
 
     @Test
-    public void configurers() {
+    void configurers() {
         this.contextRunner
                 .withUserConfiguration(TestClientConfiguration.class)
                 .run((context) -> {
@@ -90,7 +90,7 @@ public class ClientLoaderAutoConfigurationTest {
     }
 
     @Test
-    public void commands() {
+    void commands() {
         this.contextRunner
                 .withPropertyValues(
                         "n2o.loader.client.commands[0].server=http://localhost:8080/api",
@@ -119,7 +119,7 @@ public class ClientLoaderAutoConfigurationTest {
     }
 
     @Test
-    public void health() {
+    void health() {
         this.contextRunner
                 .withPropertyValues(
                         "n2o.loader.client.health-check=false")

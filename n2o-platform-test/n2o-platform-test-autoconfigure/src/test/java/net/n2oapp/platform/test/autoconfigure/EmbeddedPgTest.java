@@ -11,12 +11,12 @@ import java.sql.ResultSet;
 
 @SpringBootTest(classes = Application.class)
 @EnableEmbeddedPg
-public class EmbeddedPgTest {
+class EmbeddedPgTest {
     @Autowired
     private DataSource dataSource;
 
     @Test
-    public void testDataSource() throws Exception {
+    void testDataSource() throws Exception {
         try (ResultSet rs = dataSource.getConnection().createStatement().executeQuery("SELECT datname FROM pg_database where datname like 'db_%'")) {
             Assertions.assertTrue(rs.next());
         }

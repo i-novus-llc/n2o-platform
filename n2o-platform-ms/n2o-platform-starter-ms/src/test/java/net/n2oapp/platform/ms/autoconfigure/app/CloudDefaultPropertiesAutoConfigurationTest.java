@@ -17,7 +17,7 @@ import org.springframework.core.env.Environment;
                 "n2o.ms.loki.enabled=true" /// test that enabled loki doesn't fails app context load
         })
 @EnableAutoConfiguration
-public class CloudDefaultPropertiesAutoConfigurationTest {
+class CloudDefaultPropertiesAutoConfigurationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
@@ -25,7 +25,7 @@ public class CloudDefaultPropertiesAutoConfigurationTest {
     Environment env;
 
     @Test
-    public void testStartupApplication() {
+    void testStartupApplication() {
         ActuatorHealthResponse response = restTemplate.getForObject(env.getProperty("management.endpoints.web.base-path") + "/health", ActuatorHealthResponse.class);
         assert response.getStatus().equals(Status.UP.getCode()) : "Application startup failed";
     }
