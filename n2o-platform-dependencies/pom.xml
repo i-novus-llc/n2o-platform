@@ -23,6 +23,11 @@
         <feign.version>10.10.1</feign.version>
         <feign-jaxrs-inovus.version>2.0</feign-jaxrs-inovus.version>
         <jackson-jaxrs-json.version>2.12.7</jackson-jaxrs-json.version>
+        <loki-logback-appender.version>1.4.0</loki-logback-appender.version>
+        <google-guava.version>31.1-jre</google-guava.version>
+        <inovus-liquibase-core.version>3.6.2.5.inovus</inovus-liquibase-core.version>
+        <joda-convert.version>2.2.1</joda-convert.version>
+        <spring-security-oauth2.version>2.5.2.RELEASE</spring-security-oauth2.version>
     </properties>
 
     <dependencyManagement>
@@ -65,8 +70,8 @@
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
-                <artifactId>n2o-platform-starter-audit</artifactId>
-                <version>5.1.0-SNAPSHOT</version>
+                <artifactId>n2o-platform-starter-db-audit</artifactId>
+                <version>6.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
@@ -220,7 +225,7 @@
             <dependency>
                 <groupId>org.springframework.security.oauth</groupId>
                 <artifactId>spring-security-oauth2</artifactId>
-                <version>2.3.5.RELEASE</version>
+                <version>${spring-security-oauth2.version}</version>
             </dependency>
 
             <!-- CXF -->
@@ -350,14 +355,14 @@
             <dependency>
                 <groupId>org.joda</groupId>
                 <artifactId>joda-convert</artifactId>
-                <version>2.2.1</version>
+                <version>${joda-convert.version}</version>
             </dependency>
 
             <!-- Liquibase patched for working classpath*: -->
             <dependency>
                 <groupId>ru.i-novus.components</groupId>
                 <artifactId>liquibase-core</artifactId>
-                <version>3.6.2.4.inovus</version>
+                <version>${inovus-liquibase-core.version}</version>
             </dependency>
 
             <dependency>
@@ -445,7 +450,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>31.1-jre</version>
+                <version>${google-guava.version}</version>
             </dependency>
 
             <dependency>
@@ -475,7 +480,7 @@
             <dependency>
                 <groupId>com.github.loki4j</groupId>
                 <artifactId>loki-logback-appender</artifactId>
-                <version>1.2.0</version>
+                <version>${loki-logback-appender.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

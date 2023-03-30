@@ -2,11 +2,11 @@ package net.n2oapp.platform.actuate.autoconfigure;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.core.env.Environment;
 
 /**
  * @author RMakhmutov
@@ -19,11 +19,11 @@ class ActuatorAutoConfigurationTest {
     private TestRestTemplate restTemplate;
 
     @Autowired
-    private Environment env;
+    WebEndpointProperties webEndpointProperties;
 
     @Test
     void testActuatorAutoConfiguration() {
-        ActuatorHealthResponse response = restTemplate.getForObject(env.getProperty("management.endpoints.web.base-path") + "/health", ActuatorHealthResponse.class);
+        ActuatorHealthResponse response = restTemplate.getForObject(webEndpointProperties.getBasePath() + "/health", ActuatorHealthResponse.class);
 
         /// assert that health endpoint is up and accessible, and that kafka is down and overall application health is "DOWN"
         assert response.getStatus().equals(Status.DOWN.getCode());

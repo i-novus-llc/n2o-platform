@@ -2,11 +2,11 @@ package net.n2oapp.platform.ms.autoconfigure.app;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.core.env.Environment;
 
 /**
  * @author RMakhmutov
@@ -22,11 +22,11 @@ class CloudDefaultPropertiesAutoConfigurationTest {
     private TestRestTemplate restTemplate;
 
     @Autowired
-    Environment env;
+    WebEndpointProperties webEndpointProperties;
 
     @Test
     void testStartupApplication() {
-        ActuatorHealthResponse response = restTemplate.getForObject(env.getProperty("management.endpoints.web.base-path") + "/health", ActuatorHealthResponse.class);
+        ActuatorHealthResponse response = restTemplate.getForObject(webEndpointProperties.getBasePath() + "/health", ActuatorHealthResponse.class);
         assert response.getStatus().equals(Status.UP.getCode()) : "Application startup failed";
     }
 
