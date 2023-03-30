@@ -5,6 +5,18 @@
 
 == 5.1
 
+==== Изменения в платформе
+* Файлы конфигурации bootstrap.yml стали deprecated в новых версиях spring boot и spring cloud, поэтому платформа их также не поддерживает. Вся конфигурация теперь делается через application.yml. В частности для считывания конфигурации из облака используется новое свойство spring.config.import. Подробнее: +
+https://docs.spring.io/spring-cloud-consul/docs/current/reference/html/#spring-cloud-consul-config
+https://spring.io/blog/2020/08/14/config-file-processing-in-spring-boot-2-4
+https://docs.spring.io/spring-boot/docs/2.7.5/reference/htmlsingle/#features.external-config
+* Consul Configuration теперь по умолчанию обязателен для старта приложения. Для тестов, использующих test-starter платформы, наоборот,
+по умолчанию считывание конфигурации из Consul выключено.
+* Формат по умолчанию для хранения настроек в Consul теперь YAML: https://docs.spring.io/spring-cloud-consul/docs/current/reference/html/#spring-cloud-consul-config-format
+* Изменение имени модуля: n2o-platform-audit теперь называется n2o-platform-db-audit. Стартер и другие зависимости также поменяли свои имена соответственно.
+* Удалён профиль `consul`. Для работы без Consul можно использовать способ описанный в link:/n2o-platform-ms/README.adoc[документации к n2o-platform-ms-starter].
+
+==== Изменения в зависимостях
 * Сделать миграции до Spring Boot 2.7.5: +
 https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.7-Release-Notes +
 https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.6-Release-Notes +
@@ -19,12 +31,3 @@ https://spring.io/blog/2020/12/22/spring-cloud-2020-0-0-aka-ilford-is-available 
 https://spring.io/blog/2021/12/02/spring-cloud-2021-0-0-codename-jubilee-has-been-released
 * Сделать миграции до N2O Framework 7.23: +
 https://n2o.i-novus.ru/docs/guides/migration/to_7_23/
-* Файлы конфигурации bootstrap.yml стали deprecated в новых версиях spring boot и spring cloud, поэтому платформа их также не поддерживает. Вся конфигурация теперь делается через application.yml. В частности для считывания конфигурации из облака используется новое свойство spring.config.import. Подробнее: +
-https://docs.spring.io/spring-cloud-consul/docs/current/reference/html/#spring-cloud-consul-config
-https://spring.io/blog/2020/08/14/config-file-processing-in-spring-boot-2-4
-https://docs.spring.io/spring-boot/docs/2.7.5/reference/htmlsingle/#features.external-config
-* Consul Configuration теперь по умолчанию обязателен для старта приложения. Для тестов, использующих test-starter платформы, наоборот,
-по умолчанию считывание конфигурации из Consul выключено.
-* Формат по умолчанию для хранения настроек в Consul теперь YAML: https://docs.spring.io/spring-cloud-consul/docs/current/reference/html/#spring-cloud-consul-config-format
-* Изменение имени модуля: n2o-platform-audit теперь называется n2o-platform-db-audit. Стартер и другие зависимости также поменяли свои имена соответственно.
-* Удалён профиль `consul`. Для работы без Consul можно использовать способ описанный в link:/n2o-platform-ms/README.adoc[документации к n2o-platform-ms-starter].
