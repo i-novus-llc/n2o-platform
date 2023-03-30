@@ -23,7 +23,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.Map;
@@ -48,9 +48,8 @@ public class ActuatorAutoConfiguration {
         Environment env;
 
         @Bean
-        public SecurityFilterChain actFilterChain(HttpSecurity http) throws Exception {
-            http.requestMatcher(EndpointRequest.toAnyEndpoint()).authorizeRequests(requests -> requests.anyRequest().permitAll());
-            return http.build();
+        public WebSecurityCustomizer actuatorSecurityCustomizer() {
+            return web -> web.ignoring().requestMatchers(EndpointRequest.toAnyEndpoint());
         }
     }
 
