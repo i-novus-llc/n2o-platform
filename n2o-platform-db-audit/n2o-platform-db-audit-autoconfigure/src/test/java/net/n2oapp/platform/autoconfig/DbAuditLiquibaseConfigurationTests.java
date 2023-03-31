@@ -11,24 +11,24 @@ import org.springframework.lang.Nullable;
 
 @SpringBootApplication
 @SpringBootTest(classes = {DbAuditLiquibaseConfigurationTests.class, DbAuditLiquibaseConfiguration.class})
-public class DbAuditLiquibaseConfigurationTests {
+class DbAuditLiquibaseConfigurationTests {
     @Autowired
     JdbcTemplate jdbcTemplate;
     @Autowired
     ApplicationContext context;
 
     @Test
-    public void auditLiquibaseExist() {
+    void auditLiquibaseExist() {
         Assertions.assertNotNull(context.getBean("auditLiquibase"));
     }
 
     @Test
-    public void emptyLiquibaseBean() {
+    void emptyLiquibaseBean() {
         Assertions.assertFalse(context.getBean("liquibase") instanceof Nullable);
     }
 
     @Test
-    public void testDBChangelog() {
+    void testDBChangelog() {
         Assertions.assertTrue(jdbcTemplate.queryForObject("SELECT EXISTS (SELECT 1 FROM information_schema.tables " +
                 "WHERE  table_schema = 'PUBLIC' AND table_name = 'DATABASECHANGELOG')", Boolean.class));
     }

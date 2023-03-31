@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.fail;
                 "cxf.jaxrs.client.receive.timeout=1000",
         },
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-public class DefineReceiveTimeoutTest {
+class DefineReceiveTimeoutTest {
 
     @BeforeAll
     public static void init() {
@@ -46,7 +46,7 @@ public class DefineReceiveTimeoutTest {
      * Проверка, что нет ошибки при выполнении запроса быстрее, чем указано в таймауте
      * */
     @Test
-    public void testReceiveTimeoutSuccess() throws InterruptedException {
+    void testReceiveTimeoutSuccess() throws InterruptedException {
         assertEquals("timeout success", client.timeoutSuccess());
     }
 
@@ -56,7 +56,7 @@ public class DefineReceiveTimeoutTest {
      * Погрешность равна 1 секунде
      * */
     @Test
-    public void testReceiveTimeoutFail() {
+    void testReceiveTimeoutFail() {
         long start = System.currentTimeMillis();
         try {
             client.timeoutFailure();

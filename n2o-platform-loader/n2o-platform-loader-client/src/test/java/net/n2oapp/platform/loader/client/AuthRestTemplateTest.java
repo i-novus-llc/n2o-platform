@@ -17,27 +17,27 @@ import static org.hamcrest.core.Is.is;
 
 @SpringBootTest(classes = TestApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class AuthRestTemplateTest {
+class AuthRestTemplateTest {
 
     @LocalServerPort
     private String port;
 
     @Test
-    public void testBasicAuthContext() {
+    void testBasicAuthContext() {
         ClientContext clientContext = new BasicAuthClientContext("user", "password");
         assertThat(clientContext.getTokenType(), is("Basic"));
         assertThat(clientContext.getAccessToken(), is("dXNlcjpwYXNzd29yZA=="));
     }
 
     @Test
-    public void testOauth2Context() {
+    void testOauth2Context() {
         ClientContext clientContext = new OAuth2ClientContext("testClient", "testClientSecret", "http://localhost:" + port + "/token");
         assertThat(clientContext.getTokenType(), is("Bearer"));
         assertThat(clientContext.getAccessToken(), is("test_token"));
     }
 
     @Test
-    public void testAuthRestTemplate() {
+    void testAuthRestTemplate() {
         //token acquire failed
         try {
             RestOperations template = new AuthRestTemplate(Map.of("http://localhost:" + port + "/resource", new OAuth2ClientContext("testClient", "testClientSecret", "http://localhost:" + port + "/hello")));

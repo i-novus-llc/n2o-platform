@@ -13,13 +13,13 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ServerLoaderAutoConfigurationTest {
+class ServerLoaderAutoConfigurationTest {
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(
                     ServerLoaderAutoConfiguration.class));
 
     @Test
-    public void disabled() {
+    void disabled() {
         this.contextRunner
                 .withClassLoader(new FilteredClassLoader(ServerLoader.class))
                 .run((context) -> {
@@ -28,7 +28,7 @@ public class ServerLoaderAutoConfigurationTest {
     }
 
     @Test
-    public void loaders() {
+    void loaders() {
         this.contextRunner
                 .withUserConfiguration(TestServerConfiguration.class)
                 .run((context) -> {
@@ -39,7 +39,7 @@ public class ServerLoaderAutoConfigurationTest {
     }
 
     @Test
-    public void settings() {
+    void settings() {
         this.contextRunner
                 .withUserConfiguration(TestServerConfiguration.class)
                 .withPropertyValues(

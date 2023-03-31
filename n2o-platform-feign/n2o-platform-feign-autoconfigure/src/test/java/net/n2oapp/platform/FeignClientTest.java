@@ -50,7 +50,7 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
                 "net.n2oapp.platform.jaxrs.autoconfigure," +
                 "org.apache.cxf.jaxrs.validation",
                 "n2o.ui.message.stacktrace=true"})
-public class FeignClientTest {
+class FeignClientTest {
 
     @MockBean
     private OAuth2ClientContext oAuth2ClientContext;
@@ -71,7 +71,7 @@ public class FeignClientTest {
      * Проверка, что REST прокси клиент обрабатывает Pageable параметры и параметры фильтрации.
      */
     @Test
-    public void pagingAndFiltering() throws Exception {
+    void pagingAndFiltering() throws Exception {
         SomeCriteria criteria = new SomeCriteria(2, 20);
         criteria.setLikeName("John");
         SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy hh:mm");
@@ -103,7 +103,7 @@ public class FeignClientTest {
      * Проверка, что REST прокси клиент обрабатывает Sort.Order параметры.
      */
     @Test
-    public void sort() {
+    void sort() {
         SomeCriteria criteria = new SomeCriteria(1, 10,
                 Sort.by(new Sort.Order(ASC, "name"), new Sort.Order(DESC, "date")));
         Page<SomeModel> page = client.search(criteria);
@@ -116,7 +116,7 @@ public class FeignClientTest {
      * Проверка обработки JSR303 валидаций от сервера к прокси клиенту.
      */
     @Test
-    public void validations() {
+    void validations() {
         SomeModel model = new SomeModel();
         try {
             client.create(model);
@@ -132,7 +132,7 @@ public class FeignClientTest {
      * Проверка проброса исключений от сервера к прокси клиенту с сохранением стектрейса.
      */
     @Test
-    public void exceptions() {
+    void exceptions() {
         try {
             client.update(new SomeModel());//при изменении не задан [id], это вызовет ошибку на сервере
             fail();
@@ -155,7 +155,7 @@ public class FeignClientTest {
      * Проверка локализации сообщений, выбрасываемых исключением i18n {@link UserException}
      */
     @Test
-    public void i18n() {
+    void i18n() {
         try {
             client.update(new SomeModel(-1L));//при изменении [id] должен быть положительным числом, это вызовет ошибку на сервере
             fail();
@@ -170,7 +170,7 @@ public class FeignClientTest {
      * Проверка сериализации/десериализации Page c абстрактным типом
      */
     @Test
-    public void pageOfAbstractModel() {
+    void pageOfAbstractModel() {
         assertThat(client.searchModel(new SomeCriteria()).getContent().get(0), instanceOf(StringModel.class));
     }
 
@@ -178,7 +178,7 @@ public class FeignClientTest {
      * Проверка списка ошибок
      */
     @Test
-    public void userExceptionsWithMessageList() {
+    void userExceptionsWithMessageList() {
         try {
             client.throwErrors();
             fail();
@@ -192,12 +192,12 @@ public class FeignClientTest {
     }
 
     @Test
-    public void testAuthorization() {
+    void testAuthorization() {
         assertThat(client.authHeader().get("Authorization"), is("Bearer " + TEST_TOKEN));
     }
 
     @Test
-    public void testMapQueryParams() {
+    void testMapQueryParams() {
         Map<String, String> map = Map.of("number", "1", "code", "1");
         assertThat(client.mapQueryParam(map), is(map));
         MapParamHolder holder = new MapParamHolder();

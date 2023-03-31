@@ -44,7 +44,7 @@ import static org.hamcrest.core.Is.is;
                 "cxf.jaxrs.client.address=http://localhost:${server.port}/protectedResource"
         })
 @SpringBootApplication
-public class JwtForwardingTest {
+class JwtForwardingTest {
 
     public static final String accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ";
     public static final String refreshedToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJyZWZyZXNoZWQiOnRydWV9";
@@ -69,21 +69,21 @@ public class JwtForwardingTest {
     }
 
     @Test
-    public void testRestProvider() {
+    void testRestProvider() {
         builder.routes(new RouteInfo("/testRestTemplate", new QueryContext("testRestTemplate")));
         Map result = restTemplate.getForObject("http://localhost:" + port + "/n2o/data/testRestTemplate", Map.class);
         assertThat(((Map) ((List) result.get("list")).get(0)).get("auth"), is("Bearer " + accessToken));
     }
 
     @Test
-    public void testJaxRsProxyClient() {
+    void testJaxRsProxyClient() {
         builder.routes(new RouteInfo("/testJaxRs", new QueryContext("testJaxRs")));
         Map result = restTemplate.getForObject("http://localhost:" + port + "/n2o/data/testJaxRs", Map.class);
         assertThat(((Map) ((List) result.get("list")).get(0)).get("auth"), is("Bearer " + accessToken));
     }
 
     @Test
-    public void testJaxRsProxyClientRefreshToken() {
+    void testJaxRsProxyClientRefreshToken() {
         DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken(accessToken);
         token.setRefreshToken(new DefaultOAuth2RefreshToken(accessToken));
         token.setExpiration(new Date(0));

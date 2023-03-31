@@ -80,7 +80,7 @@ public class LogbackApplicationListener implements ApplicationListener<Applicati
     }
 
     private void configureLokiAppender(Loki4jAppender loki4jAppender, String lokiUrl, String appName, LoggerContext lc) {
-        HttpSender httpSender = new JavaHttpSender();
+        JavaHttpSender httpSender = new JavaHttpSender();
         httpSender.setUrl(lokiUrl);
         loki4jAppender.setHttp(httpSender);
         JsonEncoder encoder = new JsonEncoder();

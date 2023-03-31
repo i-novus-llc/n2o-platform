@@ -3,13 +3,13 @@ package net.n2oapp.platform.jaxrs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class CodeGeneratorTest {
+class CodeGeneratorTest {
 
     /*
      * Проверка того, что сгенерируется код с префиксом
      * */
     @Test
-    public void generateWithPrefix() {
+    void generateWithPrefix() {
         final String prefix = "n2o";
 
         final String code = CodeGenerator.generate(prefix);
@@ -22,7 +22,7 @@ public class CodeGeneratorTest {
      * Проверка того, что сгенерируется код без префикса
      * */
     @Test
-    public void generateWithoutPrefix() {
+    void generateWithoutPrefix() {
         final String code = CodeGenerator.generate(null);
 
         Assertions.assertNotNull(code);

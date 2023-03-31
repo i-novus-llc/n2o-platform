@@ -18,14 +18,14 @@ import org.springframework.boot.test.context.SpringBootTest;
         },
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @DefinePort
-public class DefinePortTest {
+class DefinePortTest {
 
     @Autowired
     @Qualifier("someRestJaxRsProxyClient")
     private SomeRest client;
 
     @Test
-    public void testClientCall() throws Exception {
+    void testClientCall() throws Exception {
         Assertions.assertEquals("echo", client.echo());
     }
 }
