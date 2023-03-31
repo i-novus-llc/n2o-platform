@@ -43,10 +43,7 @@ public class ActuatorAutoConfiguration {
     @ConditionalOnClass(SecurityFilterChain.class)
     @ConditionalOnBean(HttpSecurity.class)
     @AutoConfigureAfter(SecurityAutoConfiguration.class)
-    public static class MonitoringSecurityConfigurerAdapter {
-        @Autowired
-        Environment env;
-
+    public static class ActuatorSecurityCustomizer {
         @Bean
         public WebSecurityCustomizer actuatorSecurityCustomizer() {
             return web -> web.ignoring().requestMatchers(EndpointRequest.toAnyEndpoint());

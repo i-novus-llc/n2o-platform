@@ -7,6 +7,7 @@ import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 /**
  * @author RMakhmutov
@@ -14,6 +15,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
  */
 @SpringBootTest(classes={ActuatorAutoConfigurationTest.class,TestKafkaConfig.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EnableAutoConfiguration
+@EnableWebSecurity
 class ActuatorAutoConfigurationTest {
     @Autowired
     private TestRestTemplate restTemplate;
