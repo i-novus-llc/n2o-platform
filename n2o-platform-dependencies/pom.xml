@@ -27,7 +27,6 @@
         <google-guava.version>31.1-jre</google-guava.version>
         <inovus-liquibase-core.version>3.6.2.5.inovus</inovus-liquibase-core.version>
         <joda-convert.version>2.2.1</joda-convert.version>
-        <spring-security-oauth2.version>2.5.2.RELEASE</spring-security-oauth2.version>
     </properties>
 
     <dependencyManagement>
@@ -113,16 +112,6 @@
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-quartz-autoconfigure</artifactId>
-                <version>6.0.0-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>net.n2oapp.platform</groupId>
-                <artifactId>n2o-platform-security-autoconfigure</artifactId>
-                <version>6.0.0-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>net.n2oapp.platform</groupId>
-                <artifactId>n2o-platform-starter-jwt</artifactId>
                 <version>6.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
@@ -220,12 +209,6 @@
                 <version>${spring.cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springframework.security.oauth</groupId>
-                <artifactId>spring-security-oauth2</artifactId>
-                <version>${spring-security-oauth2.version}</version>
             </dependency>
 
             <!-- CXF -->
