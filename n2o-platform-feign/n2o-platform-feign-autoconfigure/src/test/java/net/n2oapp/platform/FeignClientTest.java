@@ -6,22 +6,17 @@ import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.*;
 import net.n2oapp.platform.jaxrs.api.*;
 import net.n2oapp.platform.jaxrs.impl.SomeRestImpl;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.oauth2.client.OAuth2ClientContext;
-import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
@@ -51,21 +46,10 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
                 "org.apache.cxf.jaxrs.validation",
                 "n2o.ui.message.stacktrace=true"})
 class FeignClientTest {
-
-    @MockBean
-    private OAuth2ClientContext oAuth2ClientContext;
-
     @Autowired
     private SomeFeignClient client;
 
     private static final String TEST_TOKEN = "Test_token";
-
-    @BeforeEach
-    public void setUp() {
-        DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken(TEST_TOKEN);
-        token.setTokenType("Bearer");
-        Mockito.when(oAuth2ClientContext.getAccessToken()).thenReturn(token);
-    }
 
     /**
      * Проверка, что REST прокси клиент обрабатывает Pageable параметры и параметры фильтрации.
@@ -189,11 +173,6 @@ class FeignClientTest {
             List<String> errorTextList = restException.getErrors().stream().map(RestMessage.BaseError::getMessage).collect(Collectors.toList());
             assertThat(errorTextList, anyOf(hasItems("Ошибка пользователя раз", "Ошибка пользователя два", "Другая ошибка пользователя"), hasItems("user.error1", "user.error1", "user.error2")));
         }
-    }
-
-    @Test
-    void testAuthorization() {
-        assertThat(client.authHeader().get("Authorization"), is("Bearer " + TEST_TOKEN));
     }
 
     @Test

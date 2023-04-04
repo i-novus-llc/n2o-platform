@@ -7,6 +7,7 @@ import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.env.Environment;
 
 /**
  * @author RMakhmutov
@@ -24,10 +25,14 @@ class CloudDefaultPropertiesAutoConfigurationTest {
     @Autowired
     WebEndpointProperties webEndpointProperties;
 
+    @Autowired
+    Environment environment;
+
     @Test
     void testStartupApplication() {
         ActuatorHealthResponse response = restTemplate.getForObject(webEndpointProperties.getBasePath() + "/health", ActuatorHealthResponse.class);
         assert response.getStatus().equals(Status.UP.getCode()) : "Application startup failed";
+        assert environment.getProperty("management.health.consul.enabled").equals(environment.getProperty("spring.cloud.consul.config.enabled")) : "Application default config not loaded";
     }
 
     private static class ActuatorHealthResponse {

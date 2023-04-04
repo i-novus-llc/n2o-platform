@@ -44,7 +44,6 @@
         <module>n2o-platform-i18n</module>
         <module>n2o-platform-actuator</module>
         <module>n2o-platform-db-audit</module>
-        <module>n2o-platform-security</module>
         <module>n2o-platform-jaxrs</module>
         <module>n2o-platform-feign</module>
         <module>n2o-platform-loader</module>

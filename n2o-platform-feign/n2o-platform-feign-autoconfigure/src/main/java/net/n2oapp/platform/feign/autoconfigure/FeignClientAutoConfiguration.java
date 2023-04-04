@@ -17,12 +17,9 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.openfeign.loadbalancer.FeignLoadBalancerAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
-import org.springframework.security.oauth2.client.OAuth2ClientContext;
 
 import javax.ws.rs.QueryParam;
 import java.lang.reflect.Constructor;
@@ -87,16 +84,6 @@ public class FeignClientAutoConfiguration {
     @Bean
     public Retryer feignRetryer() {
         return Retryer.NEVER_RETRY;
-    }
-
-    @Configuration
-    @ConditionalOnClass(OAuth2ClientContext.class)
-    public static class FeignJwtHeaderInterceptorConfig {
-        @Bean
-        @ConditionalOnMissingBean
-        public FeignJwtHeaderInterceptor feignJwtHeaderInterceptor(OAuth2ClientContext oAuth2ClientContext) {
-            return new FeignJwtHeaderInterceptor(oAuth2ClientContext);
-        }
     }
 
     @Bean
