@@ -14,7 +14,6 @@ image:https://img.shields.io/hexpm/l/plug.svg?style=flat[link="http://www.apache
 * link:/n2o-platform-ms/README.adoc[ms] - стартер для создания микросервисов на основе платформы
 * link:/n2o-platform-parent/README.adoc[parent] - родительский pom для создания приложений на основе платформы
 * link:/n2o-platform-quartz/README.adoc[quartz] - стартер-обёртка над spring quartz, с конфигурацией по умолчанию и автонакатом БД
-* link:/n2o-platform-security/README.adoc[security] - стартер, который даёт возможность валидации токена JWT и его прозрачной передачи между микросервисами при использовании инструментов платформы
 * link:/n2o-platform-seek-paging/README.adoc[seek-paging] - библиотека предоставляет возможность seek-пагинации
 * link:/n2o-platform-selection/README.adoc[selection] - фреймворк, реализующий выборочное получение только необходимых данных из БД
 * link:/n2o-platform-test/README.adoc[test] - стартер для создания тестов
