@@ -13,6 +13,9 @@
         <relativePath>../n2o-platform-parent</relativePath>
     </parent>
 
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
 
     <dependencies>
         <dependency>
