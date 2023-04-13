@@ -42,10 +42,41 @@
 Встроенная в платформу n2o boot конфигурация JaCoCo решает проблемы подсчёта покрытия в мультимодульных maven-проектах, описанным здесь способом: +
 https://stackoverflow.com/questions/13031219/how-to-configure-multi-module-maven-sonar-jacoco-to-give-merged-coverage-rep/60639251#60639251
 
-== Фильтрация конфигураций Docker
-Включите профиль `docker-config-filter`.
+== Фильтрация конфигураций Docker Compose и Kubernetes
+Эту функцию стоит использовать, когда нужно чтобы совпадали версии maven-зависимостей и docker-образов.
 
-При сборке во всех yml-файлах в папке docker-compose будут подставлены значения плейсхолдеров из свойств maven.
-Полученные yml-файлы будут помещены в корне сборочной директории.
+При сборке в папках `${docker-compose.config.folder}` (по умолчанию .docker-compose) и `${k8s.config.folder}` (по умолчанию .k8s) во всех yaml-файлах будут подставлены значения плейсхолдеров из свойств maven.
 
-Удобно использовать для автоматической подстановки в конфигурацию версий зависимостей из свойств maven-проекта.
+==== Пример
+Вместо `${rdm.version}` в yaml-конфигурации:
+```
+rdm-service:
+    image: rdm/backend:${rdm.version}
+```
+будет подставлено значение свойства из pom-файла:
+```
+<properties>
+    <rdm.version>1.4.3</rdm.version>
+</properties>
+```
+Полученные yaml-файлы будут помещены в корне сборочной директории.
+
+==== Подключение
+Для включения этой функции нужно в рутовый pom-файл проекта добавить конфигурацию плагина:
+```
+<build>
+    <plugins>
+        <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+                <execution>
+                    <id>process-docker-config</id>
+                    <phase>initialize</phase>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+```
+Тогда сборка конфигураций будет производиться только один раз за сборку (только для рутового pom-файла проекта) в фазе initialize.

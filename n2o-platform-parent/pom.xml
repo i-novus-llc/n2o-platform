@@ -37,6 +37,9 @@
             src/main/java/**
         </sonar.inclusions>
         <sonar.test.exclusions>src/test/**</sonar.test.exclusions>
+
+        <docker-compose.config.folder>.docker-compose</docker-compose.config.folder>
+        <k8s.config.folder>.k8s</k8s.config.folder>
     </properties>
 
     <dependencies>
@@ -146,6 +149,40 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.1.0</version>
+                    <executions>
+                        <execution>
+                            <id>process-docker-config</id>
+                            <phase>none</phase>
+                            <goals>
+                                <goal>copy-resources</goal>
+                            </goals>
+                            <configuration>
+                                <outputDirectory>${project.basedir}</outputDirectory>
+                                <resources>
+                                    <resource>
+                                        <directory>${project.basedir}/${docker-compose.config.folder}</directory>
+                                        <filtering>true</filtering>
+                                        <includes>
+                                            <include>*.yml</include>
+                                            <include>*.yaml</include>
+                                        </includes>
+                                    </resource>
+                                    <resource>
+                                        <directory>${project.basedir}/${k8s.config.folder}</directory>
+                                        <filtering>true</filtering>
+                                        <includes>
+                                            <include>*.yml</include>
+                                            <include>*.yaml</include>
+                                        </includes>
+                                    </resource>
+                                </resources>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -202,39 +239,6 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>docker-config-filter</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <version>3.1.0</version>
-                        <executions>
-                            <execution>
-                                <id>copy-resources</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <configuration>
-                                    <outputDirectory>${project.basedir}</outputDirectory>
-                                    <resources>
-                                        <resource>
-                                            <directory>${project.basedir}/docker-compose</directory>
-                                            <filtering>true</filtering>
-                                            <includes>
-                                                <include>*.yml</include>
-                                            </includes>
-                                        </resource>
-                                    </resources>
-                                </configuration>
-                            </execution>
-                        </executions>
                     </plugin>
                 </plugins>
             </build>
