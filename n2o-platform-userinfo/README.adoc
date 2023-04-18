@@ -97,7 +97,7 @@ RestTemplate restTemplate;
 === Интерцепторы
 Добавляют в запрос заголовок с информацией о пользователе.
 
-Модуль предоставляет интерцепторы для
+Модуль предоставляет интерцепторы для:
 
 * WebClient(spring)
 
@@ -126,4 +126,9 @@ RequestInterceptor userinfoFeignInterceptor;
 ----
 
 === Расширение
-Из коробки модуль предназначен для работы совместно с security-admin
+
+Из коробки модуль предназначен для работы совместно с security-admin и в качестве principals(org.springframework.security.core.Authentication.getPrincipal) ожидает модель net.n2oapp.security.auth.common.OauthUser.
+
+При использование другой модели необходимо создать бин расширяющий net.n2oapp.platform.userinfo.mapper.PrincipalToJsonAbstractMapper. В качестве параметра указать ожидаемый тип principals. Смапить данные в модель net.n2oapp.platform.userinfo.UserInfo, преобразовать в json.
+
+В случае необходимости расширить модель UserInfo, нужно будет также переопределить net.n2oapp.platform.userinfo.mapper.JsonToPrincipalAbstractMapper и net.n2oapp.platform.userinfo.mapper.UserInfoToJsonMapper и создать их бины.
