@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class UserInfoConfig {
 
-    @Value("${n2o.platform.userinfo-translation.header-name:n2o-user-info}")
+    @Value("${n2o.platform.userinfo.header-name:n2o-user-info}")
     private String userInfoHeaderName;
 
     @Bean

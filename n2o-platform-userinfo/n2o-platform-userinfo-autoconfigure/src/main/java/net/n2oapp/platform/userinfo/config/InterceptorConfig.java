@@ -21,10 +21,10 @@ import java.util.List;
 @Configuration
 public class InterceptorConfig {
 
-    @Value("${n2o.platform.userinfo-translation.default-behavior:true}")
+    @Value("${n2o.platform.userinfo.default-behavior:true}")
     private Boolean userinfoTranslationDefaultBehavior;
 
-    @Value("${n2o.platform.userinfo-translation.header-name:n2o-user-info}")
+    @Value("${n2o.platform.userinfo.header-name:n2o-user-info}")
     private String userInfoHeaderName;
 
     @Bean

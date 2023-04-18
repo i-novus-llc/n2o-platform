@@ -9,12 +9,12 @@
 == Подключение
 
 Добавьте зависимость:
-[source,xml]
 
+[source,xml]
 ----
 <dependency>
   <groupId>net.n2oapp.platform</groupId>
-  <artifactId>n2o-platform-userinfo-translation-autoconfigure</artifactId>
+  <artifactId>n2o-platform-userinfo-starter</artifactId>
 </dependency>
 ----
 
@@ -37,10 +37,10 @@
 ----
 #Имя заголовка в котором передаются данные о пользователе.
 #Нужно указывать и в сервисе отправляющем и принимающем данные.
-n2o.platform.userinfo-translation.header-name=n2o-user-info
+n2o.platform.userinfo.header-name=n2o-user-info
 
 #Отправлять данные по умолчания. По умолчанию true.
-n2o.platform.userinfo-translation.default-behavior=true
+n2o.platform.userinfo.default-behavior=true
 
 #Отправка только username пользователя. По умолчанию false.
 n2o.platform.userinfo.username-only=false
@@ -124,3 +124,6 @@ ClientHttpRequestInterceptor userinfoRestTemplateInterceptor;
 @Qualifier("userinfoFeignInterceptor")
 RequestInterceptor userinfoFeignInterceptor;
 ----
+
+=== Расширение
+Из коробки модуль предназначен для работы совместно с security-admin
