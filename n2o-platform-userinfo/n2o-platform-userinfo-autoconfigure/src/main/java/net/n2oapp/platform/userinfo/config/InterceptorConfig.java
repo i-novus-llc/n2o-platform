@@ -11,12 +11,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
+
+import static java.util.Objects.isNull;
 
 @Configuration
 public class InterceptorConfig {
@@ -51,7 +55,15 @@ public class InterceptorConfig {
     private void addUserInfoHeader(Object httpHeaders, PrincipalToJsonAbstractMapper principalMapper) {
         Boolean translateUserInfo = TranslateUserInfoHolder.get();
         if ((userinfoTranslationDefaultBehavior && translateUserInfo) || translateUserInfo) {
-            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            SecurityContext context = SecurityContextHolder.getContext();
+            if (isNull(context))
+                return;
+            Authentication authentication = context.getAuthentication();
+            if (isNull(authentication))
+                return;
+            Object principal = authentication.getPrincipal();
+            if (isNull(principal))
+                return;
             if (httpHeaders instanceof HttpHeaders)
                 ((HttpHeaders) httpHeaders).add(userInfoHeaderName, principalMapper.map(principal));
             else if (httpHeaders instanceof RequestTemplate) {

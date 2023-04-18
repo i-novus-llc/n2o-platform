@@ -1,7 +1,10 @@
 package net.n2oapp.platform.userinfo;
 
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.*;
+import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 
 @Aspect
@@ -34,6 +37,4 @@ public class UserInfoTranslationAdvice {
     public void clearClassContext() {
         TranslateUserInfoHolder.clear();
     }
-
-
 }
