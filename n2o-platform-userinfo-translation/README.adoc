@@ -1,0 +1,126 @@
+:toc:
+:toclevels: 3
+:toc-title: Содержание
+
+== Возможности
+
+* Трансляция информации о пользователе от сервиса к сервису.
+
+== Подключение
+
+Добавьте зависимость:
+[source,xml]
+
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-userinfo-translation-autoconfigure</artifactId>
+</dependency>
+----
+
+Для автоматической работы при использовании <rest> провайдера данных в n2o xml, нужно так же добавить зависимость
+
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-starter-web</artifactId>
+  <version>${n2o.version}</version>
+</dependency>
+----
+
+== Использование
+
+=== Настройки
+
+[source,properties]
+----
+#Имя заголовка в котором передаются данные о пользователе.
+#Нужно указывать и в сервисе отправляющем и принимающем данные.
+n2o.platform.userinfo-translation.header-name=n2o-user-info
+
+#Отправлять данные по умолчания. По умолчанию true.
+n2o.platform.userinfo-translation.default-behavior=true
+
+#Отправка только username пользователя. По умолчанию false.
+n2o.platform.userinfo.username-only=false
+
+----
+=== @TranslateUserInfo
+
+Аннотация для указания нужно ли транслировать информацию о пользователе из данного метода\класса.
+Аннотация метода переопределяет аннотацию класса.
+Считывание аннотации происходит только при вызове метода через прокси. В примере ниже при вызове метода method2 из method1, данные отправлены НЕ будут. При вызове method2 из "вне"(обращение к методу бина) данные будут отправлены.
+
+[source,java]
+----
+@Service/@Component/@Bean
+@TranslateUserInfo(false)
+public class SomeService {
+    @Autowired
+    @Qualifier("userInfoTranslationWebClient")
+    WebClient webClient;
+
+    @TranslateUserInfo(value = false)
+    public void method1() {
+        webClient.get().retrieve().bodyToMono(String.class).block();
+        method2();
+    }
+
+    @TranslateUserInfo(value = true)
+    public void method2() {
+        webClient.get().retrieve().bodyToMono(String.class).block();
+    }
+}
+----
+=== Клиенты
+Клиенты с интегрированными интерцепторами, отправляющие информацию о пользователе.
+
+* WebClient(spring)
+
+[source,java]
+----
+@Autowired
+@Qualifier("userInfoTranslationWebClient")
+WebClient webClient;
+----
+
+* RestTemplate
+
+[source,java]
+----
+@Autowired
+@Qualifier("userInfoTranslationRestTemplate")
+RestTemplate restTemplate;
+----
+
+=== Интерцепторы
+Добавляют в запрос заголовок с информацией о пользователе.
+
+Модуль предоставляет интерцепторы для
+
+* WebClient(spring)
+
+[source,java]
+----
+@Autowired
+@Qualifier("userinfoExchangeFilterFunction")
+ExchangeFilterFunction userinfoExchangeFilterFunction;
+----
+
+* RestTemplate
+
+[source,java]
+----
+@Autowired
+@Qualifier("userinfoRestTemplateInterceptor")
+ClientHttpRequestInterceptor userinfoRestTemplateInterceptor;
+----
+* Feign
+
+[source,java]
+----
+@Autowired
+@Qualifier("userinfoFeignInterceptor")
+RequestInterceptor userinfoFeignInterceptor;
+----
