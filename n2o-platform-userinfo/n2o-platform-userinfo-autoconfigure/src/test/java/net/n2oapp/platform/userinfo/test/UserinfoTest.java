@@ -11,6 +11,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Instant;
@@ -30,11 +32,27 @@ public class UserinfoTest {
     @Autowired
     private WebClient webClient;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     @Test
-    public void userinfoTest() {
+    public void userinfoWebClientTest() {
         SecurityContextHolder.setContext(new SecurityContextImpl(oAuth2AuthenticationToken()));
         ResponseEntity<Boolean> nextServiceContextCorrect = webClient.get().uri("http://localhost:" + port).retrieve().toEntity(Boolean.class).block();
         assertThat(nextServiceContextCorrect.getBody(), is(true));
+    }
+
+    @Test
+    public void userinfoRestTemplate() {
+        SecurityContextHolder.setContext(new SecurityContextImpl(oAuth2AuthenticationToken()));
+        ResponseEntity<Boolean> nextServiceContextCorrect = restTemplate.getForEntity("http://localhost:" + port, Boolean.class);
+        assertThat(nextServiceContextCorrect.getBody(), is(true));
+    }
+
+    @Test
+    public void noAuthRestTemplate() {
+        ResponseEntity<Boolean> nextServiceContextCorrect = restTemplate.getForEntity("http://localhost:" + port, Boolean.class);
+        assertThat(nextServiceContextCorrect.getBody(), is(false));
     }
 
     private OAuth2AuthenticationToken oAuth2AuthenticationToken() {
