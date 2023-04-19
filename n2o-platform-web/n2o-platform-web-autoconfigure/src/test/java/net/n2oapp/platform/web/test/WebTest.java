@@ -3,6 +3,7 @@ package net.n2oapp.platform.web.test;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
@@ -16,7 +17,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @SpringBootTest(classes = WebTest.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@EnableAutoConfiguration
+@EnableAutoConfiguration(exclude = SecurityAutoConfiguration.class)
 class WebTest {
 
     @LocalServerPort
