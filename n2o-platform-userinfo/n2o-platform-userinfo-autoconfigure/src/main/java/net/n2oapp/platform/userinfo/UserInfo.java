@@ -30,7 +30,7 @@ public class UserInfo {
     public Set<String> roles = new HashSet<>();
     public Set<String> permissions = new HashSet<>();
 
-    public Collection<? extends GrantedAuthority> authorities = new HashSet<>();
+    public transient Collection<? extends GrantedAuthority> authorities = new HashSet<>();
 
     public UserInfo(OauthUser user) {
         this.surname = user.getSurname();
@@ -44,6 +44,7 @@ public class UserInfo {
         this.userLevel = user.getUserLevel();
         this.accountId = user.getAccountId();
         this.username = user.getUsername();
+        this.authorities = user.getAuthorities();
         parseAuthorities(user);
     }
 
