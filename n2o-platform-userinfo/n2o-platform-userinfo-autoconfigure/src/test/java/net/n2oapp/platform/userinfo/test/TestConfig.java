@@ -14,13 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @TestConfiguration
-
 public class TestConfig {
 
     @RestController
     @RequestMapping
     public class TestController {
-
         @GetMapping("/")
         public Boolean testEndpoint() {
             return SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof UserInfo;

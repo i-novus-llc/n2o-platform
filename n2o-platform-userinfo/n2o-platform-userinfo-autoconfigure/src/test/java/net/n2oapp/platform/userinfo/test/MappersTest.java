@@ -53,7 +53,7 @@ public class MappersTest {
         OauthPrincipalToJsonMapper mapper = new OauthPrincipalToJsonMapper();
         mapper.setUserInfoUserNameOnly(false);
         OidcIdToken oidcIdToken = new OidcIdToken("test_token_value", Instant.MIN, Instant.MAX, Map.of("sub", "sub"));
-        OauthUser oauthUser = new OauthUser("testUsername",List.of(new RoleGrantedAuthority("testRoleGrantedAuthority"), new SystemGrantedAuthority("testSystemGrantedAuthority"), new PermissionGrantedAuthority("testPermissionGrantedAuthority2"),new PermissionGrantedAuthority("testPermissionGrantedAuthority")), oidcIdToken);
+        OauthUser oauthUser = new OauthUser("testUsername", List.of(new RoleGrantedAuthority("testRoleGrantedAuthority"), new SystemGrantedAuthority("testSystemGrantedAuthority"), new PermissionGrantedAuthority("testPermissionGrantedAuthority2"), new PermissionGrantedAuthority("testPermissionGrantedAuthority")), oidcIdToken);
         oauthUser.setEmail("testEmail");
         oauthUser.setSurname("testSurname");
         oauthUser.setFirstName("testFirstName");
@@ -69,6 +69,5 @@ public class MappersTest {
         UserInfoToJsonMapper userInfoToJsonMapper = new UserInfoToJsonMapper();
         userInfoToJsonMapper.setUserInfoUserNameOnly(false);
         assertThat(userInfoToJsonMapper.map(userInfo), is(JSON_PRINCIPAL_FULL));
-
     }
 }
