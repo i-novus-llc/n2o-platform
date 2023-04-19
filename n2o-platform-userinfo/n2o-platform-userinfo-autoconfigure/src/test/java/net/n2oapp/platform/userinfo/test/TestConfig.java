@@ -1,6 +1,7 @@
 package net.n2oapp.platform.userinfo.test;
 
 import net.n2oapp.platform.userinfo.UserInfo;
+import net.n2oapp.platform.userinfo.UserInfoModel;
 import net.n2oapp.platform.userinfo.mapper.OauthPrincipalToJsonMapper;
 import net.n2oapp.platform.userinfo.mapper.PrincipalToJsonAbstractMapper;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -18,10 +19,12 @@ public class TestConfig {
 
     @RestController
     @RequestMapping
+    @UserInfo
     public class TestController {
         @GetMapping("/")
+        @UserInfo
         public Boolean testEndpoint() {
-            return SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof UserInfo;
+            return SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof UserInfoModel;
         }
     }
 

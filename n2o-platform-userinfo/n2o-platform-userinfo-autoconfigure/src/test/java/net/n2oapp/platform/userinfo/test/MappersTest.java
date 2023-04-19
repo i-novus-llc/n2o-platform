@@ -1,6 +1,6 @@
 package net.n2oapp.platform.userinfo.test;
 
-import net.n2oapp.platform.userinfo.UserInfo;
+import net.n2oapp.platform.userinfo.UserInfoModel;
 import net.n2oapp.platform.userinfo.mapper.JsonToPrincipalMapper;
 import net.n2oapp.platform.userinfo.mapper.OauthPrincipalToJsonMapper;
 import net.n2oapp.platform.userinfo.mapper.UserInfoToJsonMapper;
@@ -27,7 +27,7 @@ public class MappersTest {
     @Test
     public void jsonToPrincipalMapperTest() {
         JsonToPrincipalMapper mapper = new JsonToPrincipalMapper();
-        UserInfo userInfo = mapper.map(JSON_PRINCIPAL_FULL);
+        UserInfoModel userInfo = mapper.map(JSON_PRINCIPAL_FULL);
         assertThat(userInfo.surname, is("testSurname"));
         assertThat(userInfo.firstName, is("testFirstName"));
         assertThat(userInfo.email, is("testEmail"));
@@ -65,7 +65,7 @@ public class MappersTest {
     @Test
     public void userInfoToJsonMapperTest() {
         JsonToPrincipalMapper mapper = new JsonToPrincipalMapper();
-        UserInfo userInfo = mapper.map(JSON_PRINCIPAL_FULL);
+        UserInfoModel userInfo = mapper.map(JSON_PRINCIPAL_FULL);
         UserInfoToJsonMapper userInfoToJsonMapper = new UserInfoToJsonMapper();
         userInfoToJsonMapper.setUserInfoUserNameOnly(false);
         assertThat(userInfoToJsonMapper.map(userInfo), is(JSON_PRINCIPAL_FULL));

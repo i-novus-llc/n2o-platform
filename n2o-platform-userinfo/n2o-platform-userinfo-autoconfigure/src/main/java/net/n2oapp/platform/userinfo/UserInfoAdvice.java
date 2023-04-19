@@ -8,33 +8,33 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 
 @Aspect
-public class UserInfoTranslationAdvice {
+public class UserInfoAdvice {
 
-    @Pointcut("@annotation(TranslateUserInfo)")
+    @Pointcut("@annotation(net.n2oapp.platform.userinfo.UserInfo)")
     public void userinfoTranslateMethods() {
     }
 
-    @Pointcut("within(@TranslateUserInfo *) && execution(* *(..))")
+    @Pointcut("within(@net.n2oapp.platform.userinfo.UserInfo *) && execution(* *(..))")
     public void userinfoTranslateClass() {
     }
 
     @Before("userinfoTranslateMethods()")
     public void injectMethodContext(JoinPoint jp) {
-        TranslateUserInfoHolder.set(((MethodSignature) jp.getSignature()).getMethod().getAnnotation(TranslateUserInfo.class).value());
+        UserInfoStateHolder.set(((MethodSignature) jp.getSignature()).getMethod().getAnnotation(UserInfo.class).value());
     }
 
     @After("userinfoTranslateMethods()")
     public void clearMethodContext() {
-        TranslateUserInfoHolder.clear();
+        UserInfoStateHolder.clear();
     }
 
     @Before("userinfoTranslateClass()")
     public void injectClassContext(JoinPoint jp) {
-        TranslateUserInfoHolder.set(((TranslateUserInfo) jp.getSignature().getDeclaringType().getAnnotation(TranslateUserInfo.class)).value());
+        UserInfoStateHolder.set(((UserInfo) jp.getSignature().getDeclaringType().getAnnotation(UserInfo.class)).value());
     }
 
     @After("userinfoTranslateClass()")
     public void clearClassContext() {
-        TranslateUserInfoHolder.clear();
+        UserInfoStateHolder.clear();
     }
 }

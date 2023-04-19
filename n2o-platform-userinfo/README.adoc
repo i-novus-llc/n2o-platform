@@ -46,7 +46,7 @@ n2o.platform.userinfo.default-behavior=true
 n2o.platform.userinfo.username-only=false
 
 ----
-=== @TranslateUserInfo
+=== @UserInfo
 
 Аннотация для указания нужно ли транслировать информацию о пользователе из данного метода\класса.
 Аннотация метода переопределяет аннотацию класса.
@@ -55,19 +55,19 @@ n2o.platform.userinfo.username-only=false
 [source,java]
 ----
 @Service/@Component/@Bean
-@TranslateUserInfo(false)
+@UserInfo(false)
 public class SomeService {
     @Autowired
-    @Qualifier("userInfoTranslationWebClient")
+    @Qualifier("userInfoWebClient")
     WebClient webClient;
 
-    @TranslateUserInfo(value = false)
+    @UserInfo(value = false)
     public void method1() {
         webClient.get().retrieve().bodyToMono(String.class).block();
         method2();
     }
 
-    @TranslateUserInfo(value = true)
+    @UserInfo(value = true)
     public void method2() {
         webClient.get().retrieve().bodyToMono(String.class).block();
     }
@@ -81,7 +81,7 @@ public class SomeService {
 [source,java]
 ----
 @Autowired
-@Qualifier("userInfoTranslationWebClient")
+@Qualifier("userInfoWebClient")
 WebClient webClient;
 ----
 
@@ -90,7 +90,7 @@ WebClient webClient;
 [source,java]
 ----
 @Autowired
-@Qualifier("userInfoTranslationRestTemplate")
+@Qualifier("userInfoRestTemplate")
 RestTemplate restTemplate;
 ----
 
@@ -129,6 +129,6 @@ RequestInterceptor userinfoFeignInterceptor;
 
 Из коробки модуль предназначен для работы совместно с security-admin и в качестве principals(org.springframework.security.core.Authentication.getPrincipal) ожидает модель net.n2oapp.security.auth.common.OauthUser.
 
-При использование другой модели необходимо создать бин расширяющий net.n2oapp.platform.userinfo.mapper.PrincipalToJsonAbstractMapper. В качестве параметра указать ожидаемый тип principals. Смапить данные в модель net.n2oapp.platform.userinfo.UserInfo, преобразовать в json.
+При использование другой модели необходимо создать бин расширяющий net.n2oapp.platform.userinfo.mapper.PrincipalToJsonAbstractMapper. В качестве параметра указать ожидаемый тип principals. Смапить данные в модель net.n2oapp.platform.userinfo.UserInfoModel, преобразовать в json.
 
-В случае необходимости расширить модель UserInfo, нужно будет также переопределить net.n2oapp.platform.userinfo.mapper.JsonToPrincipalAbstractMapper и net.n2oapp.platform.userinfo.mapper.UserInfoToJsonMapper и создать их бины.
+В случае необходимости расширить модель UserInfoModel, нужно будет также переопределить net.n2oapp.platform.userinfo.mapper.JsonToPrincipalAbstractMapper и net.n2oapp.platform.userinfo.mapper.UserInfoToJsonMapper и создать их бины.

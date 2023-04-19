@@ -2,8 +2,8 @@ package net.n2oapp.platform.userinfo.config;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
-import net.n2oapp.platform.userinfo.TranslateUserInfoHolder;
-import net.n2oapp.platform.userinfo.UserInfoTranslationAdvice;
+import net.n2oapp.platform.userinfo.UserInfoStateHolder;
+import net.n2oapp.platform.userinfo.UserInfoAdvice;
 import net.n2oapp.platform.userinfo.mapper.PrincipalToJsonAbstractMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +26,7 @@ import static java.util.Objects.isNull;
 public class InterceptorConfig {
 
     @Value("${n2o.platform.userinfo.default-behavior:true}")
-    private Boolean userinfoTranslationDefaultBehavior;
+    private Boolean userinfoDefaultBehavior;
 
     @Value("${n2o.platform.userinfo.header-name:n2o-user-info}")
     private String userInfoHeaderName;
@@ -53,8 +53,8 @@ public class InterceptorConfig {
     }
 
     private void addUserInfoHeader(Object httpHeaders, PrincipalToJsonAbstractMapper principalMapper) {
-        Boolean translateUserInfo = TranslateUserInfoHolder.get();
-        if ((userinfoTranslationDefaultBehavior && translateUserInfo) || translateUserInfo) {
+        Boolean userInfo = UserInfoStateHolder.get();
+        if ((userinfoDefaultBehavior && userInfo) || userInfo) {
             SecurityContext context = SecurityContextHolder.getContext();
             if (isNull(context))
                 return;
@@ -73,19 +73,19 @@ public class InterceptorConfig {
     }
 
     @Bean
-    public UserInfoTranslationAdvice userInfoTranslationAdvice() {
-        return new UserInfoTranslationAdvice();
+    public UserInfoAdvice userInfoAdvice() {
+        return new UserInfoAdvice();
     }
 
     @Bean
-    public RestTemplate userInfoTranslationRestTemplate(@Qualifier("userinfoRestTemplateInterceptor") ClientHttpRequestInterceptor interceptor) {
+    public RestTemplate userInfoRestTemplate(@Qualifier("userinfoRestTemplateInterceptor") ClientHttpRequestInterceptor interceptor) {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setInterceptors(List.of(interceptor));
         return restTemplate;
     }
 
     @Bean
-    public WebClient userInfoTranslationWebClient(@Qualifier("userinfoExchangeFilterFunction") ExchangeFilterFunction userinfoExchangeFilterFunction) {
+    public WebClient userInfoWebClient(@Qualifier("userinfoExchangeFilterFunction") ExchangeFilterFunction userinfoExchangeFilterFunction) {
         return WebClient.builder().filter(userinfoExchangeFilterFunction).build();
     }
 }

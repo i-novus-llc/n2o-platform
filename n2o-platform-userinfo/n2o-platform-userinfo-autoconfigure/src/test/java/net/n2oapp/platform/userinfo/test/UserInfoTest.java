@@ -11,7 +11,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -21,10 +20,10 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@SpringBootTest(classes = {UserinfoTest.class, TestConfig.class},
+@SpringBootTest(classes = {UserInfoTest.class, TestConfig.class},
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "spring.security.strategy=GLOBAL")
 @EnableAutoConfiguration
-public class UserinfoTest {
+public class UserInfoTest {
 
     @LocalServerPort
     private int port;
