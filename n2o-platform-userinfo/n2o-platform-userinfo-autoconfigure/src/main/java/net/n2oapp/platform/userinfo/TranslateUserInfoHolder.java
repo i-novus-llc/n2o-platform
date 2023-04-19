@@ -1,6 +1,8 @@
 package net.n2oapp.platform.userinfo;
 
 public class TranslateUserInfoHolder {
+    private TranslateUserInfoHolder() {
+    }
 
     private static final ThreadLocal<Boolean> translateUserInfo = ThreadLocal.withInitial(() -> Boolean.TRUE);
 

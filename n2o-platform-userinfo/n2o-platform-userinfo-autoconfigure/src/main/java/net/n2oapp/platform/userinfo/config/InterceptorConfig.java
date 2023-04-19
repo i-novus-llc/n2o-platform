@@ -65,7 +65,7 @@ public class InterceptorConfig {
             if (isNull(principal))
                 return;
             if (httpHeaders instanceof HttpHeaders)
-                ((HttpHeaders) httpHeaders).add(userInfoHeaderName, principalMapper.map(principal));
+                HttpHeaders.writableHttpHeaders(((HttpHeaders) httpHeaders)).add(userInfoHeaderName, principalMapper.map(principal));
             else if (httpHeaders instanceof RequestTemplate) {
                 ((RequestTemplate) httpHeaders).header(userInfoHeaderName, principalMapper.map(principal));
             }
