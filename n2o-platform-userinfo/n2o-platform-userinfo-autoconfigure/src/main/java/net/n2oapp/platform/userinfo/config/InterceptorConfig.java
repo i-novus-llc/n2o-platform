@@ -2,8 +2,8 @@ package net.n2oapp.platform.userinfo.config;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
-import net.n2oapp.platform.userinfo.UserInfoStateHolder;
 import net.n2oapp.platform.userinfo.UserInfoAdvice;
+import net.n2oapp.platform.userinfo.UserInfoStateHolder;
 import net.n2oapp.platform.userinfo.mapper.PrincipalToJsonAbstractMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +21,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.List;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Configuration
 public class InterceptorConfig {
@@ -54,7 +55,7 @@ public class InterceptorConfig {
 
     private void addUserInfoHeader(Object httpHeaders, PrincipalToJsonAbstractMapper principalMapper) {
         Boolean userInfo = UserInfoStateHolder.get();
-        if ((userinfoSendByDefault && userInfo) || userInfo) {
+        if ((isNull(userInfo) && userinfoSendByDefault) || (nonNull(userInfo) && userInfo)) {
             SecurityContext context = SecurityContextHolder.getContext();
             if (isNull(context))
                 return;

@@ -4,7 +4,7 @@ public class UserInfoStateHolder {
     private UserInfoStateHolder() {
     }
 
-    private static final ThreadLocal<Boolean> userInfoStateHolder = ThreadLocal.withInitial(() -> Boolean.TRUE);
+    private static final ThreadLocal<Boolean> userInfoStateHolder = ThreadLocal.withInitial(() -> null);
 
     public static void set(boolean translate) {
         userInfoStateHolder.set(translate);
