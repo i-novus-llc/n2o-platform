@@ -25,8 +25,8 @@ import static java.util.Objects.isNull;
 @Configuration
 public class InterceptorConfig {
 
-    @Value("${n2o.platform.userinfo.default-behavior:true}")
-    private Boolean userinfoDefaultBehavior;
+    @Value("${n2o.platform.userinfo.send-by-default:true}")
+    private boolean userinfoSendByDefault;
 
     @Value("${n2o.platform.userinfo.header-name:n2o-user-info}")
     private String userInfoHeaderName;
@@ -54,7 +54,7 @@ public class InterceptorConfig {
 
     private void addUserInfoHeader(Object httpHeaders, PrincipalToJsonAbstractMapper principalMapper) {
         Boolean userInfo = UserInfoStateHolder.get();
-        if ((userinfoDefaultBehavior && userInfo) || userInfo) {
+        if ((userinfoSendByDefault && userInfo) || userInfo) {
             SecurityContext context = SecurityContextHolder.getContext();
             if (isNull(context))
                 return;

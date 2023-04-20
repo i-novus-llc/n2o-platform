@@ -41,7 +41,7 @@
 n2o.platform.userinfo.header-name=n2o-user-info
 
 #Отправлять данные по умолчания. По умолчанию true.
-n2o.platform.userinfo.default-behavior=true
+n2o.platform.userinfo.send-by-default=true
 
 #Отправка только username пользователя. По умолчанию false.
 n2o.platform.userinfo.username-only=false
