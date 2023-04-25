@@ -67,7 +67,7 @@ n2o.platform.userinfo.username-only=false
 @UserInfo(false)
 public class SomeService {
     @Autowired
-    @Qualifier("userInfoWebClient")
+    @Qualifier("platformWebClient")
     WebClient webClient;
 
     @UserInfo(value = false)
@@ -93,7 +93,7 @@ public class SomeService {
 [source,java]
 ----
 @Autowired
-@Qualifier("userInfoWebClient")
+@Qualifier("platformWebClient")
 WebClient webClient;
 ----
 
@@ -102,7 +102,7 @@ WebClient webClient;
 [source,java]
 ----
 @Autowired
-@Qualifier("userInfoRestTemplate")
+@Qualifier("platformRestTemplate")
 RestTemplate restTemplate;
 ----
 

@@ -47,7 +47,7 @@ public class WebAutoConfiguration {
 
         @Bean("restDataProviderEngine")
         @ConditionalOnMissingBean(name = "restDataProviderEngine")
-        public SpringRestDataProviderEngine oauthRestDataProviderEngine(@Qualifier("userInfoRestTemplate") RestTemplate restTemplate,
+        public SpringRestDataProviderEngine oauthRestDataProviderEngine(@Qualifier("platformRestTemplate") RestTemplate restTemplate,
                                                                         @Value("${n2o.engine.rest.url}") String baseRestUrl) {
             ObjectMapper restObjectMapper = new ObjectMapper();
             restObjectMapper.setDateFormat(new SimpleDateFormat(serializingFormat));

@@ -79,14 +79,14 @@ public class InterceptorConfig {
     }
 
     @Bean
-    public RestTemplate userInfoRestTemplate(@Qualifier("userinfoRestTemplateInterceptor") ClientHttpRequestInterceptor interceptor) {
+    public RestTemplate platformRestTemplate(@Qualifier("userinfoRestTemplateInterceptor") ClientHttpRequestInterceptor interceptor) {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setInterceptors(List.of(interceptor));
         return restTemplate;
     }
 
     @Bean
-    public WebClient userInfoWebClient(@Qualifier("userinfoExchangeFilterFunction") ExchangeFilterFunction userinfoExchangeFilterFunction) {
+    public WebClient platformWebClient(@Qualifier("userinfoExchangeFilterFunction") ExchangeFilterFunction userinfoExchangeFilterFunction) {
         return WebClient.builder().filter(userinfoExchangeFilterFunction).build();
     }
 }
