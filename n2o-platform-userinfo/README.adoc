@@ -31,6 +31,10 @@
 
 == Использование
 
+=== Ограничения
+
+Функционал данного модуля работает только при использовании преднастроенных  <<clients,клиентов>> или при интеграции <<interceptors,интерцепторов>> в свой клиент.
+
 === Настройки
 
 [source,properties]
@@ -47,11 +51,15 @@ n2o.platform.userinfo.send-by-default=true
 n2o.platform.userinfo.username-only=false
 
 ----
+
 === @UserInfo
 
-Аннотация для указания нужно ли передавать информацию о пользователе из данного метода\класса. Данная аннотация работает только при использовании преднастроенных  <<clients,клиентов>> или при интеграции <<interceptors,интерцепторов>> в свой клиент.
+Аннотация для указания нужно ли передавать информацию о пользователе из данного метода\класса.
+
 Аннотация метода переопределяет аннотацию класса.
-Считывание аннотации происходит только при вызове метода через прокси. В примере ниже при вызове метода method2 из method1, данные отправлены НЕ будут. При вызове method2 из "вне"(обращение к методу бина) данные будут отправлены.
+Считывание аннотации происходит только при вызове метода через прокси.
+В примере ниже при вызове метода method2 из method1, данные отправлены НЕ будут.
+При вызове method2 из "вне"(обращение к методу бина) данные будут отправлены.
 
 [source,java]
 ----
@@ -74,8 +82,10 @@ public class SomeService {
     }
 }
 ----
+
 [#clients]
 === Клиенты
+
 Клиенты с интегрированными интерцепторами, отправляющие информацию о пользователе.
 
 * WebClient(spring)
@@ -95,8 +105,10 @@ WebClient webClient;
 @Qualifier("userInfoRestTemplate")
 RestTemplate restTemplate;
 ----
+
 [#interceptors]
 === Интерцепторы
+
 Добавляют в запрос заголовок с информацией о пользователе.
 
 Модуль предоставляет интерцепторы для:
@@ -118,6 +130,7 @@ ExchangeFilterFunction userinfoExchangeFilterFunction;
 @Qualifier("userinfoRestTemplateInterceptor")
 ClientHttpRequestInterceptor userinfoRestTemplateInterceptor;
 ----
+
 * Feign
 
 [source,java]
@@ -131,6 +144,8 @@ RequestInterceptor userinfoFeignInterceptor;
 
 Из коробки модуль предназначен для работы совместно с security-admin и в качестве principals(org.springframework.security.core.Authentication.getPrincipal) ожидает модель net.n2oapp.security.auth.common.OauthUser.
 
-При использование другой модели необходимо создать бин расширяющий net.n2oapp.platform.userinfo.mapper.PrincipalToJsonAbstractMapper. В качестве параметра указать ожидаемый тип principals. Смапить данные в модель net.n2oapp.platform.userinfo.UserInfoModel, преобразовать в json.
+При использование другой модели необходимо создать бин расширяющий net.n2oapp.platform.userinfo.mapper.PrincipalToJsonAbstractMapper.
+В качестве параметра указать ожидаемый тип principals.
+Смапить данные в модель net.n2oapp.platform.userinfo.UserInfoModel, преобразовать в json.
 
 В случае необходимости расширить модель UserInfoModel, нужно будет также переопределить net.n2oapp.platform.userinfo.mapper.JsonToPrincipalAbstractMapper и net.n2oapp.platform.userinfo.mapper.UserInfoToJsonMapper и создать их бины.
