@@ -34,7 +34,7 @@ public class JsonToPrincipalFilter extends OncePerRequestFilter {
         String header = request.getHeader(userInfoHeaderName);
         UserInfoModel userInfo = jsonToPrincipalMapper.map(header);
         Collection<? extends GrantedAuthority> authorities = isEmpty(userInfo.authorities) ? of(new SimpleGrantedAuthority("dummyAuthority")) : userInfo.authorities;
-        AnonymousAuthenticationToken authenticationToken = new AnonymousAuthenticationToken(userInfo.username, userInfo, authorities);
+        AnonymousAuthenticationToken authenticationToken = new AnonymousAuthenticationToken(userInfo.getUsername(), userInfo, authorities);
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         filterChain.doFilter(request, response);
     }

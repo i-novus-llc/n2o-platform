@@ -1,5 +1,7 @@
 package net.n2oapp.platform.userinfo;
 
+import lombok.Getter;
+import lombok.Setter;
 import net.n2oapp.security.auth.common.OauthUser;
 import net.n2oapp.security.auth.common.authority.PermissionGrantedAuthority;
 import net.n2oapp.security.auth.common.authority.RoleGrantedAuthority;
@@ -12,19 +14,21 @@ import java.util.Set;
 
 import static java.util.Objects.nonNull;
 
+@Getter
+@Setter
 public class UserInfoModel {
 
-    public String surname;
-    public String firstName;
-    public String patronymic;
-    public String email;
-    public String organization;
-    public String region;
-    public String department;
-    public String departmentName;
-    public String userLevel;
-    public String accountId;
-    public String username;
+    private String surname;
+    private String firstName;
+    private String patronymic;
+    private String email;
+    private String organization;
+    private String region;
+    private String department;
+    private String departmentName;
+    private String userLevel;
+    private String accountId;
+    private String username;
 
     public Set<String> systems = new HashSet<>();
     public Set<String> roles = new HashSet<>();
@@ -53,21 +57,21 @@ public class UserInfoModel {
     }
 
     public UserInfoModel(UserInfoModel userInfo) {
-        this.surname = userInfo.surname;
-        this.firstName = userInfo.firstName;
-        this.patronymic = userInfo.patronymic;
-        this.email = userInfo.email;
-        this.organization = userInfo.organization;
-        this.region = userInfo.region;
-        this.department = userInfo.department;
-        this.departmentName = userInfo.departmentName;
-        this.userLevel = userInfo.userLevel;
-        this.accountId = userInfo.accountId;
-        this.username = userInfo.username;
-        this.roles = new HashSet<>(userInfo.roles);
-        this.systems = new HashSet<>(userInfo.systems);
-        this.permissions = new HashSet<>(userInfo.permissions);
-        this.authorities = new HashSet<>(userInfo.authorities);
+        this.surname = userInfo.getSurname();
+        this.firstName = userInfo.getFirstName();
+        this.patronymic = userInfo.getPatronymic();
+        this.email = userInfo.getEmail();
+        this.organization = userInfo.getOrganization();
+        this.region = userInfo.getRegion();
+        this.department = userInfo.getDepartment();
+        this.departmentName = userInfo.getDepartmentName();
+        this.userLevel = userInfo.getUserLevel();
+        this.accountId = userInfo.getAccountId();
+        this.username = userInfo.getUsername();
+        this.roles = new HashSet<>(userInfo.getRoles());
+        this.systems = new HashSet<>(userInfo.getSystems());
+        this.permissions = new HashSet<>(userInfo.getPermissions());
+        this.authorities = new HashSet<>(userInfo.getAuthorities());
     }
 
     private void parseAuthorities(OauthUser user) {

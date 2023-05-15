@@ -142,10 +142,10 @@ RequestInterceptor userinfoFeignInterceptor;
 
 === Расширение
 
-Из коробки модуль предназначен для работы совместно с security-admin и в качестве principals(org.springframework.security.core.Authentication.getPrincipal) ожидает модель net.n2oapp.security.auth.common.OauthUser.
+Из коробки модуль предназначен для работы совместно с security-admin и в качестве principals(`org.springframework.security.core.Authentication.getPrincipal`) ожидает модель `net.n2oapp.security.auth.common.OauthUser`.
 
-При использование другой модели необходимо создать бин расширяющий net.n2oapp.platform.userinfo.mapper.PrincipalToJsonAbstractMapper.
+При использование другой модели необходимо создать бин расширяющий `net.n2oapp.platform.userinfo.mapper.PrincipalToJsonAbstractMapper`.
 В качестве параметра указать ожидаемый тип principals.
-Смапить данные в модель net.n2oapp.platform.userinfo.UserInfoModel, преобразовать в json.
+Смапить данные в модель `net.n2oapp.platform.userinfo.UserInfoModel`, преобразовать в json.
 
-В случае необходимости расширить модель UserInfoModel, нужно будет также переопределить net.n2oapp.platform.userinfo.mapper.JsonToPrincipalAbstractMapper и net.n2oapp.platform.userinfo.mapper.UserInfoToJsonMapper и создать их бины.
+В случае необходимости расширить модель UserInfoModel, нужно будет также переопределить `net.n2oapp.platform.userinfo.mapper.JsonToPrincipalAbstractMapper` и `net.n2oapp.platform.userinfo.mapper.UserInfoToJsonMapper` и создать их бины.
