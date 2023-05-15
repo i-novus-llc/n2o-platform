@@ -34,7 +34,7 @@ public class UserInfoModel {
     public Set<String> roles = new HashSet<>();
     public Set<String> permissions = new HashSet<>();
 
-    public transient Collection<? extends GrantedAuthority> authorities = new HashSet<>();
+    private transient Collection<? extends GrantedAuthority> authorities = new HashSet<>();
 
     public UserInfoModel(OauthUser user) {
         this.surname = user.getSurname();

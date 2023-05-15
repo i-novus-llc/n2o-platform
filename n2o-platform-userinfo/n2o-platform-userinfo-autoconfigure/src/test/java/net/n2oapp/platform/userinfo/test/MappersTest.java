@@ -42,10 +42,10 @@ public class MappersTest {
         assertThat(userInfo.systems.size(), is(1));
         assertThat(userInfo.roles.size(), is(1));
         assertThat(userInfo.permissions.size(), is(2));
-        assertThat(userInfo.authorities.size(), is(4));
-        assertThat(userInfo.authorities.stream().filter(a -> a instanceof PermissionGrantedAuthority).collect(Collectors.toList()).size(), is(2));
-        assertThat(userInfo.authorities.stream().filter(a -> a instanceof SystemGrantedAuthority).collect(Collectors.toList()).size(), is(1));
-        assertThat(userInfo.authorities.stream().filter(a -> a instanceof RoleGrantedAuthority).collect(Collectors.toList()).size(), is(1));
+        assertThat(userInfo.getAuthorities().size(), is(4));
+        assertThat(userInfo.getAuthorities().stream().filter(a -> a instanceof PermissionGrantedAuthority).collect(Collectors.toList()).size(), is(2));
+        assertThat(userInfo.getAuthorities().stream().filter(a -> a instanceof SystemGrantedAuthority).collect(Collectors.toList()).size(), is(1));
+        assertThat(userInfo.getAuthorities().stream().filter(a -> a instanceof RoleGrantedAuthority).collect(Collectors.toList()).size(), is(1));
     }
 
     @Test
