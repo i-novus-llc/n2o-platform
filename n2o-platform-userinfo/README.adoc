@@ -83,8 +83,8 @@ public class SomeService {
 }
 ----
 
-[[clients]]
 === Клиенты
+[[clients]]
 
 Клиенты с интегрированными интерцепторами, отправляющие информацию о пользователе.
 
@@ -106,8 +106,8 @@ WebClient webClient;
 RestTemplate restTemplate;
 ----
 
-[[interceptors]]
 === Интерцепторы
+[[interceptors]]
 
 Добавляют в запрос заголовок с информацией о пользователе.
 
