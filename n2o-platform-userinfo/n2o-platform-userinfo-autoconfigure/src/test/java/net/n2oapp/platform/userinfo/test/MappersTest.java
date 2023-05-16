@@ -28,24 +28,24 @@ public class MappersTest {
     public void jsonToPrincipalMapperTest() {
         JsonToPrincipalMapper mapper = new JsonToPrincipalMapper();
         UserInfoModel userInfo = mapper.map(JSON_PRINCIPAL_FULL);
-        assertThat(userInfo.getSurname(), is("testSurname"));
-        assertThat(userInfo.getFirstName(), is("testFirstName"));
-        assertThat(userInfo.getEmail(), is("testEmail"));
-        assertThat(userInfo.getAccountId(), is("1"));
-        assertThat(userInfo.getUsername(), is("testUsername"));
-        assertThat(userInfo.getPatronymic(), is(nullValue()));
-        assertThat(userInfo.getOrganization(), is(nullValue()));
-        assertThat(userInfo.getRegion(), is(nullValue()));
-        assertThat(userInfo.getDepartment(), is(nullValue()));
-        assertThat(userInfo.getDepartmentName(), is(nullValue()));
-        assertThat(userInfo.getUserLevel(), is(nullValue()));
+        assertThat(userInfo.surname, is("testSurname"));
+        assertThat(userInfo.firstName, is("testFirstName"));
+        assertThat(userInfo.email, is("testEmail"));
+        assertThat(userInfo.accountId, is("1"));
+        assertThat(userInfo.username, is("testUsername"));
+        assertThat(userInfo.patronymic, is(nullValue()));
+        assertThat(userInfo.organization, is(nullValue()));
+        assertThat(userInfo.region, is(nullValue()));
+        assertThat(userInfo.department, is(nullValue()));
+        assertThat(userInfo.departmentName, is(nullValue()));
+        assertThat(userInfo.userLevel, is(nullValue()));
         assertThat(userInfo.systems.size(), is(1));
         assertThat(userInfo.roles.size(), is(1));
         assertThat(userInfo.permissions.size(), is(2));
-        assertThat(userInfo.getAuthorities().size(), is(4));
-        assertThat(userInfo.getAuthorities().stream().filter(a -> a instanceof PermissionGrantedAuthority).collect(Collectors.toList()).size(), is(2));
-        assertThat(userInfo.getAuthorities().stream().filter(a -> a instanceof SystemGrantedAuthority).collect(Collectors.toList()).size(), is(1));
-        assertThat(userInfo.getAuthorities().stream().filter(a -> a instanceof RoleGrantedAuthority).collect(Collectors.toList()).size(), is(1));
+        assertThat(userInfo.authorities.size(), is(4));
+        assertThat(userInfo.authorities.stream().filter(a -> a instanceof PermissionGrantedAuthority).collect(Collectors.toList()).size(), is(2));
+        assertThat(userInfo.authorities.stream().filter(a -> a instanceof SystemGrantedAuthority).collect(Collectors.toList()).size(), is(1));
+        assertThat(userInfo.authorities.stream().filter(a -> a instanceof RoleGrantedAuthority).collect(Collectors.toList()).size(), is(1));
     }
 
     @Test

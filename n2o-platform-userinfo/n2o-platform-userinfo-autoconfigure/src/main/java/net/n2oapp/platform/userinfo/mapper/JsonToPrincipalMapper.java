@@ -22,7 +22,7 @@ public class JsonToPrincipalMapper extends JsonToPrincipalAbstractMapper<UserInf
             authorities.add(new PermissionGrantedAuthority(permission));
         for (String system : userInfo.systems)
             authorities.add(new SystemGrantedAuthority(system));
-        userInfo.setAuthorities(authorities);
+        userInfo.authorities = authorities;
         return userInfo;
     }
 }

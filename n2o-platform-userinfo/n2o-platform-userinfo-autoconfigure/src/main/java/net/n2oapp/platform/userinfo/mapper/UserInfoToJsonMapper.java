@@ -13,7 +13,7 @@ public class UserInfoToJsonMapper extends PrincipalToJsonAbstractMapper<UserInfo
 
     @Override
     public String map(UserInfoModel principal) {
-        UserInfoModel userInfo = userInfoUserNameOnly ? new UserInfoModel(principal.getUsername()) : new UserInfoModel(principal);
+        UserInfoModel userInfo = userInfoUserNameOnly ? new UserInfoModel(principal.username) : new UserInfoModel(principal);
         return gson.toJson(userInfo);
     }
 }

@@ -33,8 +33,8 @@ public class JsonToPrincipalFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String header = request.getHeader(userInfoHeaderName);
         UserInfoModel userInfo = jsonToPrincipalMapper.map(header);
-        Collection<? extends GrantedAuthority> authorities = isEmpty(userInfo.getAuthorities()) ? of(new SimpleGrantedAuthority("dummyAuthority")) : userInfo.getAuthorities();
-        AnonymousAuthenticationToken authenticationToken = new AnonymousAuthenticationToken(userInfo.getUsername(), userInfo, authorities);
+        Collection<? extends GrantedAuthority> authorities = isEmpty(userInfo.authorities) ? of(new SimpleGrantedAuthority("dummyAuthority")) : userInfo.authorities;
+        AnonymousAuthenticationToken authenticationToken = new AnonymousAuthenticationToken(userInfo.username, userInfo, authorities);
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         filterChain.doFilter(request, response);
     }
