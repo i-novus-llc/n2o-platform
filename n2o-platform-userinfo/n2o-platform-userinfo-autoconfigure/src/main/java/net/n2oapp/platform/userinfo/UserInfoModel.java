@@ -1,7 +1,5 @@
 package net.n2oapp.platform.userinfo;
 
-import lombok.Getter;
-import lombok.Setter;
 import net.n2oapp.security.auth.common.OauthUser;
 import net.n2oapp.security.auth.common.authority.PermissionGrantedAuthority;
 import net.n2oapp.security.auth.common.authority.RoleGrantedAuthority;

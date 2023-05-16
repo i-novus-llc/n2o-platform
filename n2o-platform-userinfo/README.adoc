@@ -142,10 +142,87 @@ RequestInterceptor userinfoFeignInterceptor;
 
 === Расширение
 
-Из коробки модуль предназначен для работы совместно с security-admin и в качестве principals(`org.springframework.security.core.Authentication.getPrincipal`) ожидает модель `net.n2oapp.security.auth.common.OauthUser`.
+"Из коробки" модуль предназначен для работы совместно с security-admin и в качестве principals(`org.springframework.security.core.Authentication.getPrincipal`) ожидает модель `net.n2oapp.security.auth.common.OauthUser`.
 
-При использование другой модели необходимо создать бин расширяющий `net.n2oapp.platform.userinfo.mapper.PrincipalToJsonAbstractMapper`.
+При использовании другой модели необходимо создать бин расширяющий `net.n2oapp.platform.userinfo.mapper.PrincipalToJsonAbstractMapper`.
 В качестве параметра указать ожидаемый тип principals.
+
 Смапить данные в модель `net.n2oapp.platform.userinfo.UserInfoModel`, преобразовать в json.
 
-В случае необходимости расширить модель UserInfoModel, нужно будет также переопределить `net.n2oapp.platform.userinfo.mapper.JsonToPrincipalAbstractMapper` и `net.n2oapp.platform.userinfo.mapper.UserInfoToJsonMapper` и создать их бины.
+[source,java]
+----
+@Bean
+public PrincipalToJsonAbstractMapper customPrincipalToJsonMapper(){
+    return new PrincipalToJsonAbstractMapper<CustomPrincipal>() {
+        @Override
+        public String map(CustomPrincipal principal) {
+            UserInfoModel userInfo = new UserInfoModel(principal.getUsername());
+
+            userInfo.email = principal.getCustomEmailField();
+            //можно использовать любой сбособ получения Json строки
+            return new Gson().toJson(userInfo);
+        }
+    };
+}
+----
+
+
+
+В случае необходимости расширить модель UserInfoModel, нужно будет также переопределить `net.n2oapp.platform.userinfo.mapper.JsonToPrincipalAbstractMapper` и создать бин.
+
+[source,java]
+----
+public class CustomUserInfoModel extends UserInfoModel{
+        public String someCustomField;
+    }
+----
+
+[source,java]
+----
+@Bean
+public JsonToPrincipalAbstractMapper customJsonToPrincipalMapper(){
+    return new JsonToPrincipalAbstractMapper<CustomUserInfoModel>(){
+        @Override
+        public CustomUserInfoModel map(String principal) {
+            //можно использовать любой сбособ парсинга Json
+            CustomUserInfoModel userInfo = new Gson().fromJson(principal, new TypeToken<CustomUserInfoModel>() {
+            }.getType());
+            //Если используются org.springframework.security.core.GrantedAuthority из security-admin
+            //Иначе зависит от вашей реализации
+            userInfo.authorities = collectAuthority(userInfo);
+            return userInfo;
+        }
+    };
+}
+----
+
+При возникновении проблем с сериализацией расширенной `UserInfoModel` нужно создать бин `net.n2oapp.platform.userinfo.mapper.UserInfoToJsonMapper` и передать ему сконфигурированный экземляр Gson
+
+[source,java]
+----
+@Bean
+public PrincipalToJsonAbstractMapper userInfoToJsonMapper() {
+    GsonBuilder gsonBuilder = new GsonBuilder();
+    .....
+    return new UserInfoToJsonMapper(gsonBuilder.create());
+}
+----
+
+Либо полностью переопределить `UserInfoToJsonMapper` или его родителя и создать бин.
+
+[source,java]
+----
+@Bean
+public PrincipalToJsonAbstractMapper userInfoToJsonMapper() {
+    return new UserInfoToJsonMapper<CustomUserInfoModel>(){
+        @Override
+        public String map(CustomUserInfoModel principal) {
+            String json;
+            ...
+            сериализация
+            ...
+            return json;
+        }
+    };
+}
+----
