@@ -23,6 +23,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class MappersTest {
 
     private final String JSON_PRINCIPAL_FULL = "{\"surname\":\"testSurname\",\"firstName\":\"testFirstName\",\"email\":\"testEmail\",\"accountId\":\"1\",\"username\":\"testUsername\",\"systems\":[\"testSystemGrantedAuthority\"],\"roles\":[\"testRoleGrantedAuthority\"],\"permissions\":[\"testPermissionGrantedAuthority2\",\"testPermissionGrantedAuthority\"]}";
+    private final String JSON_PRINCIPAL_USERNAME= "{\"username\":\"testUsername\",\"systems\":[],\"roles\":[],\"permissions\":[]}";
 
     @Test
     public void jsonToPrincipalMapperTest() {
@@ -65,9 +66,11 @@ public class MappersTest {
     @Test
     public void userInfoToJsonMapperTest() {
         JsonToPrincipalMapper mapper = new JsonToPrincipalMapper();
-        UserInfoModel userInfo = mapper.map(JSON_PRINCIPAL_FULL);
+        UserInfoModel userInfo = new UserInfoModel(mapper.map(JSON_PRINCIPAL_FULL));
         UserInfoToJsonMapper userInfoToJsonMapper = new UserInfoToJsonMapper();
         userInfoToJsonMapper.setUserInfoUserNameOnly(false);
         assertThat(userInfoToJsonMapper.map(userInfo), is(JSON_PRINCIPAL_FULL));
+        userInfoToJsonMapper.setUserInfoUserNameOnly(true);
+        assertThat(userInfoToJsonMapper.map(userInfo), is(JSON_PRINCIPAL_USERNAME));
     }
 }
