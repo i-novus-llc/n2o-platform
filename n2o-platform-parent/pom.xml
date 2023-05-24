@@ -164,19 +164,16 @@
                                 <resources>
                                     <resource>
                                         <directory>${project.basedir}/${docker-compose.config.folder}</directory>
+                                        <targetPath>${project.basedir}</targetPath>
                                         <filtering>true</filtering>
-                                        <includes>
-                                            <include>*.yml</include>
-                                            <include>*.yaml</include>
-                                        </includes>
                                     </resource>
                                     <resource>
                                         <directory>${project.basedir}/${k8s.config.folder}</directory>
+                                        <targetPath>${project.basedir}/.k8s/target</targetPath>
                                         <filtering>true</filtering>
-                                        <includes>
-                                            <include>*.yml</include>
-                                            <include>*.yaml</include>
-                                        </includes>
+                                        <excludes>
+                                            <exclude>**/target/**</exclude>
+                                        </excludes>
                                     </resource>
                                 </resources>
                             </configuration>
