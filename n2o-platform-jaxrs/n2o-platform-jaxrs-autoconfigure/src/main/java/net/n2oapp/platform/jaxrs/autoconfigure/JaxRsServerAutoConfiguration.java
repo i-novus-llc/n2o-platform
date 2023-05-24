@@ -8,6 +8,7 @@ import net.n2oapp.platform.jaxrs.ViolationRestExceptionMapper;
 import org.apache.cxf.ext.logging.LoggingInInterceptor;
 import org.apache.cxf.ext.logging.LoggingOutInterceptor;
 import org.apache.cxf.jaxrs.swagger.Swagger2Feature;
+import org.apache.cxf.jaxrs.swagger.ui.SwaggerUiConfig;
 import org.apache.cxf.jaxrs.validation.JAXRSBeanValidationInInterceptor;
 import org.apache.cxf.spring.boot.autoconfigure.CxfProperties;
 import org.apache.cxf.tracing.brave.jaxrs.BraveFeature;
@@ -63,6 +64,13 @@ public class JaxRsServerAutoConfiguration {
         }
         result.setResourcePackage(jaxRsProperties.getSwagger().getResourcePackage());
         result.setScan(true);
+
+        //Since Swagger UI 4.1.3 disable reading config params from URL by default due to security concerns.
+        SwaggerUiConfig swaggerUiConfig = new SwaggerUiConfig();
+        swaggerUiConfig.setQueryConfigEnabled(false);
+        swaggerUiConfig.setUrl("swagger.json");
+        result.setSwaggerUiConfig(swaggerUiConfig);
+
         return result;
     }
 
