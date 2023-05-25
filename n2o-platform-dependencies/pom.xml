@@ -26,7 +26,6 @@
         <jackson-jaxrs-json.version>2.12.7</jackson-jaxrs-json.version>
         <loki-logback-appender.version>1.4.0</loki-logback-appender.version>
         <google-guava.version>31.1-jre</google-guava.version>
-        <inovus-liquibase-core.version>3.6.2.5.inovus</inovus-liquibase-core.version>
         <joda-convert.version>2.2.1</joda-convert.version>
     </properties>
 
@@ -357,13 +356,6 @@
                 <groupId>org.joda</groupId>
                 <artifactId>joda-convert</artifactId>
                 <version>${joda-convert.version}</version>
-            </dependency>
-
-            <!-- Liquibase patched for working classpath*: -->
-            <dependency>
-                <groupId>ru.i-novus.components</groupId>
-                <artifactId>liquibase-core</artifactId>
-                <version>${inovus-liquibase-core.version}</version>
             </dependency>
 
             <dependency>
