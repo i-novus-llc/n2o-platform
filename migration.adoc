@@ -20,6 +20,7 @@ https://docs.spring.io/spring-boot/docs/2.7.5/reference/htmlsingle/#features.ext
 * Формат по умолчанию для хранения настроек в Consul теперь YAML: https://docs.spring.io/spring-cloud-consul/docs/current/reference/html/#spring-cloud-consul-config-format
 * Изменение имени модуля: n2o-platform-audit теперь называется n2o-platform-db-audit. Стартер и другие зависимости также поменяли свои имена соответственно.
 * Удалён профиль `consul`. Для работы без Consul можно использовать способ описанный в link:/n2o-platform-ms/README.adoc[документации к n2o-platform-ms-starter].
+* Свойство maven `config.server.enable` можно удалить, так как оно больше не влияет на использование внешнего сервера конфигураций, он теперь включен всегда.
 
 ==== Изменения в зависимостях
 * Сделать миграции до Spring Boot 2.7.5: +
