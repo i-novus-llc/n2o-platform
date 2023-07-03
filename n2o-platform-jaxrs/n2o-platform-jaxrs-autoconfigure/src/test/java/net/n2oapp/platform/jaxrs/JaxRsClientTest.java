@@ -38,7 +38,7 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
                 webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
                 properties = {"server.port=8423",
                 "n2o.ui.message.stacktrace=true"})
-public class JaxRsClientTest {
+class JaxRsClientTest {
 
     @Autowired
     @Qualifier("someRestJaxRsProxyClient")//в контексте теста есть 2 бина SomeRest: SomeRestImpl и прокси клиент
@@ -48,7 +48,7 @@ public class JaxRsClientTest {
      * Проверка, что REST прокси клиент обрабатывает Pageable параметры и параметры фильтрации.
      */
     @Test
-    public void pagingAndFiltering() {
+    void pagingAndFiltering() {
         forEachHeaderCombination(() -> {
             SomeCriteria criteria = new SomeCriteria(2, 20);
             criteria.setLikeName("John");
@@ -80,7 +80,7 @@ public class JaxRsClientTest {
      * Проверка, что REST прокси клиент обрабатывает Sort.Order параметры.
      */
     @Test
-    public void sort() {
+    void sort() {
         forEachHeaderCombination(() -> {
             SomeCriteria criteria = new SomeCriteria(1, 10,
                     Sort.by(new Sort.Order(ASC, "name"), new Sort.Order(DESC, "date")));
@@ -95,7 +95,7 @@ public class JaxRsClientTest {
      * Проверка обработки JSR303 валидаций от сервера к прокси клиенту.
      */
     @Test
-    public void validations() {
+    void validations() {
         forEachHeaderCombination(() -> {
             SomeModel model = new SomeModel();
             model.setStringModel(new StringModel(null));
@@ -124,7 +124,7 @@ public class JaxRsClientTest {
      * Проверка проброса исключений от сервера к прокси клиенту с сохранением стектрейса.
      */
     @Test
-    public void exceptions() {
+    void exceptions() {
         forEachHeaderCombination(() -> {
             try {
                 client.update(new SomeModel());//при изменении не задан [id], это вызовет ошибку на сервере
@@ -149,7 +149,7 @@ public class JaxRsClientTest {
      * Проверка локализации сообщений, выбрасываемых исключением i18n {@link UserException}
      */
     @Test
-    public void i18n() {
+    void i18n() {
         forEachHeaderCombination(() -> {
             try {
                 client.update(new SomeModel(-1L));//при изменении [id] должен быть положительным числом, это вызовет ошибку на сервере
@@ -166,7 +166,7 @@ public class JaxRsClientTest {
      * Проверка сериализации/десериализации Page c абстрактным типом
      */
     @Test
-    public void pageOfAbstractModel() {
+    void pageOfAbstractModel() {
         forEachHeaderCombination(() ->
                 assertThat(client.searchModel(new SomeCriteria()).getContent().get(0), instanceOf(StringModel.class))
         );
@@ -176,7 +176,7 @@ public class JaxRsClientTest {
      * Проверка списка ошибок
      */
     @Test
-    public void userExceptionsWithMessageList() {
+    void userExceptionsWithMessageList() {
         forEachHeaderCombination(() -> {
             try {
                 client.throwErrors();
@@ -195,7 +195,7 @@ public class JaxRsClientTest {
      * Проверка Set<List> как @QueryParam, тестируется работа ListConverter
      */
     @Test
-    public void testSearchByList() {
+    void testSearchByList() {
         forEachHeaderCombination(() -> {
             List<LocalDateTime> expectedList = Arrays.asList(LocalDateTime.now(), LocalDateTime.now().minusDays(2));
             List<LocalDateTime> actual = client.searchBySetOfTypedList(Set.of(expectedList));
@@ -207,7 +207,7 @@ public class JaxRsClientTest {
      * Проверка Set<Map> как @QueryParam, тестируется работа MapConverter
      */
     @Test
-    public void testSearchByMap() {
+    void testSearchByMap() {
         forEachHeaderCombination(() -> {
             Map<String, String> expectedMap = Map.of("key1", "value1", "key2", "value2");
             Map<String, String> actual = client.searchBySetOfTypedMap(expectedMap);
@@ -216,7 +216,7 @@ public class JaxRsClientTest {
     }
 
     @Test
-    public void testGetListOfAbstractModels() {
+    void testGetListOfAbstractModels() {
         forEachHeaderCombination(() -> {
             List<AbstractModel<?>> listOfAbstractModels = client.getListOfAbstractModels();
             assertThat(listOfAbstractModels.size(), equalTo(2));
@@ -226,7 +226,7 @@ public class JaxRsClientTest {
     }
 
     @Test
-    public void testGetListModels() {
+    void testGetListModels() {
         forEachHeaderCombination(() -> {
             List<ListModel> genericList = client.getListModels();
             int i = 0;
@@ -244,7 +244,7 @@ public class JaxRsClientTest {
      * {@link Seekable}, {@link SeekRequest}, {@link SeekedPageImpl}
      */
     @Test
-    public void testSeek() {
+    void testSeek() {
         forEachHeaderCombination(() -> {
             SeekRequest request = new SeekRequest();
             request.setPivots(SomeRestImpl.EXPECTED_PIVOTS);

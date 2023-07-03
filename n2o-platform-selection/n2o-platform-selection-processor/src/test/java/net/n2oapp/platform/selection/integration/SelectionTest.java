@@ -58,7 +58,7 @@ import static java.util.Collections.emptyList;
 @EnableJaxRsProxyClient(value = SelectiveRest.class, address = "http://localhost:${server.port}/api")
 @Import(SelectionTest.Config.class)
 @DefinePort
-public class SelectionTest {
+class SelectionTest {
 
     private static QueryCount queryCount;
 
@@ -162,7 +162,7 @@ public class SelectionTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         EmployeeCriteria criteria = new EmployeeCriteria();
         criteria.setPageSize(100);
         EmployeeSelection selection = EmployeeSelection.create().id().name().contacts(

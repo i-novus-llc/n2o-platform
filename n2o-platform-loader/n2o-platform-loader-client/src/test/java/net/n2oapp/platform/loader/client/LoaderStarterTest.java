@@ -15,14 +15,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @SpringBootTest(classes = TestApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @WireMockTest(httpPort = 8787)
-public class LoaderStarterTest {
+class LoaderStarterTest {
 
     @Autowired
     private ClientLoader simpleClientLoader;
 
 
     @Test
-    public void testFailRetries() throws InterruptedException {
+    void testFailRetries() throws InterruptedException {
         ClientLoaderRunner runner = new ClientLoaderRunner(List.of(simpleClientLoader));
         runner.add("http://localhost:8787", "sub", "test1", "test.txt", SimpleClientLoader.class);
         stubFor(post(urlMatching("/simple/sub/test1")).willReturn(aResponse().withStatus(500)));

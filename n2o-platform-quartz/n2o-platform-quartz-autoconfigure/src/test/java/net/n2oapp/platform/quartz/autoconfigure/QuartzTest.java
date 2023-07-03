@@ -19,7 +19,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @Import(QuartzTestConfiguration.class)
 @SpringBootTest(classes = {QuartzTest.class})
 @TestPropertySource("classpath:test.properties")
-public class QuartzTest {
+class QuartzTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -28,7 +28,7 @@ public class QuartzTest {
      * Тест загрузки джоба и триггера в БД
      */
     @Test
-    public void testTableContent() {
+    void testTableContent() {
         List<Map<String, Object>> result = jdbcTemplate.queryForList("SELECT * FROM qrtz_job_details");
         assertThat(result.size(), is(1));
         assertThat(result.get(0).get("job_name"), is("test_job"));
@@ -42,7 +42,7 @@ public class QuartzTest {
      * Тест выполнения джоба и передачи объекта через контекст
      */
     @Test
-    public void testJob() throws InterruptedException {
+    void testJob() throws InterruptedException {
         int before = TestJob.i;
         TimeUnit.SECONDS.sleep(1);
         assertThat(TestJob.i > before, is(true));

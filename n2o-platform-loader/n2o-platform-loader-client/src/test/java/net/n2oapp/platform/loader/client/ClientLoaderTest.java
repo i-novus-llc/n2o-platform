@@ -21,7 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
         webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @TestPropertySource("classpath:test.yml")
 @WireMockTest(httpPort = 8787)
-public class ClientLoaderTest {
+class ClientLoaderTest {
 
     @Autowired
     private ClientLoader jsonClientLoader;
@@ -33,7 +33,7 @@ public class ClientLoaderTest {
     private ClassPathResource text;
 
     @Test
-    public void simpleLoad() throws URISyntaxException {
+    void simpleLoad() throws URISyntaxException {
         stubFor(post(urlMatching("/simple/.*/.*"))
                 .willReturn(aResponse()
                         .withStatus(200)));
@@ -44,7 +44,7 @@ public class ClientLoaderTest {
     }
 
     @Test
-    public void jsonLoad() throws URISyntaxException {
+    void jsonLoad() throws URISyntaxException {
         stubFor(post(urlMatching("/loaders/.*/.*"))
                 .willReturn(aResponse()
                         .withStatus(200)));
@@ -55,7 +55,7 @@ public class ClientLoaderTest {
     }
 
     @Test
-    public void run() {
+    void run() {
         //success
         stubFor(post(urlMatching("/loaders/sub/test1")).willReturn(aResponse().withStatus(200)));
         stubFor(post(urlMatching("/simple/sub/test2")).willReturn(aResponse().withStatus(200)));

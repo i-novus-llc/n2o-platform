@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootApplication
 @SpringBootTest(classes = JaxRsServerTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class JaxRsServerTest {
+class JaxRsServerTest {
 
     @LocalServerPort
     private int port;
@@ -45,7 +45,7 @@ public class JaxRsServerTest {
      * Проверка, что REST сервис был автоматически найден и поднят по пути /api/info.
      */
     @Test
-    public void info() {
+    void info() {
         forEachClient(webClient -> {
             Response response = webClient.path("info").get();
             assertThat(response.getStatus(), equalTo(200));
@@ -57,7 +57,7 @@ public class JaxRsServerTest {
     }
 
     @Test
-    public void testSearchHead() {
+    void testSearchHead() {
         forEachClient(webClient -> {
             Response response = webClient.path("example").path("search").head();
             assertThat(response.getStatus(), equalTo(200));
@@ -68,7 +68,7 @@ public class JaxRsServerTest {
      * Проверка, что REST сервис обрабатывает Pageable параметры.
      */
     @Test
-    public void paging() {
+    void paging() {
         forEachClient(webClient -> {
             Page<Map<String, Object>> page = webClient.path("example").path("search")
                     .query("size", 20).query("page", 2).get(Page.class);
@@ -84,7 +84,7 @@ public class JaxRsServerTest {
      * Проверка, что REST сервис обрабатывает Pageable параметры по умолчанию.
      */
     @Test
-    public void pagingByDefault() {
+    void pagingByDefault() {
         forEachClient(webClient -> {
             Page<Map<String, Object>> page = webClient.path("example").path("search").get(Page.class);
             assertThat(page.getTotalElements(), equalTo(100L));
@@ -99,7 +99,7 @@ public class JaxRsServerTest {
      * Проверка, что REST сервис обрабатывает Sort.Order параметры.
      */
     @Test
-    public void sort() {
+    void sort() {
         forEachClient(webClient -> {
             Page<Map<String, Object>> page = webClient.path("example").path("search")
                     .query("sort", "name: asc", "id: desc")
@@ -121,7 +121,7 @@ public class JaxRsServerTest {
      * Проверка, что REST сервис обрабатывает Page ответ.
      */
     @Test
-    public void pageResult() {
+    void pageResult() {
         forEachClient(webClient -> {
             Page page = webClient.path("example").path("search").get(Page.class);
             assertThat(page.getContent(), instanceOf(List.class));
@@ -133,7 +133,7 @@ public class JaxRsServerTest {
      * Проверка, что REST сервис обрабатывает Sort ответ.
      */
     @Test
-    public void sortResult() {
+    void sortResult() {
         forEachClient(webClient -> {
             Page<Map<String, Object>> page = webClient.path("example").path("search")
                     .query("sort", "name: asc").get(Page.class);
@@ -150,7 +150,7 @@ public class JaxRsServerTest {
      * Проверка, что REST сервис обрабатывает List ответ.
      */
     @Test
-    public void listResult() {
+    void listResult() {
         forEachClient(webClient -> {
             List<?> list = webClient.path("example").path("list").get(List.class);
             assertThat(list.size(), notNullValue());
@@ -161,7 +161,7 @@ public class JaxRsServerTest {
      * Проверка, что REST сервис обрабатывает Long ответ (например, идентификатор записи).
      */
     @Test
-    public void idResult() {
+    void idResult() {
         forEachClient(webClient -> {
             if (webClient.getHeaders().getFirst(HttpHeaders.ACCEPT).equals(MediaType.APPLICATION_XML))
                 return; // Мы вызываем метод, возвращающий примитивное значение (Long), которое не может быть десереализовано из XML.
@@ -174,7 +174,7 @@ public class JaxRsServerTest {
      * Проверка, что REST сервис обрабатывает ответ в виде java модели.
      */
     @Test
-    public void singleResult() {
+    void singleResult() {
         forEachClient(webClient -> {
             SomeModel result = webClient.path("example").path(1).get(SomeModel.class);
             assertThat(result, notNullValue());
@@ -186,7 +186,7 @@ public class JaxRsServerTest {
      * Проверка, что REST сервис правильно обрабатывает параметры фильтрации.
      */
     @Test
-    public void filters() {
+    void filters() {
         forEachClient(webClient -> {
             Page<Map<String, Object>> page = webClient.path("example").path("search")
                     .query("name", "John")
@@ -204,7 +204,7 @@ public class JaxRsServerTest {
      * Проверка, что REST сервис правильно обрабатывает валидации JSR303.
      */
     @Test
-    public void validations() {
+    void validations() {
         Map<String, Object> model = new HashMap<>();
         model.put("name", ""); // Имя должно быть задано
         model.put("date", "2030-01-01T12:00:00Z"); // Дата не должна быть в будущем
@@ -219,7 +219,7 @@ public class JaxRsServerTest {
     }
 
     @Test
-    public void testGetById() {
+    void testGetById() {
         forEachClient(webClient -> {
             SomeModel model = webClient.path("example").path("{id}", 50).get(SomeModel.class);
             assertNotNull(model);
@@ -231,7 +231,7 @@ public class JaxRsServerTest {
     }
 
     @Test
-    public void testDefaultContentTypeIsJson() {
+    void testDefaultContentTypeIsJson() {
         WebClient client = WebClient.create("http://localhost:" + port, List.of(jsonProvider, xmlProvider))
                 .accept(MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON)
                 .type(MediaType.APPLICATION_JSON)

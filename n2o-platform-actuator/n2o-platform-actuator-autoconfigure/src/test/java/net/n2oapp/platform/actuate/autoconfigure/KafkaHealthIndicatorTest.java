@@ -28,14 +28,14 @@ import java.util.Map;
         topics = {
                 KafkaHealthIndicatorTest.TEST_TOPIC
         })
-public class KafkaHealthIndicatorTest {
+class KafkaHealthIndicatorTest {
     public static final String TEST_TOPIC = "test";
 
     @Autowired
     private EmbeddedKafkaBroker kafkaEmbedded;
 
     @Test
-    public void kafkaIsUp() {
+    void kafkaIsUp() {
         KafkaTemplate<String, Object> kafkaTemplate = initKafkaTemplate(kafkaEmbedded.getBrokersAsString());
 
         KafkaHealthIndicator healthIndicator = new KafkaHealthIndicator(kafkaTemplate);
@@ -45,7 +45,7 @@ public class KafkaHealthIndicatorTest {
     }
 
     @Test
-    public void kafkaIsDown() {
+    void kafkaIsDown() {
         KafkaTemplate kafkaTemplate = initKafkaTemplate("127.0.0.1:" + SocketUtils.findAvailableTcpPort());
 
         KafkaHealthIndicator healthIndicator = new KafkaHealthIndicator(kafkaTemplate);

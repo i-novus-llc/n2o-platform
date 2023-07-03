@@ -9,10 +9,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class FlatteningIterableTest {
+class FlatteningIterableTest {
 
     @Test
-    public void testFlatten() {
+    void testFlatten() {
         final List<List<Integer>> lists = List.of(
             List.of(1, 2, 3),
             Collections.emptyList(),

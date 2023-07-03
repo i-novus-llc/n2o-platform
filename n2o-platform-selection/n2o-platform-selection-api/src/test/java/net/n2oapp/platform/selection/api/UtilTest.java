@@ -6,10 +6,10 @@ import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class UtilTest {
+class UtilTest {
 
     @Test
-    public void testEncodeDecode() {
+    void testEncodeDecode() {
         String json = "{\"name123\":\"T\",\"321positionSelection0321\":{\"b77\":\"F\"}}";
         String urlBase = "http://rest-api.ru?selection=";
         String encode = Util.encode(json);

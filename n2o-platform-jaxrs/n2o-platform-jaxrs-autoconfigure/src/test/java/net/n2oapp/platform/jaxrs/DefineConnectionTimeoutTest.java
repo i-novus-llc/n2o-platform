@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
                 "cxf.jaxrs.client.connection.timeout=1000",
         },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class DefineConnectionTimeoutTest {
+class DefineConnectionTimeoutTest {
 
     @Autowired
     @Qualifier("someRestJaxRsProxyClient")
@@ -32,7 +32,7 @@ public class DefineConnectionTimeoutTest {
     * Погрешность равна 1 секунде
     * */
     @Test
-    public void testConnectionTimeoutFail() {
+    void testConnectionTimeoutFail() {
         long start = System.currentTimeMillis();
         try {
             client.timeoutSuccess();

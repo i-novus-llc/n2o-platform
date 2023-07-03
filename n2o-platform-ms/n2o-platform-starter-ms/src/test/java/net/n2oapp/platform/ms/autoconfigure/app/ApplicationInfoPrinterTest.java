@@ -15,12 +15,12 @@ import static org.hamcrest.Matchers.is;
 @SpringBootTest(classes = ApplicationInfoPrinterTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EnableAutoConfiguration
 @Import(ApplicationInfoPrinterTestConfiguration.class)
-public class ApplicationInfoPrinterTest {
+class ApplicationInfoPrinterTest {
     @Autowired
     private MemoryAppender memoryAppender;
 
     @Test
-    public void testApplicationInfoPrinter() {
+    void testApplicationInfoPrinter() {
         assertThat(memoryAppender.contains("Application info:", Level.INFO), is(true));
         assertThat(memoryAppender.contains("groupId: net.n2oapp.platform", Level.INFO), is(true));
         assertThat(memoryAppender.contains("artifactId: test", Level.INFO), is(true));

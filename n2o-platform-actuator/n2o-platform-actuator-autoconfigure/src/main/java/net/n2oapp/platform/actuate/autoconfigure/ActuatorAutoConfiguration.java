@@ -1,9 +1,9 @@
 package net.n2oapp.platform.actuate.autoconfigure;
 
 import net.n2oapp.platform.actuate.health.KafkaHealthIndicator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.health.CompositeHealthContributorConfiguration;
 import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.actuate.autoconfigure.web.servlet.ServletManagementContextAutoConfiguration;
 import org.springframework.boot.actuate.health.HealthContributor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -19,10 +19,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.env.Environment;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.Map;
@@ -42,14 +41,10 @@ public class ActuatorAutoConfiguration {
     @ConditionalOnClass(SecurityFilterChain.class)
     @ConditionalOnBean(HttpSecurity.class)
     @AutoConfigureAfter(SecurityAutoConfiguration.class)
-    public static class MonitoringSecurityConfigurerAdapter {
-        @Autowired
-        Environment env;
-
+    public static class ActuatorSecurityCustomizer {
         @Bean
-        public SecurityFilterChain actuatorFilterChain(HttpSecurity http) throws Exception {
-            http.csrf().disable().antMatcher(env.getProperty("management.endpoints.web.base-path") + "/**").authorizeRequests().anyRequest().permitAll();
-            return http.build();
+        public WebSecurityCustomizer actuatorSecurityCustomizer() {
+            return web -> web.ignoring().requestMatchers(EndpointRequest.toAnyEndpoint());
         }
     }
 

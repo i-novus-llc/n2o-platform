@@ -21,7 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @SpringBootTest(classes = TestApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestDatabase
-public class LoaderServerTest {
+class LoaderServerTest {
     @Autowired
     private SimpleServerLoader simpleLoader;
     @Autowired
@@ -35,7 +35,7 @@ public class LoaderServerTest {
      * Тест Api {@link ServerLoader}
      */
     @Test
-    public void simpleLoader() {
+    void simpleLoader() {
         BiConsumer<List<TestModel>, String> loader = (data, subject) -> {
             simpleLoader.load(data, subject);
         };
@@ -51,7 +51,7 @@ public class LoaderServerTest {
      * Тест {@link RepositoryServerLoader}
      */
     @Test
-    public void repositoryLoader() {
+    void repositoryLoader() {
         BiConsumer<List<TestModel>, String> loader = (data, subject) -> {
             repositoryLoader.load(data, subject);
         };
@@ -67,7 +67,7 @@ public class LoaderServerTest {
      * Тест {@link ServerLoaderRestService}
      */
     @Test
-    public void restLoader() {
+    void restLoader() {
         BiConsumer<List<TestModel>, String> loader = (data, subject) -> {
             RestTemplate restTemplate = new RestTemplate();
             String url = "http://localhost:" + port + "/api/loaders/" + subject + "/load2";

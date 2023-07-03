@@ -8,10 +8,10 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class RestMessageTest {
+class RestMessageTest {
 
     @Test
-    public void testEqualsHashCode() {
+    void testEqualsHashCode() {
         RestMessage.Error error1 = new RestMessage.Error("123");
         RestMessage.ConstraintViolationError error2 = new RestMessage.ConstraintViolationError();
         error2.setMessage("123");

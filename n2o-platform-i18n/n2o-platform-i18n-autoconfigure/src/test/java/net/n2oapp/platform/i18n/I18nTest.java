@@ -18,7 +18,7 @@ import static org.hamcrest.Matchers.is;
 @SpringBootApplication
 @SpringBootTest(classes = I18nTest.class,
         webEnvironment = SpringBootTest.WebEnvironment.NONE)
-public class I18nTest {
+class I18nTest {
     private @Autowired Messages messages;
 
     @BeforeEach
@@ -30,7 +30,7 @@ public class I18nTest {
      * Проверка, что {@link Messages} локализуют сообщения с кодом и без, с параметрами и без.
      */
     @Test
-    public void messages() {
+    void messages() {
         assertThat(messages.getMessage("test1"), is("Тест"));
         assertThat(messages.getMessage("test2", "раз", 2), is("Тест раз и 2"));
         assertThat(messages.getMessage("undefined"), is("undefined"));
@@ -44,7 +44,7 @@ public class I18nTest {
      * Проверка локализации исключений {@link UserException} и подключения глобального {@link org.springframework.context.MessageSource}
      */
     @Test
-    public void exceptions() {
+    void exceptions() {
         try {
             throw new UserException("test1");
         } catch (Exception e) {

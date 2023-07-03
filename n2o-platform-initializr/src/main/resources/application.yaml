@@ -72,15 +72,6 @@ initializr:
           aliases:
             - feign
             - client
-        - name: JWT
-          id: n2o-jwt
-          groupId: net.n2oapp.platform
-          artifactId: n2o-platform-starter-jwt
-          description: Stateless auth by JWT
-          bom: n2o-platform-bom
-          aliases:
-            - jwt
-            - auth
         - name: MS
           id: n2o-ms
           groupId: net.n2oapp.platform

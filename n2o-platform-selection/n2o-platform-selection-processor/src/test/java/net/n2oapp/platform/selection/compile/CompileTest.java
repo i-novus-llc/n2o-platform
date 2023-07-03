@@ -16,10 +16,10 @@ import java.util.List;
 
 import static com.google.testing.compile.Compiler.javac;
 
-public class CompileTest {
+class CompileTest {
 
     @Test
-    public void testCompileNoErrors() throws IOException {
+    void testCompileNoErrors() throws IOException {
         List<String> classes = List.of(
             Address.class.getSimpleName(),
             AddressModel.class.getSimpleName(),

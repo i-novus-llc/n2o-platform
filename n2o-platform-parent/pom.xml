@@ -8,25 +8,25 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-boot-dependencies</artifactId>
-        <version>5.1.3-SNAPSHOT</version>
+        <version>6.0.0-SNAPSHOT</version>
         <relativePath>../n2o-platform-dependencies</relativePath>
     </parent>
 
     <properties>
-        <versions-maven-plugin.version>2.7</versions-maven-plugin.version>
-        <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
-        <maven.source.version>3.2.0</maven.source.version>
-        <maven.javadoc.version>3.2.0</maven.javadoc.version>
-        <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
-
         <java.version>11</java.version>
 
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
+        <maven.source.version>3.2.1</maven.source.version>
+        <maven.javadoc.version>3.5.0</maven.javadoc.version>
+        <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <versions-maven-plugin.version>2.15.0</versions-maven-plugin.version>
+
+        <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
         <jacoco.skip>true</jacoco.skip> <!-- Skip all by default for project's root and aggregator pom modules. Disable skip in jar modules. -->
         <jacoco.aggregate.report.path>${project.basedir}/../target/site/jacoco-aggregate</jacoco.aggregate.report.path> <!-- By default use parent directory of module for multimodule projects. -->
 
@@ -37,6 +37,9 @@
             src/main/java/**
         </sonar.inclusions>
         <sonar.test.exclusions>src/test/**</sonar.test.exclusions>
+
+        <docker-compose.config.folder>.docker-compose</docker-compose.config.folder>
+        <k8s.config.folder>.k8s</k8s.config.folder>
     </properties>
 
     <dependencies>
@@ -146,6 +149,37 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.1.0</version>
+                    <executions>
+                        <execution>
+                            <id>process-docker-config</id>
+                            <phase>none</phase>
+                            <goals>
+                                <goal>copy-resources</goal>
+                            </goals>
+                            <configuration>
+                                <outputDirectory>${project.basedir}</outputDirectory>
+                                <resources>
+                                    <resource>
+                                        <directory>${project.basedir}/${docker-compose.config.folder}</directory>
+                                        <targetPath>${project.basedir}</targetPath>
+                                        <filtering>true</filtering>
+                                    </resource>
+                                    <resource>
+                                        <directory>${project.basedir}/${k8s.config.folder}</directory>
+                                        <targetPath>${project.basedir}/.k8s/target</targetPath>
+                                        <filtering>true</filtering>
+                                        <excludes>
+                                            <exclude>**/target/**</exclude>
+                                        </excludes>
+                                    </resource>
+                                </resources>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -202,39 +236,6 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>docker-config-filter</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <version>3.1.0</version>
-                        <executions>
-                            <execution>
-                                <id>copy-resources</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <configuration>
-                                    <outputDirectory>${project.basedir}</outputDirectory>
-                                    <resources>
-                                        <resource>
-                                            <directory>${project.basedir}/docker-compose</directory>
-                                            <filtering>true</filtering>
-                                            <includes>
-                                                <include>*.yml</include>
-                                            </includes>
-                                        </resource>
-                                    </resources>
-                                </configuration>
-                            </execution>
-                        </executions>
                     </plugin>
                 </plugins>
             </build>
