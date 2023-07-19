@@ -9,6 +9,7 @@ import org.springframework.boot.actuate.health.HealthContributor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -34,6 +35,7 @@ import java.util.Map;
 @ConditionalOnWebApplication
 @PropertySource("classpath:/META-INF/net/n2oapp/platform/actuate/monitoring.properties")
 @AutoConfigureBefore(ServletManagementContextAutoConfiguration.class)
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class ActuatorAutoConfiguration {
 
     @Configuration
