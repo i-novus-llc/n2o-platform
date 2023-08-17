@@ -5,7 +5,12 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.util.Assert;
 
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+
 public class KafkaHealthIndicator extends AbstractHealthIndicator {
+
+    private static final String HEALTHCHECK_TOPIC = "test";
 
     private final KafkaTemplate kafkaTemplate;
 
@@ -17,10 +22,26 @@ public class KafkaHealthIndicator extends AbstractHealthIndicator {
     @Override
     protected void doHealthCheck(Health.Builder builder) {
         try {
-            kafkaTemplate.send("test", null).get();
+            if (kafkaTemplate.isTransactional()) {
+                kafkaTemplate.executeInTransaction(kafkaOperations -> send());
+            } else {
+                send();
+            }
             builder.up();
         } catch (Exception ex) {
             builder.down(ex);
         }
     }
+
+    private Object send() {
+        try {
+            return kafkaTemplate.send(HEALTHCHECK_TOPIC, null).get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(e);
+        } catch (ExecutionException | CancellationException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
 }
