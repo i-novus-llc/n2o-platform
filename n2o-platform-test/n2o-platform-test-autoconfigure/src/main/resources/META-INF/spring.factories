@@ -1,5 +1,3 @@
-net.n2oapp.platform.test.autoconfigure.pg.EnableEmbeddedPg=\
-net.n2oapp.platform.test.autoconfigure.pg.EmbeddedPgAutoConfiguration
 net.n2oapp.platform.test.autoconfigure.pg.EnableTestcontainersPg=\
 net.n2oapp.platform.test.autoconfigure.pg.TestcontainersPgAutoConfiguration
 
