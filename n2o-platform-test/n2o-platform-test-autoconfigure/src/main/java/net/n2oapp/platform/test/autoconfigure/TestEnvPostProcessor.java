@@ -1,7 +1,6 @@
 package net.n2oapp.platform.test.autoconfigure;
 
 import net.n2oapp.platform.test.PortFinder;
-import net.n2oapp.platform.test.autoconfigure.pg.EnableEmbeddedPg;
 import net.n2oapp.platform.test.autoconfigure.pg.EnableTestcontainersPg;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
@@ -23,9 +22,6 @@ public class TestEnvPostProcessor implements EnvironmentPostProcessor {
         Map<String, Object> map = new HashMap<>();
         if (clazz.getAnnotation(DefinePort.class) != null) {
             map.put("server.port", PortFinder.getPort("spring-boot"));
-        }
-        if(clazz.getAnnotation(EnableEmbeddedPg.class) != null) {
-            map.put("test.embedded-pg", true);
         }
         if(clazz.getAnnotation(EnableTestcontainersPg.class) != null) {
             map.put("test.testcontainers-pg", true);

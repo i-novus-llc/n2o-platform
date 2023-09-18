@@ -11,36 +11,6 @@
 
 == Инструкции
 
-=== Разворачивание Postgresql без использования Docker
-
-==== Подключение
-
-Добавьте зависимость:
-[source,xml]
-----
-<dependency>
-  <groupId>net.n2oapp.platform</groupId>
-  <artifactId>n2o-platform-starter-test</artifactId>
-</dependency>
-----
-
-==== Инициализация
-
-Над классом теста указываете аннотацию EnableEmbeddedPg:
-[source,java]
-----
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = Application.class)
-@EnableEmbeddedPg
-public class EmbeddedPgTest {
-    ...
-}
-----
-
-[NOTE]
-Создастся DataSource spring-bean с подключением с супер пользователем к бд с сгенерированным названием и портом.
-
-
 === Поднятие сервера и прокси-клиента на произвольном порту
 
 ==== Подключение
@@ -90,7 +60,7 @@ https://www.testcontainers.org/supported_docker_environment/[*Системные
 
 ==== Инициализация
 
-Над классом теста указываете аннотацию EnableEmbeddedPg:
+Над классом теста указываете аннотацию EnableTestcontainersPg:
 [source,java]
 ----
 @RunWith(SpringRunner.class)

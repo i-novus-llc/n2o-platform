@@ -28,9 +28,9 @@
         </dependency>
 
         <dependency>
-            <groupId>ru.i-novus.components</groupId>
-            <artifactId>otj-pg-embedded-rus</artifactId>
-            <version>0.13.2-alpha.1</version>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.3.7</version>
         </dependency>
 
         <dependency>
@@ -52,13 +52,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-rs-client</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
