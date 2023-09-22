@@ -78,12 +78,6 @@
         </dependency>
 
         <dependency>
-            <groupId>net.n2oapp.platform</groupId>
-            <artifactId>n2o-platform-userinfo-autoconfigure</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <scope>test</scope>

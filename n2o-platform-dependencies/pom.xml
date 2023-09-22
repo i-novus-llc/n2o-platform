@@ -174,16 +174,6 @@
                 <artifactId>n2o-platform-selection-processor</artifactId>
                 <version>5.2.1-SNAPSHOT</version>
             </dependency>
-            <dependency>
-                <groupId>net.n2oapp.platform</groupId>
-                <artifactId>n2o-platform-userinfo-autoconfigure</artifactId>
-                <version>5.2.1-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>net.n2oapp.platform</groupId>
-                <artifactId>n2o-platform-userinfo-starter</artifactId>
-                <version>5.2.1-SNAPSHOT</version>
-            </dependency>
 
             <!--N2O Framework-->
             <dependency>
