@@ -54,7 +54,6 @@
         <module>n2o-platform-initializr</module>
         <module>n2o-platform-selection</module>
         <module>n2o-platform-seek-paging</module>
-        <module>n2o-platform-userinfo</module>
     </modules>
 
     <properties>
