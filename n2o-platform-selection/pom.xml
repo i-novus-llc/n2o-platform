@@ -3,7 +3,7 @@
     <parent>
         <artifactId>n2o-boot-platform-parent</artifactId>
         <groupId>net.n2oapp.platform</groupId>
-        <version>5.3.1</version>
+        <version>5.3.2-SNAPSHOT</version>
         <relativePath>../n2o-platform-parent</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
