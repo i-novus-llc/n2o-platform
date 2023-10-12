@@ -13,7 +13,6 @@
 
     <properties>
         <n2o.version>7.23.68</n2o.version>
-        <security.version>7.0.2</security.version>
         <jaxrs-api.version>2.1.1</jaxrs-api.version>
         <swagger.version>4.15.0</swagger.version>
         <swagger-annotations.version>1.6.8</swagger-annotations.version>
@@ -200,13 +199,6 @@
                 <groupId>net.n2oapp.framework</groupId>
                 <artifactId>n2o-access</artifactId>
                 <version>${n2o.version}</version>
-            </dependency>
-
-            <!-- Security-admin -->
-            <dependency>
-                <groupId>net.n2oapp.framework.security</groupId>
-                <artifactId>security-auth-common</artifactId>
-                <version>${security.version}</version>
             </dependency>
 
             <!-- Spring -->
