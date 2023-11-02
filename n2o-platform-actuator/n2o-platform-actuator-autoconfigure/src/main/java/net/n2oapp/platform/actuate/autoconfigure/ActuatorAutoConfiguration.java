@@ -4,7 +4,7 @@ import net.n2oapp.platform.actuate.health.KafkaHealthIndicator;
 import org.springframework.boot.actuate.autoconfigure.health.CompositeHealthContributorConfiguration;
 import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
-import org.springframework.boot.actuate.autoconfigure.web.servlet.ServletManagementContextAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.web.server.ManagementContextAutoConfiguration;
 import org.springframework.boot.actuate.health.HealthContributor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -17,7 +17,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -33,8 +32,7 @@ import java.util.Map;
  */
 @AutoConfiguration
 @ConditionalOnWebApplication
-@PropertySource("classpath:/META-INF/net/n2oapp/platform/actuate/monitoring.properties")
-@AutoConfigureBefore(ServletManagementContextAutoConfiguration.class)
+@AutoConfigureBefore(ManagementContextAutoConfiguration.class)
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class ActuatorAutoConfiguration {
 
