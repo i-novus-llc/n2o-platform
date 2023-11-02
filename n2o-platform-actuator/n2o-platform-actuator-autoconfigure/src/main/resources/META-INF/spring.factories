@@ -1,0 +1,2 @@
+org.springframework.boot.env.EnvironmentPostProcessor=\
+net.n2oapp.platform.actuate.autoconfigure.ActuatorEnvironmentPostprocessor
