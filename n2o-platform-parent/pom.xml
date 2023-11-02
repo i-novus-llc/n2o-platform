@@ -40,6 +40,8 @@
 
         <docker-compose.config.folder>.docker-compose</docker-compose.config.folder>
         <k8s.config.folder>.k8s</k8s.config.folder>
+        <maven.build.timestamp.format>yyyyMMdd.HHmmss</maven.build.timestamp.format>
+        <docker.image.tag.unique.suffix>-${maven.build.timestamp}</docker.image.tag.unique.suffix>
     </properties>
 
     <dependencies>
@@ -164,12 +166,15 @@
                                 <resources>
                                     <resource>
                                         <directory>${project.basedir}/${docker-compose.config.folder}</directory>
-                                        <targetPath>${project.basedir}</targetPath>
+                                        <targetPath>${project.basedir}/${docker-compose.config.folder}/target</targetPath>
                                         <filtering>true</filtering>
+                                        <excludes>
+                                            <exclude>**/target/**</exclude>
+                                        </excludes>
                                     </resource>
                                     <resource>
                                         <directory>${project.basedir}/${k8s.config.folder}</directory>
-                                        <targetPath>${project.basedir}/.k8s/target</targetPath>
+                                        <targetPath>${project.basedir}/${k8s.config.folder}/target</targetPath>
                                         <filtering>true</filtering>
                                         <excludes>
                                             <exclude>**/target/**</exclude>
