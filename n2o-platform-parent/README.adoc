@@ -43,7 +43,7 @@
 https://stackoverflow.com/questions/13031219/how-to-configure-multi-module-maven-sonar-jacoco-to-give-merged-coverage-rep/60639251#60639251
 
 == Фильтрация конфигураций Docker Compose и Kubernetes
-Эту функцию стоит использовать, когда нужно чтобы совпадали версии maven-зависимостей и docker-образов.
+Эта функция позволяет "собирать" конфигурационные файлы docker и kubernetes, подставляя значения из maven.
 
 При сборке в папках `${docker-compose.config.folder}` (по умолчанию .docker-compose) и `${k8s.config.folder}` (по умолчанию .k8s) во всех yaml-файлах будут подставлены значения плейсхолдеров из свойств maven.
 

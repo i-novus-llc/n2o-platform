@@ -36,6 +36,33 @@ SPRING_CONFIG_IMPORT=optional:consul:
 
 Для тестового окружения Consul можно отключить подключив link:/n2o-platform-test/README.adoc[test] - стартер для создания тестов
 
+== Включение конфигурации через Vault
+По умолчанию vault не подключается данным стартером.
+Чтобы включить в проекте конфигурацию через Vault добавьте зависимость:
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.springframework.cloud</groupId>
+  <artifactId>spring-cloud-starter-vault-config</artifactId>
+</dependency>
+----
+
+Затем добавьте настройки в application.yaml:
+
+[source,yaml]
+----
+spring.config.import: consul:,vault:
+spring.cloud.vault.host: vault-agent.local
+spring.cloud.vault.kv.backend: код системы
+----
+
+Через переменную окружения `SPRING_CLOUD_VAULT_TOKEN` передать токен доступа или в k8s-среде воспользоваться авторизацией через link:https://docs.spring.io/spring-cloud-vault/docs/current/reference/html/#vault.config.authentication.kubernetes[service-account-token-file].
+
+В самом Vault нужно добавить KV-engine с именем "код системы". Внутри создать папку с именем `application`, в которую добавить все общие секреты системы в формате key-value. Секреты отдельных модулей нужно размещать в своих папках, названия которых должны совпадать с `spring.application.name`.
+
+Подробная документация: https://docs.spring.io/spring-cloud-vault/docs/current/reference/html
+
 == Observability
 Observability - это сочетание трёх видов информации о приложении: метрик, трассировок, логов. В совокупности они дают полную картину того, что происходит внутри приложения.
 Особенно полезна эта информация для анализа проблем production-стендов, где нельзя просто подключить, продебажить или использовать другие средства поиска проблем "вживую".
