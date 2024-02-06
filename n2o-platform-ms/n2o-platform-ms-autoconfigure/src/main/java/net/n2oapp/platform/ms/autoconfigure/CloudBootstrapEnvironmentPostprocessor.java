@@ -30,11 +30,15 @@ public class CloudBootstrapEnvironmentPostprocessor implements EnvironmentPostPr
 
     private Properties defaultConsulProperties() {
         Properties props = new Properties();
-        props.put("spring.config.import", "consul:");
+        props.put("spring.config.import", "consul:,optional:vault:");
         props.put("spring.cloud.consul.config.enabled", "true");
         props.put("spring.cloud.consul.host", "consul-agent.local");
         props.put("spring.cloud.consul.port", "8500");
         props.put("spring.cloud.consul.config.format", "YAML");
+        props.put("spring.cloud.vault.enabled", "false");
+        props.put("spring.cloud.vault.reactive.enabled", "false");
+        props.put("spring.cloud.vault.kv.application-name", "${spring.cloud.consul.config.prefix}-${spring.application.name}");
+        props.put("spring.cloud.vault.kv.default-context", "${spring.cloud.consul.config.prefix}-application");
         return props;
     }
 }
