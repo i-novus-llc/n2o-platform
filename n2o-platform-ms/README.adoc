@@ -49,15 +49,15 @@ SPRING_CLOUD_VAULT_TOKEN=токен_доступа_vault
 ----
 
 В k8s-среде можно воспользоваться авторизацией через link:https://docs.spring.io/spring-cloud-vault/docs/current/reference/html/#vault.config.authentication.kubernetes[service-account-token-file].
-Данный способ авторизации должен быть настроен на уровне k8s-кластера. Кроме этого, нужно вместо SPRING_CLOUD_VAULT_TOKEN прописать в переменные окружения:
+Данный способ авторизации должен быть настроен на уровне k8s-кластера. Кроме этого, нужно вместо `SPRING_CLOUD_VAULT_TOKEN` прописать в переменные окружения:
 [source,properties]
 ----
 SPRING_CLOUD_VAULT_AUTHENTICATION=KUBERNETES
 SPRING_CLOUD_VAULT_KUBERNETES_ROLE=default
 ----
-Роль default должна быть создана администратором Vault для метода авторизации kubernetes.
+Роль `default` должна быть создана администратором Vault для метода авторизации `kubernetes`.
 
-В самом Vault должен быть добавлен KV-engine с именем "secret". Внутри нужно создать секреты(папки) с именами:
+В самом Vault должен быть добавлен KV-engine с именем `secret`. Внутри нужно создать секреты(папки) с именами:
 ```
 ${spring.cloud.consul.config.prefix}-${spring.application.name}
 ${spring.cloud.consul.config.prefix}-application
