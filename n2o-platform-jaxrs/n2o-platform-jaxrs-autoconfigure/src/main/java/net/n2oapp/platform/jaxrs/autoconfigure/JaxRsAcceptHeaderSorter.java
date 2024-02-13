@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import static javax.ws.rs.core.HttpHeaders.ACCEPT;
+import static jakarta.ws.rs.core.HttpHeaders.ACCEPT;
 import static org.apache.cxf.message.Message.PROTOCOL_HEADERS;
 
 /*

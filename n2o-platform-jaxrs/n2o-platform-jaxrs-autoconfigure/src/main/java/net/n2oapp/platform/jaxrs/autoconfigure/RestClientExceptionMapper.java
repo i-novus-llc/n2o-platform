@@ -4,8 +4,8 @@ import net.n2oapp.platform.jaxrs.RestException;
 import net.n2oapp.platform.jaxrs.RestMessage;
 import org.apache.cxf.jaxrs.client.ResponseExceptionMapper;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.Provider;
 
 /**
  * Преобразование ответа REST сервиса в исключение {@link RestException}

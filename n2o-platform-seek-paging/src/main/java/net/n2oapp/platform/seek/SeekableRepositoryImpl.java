@@ -22,7 +22,7 @@ import org.springframework.data.jpa.repository.support.QuerydslJpaPredicateExecu
 import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.util.CollectionUtils;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;

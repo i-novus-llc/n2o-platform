@@ -6,7 +6,7 @@ import net.n2oapp.platform.jaxrs.api.SomeModel;
 import net.n2oapp.platform.jaxrs.api.SomeRest;
 import org.springframework.data.domain.Page;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import javax.ws.rs.*;
 
 /**

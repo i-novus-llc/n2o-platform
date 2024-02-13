@@ -1,6 +1,6 @@
 package net.n2oapp.platform.jaxrs.api;
 
-import javax.ws.rs.QueryParam;
+import jakarta.ws.rs.QueryParam;
 import java.util.Map;
 
 public class MapParamHolder {

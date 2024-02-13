@@ -8,9 +8,9 @@ import net.n2oapp.platform.jaxrs.seek.SeekRequest;
 import net.n2oapp.platform.jaxrs.seek.SeekedPage;
 import org.springframework.data.domain.Page;
 
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;

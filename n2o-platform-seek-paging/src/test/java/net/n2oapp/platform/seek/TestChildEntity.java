@@ -1,6 +1,6 @@
 package net.n2oapp.platform.seek;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 public class TestChildEntity {

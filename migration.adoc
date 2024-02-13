@@ -2,6 +2,9 @@
 
 == 6.0.0
 * В ms-стартер добавлен выключенный по умолчанию клиент конфигурации vault. Может повлиять, если в проекте он был уже подключен.
+* Переход со swagger на openApi.
+** Настройка `jaxrs.swagger.enabled` изменена на `jaxrs.openapi.enabled`.
+** аыва
 
 == 5.3.0
 * Стартер проброса информации пользователя между сервисами(n2o-platform-userinfo-starter) перенесён в проект security-admin(security-userinfo-starter).

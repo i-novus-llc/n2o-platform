@@ -11,7 +11,7 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 
-import javax.ws.rs.Path;
+import jakarta.ws.rs.Path;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.*;

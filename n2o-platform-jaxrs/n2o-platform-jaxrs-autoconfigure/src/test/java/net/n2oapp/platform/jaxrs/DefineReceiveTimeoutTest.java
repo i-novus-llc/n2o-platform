@@ -7,10 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.util.SocketUtils;
-
+import org.springframework.test.util.TestSocketUtils;
 import java.net.SocketTimeoutException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -30,7 +28,7 @@ class DefineReceiveTimeoutTest {
 
     @BeforeAll
     public static void init() {
-        System.setProperty("server.port", String.valueOf(SocketUtils.findAvailableTcpPort()));
+        System.setProperty("server.port", String.valueOf(TestSocketUtils.findAvailableTcpPort()));
     }
 
     @AfterAll

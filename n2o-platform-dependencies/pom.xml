@@ -14,16 +14,16 @@
     <properties>
         <n2o.version>7.23.68</n2o.version>
         <security.version>7.0.2</security.version>
-        <jaxrs-api.version>2.1.1</jaxrs-api.version>
+        <jakarta-api.version>3.1.0</jakarta-api.version>
         <swagger.version>4.15.0</swagger.version>
         <swagger-annotations.version>1.6.8</swagger-annotations.version>
-        <cxf.version>3.5.4</cxf.version>
+        <cxf.version>4.0.3</cxf.version>
         <commons.version>2.6</commons.version>
-        <spring.cloud.version>2021.0.5</spring.cloud.version>
+        <spring.cloud.version>2023.0.0</spring.cloud.version>
         <activation.version>1.1.1</activation.version>
         <feign.version>10.10.1</feign.version>
         <feign-jaxrs-inovus.version>2.0</feign-jaxrs-inovus.version>
-        <jackson-jaxrs-json.version>2.12.7</jackson-jaxrs-json.version>
+        <jackson-jaxrs-json.version>2.16.1</jackson-jaxrs-json.version>
         <loki-logback-appender.version>1.4.0</loki-logback-appender.version>
         <google-guava.version>31.1-jre</google-guava.version>
         <joda-convert.version>2.2.1</joda-convert.version>
@@ -246,7 +246,7 @@
 
             <dependency>
                 <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-rs-service-description-swagger</artifactId>
+                <artifactId>cxf-rt-rs-service-description-openapi-v3</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
 
@@ -300,9 +300,9 @@
 
             <!-- API -->
             <dependency>
-                <groupId>javax.ws.rs</groupId>
-                <artifactId>javax.ws.rs-api</artifactId>
-                <version>${jaxrs-api.version}</version>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
+                <version>${jakarta-api.version}</version>
             </dependency>
 
             <dependency>

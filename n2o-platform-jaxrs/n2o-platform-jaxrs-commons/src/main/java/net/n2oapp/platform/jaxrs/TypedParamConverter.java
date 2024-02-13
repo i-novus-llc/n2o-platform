@@ -1,6 +1,6 @@
 package net.n2oapp.platform.jaxrs;
 
-import javax.ws.rs.ext.ParamConverter;
+import jakarta.ws.rs.ext.ParamConverter;
 
 /**
  * Типизированный конвертер параметров REST запроса

@@ -13,12 +13,12 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.util.SocketUtils;
-import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.test.util.TestSocketUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -64,7 +64,7 @@ class KafkaHealthIndicatorTest {
 
     @Test
     void kafkaIsDown() {
-        KafkaTemplate kafkaTemplate = initKafkaTemplate("127.0.0.1:" + SocketUtils.findAvailableTcpPort());
+        KafkaTemplate kafkaTemplate = initKafkaTemplate("127.0.0.1:" + TestSocketUtils.findAvailableTcpPort());
 
         KafkaHealthIndicator healthIndicator = new KafkaHealthIndicator(kafkaTemplate);
         Health health = healthIndicator.health();
@@ -94,11 +94,11 @@ class KafkaHealthIndicatorTest {
 
     private KafkaTemplate mockSendException(KafkaTemplate kafkaTemplate, Throwable throwable) throws ExecutionException, InterruptedException {
         kafkaTemplate = Mockito.spy(kafkaTemplate);
-        ListenableFuture listenableFuture = Mockito.mock(ListenableFuture.class);
-        Mockito.doReturn(listenableFuture)
+        CompletableFuture completableFuture = Mockito.mock(CompletableFuture.class);
+        Mockito.doReturn(completableFuture)
                 .when(kafkaTemplate)
                 .send(Mockito.any(), Mockito.any());
-        Mockito.doThrow(throwable).when(listenableFuture).get();
+        Mockito.doThrow(throwable).when(completableFuture).get();
         return kafkaTemplate;
     }
 

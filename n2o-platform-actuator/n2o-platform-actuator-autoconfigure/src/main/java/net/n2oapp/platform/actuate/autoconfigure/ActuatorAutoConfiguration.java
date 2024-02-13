@@ -58,6 +58,7 @@ public class ActuatorAutoConfiguration {
         private final Map<String, KafkaTemplate> kafkaTemplates;
 
         public KafkaHealthIndicatorConfiguration(Map<String, KafkaTemplate> kafkaTemplates) {
+            super(KafkaHealthIndicator::new);
             this.kafkaTemplates = kafkaTemplates;
         }
 

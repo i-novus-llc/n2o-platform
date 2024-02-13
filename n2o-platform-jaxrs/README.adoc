@@ -231,17 +231,17 @@ public interface SomeRest {
 }
 ----
 
-В настройках приложения задайте путь к REST сервисам со swagger аннотациями и другие параметры:
+В настройках приложения задайте путь к REST сервисам со openApi аннотациями и другие параметры:
 [source,python]
 ----
-jaxrs.swagger.enabled=true
-jaxrs.swagger.title=REST сервисы для примера
-jaxrs.swagger.version=1.0
-jaxrs.swagger.resource-package=net.n2oapp.microservice.example
+jaxrs.openapi.enabled=true
+jaxrs.openapi.title=REST сервисы для примера
+jaxrs.openapi.version=1.0
+jaxrs.openapi.resource-package=net.n2oapp.microservice.example
 #Опционально можно указать какие протоколы (http,https,ws,wss):
-jaxrs.swagger.schemes=http,https
-jaxrs.swagger.auth.name=oauth2
-jaxrs.swagger.auth.token-uri=http://localhost:8080/oauth/token
+jaxrs.openapi.schemes=http,https
+jaxrs.openapi.auth.name=oauth2
+jaxrs.openapi.auth.token-uri=http://localhost:8080/oauth/token
 ----
 
 [NOTE]

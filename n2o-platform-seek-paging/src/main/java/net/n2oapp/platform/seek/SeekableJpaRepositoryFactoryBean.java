@@ -5,7 +5,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.lang.NonNull;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 public class SeekableJpaRepositoryFactoryBean<T extends Repository<S, I>, S, I> extends JpaRepositoryFactoryBean<T, S, I> {
 

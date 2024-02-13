@@ -1,6 +1,6 @@
 package net.n2oapp.platform.jaxrs;
 
-import javax.ws.rs.WebApplicationException;
+import jakarta.ws.rs.WebApplicationException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;

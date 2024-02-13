@@ -18,7 +18,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.ReflectionUtils;
 
-import javax.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedHashMap;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -114,7 +114,7 @@ class JaxRsClientTest {
                             SomeModel.class.getName().equals(constraintViolationError.getLeafBeanClass()) ||
                             StringModel.class.getName().equals(constraintViolationError.getLeafBeanClass())
                     );
-                    assertEquals("javax.validation.constraints.NotNull", constraintViolationError.getConstraintAnnotation());
+                    assertEquals("jakarta.validation.constraints.NotNull", constraintViolationError.getConstraintAnnotation());
                 }
             }
         });
