@@ -2,9 +2,13 @@
 
 == 6.0.0
 * В ms-стартер добавлен выключенный по умолчанию клиент конфигурации vault. Может повлиять, если в проекте он был уже подключен.
+* Переход на Spring Boot 3.2. Для этого есть отдельный миграционный гайд: https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.0-Migration-Guide. В частности это значит, что минимальная поддерживаемая платформой версия Java теперь 17.
+* Переход с Java EE на Jakarta EE. Это, например, значит, что нужно вместо пакетов `javax` использовать `jakarta`.
 * Переход со swagger на openApi.
-** Настройка `jaxrs.swagger.enabled` изменена на `jaxrs.openapi.enabled`.
-** аыва
+** Все настройки `jaxrs.swagger.\*` заменены на аналогичные настройки `jaxrs.openapi.*`.
+** Настройка `jaxrs.swagger.resource-package` была заменена на `jaxrs.openapi.resource-packages`.
+* Переход на openfeign 13.2.
+** -
 
 == 5.3.0
 * Стартер проброса информации пользователя между сервисами(n2o-platform-userinfo-starter) перенесён в проект security-admin(security-userinfo-starter).

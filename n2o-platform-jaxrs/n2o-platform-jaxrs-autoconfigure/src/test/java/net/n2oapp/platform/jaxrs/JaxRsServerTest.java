@@ -1,6 +1,6 @@
 package net.n2oapp.platform.jaxrs;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
 import net.n2oapp.platform.jaxrs.api.SomeModel;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.junit.jupiter.api.Test;
@@ -51,7 +51,7 @@ class JaxRsServerTest {
             assertThat(response.getStatus(), equalTo(200));
             String html = response.readEntity(String.class);
             assertThat(html, containsString("Endpoint address"));
-            assertThat(html, containsString("Swagger"));
+            assertThat(html, containsString("OpenAPI"));
             assertThat(html, containsString("WADL"));
         });
     }

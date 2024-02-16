@@ -3,11 +3,6 @@ package net.n2oapp.platform.jaxrs.autoconfigure;
 import io.swagger.v3.oas.models.security.Scopes;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * Настройки JaxRS конфигурации
  */
@@ -89,7 +84,7 @@ public class JaxRsProperties {
     /**
      * Настройки OpenApi
      */
-    private final OpenApi openApi = new OpenApi();
+    private final OpenApi openapi = new OpenApi();
 
     public static class OpenApi {
 
@@ -260,8 +255,8 @@ public class JaxRsProperties {
         }
     }
 
-    public OpenApi getOpenApi() {
-        return openApi;
+    public OpenApi getOpenapi() {
+        return openapi;
     }
 
     public Logging getLoggingIn() {

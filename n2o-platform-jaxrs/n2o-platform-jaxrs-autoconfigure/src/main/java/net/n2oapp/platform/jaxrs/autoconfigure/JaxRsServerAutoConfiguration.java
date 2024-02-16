@@ -9,7 +9,6 @@ import net.n2oapp.platform.jaxrs.MessageExceptionMapper;
 import net.n2oapp.platform.jaxrs.ViolationRestExceptionMapper;
 import org.apache.cxf.ext.logging.LoggingInInterceptor;
 import org.apache.cxf.ext.logging.LoggingOutInterceptor;
-import org.apache.cxf.jaxrs.openapi.OpenApiCustomizer;
 import org.apache.cxf.jaxrs.openapi.OpenApiFeature;
 import org.apache.cxf.jaxrs.swagger.ui.SwaggerUiConfig;
 import org.apache.cxf.jaxrs.validation.JAXRSBeanValidationInInterceptor;
@@ -28,7 +27,6 @@ import org.springframework.context.annotation.Bean;
 
 import jakarta.validation.ValidatorFactory;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,18 +52,18 @@ public class JaxRsServerAutoConfiguration {
     @ConditionalOnProperty(prefix = "jaxrs.openapi", name = "enabled", matchIfMissing = true)
     OpenApiFeature openApiFeature() {
         final OpenApiFeature feature = new OpenApiFeature();
-        feature.setTitle(jaxRsProperties.getOpenApi().getTitle());
-        feature.setDescription(jaxRsProperties.getOpenApi().getDescription());
+        feature.setTitle(jaxRsProperties.getOpenapi().getTitle());
+        feature.setDescription(jaxRsProperties.getOpenapi().getDescription());
 //        feature.setBasePath(cxfProperties.getPath()); todo test with root and custom base paths. remove from properties
-        feature.setVersion(jaxRsProperties.getOpenApi().getVersion());
+        feature.setVersion(jaxRsProperties.getOpenapi().getVersion());
 //        feature.setSchemes(jaxRsProperties.getOpenApi().getSchemes()); todo test with multiple schemes. remove from properties
         feature.setPrettyPrint(true);
-        JaxRsProperties.OpenApi.Auth auth = jaxRsProperties.getOpenApi().getAuth();
+        JaxRsProperties.OpenApi.Auth auth = jaxRsProperties.getOpenapi().getAuth();
         if (auth != null && auth.getName() != null && auth.getTokenUri() != null) {
             SecurityScheme securityScheme = getSecurityScheme(auth);
             feature.setSecurityDefinitions(Map.of(auth.getName(), securityScheme));
         }
-        feature.setResourcePackages(Set.of(jaxRsProperties.getOpenApi().getResourcePackages()));
+        feature.setResourcePackages(Set.of(jaxRsProperties.getOpenapi().getResourcePackages()));
         feature.setScan(true);
 /* todo try without this customizer
         OpenApiCustomizer customizer = new OpenApiCustomizer();

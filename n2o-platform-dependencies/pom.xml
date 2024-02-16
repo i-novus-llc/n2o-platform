@@ -20,10 +20,9 @@
         <cxf.version>4.0.3</cxf.version>
         <commons.version>2.6</commons.version>
         <spring.cloud.version>2023.0.0</spring.cloud.version>
-        <activation.version>1.1.1</activation.version>
-        <feign.version>10.10.1</feign.version>
-        <feign-jaxrs-inovus.version>2.0</feign-jaxrs-inovus.version>
-        <jackson-jaxrs-json.version>2.16.1</jackson-jaxrs-json.version>
+        <activation.version>2.1.2</activation.version>
+        <feign-jaxrs-inovus.version>3.0-SNAPSHOT</feign-jaxrs-inovus.version>
+        <jackson-jaxrs-json.version>2.15.3</jackson-jaxrs-json.version>
         <loki-logback-appender.version>1.4.0</loki-logback-appender.version>
         <google-guava.version>31.1-jre</google-guava.version>
         <joda-convert.version>2.2.1</joda-convert.version>
@@ -257,12 +256,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                <artifactId>jackson-jaxrs-json-provider</artifactId>
-                <version>${jackson-jaxrs-json.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-http</artifactId>
                 <version>${cxf.version}</version>
@@ -337,8 +330,8 @@
             </dependency>
 
             <dependency>
-                <groupId>javax.activation</groupId>
-                <artifactId>activation</artifactId>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
                 <version>${activation.version}</version>
                 <scope>runtime</scope>
             </dependency>
@@ -349,76 +342,6 @@
                 <version>${joda-convert.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-core</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-slf4j</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-httpclient</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-hystrix</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-java8</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-okhttp</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-gson</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-jackson-jaxb</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-jackson</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-jaxb</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-jaxrs</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-jaxrs2</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-ribbon</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-sax</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
             <dependency>
                 <groupId>ru.i-novus.components</groupId>
                 <artifactId>feign-jaxrs</artifactId>

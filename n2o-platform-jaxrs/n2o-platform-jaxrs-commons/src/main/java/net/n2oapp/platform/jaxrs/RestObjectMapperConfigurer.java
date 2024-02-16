@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
+import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 
 import java.text.DateFormat;
 import java.util.List;
@@ -22,7 +22,7 @@ public final class RestObjectMapperConfigurer {
     private static final Module SPRING_DATA_JSON_MODULE = new SpringDataModule.SpringDataJsonModule();
     private static final Module SPRING_DATA_XML_MODULE = new SpringDataModule.SpringDataXmlModule();
     private static final Module JACKSON_XML_MODULE = new JacksonXmlModule();
-    private static final Module JAXB_MODULE = new JaxbAnnotationModule();
+    private static final Module JAXB_MODULE = new JakartaXmlBindAnnotationModule();
 
     private static final Module JAVA_TIME_MODULE = new JavaTimeModule();
 
