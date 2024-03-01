@@ -15,13 +15,13 @@
         <n2o.version>7.23.68</n2o.version>
         <security.version>7.0.2</security.version>
         <jakarta-api.version>3.1.0</jakarta-api.version>
-        <swagger.version>4.15.0</swagger.version>
-        <swagger-annotations.version>1.6.8</swagger-annotations.version>
+        <swagger.version>5.11.8</swagger.version>
+        <swagger-annotations.version>1.6.13</swagger-annotations.version>
         <cxf.version>4.0.3</cxf.version>
         <commons.version>2.6</commons.version>
         <spring.cloud.version>2023.0.0</spring.cloud.version>
         <activation.version>2.1.2</activation.version>
-        <feign-jaxrs-inovus.version>3.0-SNAPSHOT</feign-jaxrs-inovus.version>
+        <feign-jaxrs-inovus.version>3.0.1</feign-jaxrs-inovus.version>
         <jackson-jaxrs-json.version>2.15.3</jackson-jaxrs-json.version>
         <loki-logback-appender.version>1.4.0</loki-logback-appender.version>
         <google-guava.version>31.1-jre</google-guava.version>

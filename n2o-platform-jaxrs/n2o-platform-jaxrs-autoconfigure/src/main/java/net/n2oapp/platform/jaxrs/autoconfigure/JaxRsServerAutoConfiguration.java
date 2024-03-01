@@ -63,7 +63,8 @@ public class JaxRsServerAutoConfiguration {
             SecurityScheme securityScheme = getSecurityScheme(auth);
             feature.setSecurityDefinitions(Map.of(auth.getName(), securityScheme));
         }
-        feature.setResourcePackages(Set.of(jaxRsProperties.getOpenapi().getResourcePackages()));
+        if (jaxRsProperties.getOpenapi().getResourcePackages() != null)
+            feature.setResourcePackages(Set.of(jaxRsProperties.getOpenapi().getResourcePackages()));
         feature.setScan(true);
 /* todo try without this customizer
         OpenApiCustomizer customizer = new OpenApiCustomizer();

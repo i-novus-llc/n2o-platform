@@ -1,7 +1,6 @@
 package net.n2oapp.platform.loader.client;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

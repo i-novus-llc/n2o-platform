@@ -34,7 +34,7 @@ class WebTest {
     @Test
     void pageUp() {
         RestTemplate restTemplate = new RestTemplate();
-        Map<?, ?> indexPage = restTemplate.getForObject("http://localhost:" + port + "/n2o/page/", Map.class);
+        Map<?, ?> indexPage = restTemplate.getForObject("http://localhost:" + port + "/n2o/page", Map.class);
         assertThat(indexPage, notNullValue());
     }
 }
