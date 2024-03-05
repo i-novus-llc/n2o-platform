@@ -146,7 +146,7 @@ public class JaxRsServerAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(value = {"spring.sleuth.enabled"})
+    @ConditionalOnProperty(value = {"management.tracing.enabled"})
     BraveFeature braveFeature(Tracing brave) {
         return new BraveFeature(brave);
     }

@@ -22,7 +22,7 @@ public class JaxRsClientAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(value = {"spring.sleuth.enabled"})
+    @ConditionalOnProperty(value = {"management.tracing.enabled"})
     BraveClientProvider braveClientProvider(Tracing brave) {
         return new BraveClientProvider(brave);
     }

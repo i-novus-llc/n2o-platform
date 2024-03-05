@@ -10,7 +10,7 @@ import org.springframework.core.Ordered;
  * @since 08.04.2019
  */
 @AutoConfiguration
-@PropertySource("classpath:sleuth.n2o.default.properties")
+@PropertySource("classpath:tracing.n2o.default.properties")
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
-public class SleuthAutoConfiguration {
+public class TracingAutoConfiguration {
 }

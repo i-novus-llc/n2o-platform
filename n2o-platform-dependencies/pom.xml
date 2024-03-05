@@ -26,6 +26,7 @@
         <loki-logback-appender.version>1.4.0</loki-logback-appender.version>
         <google-guava.version>31.1-jre</google-guava.version>
         <joda-convert.version>2.2.1</joda-convert.version>
+        <zipkin-reporter.version>2.16.3</zipkin-reporter.version>
     </properties>
 
     <dependencyManagement>
@@ -383,7 +384,13 @@
                 <scope>test</scope>
             </dependency>
 
-            <!-- Grafana Loki direct log sender-->
+            <!-- Observability -->
+            <dependency>
+                <groupId>io.zipkin.reporter2</groupId>
+                <artifactId>zipkin-reporter-brave</artifactId>
+                <version>${zipkin-reporter.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.github.loki4j</groupId>
                 <artifactId>loki-logback-appender</artifactId>

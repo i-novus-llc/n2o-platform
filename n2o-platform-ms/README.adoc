@@ -74,18 +74,18 @@ Observability - это сочетание трёх видов информаци
 Данный стартер добавляет возможность собирать метрики, трассировки запросов и логи, а затем отправлять их в специальные централизованные хранилища для анализа.
 
 === Трассировка
-Данный стартер включает spring-cloud-sleuth для трассировки запросов и spring-cloud-sleuth-zipkin для отсылки данных трассировки по протоколу zipkin.
-По умолчанию трассировка запросов в логах включена, а отсылка трейсов по протоколу zipkin выключена.
+Данный стартер включает Micrometer Tracing для трассировки запросов и Zipkin Reporter для отсылки данных трассировки по протоколу zipkin.
+Трассировка запросов в логах и отсылка трейсов по протоколу zipkin включены по умолчанию.
 
 Трейсы в логах выглядят примерно так:
 ----
 2021-09-15 11:20:35.615  INFO [admin-web,a3ff402df14af73e,bcf0404af2df178f,true] 5464 --- [TaskScheduler-1] o.apache.http.impl.execchain.RetryExec   : Retrying request to {}->http://consul-develop.i-novus.ru:80
 ----
-Здесь a3ff402df14af73e - trace id, bcf0404af2df178f - span id. О том, что это, можно почитать тут: https://www.baeldung.com/spring-cloud-sleuth-single-application#1-simple-web-request
+Здесь a3ff402df14af73e - trace id, bcf0404af2df178f - span id. О том, что это, можно почитать тут: https://docs.micrometer.io/tracing/reference/glossary.html
 
-Чтобы включить отсылку трейсов в zipkin, нужно добавить в приложение настройку `spring.zipkin.enabled=true`.
-По умолчанию трейсы посылаются по адресу `localhost:9411`, который можно переопределить настройкой `spring.zipkin.baseUrl`.
-Подробнее тут: https://spring.io/projects/spring-cloud-sleuth
+Чтобы выключить сбор и отсылку трейсов в zipkin, нужно добавить в приложение настройку `management.tracing.enabled=false`.
+По умолчанию трейсы посылаются по адресу `http://localhost:9411/api/v2/spans`, который можно переопределить настройкой `management.zipkin.tracing.endpoint`.
+Все настройки тут: https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html
 
 === Логирование
 По умолчанию настроено стандартное для spring boot логирование в консоль.
