@@ -3,6 +3,9 @@ package net.n2oapp.platform.jaxrs.autoconfigure;
 import io.swagger.v3.oas.models.security.Scopes;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * Настройки JaxRS конфигурации
  */
@@ -197,7 +200,7 @@ public class JaxRsProperties {
 
             private String refreshUri;
 
-            private Scopes scopes;
+            private Scopes scopes = new Scopes();
 
             /**
              * Флоу (implicit, password, clientCredentials, authorizationCode)
@@ -249,8 +252,12 @@ public class JaxRsProperties {
                 return scopes;
             }
 
-            public void setScopes(Scopes scopes) {
-                this.scopes = scopes;
+            public void setScopes(List<Scope> scopes) {
+                this.scopes.clear();
+                this.scopes.putAll(scopes.stream().collect(Collectors.toMap(a -> a.key, a -> a.description)));
+            }
+
+            public record Scope(String key, String description) {
             }
         }
     }
