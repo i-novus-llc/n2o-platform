@@ -57,9 +57,7 @@ public class JaxRsServerAutoConfiguration {
         final OpenApiFeature feature = new OpenApiFeature();
         feature.setTitle(jaxRsProperties.getOpenapi().getTitle());
         feature.setDescription(jaxRsProperties.getOpenapi().getDescription());
-//        feature.setBasePath(cxfProperties.getPath()); todo test with root and custom base paths. remove from properties
         feature.setVersion(jaxRsProperties.getOpenapi().getVersion());
-//        feature.setSchemes(jaxRsProperties.getOpenApi().getSchemes()); todo test with multiple schemes. remove from properties
         feature.setPrettyPrint(true);
         JaxRsProperties.OpenApi.Auth auth = jaxRsProperties.getOpenapi().getAuth();
         if (auth != null && auth.getName() != null && auth.getTokenUri() != null) {
@@ -69,16 +67,11 @@ public class JaxRsServerAutoConfiguration {
         if (jaxRsProperties.getOpenapi().getResourcePackages() != null)
             feature.setResourcePackages(Set.of(jaxRsProperties.getOpenapi().getResourcePackages()));
         feature.setScan(true);
-/* todo try without this customizer
-        OpenApiCustomizer customizer = new OpenApiCustomizer();
-        customizer.setDynamicBasePath(true);
-        feature.setCustomizer(customizer);
-*/
 
         //Since Swagger UI 4.1.3 disable reading config params from URL by default due to security concerns.
         SwaggerUiConfig swaggerUiConfig = new SwaggerUiConfig();
         swaggerUiConfig.setQueryConfigEnabled(false);
-        swaggerUiConfig.setUrl("swagger.json");
+        swaggerUiConfig.setUrl("openapi.json");
         feature.setSwaggerUiConfig(swaggerUiConfig);
 
         return feature;

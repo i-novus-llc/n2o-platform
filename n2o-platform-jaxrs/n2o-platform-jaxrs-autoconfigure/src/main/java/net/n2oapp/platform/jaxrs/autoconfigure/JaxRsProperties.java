@@ -117,11 +117,6 @@ public class JaxRsProperties {
         private String[] resourcePackages;
 
         /**
-         * Доступные схемы запросов
-         */
-        private String[] schemes = new String[] {"http", "https"};
-
-        /**
          * Настройки авторизации
          * Протокол - OAuth2, возможные типы - Client credentials, Resource Owner Password Credentials
          */
@@ -165,14 +160,6 @@ public class JaxRsProperties {
 
         public void setResourcePackages(String[] resourcePackages) {
             this.resourcePackages = resourcePackages;
-        }
-
-        public String[] getSchemes() {
-            return schemes;
-        }
-
-        public void setSchemes(String[] schemes) {
-            this.schemes = schemes;
         }
 
         public Auth getAuth() {
