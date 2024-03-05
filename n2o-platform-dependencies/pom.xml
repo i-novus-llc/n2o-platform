@@ -136,11 +136,6 @@
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
-                <artifactId>n2o-platform-starter-web</artifactId>
-                <version>6.0.0-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-loader-server</artifactId>
                 <version>6.0.0-SNAPSHOT</version>
             </dependency>
