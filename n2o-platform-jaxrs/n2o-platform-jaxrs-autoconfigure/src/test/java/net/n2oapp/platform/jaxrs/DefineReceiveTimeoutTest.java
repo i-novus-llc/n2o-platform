@@ -7,9 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.util.SocketUtils;
-
-import java.net.SocketTimeoutException;
+import org.springframework.test.util.TestSocketUtils;
+import java.net.http.HttpTimeoutException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,7 +29,7 @@ class DefineReceiveTimeoutTest {
 
     @BeforeAll
     public static void init() {
-        System.setProperty("server.port", String.valueOf(SocketUtils.findAvailableTcpPort()));
+        System.setProperty("server.port", String.valueOf(TestSocketUtils.findAvailableTcpPort()));
     }
 
     @AfterAll
@@ -63,7 +62,7 @@ class DefineReceiveTimeoutTest {
             fail("receive timeout exception is expected");
         } catch (Exception e) {
             long end = System.currentTimeMillis();
-            assertTrue(e.getCause() instanceof SocketTimeoutException);
+            assertTrue(e.getCause() instanceof HttpTimeoutException);
             assertTrue(end - start >= 1000, "timeout must be approximately 1 sec");
             assertTrue(end - start < 2000, "margin of error less than 1 sec");
         }

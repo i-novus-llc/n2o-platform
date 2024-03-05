@@ -1,6 +1,6 @@
 package net.n2oapp.platform.jaxrs.api;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public abstract class AbstractModel<T> {
 

@@ -3,8 +3,8 @@ package net.n2oapp.platform.selection.integration.model;
 import net.n2oapp.platform.selection.api.Joined;
 import net.n2oapp.platform.selection.api.Selective;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

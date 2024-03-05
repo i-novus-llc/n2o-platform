@@ -38,7 +38,7 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 @SpringBootApplication(exclude = SecurityAutoConfiguration.class)
 @EnableFeignClients
 @SpringBootTest(classes = FeignClientTest.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
-        properties = {"server.port=8765", "cxf.jaxrs.component-scan-packages=com.fasterxml.jackson.jaxrs.json," +
+        properties = {"server.port=8765", "cxf.jaxrs.component-scan-packages=com.fasterxml.jackson.jakarta.rs.json," +
                 "net.n2oapp.platform.jaxrs," +
                 "net.n2oapp.platform.jaxrs.impl," +
                 "net.n2oapp.platform.jaxrs.api," +
@@ -101,7 +101,7 @@ class FeignClientTest {
      */
     @Test
     void validations() {
-        SomeModel model = new SomeModel();
+        SomeModel model = new SomeModel(1L);
         try {
             client.create(model);
             fail("Validation didn't work");

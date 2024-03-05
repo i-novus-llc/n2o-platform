@@ -1,12 +1,14 @@
 package net.n2oapp.platform.loader.server;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import java.io.InputStream;
 
 /**
@@ -15,16 +17,20 @@ import java.io.InputStream;
 @Path("/loaders")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@Api("Загрузчики данных")
+@Tag(name = "Загрузчики данных")
 public interface ServerLoaderRestService extends ServerLoaderRunner {
 
     @POST
     @Path("/{subject}/{target}")
-    @ApiOperation("Загрузить данные")
-    @ApiResponse(code = 200, message = "Данные загружены без ошибок")
+    @Operation(summary = "Загрузить данные",
+            responses = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Данные загружены без ошибок",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON))
+            })
     @Override
-    void run(@ApiParam("Владелец данных") @PathParam("subject") String subject,
-             @ApiParam("Вид данных") @PathParam("target") String target,
-             InputStream body);
-
+    void run(@Parameter(name = "Владелец данных") @PathParam("subject") String subject,
+             @Parameter(name = "Вид данных") @PathParam("target") String target,
+             @RequestBody(description = "Данные", required = true,
+                     content = @Content(schema = @Schema(implementation = InputStream.class))) InputStream body);
 }

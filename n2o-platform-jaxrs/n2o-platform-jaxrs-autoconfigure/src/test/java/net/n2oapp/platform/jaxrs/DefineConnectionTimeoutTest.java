@@ -5,7 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import java.net.SocketTimeoutException;
+
+import java.net.http.HttpConnectTimeoutException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,10 +28,10 @@ class DefineConnectionTimeoutTest {
     private SomeRest client;
 
     /*
-    * При обращении к серверу по невалидному адресу по истечении указанного таймаута ожидается ошибка
-    * (превышен таймаут ожидания соединения).
-    * Погрешность равна 1 секунде
-    * */
+     * При обращении к серверу по невалидному адресу по истечении указанного таймаута ожидается ошибка
+     * (превышен таймаут ожидания соединения).
+     * Погрешность равна 1 секунде
+     * */
     @Test
     void testConnectionTimeoutFail() {
         long start = System.currentTimeMillis();
@@ -39,7 +40,7 @@ class DefineConnectionTimeoutTest {
             fail("connection timeout exception is expected");
         } catch (Exception e) {
             long end = System.currentTimeMillis();
-            assertTrue(e.getCause() instanceof SocketTimeoutException);
+            assertTrue(e.getCause() instanceof HttpConnectTimeoutException);
             assertTrue(end - start >= 1000, "timeout must be approximately 1 sec");
             assertTrue(end - start < 2000, "margin of error less than 1 sec");
         }

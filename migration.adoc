@@ -1,7 +1,16 @@
 = Инструкции по миграции
 
 == 6.0.0
+* Переход на Spring Boot 3.2. Для этого есть отдельный миграционный гайд: https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.0-Migration-Guide. В частности это значит, что минимальная поддерживаемая платформой версия Java теперь 17.
+** Переход со Spring Cloud Sleuth на Micrometer Tracing: https://github.com/micrometer-metrics/tracing/wiki/Spring-Cloud-Sleuth-3.1-Migration-Guide
+** Отправка трейсов теперь по умолчанию включена. Отключить можно настройкой `management.tracing.enabled=false`.
 * В ms-стартер добавлен выключенный по умолчанию клиент конфигурации vault. Может повлиять, если в проекте он был уже подключен.
+* Переход с Java EE на Jakarta EE. Это, например, значит, что нужно вместо пакетов `javax` использовать `jakarta`. А также, что нельзя использовать зависимости со старыми пакетами, будут ошибки `ClassNotFound` и `MethodNotFound`.
+* Переход со swagger-спецификаций на openApi:
+** Все настройки `jaxrs.swagger.\*` заменены на аналогичные настройки `jaxrs.openapi.*`.
+** Настройка `jaxrs.swagger.resource-package` была заменена на `jaxrs.openapi.resource-packages`.
+* Переход на openfeign 13.2. Возможны изменения при работе с прокси-клиентами на основе feign.
+* Из платформы исключён модуль `n2o-platform-web`, который использовался для подключения n2o ui framework. Модуль вернётся в новых версиях платформы, когда n2o ui framework перейдёт на совместимый стек.
 
 == 5.3.0
 * Стартер проброса информации пользователя между сервисами(n2o-platform-userinfo-starter) перенесён в проект security-admin(security-userinfo-starter).

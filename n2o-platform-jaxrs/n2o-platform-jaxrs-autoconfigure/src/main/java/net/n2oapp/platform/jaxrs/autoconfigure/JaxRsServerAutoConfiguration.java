@@ -1,17 +1,21 @@
 package net.n2oapp.platform.jaxrs.autoconfigure;
 
 import brave.Tracing;
-import io.swagger.models.auth.OAuth2Definition;
+import io.swagger.v3.oas.models.security.OAuthFlow;
+import io.swagger.v3.oas.models.security.OAuthFlows;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import net.n2oapp.platform.i18n.Messages;
 import net.n2oapp.platform.jaxrs.MessageExceptionMapper;
 import net.n2oapp.platform.jaxrs.ViolationRestExceptionMapper;
+import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.ext.logging.LoggingInInterceptor;
 import org.apache.cxf.ext.logging.LoggingOutInterceptor;
-import org.apache.cxf.jaxrs.swagger.Swagger2Feature;
+import org.apache.cxf.jaxrs.openapi.OpenApiFeature;
 import org.apache.cxf.jaxrs.swagger.ui.SwaggerUiConfig;
 import org.apache.cxf.jaxrs.validation.JAXRSBeanValidationInInterceptor;
 import org.apache.cxf.spring.boot.autoconfigure.CxfProperties;
 import org.apache.cxf.tracing.brave.jaxrs.BraveFeature;
+import org.apache.cxf.transport.servlet.CXFServlet;
 import org.apache.cxf.validation.BeanValidationInInterceptor;
 import org.apache.cxf.validation.BeanValidationProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,16 +26,18 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
-import javax.validation.ValidatorFactory;
+import jakarta.validation.ValidatorFactory;
+
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Автоматическая конфигурация REST сервисов
  */
 @AutoConfiguration
 @ConditionalOnWebApplication
+@ConditionalOnClass({ SpringBus.class, CXFServlet.class })
 @AutoConfigureBefore(org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration.class)
 @EnableConfigurationProperties(JaxRsProperties.class)
 public class JaxRsServerAutoConfiguration {
@@ -45,33 +51,51 @@ public class JaxRsServerAutoConfiguration {
         this.jaxRsProperties = jaxRsProperties;
     }
 
-    @Bean("swagger2Feature")
-    @ConditionalOnProperty(prefix = "jaxrs.swagger", name = "enabled", matchIfMissing = true)
-    Swagger2Feature swagger2Feature() {
-        Swagger2Feature result = new Swagger2Feature();
-        result.setTitle(jaxRsProperties.getSwagger().getTitle());
-        result.setDescription(jaxRsProperties.getSwagger().getDescription());
-        result.setBasePath(cxfProperties.getPath());
-        result.setVersion(jaxRsProperties.getSwagger().getVersion());
-        result.setSchemes(jaxRsProperties.getSwagger().getSchemes());
-        result.setPrettyPrint(true);
-        JaxRsProperties.Swagger.Auth auth = jaxRsProperties.getSwagger().getAuth();
+    @Bean("openApiFeature")
+    @ConditionalOnProperty(prefix = "jaxrs.openapi", name = "enabled", matchIfMissing = true)
+    OpenApiFeature openApiFeature() {
+        final OpenApiFeature feature = new OpenApiFeature();
+        feature.setTitle(jaxRsProperties.getOpenapi().getTitle());
+        feature.setDescription(jaxRsProperties.getOpenapi().getDescription());
+//        feature.setBasePath(cxfProperties.getPath()); todo test with root and custom base paths. remove from properties
+        feature.setVersion(jaxRsProperties.getOpenapi().getVersion());
+//        feature.setSchemes(jaxRsProperties.getOpenApi().getSchemes()); todo test with multiple schemes. remove from properties
+        feature.setPrettyPrint(true);
+        JaxRsProperties.OpenApi.Auth auth = jaxRsProperties.getOpenapi().getAuth();
         if (auth != null && auth.getName() != null && auth.getTokenUri() != null) {
-            OAuth2Definition oAuth2Definition = new OAuth2Definition();
-            oAuth2Definition.setFlow(auth.getFlow());
-            oAuth2Definition.setTokenUrl(auth.getTokenUri());
-            result.setSecurityDefinitions(Map.of(auth.getName(), oAuth2Definition));
+            SecurityScheme securityScheme = getSecurityScheme(auth);
+            feature.setSecurityDefinitions(Map.of(auth.getName(), securityScheme));
         }
-        result.setResourcePackage(jaxRsProperties.getSwagger().getResourcePackage());
-        result.setScan(true);
+        if (jaxRsProperties.getOpenapi().getResourcePackages() != null)
+            feature.setResourcePackages(Set.of(jaxRsProperties.getOpenapi().getResourcePackages()));
+        feature.setScan(true);
+/* todo try without this customizer
+        OpenApiCustomizer customizer = new OpenApiCustomizer();
+        customizer.setDynamicBasePath(true);
+        feature.setCustomizer(customizer);
+*/
 
         //Since Swagger UI 4.1.3 disable reading config params from URL by default due to security concerns.
         SwaggerUiConfig swaggerUiConfig = new SwaggerUiConfig();
         swaggerUiConfig.setQueryConfigEnabled(false);
         swaggerUiConfig.setUrl("swagger.json");
-        result.setSwaggerUiConfig(swaggerUiConfig);
+        feature.setSwaggerUiConfig(swaggerUiConfig);
 
-        return result;
+        return feature;
+    }
+
+    private static SecurityScheme getSecurityScheme(JaxRsProperties.OpenApi.Auth auth) {
+        OAuthFlows oAuthFlows = new OAuthFlows();
+        OAuthFlow oAuthFlow = new OAuthFlow().refreshUrl(auth.getRefreshUri()).scopes(auth.getScopes());
+
+        switch (auth.getFlow()) {
+            case "implicit" -> oAuthFlows.setImplicit(oAuthFlow.authorizationUrl(auth.getAuthorizationUri()));
+            case "password" -> oAuthFlows.setPassword(oAuthFlow.tokenUrl(auth.getTokenUri()));
+            case "clientCredentials" -> oAuthFlows.setClientCredentials(oAuthFlow.tokenUrl(auth.getTokenUri()));
+            case "authorizationCode" -> oAuthFlows.setAuthorizationCode(oAuthFlow.authorizationUrl(auth.getAuthorizationUri()).tokenUrl(auth.getTokenUri()));
+        }
+
+        return new SecurityScheme().flows(oAuthFlows).type(SecurityScheme.Type.OAUTH2);
     }
 
     @Bean
@@ -125,7 +149,7 @@ public class JaxRsServerAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(value = {"spring.sleuth.enabled"})
+    @ConditionalOnProperty(value = {"management.tracing.enabled"})
     BraveFeature braveFeature(Tracing brave) {
         return new BraveFeature(brave);
     }

@@ -51,7 +51,7 @@ import static java.util.Collections.emptyList;
         "cxf.path=/api",
         "cxf.jaxrs.component-scan=true",
         "spring.jpa.properties.hibernate.show_sql=false",
-        "spring.jpa.properties.javax.persistence.validation.mode=none",
+        "spring.jpa.properties.jakarta.persistence.validation.mode=none",
         "spring.jpa.properties.hibernate.check_nullability=false"
     }
 )

@@ -2,8 +2,8 @@ package net.n2oapp.platform.jaxrs.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.fasterxml.jackson.jakarta.rs.json.JacksonXmlBindJsonProvider;
+import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
 import net.n2oapp.platform.jaxrs.*;
 import net.n2oapp.platform.jaxrs.seek.SeekPivotParameterConverter;
 import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration;
@@ -48,7 +48,7 @@ public class JaxRsCommonAutoConfiguration {
 
     @Bean
     JacksonJsonProvider jsonProvider(@Qualifier("cxfObjectMapper") ObjectMapper cxfObjectMapper) {
-        return new JacksonJsonProvider(cxfObjectMapper, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
+        return new JacksonJsonProvider(cxfObjectMapper, JacksonXmlBindJsonProvider.DEFAULT_ANNOTATIONS);
     }
 
     @Bean

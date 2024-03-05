@@ -12,21 +12,20 @@
     </parent>
 
     <properties>
-        <n2o.version>7.23.68</n2o.version>
         <security.version>7.0.2</security.version>
-        <jaxrs-api.version>2.1.1</jaxrs-api.version>
-        <swagger.version>4.15.0</swagger.version>
-        <swagger-annotations.version>1.6.8</swagger-annotations.version>
-        <cxf.version>3.5.4</cxf.version>
+        <jakarta-api.version>3.1.0</jakarta-api.version>
+        <swagger.version>5.11.8</swagger.version>
+        <swagger-annotations.version>1.6.13</swagger-annotations.version>
+        <cxf.version>4.0.3</cxf.version>
         <commons.version>2.6</commons.version>
-        <spring.cloud.version>2021.0.5</spring.cloud.version>
-        <activation.version>1.1.1</activation.version>
-        <feign.version>10.10.1</feign.version>
-        <feign-jaxrs-inovus.version>2.0</feign-jaxrs-inovus.version>
-        <jackson-jaxrs-json.version>2.12.7</jackson-jaxrs-json.version>
+        <spring.cloud.version>2023.0.0</spring.cloud.version>
+        <activation.version>2.1.2</activation.version>
+        <feign-jaxrs-inovus.version>3.0.1</feign-jaxrs-inovus.version>
+        <jackson-jaxrs-json.version>2.15.3</jackson-jaxrs-json.version>
         <loki-logback-appender.version>1.4.0</loki-logback-appender.version>
         <google-guava.version>31.1-jre</google-guava.version>
         <joda-convert.version>2.2.1</joda-convert.version>
+        <zipkin-reporter.version>2.16.3</zipkin-reporter.version>
     </properties>
 
     <dependencyManagement>
@@ -176,33 +175,6 @@
                 <version>6.0.0-SNAPSHOT</version>
             </dependency>
 
-            <!--N2O Framework-->
-            <dependency>
-                <groupId>net.n2oapp.framework</groupId>
-                <artifactId>n2o-spring-boot-starter</artifactId>
-                <version>${n2o.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.n2oapp.framework</groupId>
-                <artifactId>n2o-api</artifactId>
-                <version>${n2o.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.n2oapp.framework</groupId>
-                <artifactId>n2o-engine</artifactId>
-                <version>${n2o.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.n2oapp.framework</groupId>
-                <artifactId>n2o-config</artifactId>
-                <version>${n2o.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.n2oapp.framework</groupId>
-                <artifactId>n2o-access</artifactId>
-                <version>${n2o.version}</version>
-            </dependency>
-
             <!-- Security-admin -->
             <dependency>
                 <groupId>net.n2oapp.framework.security</groupId>
@@ -246,7 +218,7 @@
 
             <dependency>
                 <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-rt-rs-service-description-swagger</artifactId>
+                <artifactId>cxf-rt-rs-service-description-openapi-v3</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
 
@@ -254,12 +226,6 @@
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-frontend-jaxrs</artifactId>
                 <version>${cxf.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                <artifactId>jackson-jaxrs-json-provider</artifactId>
-                <version>${jackson-jaxrs-json.version}</version>
             </dependency>
 
             <dependency>
@@ -300,9 +266,9 @@
 
             <!-- API -->
             <dependency>
-                <groupId>javax.ws.rs</groupId>
-                <artifactId>javax.ws.rs-api</artifactId>
-                <version>${jaxrs-api.version}</version>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
+                <version>${jakarta-api.version}</version>
             </dependency>
 
             <dependency>
@@ -337,8 +303,8 @@
             </dependency>
 
             <dependency>
-                <groupId>javax.activation</groupId>
-                <artifactId>activation</artifactId>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
                 <version>${activation.version}</version>
                 <scope>runtime</scope>
             </dependency>
@@ -349,76 +315,6 @@
                 <version>${joda-convert.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-core</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-slf4j</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-httpclient</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-hystrix</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-java8</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-okhttp</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-gson</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-jackson-jaxb</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-jackson</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-jaxb</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-jaxrs</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-jaxrs2</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-ribbon</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-sax</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
             <dependency>
                 <groupId>ru.i-novus.components</groupId>
                 <artifactId>feign-jaxrs</artifactId>
@@ -460,7 +356,13 @@
                 <scope>test</scope>
             </dependency>
 
-            <!-- Grafana Loki direct log sender-->
+            <!-- Observability -->
+            <dependency>
+                <groupId>io.zipkin.reporter2</groupId>
+                <artifactId>zipkin-reporter-brave</artifactId>
+                <version>${zipkin-reporter.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.github.loki4j</groupId>
                 <artifactId>loki-logback-appender</artifactId>

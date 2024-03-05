@@ -1,5 +1,6 @@
 package net.n2oapp.platform.loader.autoconfigure;
 
+import jakarta.annotation.PostConstruct;
 import net.n2oapp.platform.loader.client.*;
 import net.n2oapp.platform.loader.client.ClientLoaderCommand.AuthDetails;
 import net.n2oapp.platform.loader.client.auth.AuthRestTemplate;
@@ -25,7 +26,6 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -2,8 +2,8 @@ package net.n2oapp.platform.selection.integration.model;
 
 import net.n2oapp.platform.selection.api.Selective;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 
 @Entity
 @Selective

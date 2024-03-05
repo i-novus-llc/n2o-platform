@@ -1,6 +1,10 @@
 package net.n2oapp.platform.jaxrs.autoconfigure;
 
+import io.swagger.v3.oas.models.security.Scopes;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Настройки JaxRS конфигурации
@@ -81,14 +85,14 @@ public class JaxRsProperties {
     private boolean jsr303 = true;
 
     /**
-     * Настройки Swagger
+     * Настройки OpenApi
      */
-    private final Swagger swagger = new Swagger();
+    private final OpenApi openapi = new OpenApi();
 
-    public static class Swagger {
+    public static class OpenApi {
 
         /**
-         * Включить/выключить Swagger
+         * Включить/выключить OpenApi
          */
         private boolean enabled = true;
 
@@ -103,19 +107,19 @@ public class JaxRsProperties {
         private String description;
 
         /**
-         * Версия Swagger
+         * Версия OpenApi
          */
         private String version;
 
         /**
          * Сканируемый пакет
          */
-        private String resourcePackage;
+        private String[] resourcePackages;
 
         /**
          * Доступные схемы запросов
          */
-        private String[] schemes = new String[]{"http", "https"};
+        private String[] schemes = new String[] {"http", "https"};
 
         /**
          * Настройки авторизации
@@ -139,8 +143,8 @@ public class JaxRsProperties {
             return version;
         }
 
-        public String getResourcePackage() {
-            return resourcePackage;
+        public String[] getResourcePackages() {
+            return resourcePackages;
         }
 
         public void setEnabled(boolean enabled) {
@@ -159,8 +163,8 @@ public class JaxRsProperties {
             this.version = version;
         }
 
-        public void setResourcePackage(String resourcePackage) {
-            this.resourcePackage = resourcePackage;
+        public void setResourcePackages(String[] resourcePackages) {
+            this.resourcePackages = resourcePackages;
         }
 
         public String[] getSchemes() {
@@ -192,10 +196,17 @@ public class JaxRsProperties {
              */
             private String tokenUri;
 
+            private String authorizationUri;
+
+            private String refreshUri;
+
+            private Scopes scopes = new Scopes();
+
             /**
-             * Флоу (application, password)
+             * Флоу (implicit, password, clientCredentials, authorizationCode)
+             * <a href="https://github.com/OAI/OpenAPI-Specification/blob/3.0.1/versions/3.0.1.md#oauth-flows-object">...</a>
              */
-            private String flow = "application";
+            private String flow = "password";
 
             public String getName() {
                 return name;
@@ -220,11 +231,39 @@ public class JaxRsProperties {
             public void setFlow(String flow) {
                 this.flow = flow;
             }
+
+            public String getAuthorizationUri() {
+                return authorizationUri;
+            }
+
+            public void setAuthorizationUri(String authorizationUri) {
+                this.authorizationUri = authorizationUri;
+            }
+
+            public String getRefreshUri() {
+                return refreshUri;
+            }
+
+            public void setRefreshUri(String refreshUri) {
+                this.refreshUri = refreshUri;
+            }
+
+            public Scopes getScopes() {
+                return scopes;
+            }
+
+            public void setScopes(List<Scope> scopes) {
+                this.scopes.clear();
+                this.scopes.putAll(scopes.stream().collect(Collectors.toMap(a -> a.key, a -> a.description)));
+            }
+
+            public record Scope(String key, String description) {
+            }
         }
     }
 
-    public Swagger getSwagger() {
-        return swagger;
+    public OpenApi getOpenapi() {
+        return openapi;
     }
 
     public Logging getLoggingIn() {
