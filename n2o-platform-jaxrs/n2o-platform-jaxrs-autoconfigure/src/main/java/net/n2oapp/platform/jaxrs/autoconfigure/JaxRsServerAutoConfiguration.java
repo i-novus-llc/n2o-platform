@@ -7,6 +7,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import net.n2oapp.platform.i18n.Messages;
 import net.n2oapp.platform.jaxrs.MessageExceptionMapper;
 import net.n2oapp.platform.jaxrs.ViolationRestExceptionMapper;
+import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.ext.logging.LoggingInInterceptor;
 import org.apache.cxf.ext.logging.LoggingOutInterceptor;
 import org.apache.cxf.jaxrs.openapi.OpenApiFeature;
@@ -14,6 +15,7 @@ import org.apache.cxf.jaxrs.swagger.ui.SwaggerUiConfig;
 import org.apache.cxf.jaxrs.validation.JAXRSBeanValidationInInterceptor;
 import org.apache.cxf.spring.boot.autoconfigure.CxfProperties;
 import org.apache.cxf.tracing.brave.jaxrs.BraveFeature;
+import org.apache.cxf.transport.servlet.CXFServlet;
 import org.apache.cxf.validation.BeanValidationInInterceptor;
 import org.apache.cxf.validation.BeanValidationProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +37,7 @@ import java.util.Set;
  */
 @AutoConfiguration
 @ConditionalOnWebApplication
+@ConditionalOnClass({ SpringBus.class, CXFServlet.class })
 @AutoConfigureBefore(org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration.class)
 @EnableConfigurationProperties(JaxRsProperties.class)
 public class JaxRsServerAutoConfiguration {
