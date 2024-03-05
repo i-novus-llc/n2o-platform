@@ -49,7 +49,6 @@
         <module>n2o-platform-loader</module>
         <module>n2o-platform-ms</module>
         <module>n2o-platform-quartz</module>
-        <module>n2o-platform-web</module>
         <module>n2o-platform-test</module>
         <module>n2o-platform-initializr</module>
         <module>n2o-platform-selection</module>
