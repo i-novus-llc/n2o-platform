@@ -12,7 +12,7 @@ initializr:
   description:
     value:
   javaVersions:
-    - id: 11
+    - id: 17
       default: true
   languages:
     - name: Java
@@ -32,8 +32,8 @@ initializr:
       default: true
       action: /starter.zip
   bootVersions:
-    - name: 2.7.5
-      id: 2.7.5
+    - name: 3.2.2
+      id: 3.2.2
   dependencies:
     - name: N2O
       content:
