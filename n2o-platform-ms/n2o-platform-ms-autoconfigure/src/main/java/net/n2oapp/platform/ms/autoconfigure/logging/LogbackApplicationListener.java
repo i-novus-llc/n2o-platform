@@ -2,6 +2,9 @@ package net.n2oapp.platform.ms.autoconfigure.logging;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.OutputStreamAppender;
+import ch.qos.logback.core.encoder.LayoutWrappingEncoder;
 import com.github.loki4j.logback.*;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
@@ -11,7 +14,11 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.util.StringUtils;
+
+import java.nio.charset.Charset;
+
+import static java.util.Objects.nonNull;
+import static net.n2oapp.platform.ms.autoconfigure.logging.LoggingProperties.LOKI_APPENDER_NAME;
 
 /**
  * {@code LogbackApplicationListener} is a programmatic logging system configuration, faster alternative to a standard logback xml file configuration.
@@ -33,13 +40,6 @@ import org.springframework.util.StringUtils;
 @Configuration(proxyBeanMethods = false)
 public class LogbackApplicationListener implements ApplicationListener<ApplicationEnvironmentPreparedEvent>,
         ApplicationContextInitializer<ConfigurableApplicationContext>, Ordered {
-    public static final String LOKI_ENABLED_PROPERTY = "n2o.ms.loki.enabled";
-    public static final String LOKI_URL_PROPERTY = "n2o.ms.loki.url";
-    public static final String LOKI_URL_DEFAULT_VALUE = "http://loki:3100/loki/api/v1/push";
-    public static final String LOKI_APPENDER_NAME = "LOKI_APPENDER";
-    public static final String APP_NAME_PROPERTY = "spring.application.name";
-    public static final String DEFAULT_APP_NAME = "n2o-app";
-    public static final String MESSAGE_PATTERN = "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([${appName},%X{traceId},%X{spanId}]) %clr(${PID}){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m %n%wEx";
 
     @Override
     public int getOrder() {
@@ -57,15 +57,36 @@ public class LogbackApplicationListener implements ApplicationListener<Applicati
     }
 
     private void configure(ConfigurableEnvironment env) {
-        String lokiAppenderEnabled = env.getProperty(LOKI_ENABLED_PROPERTY);
-        if (lokiAppenderEnabled != null && lokiAppenderEnabled.equals("true")) {
-            String lokiUrl = resolveEnvProperty(env, LOKI_URL_PROPERTY, LOKI_URL_DEFAULT_VALUE);
-            String appName = resolveEnvProperty(env, APP_NAME_PROPERTY, DEFAULT_APP_NAME);
-            configureLokiAppender(lokiUrl, appName);
+        LoggingProperties properties = new LoggingProperties(env);
+        if (Boolean.TRUE.equals(properties.getJsonEnabled()))
+            configureJsonFormat(properties);
+        if (Boolean.TRUE.equals(properties.getLokiEnabled()))
+            configureLokiAppender(properties);
+    }
+
+    private void configureJsonFormat(LoggingProperties loggingProperties) {
+        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        if (nonNull(logger)) {
+            for (String appenderName : loggingProperties.getJsonAppenderNames()) {
+                OutputStreamAppender<ILoggingEvent> appender = (OutputStreamAppender<ILoggingEvent>) logger.getAppender(appenderName);
+                if (nonNull(appender)) {
+                    if (appender.isStarted()) appender.stop();
+                    CustomLogstashLayout layout = new CustomLogstashLayout(lc, loggingProperties);
+                    LayoutWrappingEncoder<ILoggingEvent> encoder = new LayoutWrappingEncoder<>();
+                    encoder.setLayout(layout);
+                    encoder.setContext(lc);
+                    encoder.setCharset(Charset.defaultCharset());
+                    appender.setEncoder(encoder);
+                    layout.start();
+                    encoder.start();
+                    appender.start();
+                }
+            }
         }
     }
 
-    private void configureLokiAppender(String lokiUrl, String appName) {
+    private void configureLokiAppender(LoggingProperties properties) {
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 
@@ -75,33 +96,32 @@ public class LogbackApplicationListener implements ApplicationListener<Applicati
             loki4jAppender.setName(LOKI_APPENDER_NAME);
             root.addAppender(loki4jAppender);
         } else loki4jAppender.stop();
-        configureLokiAppender(loki4jAppender, lokiUrl, appName, lc);
+        configureLokiAppender(loki4jAppender, properties, lc);
         loki4jAppender.start();
     }
 
-    private void configureLokiAppender(Loki4jAppender loki4jAppender, String lokiUrl, String appName, LoggerContext lc) {
+    private void configureLokiAppender(Loki4jAppender loki4jAppender, LoggingProperties properties, LoggerContext lc) {
         JavaHttpSender httpSender = new JavaHttpSender();
-        httpSender.setUrl(lokiUrl);
+        httpSender.setUrl(properties.getLokiUrl());
         loki4jAppender.setHttp(httpSender);
-        JsonEncoder encoder = new JsonEncoder();
+
         AbstractLoki4jEncoder.LabelCfg labelCfg = new AbstractLoki4jEncoder.LabelCfg();
-        String hostname = lc.getProperty("hostname");
-        labelCfg.setPattern("app=" + appName + ",host=" + hostname);
-        encoder.setLabel(labelCfg);
+        String hostname = properties.getHostname();
+        labelCfg.setPattern("app=" + properties.getAppName() + ",host=" + hostname);
+
         AbstractLoki4jEncoder.MessageCfg messageCfg = new AbstractLoki4jEncoder.MessageCfg();
-        String messagePatternResolved = MESSAGE_PATTERN.replace("${appName}", appName).replace("${PID}", String.valueOf(ProcessHandle.current().pid()));
+        String messagePatternResolved = properties.getMessagePattern().replace("${appName}", properties.getAppName()).replace("${PID}", String.valueOf(ProcessHandle.current().pid()));
         messageCfg.setPattern(messagePatternResolved);
+
+        JsonEncoder encoder = properties.getJsonEnabled()
+                ? new CustomLoki4jJsonEncoder(lc, properties)
+                : new JsonEncoder();
+
+        encoder.setLabel(labelCfg);
         encoder.setMessage(messageCfg);
         encoder.setSortByTime(true);
         encoder.setContext(lc);
         loki4jAppender.setFormat(encoder);
         loki4jAppender.setContext(lc);
-    }
-
-    private String resolveEnvProperty(ConfigurableEnvironment env, String propertyKey, String defaultValue) {
-        String appName = env.getProperty(propertyKey);
-        if (!StringUtils.hasLength(appName))
-            appName = defaultValue;
-        return appName;
     }
 }
