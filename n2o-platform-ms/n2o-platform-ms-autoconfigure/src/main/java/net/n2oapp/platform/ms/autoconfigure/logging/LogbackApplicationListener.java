@@ -26,6 +26,9 @@ import static net.n2oapp.platform.ms.autoconfigure.logging.LoggingProperties.LOK
  * It adds a Loki appender over the existing logging configuration. Loki appender is only added if {@code n2o.ms.loki.enabled} setting is enabled.
  * Loki appender is added to the ROOT logger.
  * <p>
+ * It also replaces layout and encoder all appenders specified in the settings({@code n2o.ms.logging.json.appender_names}) for printing logs in Json format.
+ * This only applies by setting {@code n2o.ms.logging.json.enabled}.
+ * <p>
  * {@code LogbackApplicationListener} is spring factory class that works during start of the application in two phases:
  * <ol>
  * <li> After preparing the application environment by the {@code ApplicationEnvironmentPreparedEvent}.

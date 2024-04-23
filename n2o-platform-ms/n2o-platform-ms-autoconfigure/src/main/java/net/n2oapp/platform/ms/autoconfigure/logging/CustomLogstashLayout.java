@@ -18,8 +18,8 @@ public class CustomLogstashLayout extends LogstashLayout {
     public CustomLogstashLayout(LoggerContext lc, LoggingProperties properties) {
         super();
         this.setContext(lc);
-        this.setLineSeparator(properties.getLineSeparator());
-        this.setMessageSplitRegex(properties.getMessageSplitRegex());
+        this.setLineSeparator(properties.getJsonLineSeparator());
+        this.setMessageSplitRegex(properties.getJsonMessageSplitRegex());
         this.setTimestampPattern(properties.getJsonTimestampPattern());
         this.setIncludeTags(properties.getJsonIncludeTags());
         this.setIncludeContext(properties.getJsonIncludeContext());

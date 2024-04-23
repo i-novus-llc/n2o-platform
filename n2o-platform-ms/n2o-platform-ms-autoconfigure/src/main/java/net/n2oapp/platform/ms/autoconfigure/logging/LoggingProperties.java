@@ -59,8 +59,8 @@ public class LoggingProperties {
 
     private final Boolean jsonEnabled;
     private final String jsonTimestampPattern;
-    private final String lineSeparator;
-    private final String messageSplitRegex;
+    private final String jsonLineSeparator;
+    private final String jsonMessageSplitRegex;
     private final Boolean jsonIncludeMdc;
     private final Boolean jsonPrettyPrint;
     private final Boolean jsonIncludeTags;
@@ -78,8 +78,8 @@ public class LoggingProperties {
         this.hostname = getOrDefaultHostName();
         this.appName = env.getProperty(APP_NAME_PROPERTY, DEFAULT_APP_NAME);
         this.messagePattern = env.getProperty(MESSAGE_PATTERN_PROPERTY, MESSAGE_PATTERN_DEFAULT_VALUE);
-        this.lineSeparator = env.getProperty(LOGGING_JSON_LINE_SEPARATOR_PROPERTY, LOGGING_JSON_LINE_SEPARATOR_DEFAULT_VALUE);
-        this.messageSplitRegex = env.getProperty(LOGGING_JSON_MESSAGE_SPLIT_REGEX_PROPERTY, LOGGING_JSON_MESSAGE_SPLIT_REGEX_DEFAULT_VALUE);
+        this.jsonLineSeparator = env.getProperty(LOGGING_JSON_LINE_SEPARATOR_PROPERTY, LOGGING_JSON_LINE_SEPARATOR_DEFAULT_VALUE);
+        this.jsonMessageSplitRegex = env.getProperty(LOGGING_JSON_MESSAGE_SPLIT_REGEX_PROPERTY, LOGGING_JSON_MESSAGE_SPLIT_REGEX_DEFAULT_VALUE);
 
         this.jsonEnabled = env.getProperty(LOGGING_JSON_FORMAT_ENABLED_PROPERTY, Boolean.class, Boolean.FALSE);
         this.jsonTimestampPattern = env.getProperty(LOGGING_JSON_TIMESTAMP_PATTERN_PROPERTY, LOGGING_JSON_TIMESTAMP_PATTERN_DEFAULT_VALUE);
@@ -117,12 +117,12 @@ public class LoggingProperties {
         return jsonTimestampPattern;
     }
 
-    public String getLineSeparator() {
-        return lineSeparator;
+    public String getJsonLineSeparator() {
+        return jsonLineSeparator;
     }
 
-    public String getMessageSplitRegex() {
-        return messageSplitRegex;
+    public String getJsonMessageSplitRegex() {
+        return jsonMessageSplitRegex;
     }
 
     public Boolean getJsonIncludeMdc() {
