@@ -17,22 +17,28 @@ public class LoggingProperties {
     //JSON logs properties
     public static final String LOGGING_JSON_FORMAT_ENABLED_PROPERTY = "n2o.ms.logging.json.enabled";
 
-    public static final String LOGGING_JSON_TIMESTAMP_PATTERN_PROPERTY = "n2o.ms.logging.json.timestamp.pattern";
+    public static final String LOGGING_JSON_TIMESTAMP_PATTERN_PROPERTY = "n2o.ms.logging.json.timestamp_pattern";
     public static final String LOGGING_JSON_TIMESTAMP_PATTERN_DEFAULT_VALUE = "yyyy-MM-dd' 'HH:mm:ss.SSS";
 
-    public static final String LOGGING_JSON_PRETTY_PRINT_PROPERTY = "n2o.ms.logging.json.pretty-print";
+    private static final String LOGGING_JSON_LINE_SEPARATOR_PROPERTY = "n2o.ms.logging.json.line_separator";
+    private static final String LOGGING_JSON_LINE_SEPARATOR_DEFAULT_VALUE = "SYSTEM";
+
+    private static final String LOGGING_JSON_MESSAGE_SPLIT_REGEX_PROPERTY = "n2o.ms.logging.json.message_split_regex";
+    private static final String LOGGING_JSON_MESSAGE_SPLIT_REGEX_DEFAULT_VALUE = "SYSTEM";
+
+    public static final String LOGGING_JSON_PRETTY_PRINT_PROPERTY = "n2o.ms.logging.json.pretty_print";
     private static final String LOGGING_JSON_INCLUDE_TAGS_PROPERTY = "n2o.ms.logging.json.include.tags";
     private static final String LOGGING_JSON_INCLUDE_CONTEXT_PROPERTY = "n2o.ms.logging.json.include.context";
     private static final String LOGGING_JSON_INCLUDE_CALLER_DATA_PROPERTY = "n2o.ms.logging.json.include.caller_data";
 
-    public static final String LOGGING_JSON_APPENDER_NAMES_PROPERTY = "n2o.ms.logging.json.appender.names";
+    public static final String LOGGING_JSON_APPENDER_NAMES_PROPERTY = "n2o.ms.logging.json.appender_names";
     public static final List<String> LOGGING_JSON_APPENDER_NAMES_DEFAULT_VALUE = List.of("CONSOLE", "FILE");
 
     public static final String LOGGING_JSON_MDC_INCLUDE_PROPERTY = "n2o.ms.logging.json.mdc.include";
     public static final String LOGGING_JSON_MDC_INCLUDE_KEYS_PROPERTY = "n2o.ms.logging.json.mdc.include_keys";
     public static final String LOGGING_JSON_MDC_EXCLUDE_KEYS_PROPERTY = "n2o.ms.logging.json.mdc.exclude_keys";
 
-    public static final String LOGGING_JSON_PROVIDERS_EXCLUDE_NAMES = "n2o.ms.logging.json.providers.exclude.names";
+    public static final String LOGGING_JSON_PROVIDERS_EXCLUDE_NAMES = "n2o.ms.logging.json.provider.exclude_names";
     public static final List<String> LOGGING_JSON_PROVIDERS_EXCLUDE_NAMES_DEFAULT_VALUE = List.of("net.logstash.logback.composite.LogstashVersionJsonProvider",
             "net.logstash.logback.composite.loggingevent.LogLevelValueJsonProvider");
 
@@ -53,6 +59,8 @@ public class LoggingProperties {
 
     private final Boolean jsonEnabled;
     private final String jsonTimestampPattern;
+    private final String lineSeparator;
+    private final String messageSplitRegex;
     private final Boolean jsonIncludeMdc;
     private final Boolean jsonPrettyPrint;
     private final Boolean jsonIncludeTags;
@@ -70,6 +78,8 @@ public class LoggingProperties {
         this.hostname = getOrDefaultHostName();
         this.appName = env.getProperty(APP_NAME_PROPERTY, DEFAULT_APP_NAME);
         this.messagePattern = env.getProperty(MESSAGE_PATTERN_PROPERTY, MESSAGE_PATTERN_DEFAULT_VALUE);
+        this.lineSeparator = env.getProperty(LOGGING_JSON_LINE_SEPARATOR_PROPERTY, LOGGING_JSON_LINE_SEPARATOR_DEFAULT_VALUE);
+        this.messageSplitRegex = env.getProperty(LOGGING_JSON_MESSAGE_SPLIT_REGEX_PROPERTY, LOGGING_JSON_MESSAGE_SPLIT_REGEX_DEFAULT_VALUE);
 
         this.jsonEnabled = env.getProperty(LOGGING_JSON_FORMAT_ENABLED_PROPERTY, Boolean.class, Boolean.FALSE);
         this.jsonTimestampPattern = env.getProperty(LOGGING_JSON_TIMESTAMP_PATTERN_PROPERTY, LOGGING_JSON_TIMESTAMP_PATTERN_DEFAULT_VALUE);
@@ -105,6 +115,14 @@ public class LoggingProperties {
 
     public String getJsonTimestampPattern() {
         return jsonTimestampPattern;
+    }
+
+    public String getLineSeparator() {
+        return lineSeparator;
+    }
+
+    public String getMessageSplitRegex() {
+        return messageSplitRegex;
     }
 
     public Boolean getJsonIncludeMdc() {
