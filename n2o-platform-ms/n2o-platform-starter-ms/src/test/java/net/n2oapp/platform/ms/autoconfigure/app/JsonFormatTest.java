@@ -24,8 +24,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 @SpringBootTest(classes = JsonFormatTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {
-                "n2o.ms.logging.json.enabled=true"})
+        properties = {"n2o.ms.logging.json.enabled=true"})
 @EnableAutoConfiguration
 public class JsonFormatTest {
 
@@ -43,7 +42,7 @@ public class JsonFormatTest {
 
     @Test
     void testJsonFormat() {
-        //Layout and encoder substitution test
+        //Layout and encoder replace test
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         Layout<ILoggingEvent> layout = null;
         for (Logger logger : context.getLoggerList()) {
