@@ -9,6 +9,7 @@ import ch.qos.logback.core.OutputStreamAppender;
 import ch.qos.logback.core.encoder.Encoder;
 import ch.qos.logback.core.encoder.LayoutWrappingEncoder;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.logstash.logback.composite.JsonProviders;
 import net.n2oapp.platform.ms.autoconfigure.MemoryAppender;
 import net.n2oapp.platform.ms.autoconfigure.logging.CustomLogstashLayout;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,11 +25,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 @SpringBootTest(classes = JsonFormatTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {"n2o.ms.logging.json.enabled=true"})
+        properties = {"n2o.ms.logging.json.enabled=true",
+                "n2o.ms.logging.json.provider.include_names=net.n2oapp.platform.ms.autoconfigure.CustomLogstashLayoutProvider"})
 @EnableAutoConfiguration
 public class JsonFormatTest {
 
     private static final String TEST_LOG_MESSAGE = "test";
+    private static final String CUSTOM_PROVIDER_NAME = "net.n2oapp.platform.ms.autoconfigure.CustomLogstashLayoutProvider";
     private MemoryAppender memoryAppender;
 
     @BeforeEach
@@ -54,6 +57,13 @@ public class JsonFormatTest {
                     assertThat(encoder, instanceOf(LayoutWrappingEncoder.class));
                     layout = ((LayoutWrappingEncoder<ILoggingEvent>) encoder).getLayout();
                     assertThat(layout, instanceOf(CustomLogstashLayout.class));
+                    //check adding custom provider
+                    JsonProviders<ILoggingEvent> providers = ((CustomLogstashLayout) layout).getProviders();
+                    assertThat(providers.getProviders()
+                                    .stream()
+                                    .filter(provider -> provider.getClass().getName().equals(CUSTOM_PROVIDER_NAME))
+                                    .findAny().orElseGet(null),
+                            notNullValue());
                 }
             }
         }

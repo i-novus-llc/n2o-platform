@@ -38,6 +38,7 @@ public class LoggingProperties {
     public static final String LOGGING_JSON_MDC_INCLUDE_KEYS_PROPERTY = "n2o.ms.logging.json.mdc.include_keys";
     public static final String LOGGING_JSON_MDC_EXCLUDE_KEYS_PROPERTY = "n2o.ms.logging.json.mdc.exclude_keys";
 
+    public static final String LOGGING_JSON_PROVIDERS_INCLUDE_NAMES = "n2o.ms.logging.json.provider.include_names";
     public static final String LOGGING_JSON_PROVIDERS_EXCLUDE_NAMES = "n2o.ms.logging.json.provider.exclude_names";
     public static final List<String> LOGGING_JSON_PROVIDERS_EXCLUDE_NAMES_DEFAULT_VALUE = List.of("net.logstash.logback.composite.LogstashVersionJsonProvider",
             "net.logstash.logback.composite.loggingevent.LogLevelValueJsonProvider");
@@ -69,6 +70,7 @@ public class LoggingProperties {
     private final List<String> jsonAppenderNames;
     private final List<String> jsonMdcExcludeKeys;
     private final List<String> jsonMdcIncludeKeys;
+    private final List<String> jsonProviderIncludeNames;
     private final List<String> jsonProviderExcludeNames;
 
     private final Boolean lokiEnabled;
@@ -91,6 +93,7 @@ public class LoggingProperties {
         this.jsonAppenderNames = env.getProperty(LOGGING_JSON_APPENDER_NAMES_PROPERTY, List.class, LOGGING_JSON_APPENDER_NAMES_DEFAULT_VALUE);
         this.jsonMdcExcludeKeys = env.getProperty(LOGGING_JSON_MDC_EXCLUDE_KEYS_PROPERTY, List.class, Collections.emptyList());
         this.jsonMdcIncludeKeys = env.getProperty(LOGGING_JSON_MDC_INCLUDE_KEYS_PROPERTY, List.class, Collections.emptyList());
+        this.jsonProviderIncludeNames = env.getProperty(LOGGING_JSON_PROVIDERS_INCLUDE_NAMES, List.class, Collections.emptyList());
         this.jsonProviderExcludeNames = env.getProperty(LOGGING_JSON_PROVIDERS_EXCLUDE_NAMES, List.class, LOGGING_JSON_PROVIDERS_EXCLUDE_NAMES_DEFAULT_VALUE);
 
         this.lokiEnabled = env.getProperty(LOKI_ENABLED_PROPERTY, Boolean.class, Boolean.FALSE);
@@ -155,6 +158,10 @@ public class LoggingProperties {
 
     public List<String> getJsonMdcIncludeKeys() {
         return jsonMdcIncludeKeys;
+    }
+
+    public List<String> getJsonProviderIncludeNames() {
+        return jsonProviderIncludeNames;
     }
 
     public List<String> getJsonProviderExcludeNames() {
