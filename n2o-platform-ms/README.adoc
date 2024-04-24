@@ -103,10 +103,6 @@ n2o.ms.loki.url=http://хост_и_порт_локи/loki/api/v1/push
 |false
 |Включение форматирования отображения JSON лога
 
-|n2o.ms.logging.json.include.tags, n2o.ms.logging.json.include.context, n2o.ms.logging.json.include.caller_data
-|false
-|Включение доп.информации в логах
-
 |n2o.ms.logging.json.mdc.include
 |false
 |Включение MDC контекста в лог
@@ -118,7 +114,17 @@ n2o.ms.loki.url=http://хост_и_порт_локи/loki/api/v1/push
 |n2o.ms.logging.json.mdc.exclude_keys
 |
 |Список MDC ключей для исключения из лога (остальные отображаются)
+
+|n2o.ms.logging.json.include.tags, n2o.ms.logging.json.include.context, n2o.ms.logging.json.include.caller_data
+|false
+|Включение доп.информации в логах
+
+|n2o.ms.logging.json.provider.include_names, n2o.ms.logging.json.provider.exclude_names
+|net.logstash.logback.composite.LogstashVersionJsonProvider, net.logstash.logback.composite.loggingevent.LogLevelValueJsonProvider
+|Удаление ненужных провайдеров logstash.logback.JsonProvider, добавление кастомных
 |===
+
+Для указания корректных настроек, рекомендуется ознакомиться с документацией:  link:https://github.com/logfellow/logstash-logback-encoder/blob/main/README.md[Logstash logback encoder]
 
 === Метрики
 
