@@ -17,8 +17,10 @@ public class LoggingProperties {
     //JSON logs properties
     public static final String LOGGING_JSON_FORMAT_ENABLED_PROPERTY = "n2o.ms.logging.json.enabled";
 
-    public static final String LOGGING_JSON_TIMESTAMP_PATTERN_PROPERTY = "n2o.ms.logging.json.timestamp_pattern";
+    public static final String LOGGING_JSON_TIMESTAMP_PATTERN_PROPERTY = "n2o.ms.logging.json.timestamp.pattern";
     public static final String LOGGING_JSON_TIMESTAMP_PATTERN_DEFAULT_VALUE = "yyyy-MM-dd' 'HH:mm:ss.SSS";
+    private static final String LOGGING_JSON_TIMESTAMP_FIELD_NAME_PROPERTY = "n2o.ms.logging.json.timestamp.field_name";
+
 
     private static final String LOGGING_JSON_LINE_SEPARATOR_PROPERTY = "n2o.ms.logging.json.line_separator";
     private static final String LOGGING_JSON_LINE_SEPARATOR_DEFAULT_VALUE = "SYSTEM";
@@ -60,6 +62,7 @@ public class LoggingProperties {
 
     private final Boolean jsonEnabled;
     private final String jsonTimestampPattern;
+    private final String jsonTimestampFieldName;
     private final String jsonLineSeparator;
     private final String jsonMessageSplitRegex;
     private final Boolean jsonIncludeMdc;
@@ -85,6 +88,7 @@ public class LoggingProperties {
 
         this.jsonEnabled = env.getProperty(LOGGING_JSON_FORMAT_ENABLED_PROPERTY, Boolean.class, Boolean.FALSE);
         this.jsonTimestampPattern = env.getProperty(LOGGING_JSON_TIMESTAMP_PATTERN_PROPERTY, LOGGING_JSON_TIMESTAMP_PATTERN_DEFAULT_VALUE);
+        this.jsonTimestampFieldName = env.getProperty(LOGGING_JSON_TIMESTAMP_FIELD_NAME_PROPERTY);
         this.jsonIncludeMdc = env.getProperty(LOGGING_JSON_MDC_INCLUDE_PROPERTY, Boolean.class, Boolean.FALSE);
         this.jsonPrettyPrint = env.getProperty(LOGGING_JSON_PRETTY_PRINT_PROPERTY, Boolean.class, Boolean.FALSE);
         this.jsonIncludeTags = env.getProperty(LOGGING_JSON_INCLUDE_TAGS_PROPERTY, Boolean.class, Boolean.FALSE);
@@ -118,6 +122,10 @@ public class LoggingProperties {
 
     public String getJsonTimestampPattern() {
         return jsonTimestampPattern;
+    }
+
+    public String getJsonTimestampFieldName() {
+        return jsonTimestampFieldName;
     }
 
     public String getJsonLineSeparator() {

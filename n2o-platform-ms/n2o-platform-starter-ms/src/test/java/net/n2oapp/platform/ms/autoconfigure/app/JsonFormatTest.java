@@ -26,7 +26,8 @@ import static org.hamcrest.Matchers.*;
 
 @SpringBootTest(classes = JsonFormatTest.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {"n2o.ms.logging.json.enabled=true",
-                "n2o.ms.logging.json.provider.include_names=net.n2oapp.platform.ms.autoconfigure.CustomLogstashLayoutProvider"})
+                "n2o.ms.logging.json.provider.include_names=net.n2oapp.platform.ms.autoconfigure.CustomLogstashLayoutProvider",
+                "n2o.ms.logging.json.timestamp.field_name=timestamp_test"})
 @EnableAutoConfiguration
 public class JsonFormatTest {
 
@@ -72,7 +73,10 @@ public class JsonFormatTest {
         Logger log = (Logger) LoggerFactory.getLogger(JsonFormatTest.class);
         log.info(TEST_LOG_MESSAGE);
         ILoggingEvent event = memoryAppender.findFirst(TEST_LOG_MESSAGE);
-        assertThat(isJsonValid(layout.doLayout(event)), is(true));
+        String jsonLog = layout.doLayout(event);
+        assertThat(isJsonValid(jsonLog), is(true));
+        assertThat(jsonLog.contains("@timestamp"), is(false));
+        assertThat(jsonLog.contains("timestamp_test"), is(true));
     }
 
     private boolean isJsonValid(String jsonInString) {

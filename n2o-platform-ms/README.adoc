@@ -95,9 +95,13 @@ n2o.ms.loki.url=http://хост_и_порт_локи/loki/api/v1/push
 |CONSOLE, FILE (Стандартные имена Spring Boot appender’ов)
 |Названия appender'ов логи в которые необходимо писать в формате JSON
 
-|n2o.ms.logging.json.timestamp_pattern
+|n2o.ms.logging.json.timestamp.pattern
 |yyyy-MM-dd' 'HH:mm:ss.SSS
 |Формат времени в JSON логах
+
+|n2o.ms.logging.json.timestamp.field_name
+|@timestamp
+|Наименование поля времени в JSON логах
 
 |n2o.ms.logging.json.pretty_print
 |false
