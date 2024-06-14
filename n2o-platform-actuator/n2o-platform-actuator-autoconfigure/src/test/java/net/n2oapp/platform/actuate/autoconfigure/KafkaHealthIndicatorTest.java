@@ -10,9 +10,11 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.util.TestSocketUtils;
 
 import java.util.HashMap;
@@ -43,10 +45,23 @@ class KafkaHealthIndicatorTest {
     private EmbeddedKafkaBroker kafkaEmbedded;
 
     @Test
-    void kafkaIsUp() {
+    void kafkaIsUpBySend() {
         KafkaTemplate<String, Object> kafkaTemplate = initKafkaTemplate(kafkaEmbedded.getBrokersAsString());
 
         KafkaHealthIndicator healthIndicator = new KafkaHealthIndicator(kafkaTemplate);
+        setParameters(healthIndicator);
+
+        Health health = healthIndicator.health();
+
+        assert health.getStatus() == Status.UP;
+    }
+
+    @Test
+    void kafkaIsUpWithAdmin() {
+        KafkaTemplate<String, Object> kafkaTemplate = initKafkaTemplateWithAdmin(kafkaEmbedded.getBrokersAsString());
+
+        KafkaHealthIndicator healthIndicator = new KafkaHealthIndicator(kafkaTemplate);
+        setParameters(healthIndicator);
         Health health = healthIndicator.health();
 
         assert health.getStatus() == Status.UP;
@@ -67,6 +82,17 @@ class KafkaHealthIndicatorTest {
         KafkaTemplate kafkaTemplate = initKafkaTemplate("127.0.0.1:" + TestSocketUtils.findAvailableTcpPort());
 
         KafkaHealthIndicator healthIndicator = new KafkaHealthIndicator(kafkaTemplate);
+        Health health = healthIndicator.health();
+
+        assert health.getStatus() == Status.DOWN;
+    }
+
+    @Test
+    void kafkaIsDownWithAdmin() {
+        KafkaTemplate kafkaTemplate = initKafkaTemplateWithAdmin("127.0.0.1:" + TestSocketUtils.findAvailableTcpPort());
+
+        KafkaHealthIndicator healthIndicator = new KafkaHealthIndicator(kafkaTemplate);
+        setParameters(healthIndicator);
         Health health = healthIndicator.health();
 
         assert health.getStatus() == Status.DOWN;
@@ -118,6 +144,13 @@ class KafkaHealthIndicatorTest {
         return config;
     }
 
+    private KafkaTemplate<String, Object> initKafkaTemplateWithAdmin(String bootstrapServers) {
+        var kafkaTemplate = initKafkaTemplate(bootstrapServers);
+        KafkaAdmin kafkaAdmin = new KafkaAdmin(kafkaTemplate.getProducerFactory().getConfigurationProperties());
+        kafkaTemplate.setKafkaAdmin(kafkaAdmin);
+        return kafkaTemplate;
+    }
+
     private Map<String, Object> getDefaultKafkaTemplateProps(String bootstrapServers, int timeout) {
         Map<String, Object> config = new HashMap<>();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -125,6 +158,10 @@ class KafkaHealthIndicatorTest {
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, timeout); /// timeout reduced for testing speed up
         return config;
+    }
+
+    private void setParameters(KafkaHealthIndicator healthIndicator) {
+        ReflectionTestUtils.setField(healthIndicator, "maxTimeToWaitMs", 1000L);
     }
 
 }
