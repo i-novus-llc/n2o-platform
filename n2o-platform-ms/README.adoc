@@ -3,6 +3,7 @@
 :toc-title: Содержание
 
 == Возможности
+
 Базовый стартер для микросервисов на платформе, включающий в себя все необходимые зависимости и функции, такие как: мониторинг доступности без авторизации, подключение и считывание конфигурации из HashiCorp Consul, трассировка запросов, логирование в Grafana Loki через HTTP Logback Appender, вывод в лог дополнительной информации о приложении при старте.
 А также осуществляет базовую конфигурацию этих модулей.
 
@@ -13,6 +14,7 @@
 == Подключение
 
 Добавьте зависимость:
+
 [source,xml]
 ----
 <dependency>
@@ -22,47 +24,113 @@
 ----
 
 == Выключение конфигурации через Consul
+
 По умолчанию приложение при старте будет запрашивать настройки из Consul по адресу consul-agent.local.
 Если Consul будет недоступен, то приложение не поднимется.
 
 Для локальной разработки есть 2 решения:
 
 1. Прописать ip-адрес consul из dev-среды в etc/hosts (работает как в linux, так и в windows).
-2. Можно сделать получение настроек из Consul необязательным. Для этого добавьте в переменные окружения настройку:
+2. Можно сделать получение настроек из Consul необязательным.
+Для этого добавьте в переменные окружения настройку:
+
 [source,properties]
 ----
 SPRING_CONFIG_IMPORT=optional:consul:
 ----
 
 == Observability
-Observability - это сочетание трёх видов информации о приложении: метрик, трассировок, логов. В совокупности они дают полную картину того, что происходит внутри приложения.
+
+Observability - это сочетание трёх видов информации о приложении: метрик, трассировок, логов.
+В совокупности они дают полную картину того, что происходит внутри приложения.
 Особенно полезна эта информация для анализа проблем production-стендов, где нельзя просто подключить, продебажить или использовать другие средства поиска проблем "вживую".
 
 Данный стартер добавляет возможность собирать метрики, трассировки запросов и логи, а затем отправлять их в специальные централизованные хранилища для анализа.
 
 === Трассировка
+
 Данный стартер включает spring-cloud-sleuth для трассировки запросов и spring-cloud-sleuth-zipkin для отсылки данных трассировки по протоколу zipkin.
 По умолчанию трассировка запросов в логах включена, а отсылка трейсов по протоколу zipkin выключена.
 
 Трейсы в логах выглядят примерно так:
+
 ----
 2021-09-15 11:20:35.615  INFO [admin-web,a3ff402df14af73e,bcf0404af2df178f,true] 5464 --- [TaskScheduler-1] o.apache.http.impl.execchain.RetryExec   : Retrying request to {}->http://consul-develop.i-novus.ru:80
 ----
-Здесь a3ff402df14af73e - trace id, bcf0404af2df178f - span id. О том, что это, можно почитать тут: https://www.baeldung.com/spring-cloud-sleuth-single-application#1-simple-web-request
+
+Здесь a3ff402df14af73e - trace id, bcf0404af2df178f - span id.
+О том, что это, можно почитать тут: https://www.baeldung.com/spring-cloud-sleuth-single-application#1-simple-web-request
 
 Чтобы включить отсылку трейсов в zipkin, нужно добавить в приложение настройку `spring.zipkin.enabled=true`.
 По умолчанию трейсы посылаются по адресу `localhost:9411`, который можно переопределить настройкой `spring.zipkin.baseUrl`.
 Подробнее тут: https://spring.io/projects/spring-cloud-sleuth
 
 === Логирование
+
 По умолчанию настроено стандартное для spring boot логирование в консоль.
 Данный модуль позволяет добавить к логированию по умолчанию ещё и отправку логов напрямую в систему link:https://grafana.com/oss/loki/[Grafana Loki].
 Для этого нужно настроить два значения:
+
 ----
 n2o.ms.loki.enabled=true
 n2o.ms.loki.url=http://хост_и_порт_локи/loki/api/v1/push
 ----
+
 По умолчанию `n2o.ms.loki.url=http://loki:3100/loki/api/v1/push`.
 
+==== JSON формат
+Так же есть возможность установить JSON формат логов.
+Для этого необходимо указать настройку `n2o.ms.logging.json.enabled=true`, а так же указать следующие настройки или использовать значения по умолчанию:
+
+[cols="1,1,1"]
+|===
+|Параметр
+|Значение по умолчанию
+|Описание
+
+|n2o.ms.logging.json.enabled
+|false
+|Включение форматирования логов в формате JSON
+
+|n2o.ms.logging.json.appender_name
+|CONSOLE, FILE (Стандартные имена Spring Boot appender’ов)
+|Названия appender'ов логи в которые необходимо писать в формате JSON
+
+|n2o.ms.logging.json.timestamp.pattern
+|yyyy-MM-dd' 'HH:mm:ss.SSS
+|Формат времени в JSON логах
+
+|n2o.ms.logging.json.timestamp.field_name
+|@timestamp
+|Наименование поля времени в JSON логах
+
+|n2o.ms.logging.json.pretty_print
+|false
+|Включение форматирования отображения JSON лога
+
+|n2o.ms.logging.json.mdc.include
+|false
+|Включение MDC контекста в лог
+
+|n2o.ms.logging.json.mdc.include_keys
+|
+|Список MDC ключей для включения в лог (остальные не отображаются)
+
+|n2o.ms.logging.json.mdc.exclude_keys
+|
+|Список MDC ключей для исключения из лога (остальные отображаются)
+
+|n2o.ms.logging.json.include.tags, n2o.ms.logging.json.include.context, n2o.ms.logging.json.include.caller_data
+|false
+|Включение доп.информации в логах
+
+|n2o.ms.logging.json.provider.include_names, n2o.ms.logging.json.provider.exclude_names
+|net.logstash.logback.composite.LogstashVersionJsonProvider, net.logstash.logback.composite.loggingevent.LogLevelValueJsonProvider
+|Удаление ненужных провайдеров logstash.logback.JsonProvider, добавление кастомных
+|===
+
+Для указания корректных настроек, рекомендуется ознакомиться с документацией:  link:https://github.com/logfellow/logstash-logback-encoder/blob/main/README.md[Logstash logback encoder]
+
 === Метрики
+
 Метрики приложения собираются и экспонируются в формате link:https://grafana.com/oss/prometheus/[prometheus] через endpoint актуатора: `https://хост/контекст/actuator/prometheus`.
