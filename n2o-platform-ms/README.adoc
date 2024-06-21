@@ -78,6 +78,7 @@ n2o.ms.loki.url=http://хост_и_порт_локи/loki/api/v1/push
 
 По умолчанию `n2o.ms.loki.url=http://loki:3100/loki/api/v1/push`.
 
+==== JSON формат
 Так же есть возможность установить JSON формат логов.
 Для этого необходимо указать настройку `n2o.ms.logging.json.enabled=true`, а так же указать следующие настройки или использовать значения по умолчанию:
 
@@ -89,7 +90,7 @@ n2o.ms.loki.url=http://хост_и_порт_локи/loki/api/v1/push
 
 |n2o.ms.logging.json.enabled
 |false
-|Включение форматирование логов в формате JSON
+|Включение форматирования логов в формате JSON
 
 |n2o.ms.logging.json.appender_name
 |CONSOLE, FILE (Стандартные имена Spring Boot appender’ов)
