@@ -26,6 +26,7 @@
         <loki-logback-appender.version>1.4.0</loki-logback-appender.version>
         <google-guava.version>31.1-jre</google-guava.version>
         <joda-convert.version>2.2.1</joda-convert.version>
+        <logstash.logback.version>7.2</logstash.logback.version>
     </properties>
 
     <dependencyManagement>
