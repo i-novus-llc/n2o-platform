@@ -1,5 +1,8 @@
 = Инструкции по миграции
 
+== 6.1.0
+* Возвращен модуль `n2o-platform-web`
+
 == 6.0.0
 * Переход на Spring Boot 3.2. Для этого есть отдельный миграционный гайд: https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.0-Migration-Guide. В частности это значит, что минимальная поддерживаемая платформой версия Java теперь 17.
 ** Переход со Spring Cloud Sleuth на Micrometer Tracing: https://github.com/micrometer-metrics/tracing/wiki/Spring-Cloud-Sleuth-3.1-Migration-Guide
@@ -10,6 +13,7 @@
 ** Все настройки `jaxrs.swagger.\*` заменены на аналогичные настройки `jaxrs.openapi.*`.
 ** Настройка `jaxrs.swagger.resource-package` была заменена на `jaxrs.openapi.resource-packages`.
 * Переход на openfeign 13.2. Возможны изменения при работе с прокси-клиентами на основе feign.
+* Из платформы исключён модуль `n2o-platform-web`, который использовался для подключения n2o ui framework. Модуль вернётся в новых версиях платформы, когда n2o ui framework перейдёт на совместимый стек.
 
 == 5.3.0
 * Стартер проброса информации пользователя между сервисами(n2o-platform-userinfo-starter) перенесён в проект security-admin(security-userinfo-starter).

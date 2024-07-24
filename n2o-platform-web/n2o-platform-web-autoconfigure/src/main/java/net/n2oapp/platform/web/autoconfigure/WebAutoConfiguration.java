@@ -1,9 +1,8 @@
 package net.n2oapp.platform.web.autoconfigure;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import net.n2oapp.framework.api.rest.RestLoggingHandler;
 import net.n2oapp.framework.boot.N2oFrameworkAutoConfiguration;
 import net.n2oapp.framework.engine.data.rest.SpringRestDataProviderEngine;
-import net.n2oapp.framework.engine.data.rest.json.RestEngineTimeModule;
 import net.n2oapp.platform.i18n.Messages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,7 +16,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.client.RestTemplate;
 
-import java.text.SimpleDateFormat;
+import java.util.List;
+
+import static net.n2oapp.framework.boot.ObjectMapperConstructor.dataObjectMapper;
 
 @AutoConfiguration
 @AutoConfigureBefore(N2oFrameworkAutoConfiguration.class)
@@ -36,24 +37,13 @@ public class WebAutoConfiguration {
     @ConditionalOnClass(name = "net.n2oapp.platform.userinfo.config.InterceptorConfig")
     public static class RestConfiguration {
 
-        @Value("${n2o.engine.rest.dateformat.serialize}")
-        private String serializingFormat;
-
-        @Value("${n2o.engine.rest.dateformat.deserialize}")
-        private String[] deserializingFormats;
-
-        @Value("${n2o.engine.rest.dateformat.exclusion-keys}")
-        private String[] exclusionKeys;
-
         @Bean("restDataProviderEngine")
         @ConditionalOnMissingBean(name = "restDataProviderEngine")
         public SpringRestDataProviderEngine oauthRestDataProviderEngine(@Qualifier("platformRestTemplate") RestTemplate restTemplate,
-                                                                        @Value("${n2o.engine.rest.url}") String baseRestUrl) {
-            ObjectMapper restObjectMapper = new ObjectMapper();
-            restObjectMapper.setDateFormat(new SimpleDateFormat(serializingFormat));
-            RestEngineTimeModule module = new RestEngineTimeModule(deserializingFormats, exclusionKeys);
-            restObjectMapper.registerModules(module);
-            SpringRestDataProviderEngine springRestDataProviderEngine = new SpringRestDataProviderEngine(restTemplate, restObjectMapper);
+                                                                        @Value("${n2o.engine.rest.url}") String baseRestUrl,
+                                                                        List<RestLoggingHandler> loggingHandlers) {
+            SpringRestDataProviderEngine springRestDataProviderEngine =
+                    new SpringRestDataProviderEngine(restTemplate, dataObjectMapper(), loggingHandlers);
             springRestDataProviderEngine.setBaseRestUrl(baseRestUrl);
             return springRestDataProviderEngine;
         }

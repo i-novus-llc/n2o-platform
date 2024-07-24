@@ -49,8 +49,8 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
             return handleMultipleErrorsException(e);
         N2oException exception = handle(e);
         if (exception != null) return exception;
-        if (e instanceof N2oException)
-            return (N2oException) e;
+        if (e instanceof N2oException n2oException)
+            return n2oException;
         return new N2oException(e);
     }
 
@@ -117,7 +117,7 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
                         : handleMessageErrorsException(message);
 
             } else if (restClientException.getStatusCode().is5xxServerError() && message != null) {
-                return new N2oException(new RestException(message, restClientException.getRawStatusCode()));
+                return new N2oException(new RestException(message, restClientException.getStatusCode().value()));
             }
         }
         return null;
@@ -134,8 +134,7 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
     }
 
     private boolean isMultipleErrorsException(Exception e) {
-        if (e instanceof N2oException && e.getCause() instanceof RestException) {
-            RestException restException = (RestException) e.getCause();
+        if (e instanceof N2oException && e.getCause() instanceof RestException restException) {
             return restException.getErrors() != null;
         }
         return false;
@@ -154,15 +153,15 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
         List<ValidationMessage> validationMessages = new ArrayList<>();
         StringBuilder message = new StringBuilder();
         Map<String, String> fieldIdByValidationFailKey = operation.getInParametersMap().entrySet().stream()
-                .filter(entry -> entry.getValue() instanceof ObjectSimpleField && ((ObjectSimpleField)entry.getValue()).getValidationFailKey() != null)
-                .collect(Collectors.toMap(entry -> ((ObjectSimpleField)entry.getValue()).getValidationFailKey(), Map.Entry::getKey));
+                .filter(entry -> entry.getValue() instanceof ObjectSimpleField objectSimpleField && objectSimpleField.getValidationFailKey() != null)
+                .collect(Collectors.toMap(entry -> ((ObjectSimpleField) entry.getValue()).getValidationFailKey(), Map.Entry::getKey));
 
         int counter = 1;
         for (RestMessage.BaseError error : ((RestException) e.getCause()).getErrors()) {
-            if (error instanceof RestMessage.ConstraintViolationError)
+            if (error instanceof RestMessage.ConstraintViolationError constraintViolationError)
                 validationMessages.add(new ValidationMessage(
                         error.getMessage(),
-                        fieldIdByValidationFailKey.get(((RestMessage.ConstraintViolationError) error).getField()),
+                        fieldIdByValidationFailKey.get(constraintViolationError.getField()),
                         null
                 ));
             else

@@ -8,7 +8,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.client.RestTemplate;
+
 import java.util.Map;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -34,7 +36,7 @@ class WebTest {
     @Test
     void pageUp() {
         RestTemplate restTemplate = new RestTemplate();
-        Map<?, ?> indexPage = restTemplate.getForObject("http://localhost:" + port + "/n2o/page", Map.class);
+        Map<?, ?> indexPage = restTemplate.getForObject("http://localhost:" + port + "/n2o/page/", Map.class);
         assertThat(indexPage, notNullValue());
     }
 }
