@@ -1,0 +1,41 @@
+:toc:
+:toclevels: 3
+:toc-title: Содержание
+
+== Возможности
+
+* Создание сервера N2O Framework (без статики)
+* Проброс сообщений пользователя от Backend на Frontend, если на бекенде бросили UserException
+* Отображение стектрейса бекенда на UI, если на бекенде во время выполнения запроса произошла непредвиденная ошибка
+
+== Подключение
+
+Добавьте зависимость:
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.platform</groupId>
+  <artifactId>n2o-platform-starter-web</artifactId>
+</dependency>
+----
+
+Также вам понадобится зависимость от модуля, содержащего статические ресурсы Frontend.
+По умолчанию это n2o-web:
+
+[source,xml]
+----
+<dependency>
+  <groupId>net.n2oapp.framework</groupId>
+  <artifactId>n2o-web</artifactId>
+  <version>${n2o.version}</version>
+</dependency>
+----
+
+== Использование
+
+После подключения сервера и статики в папке META-INF/conf можно создавать страницы на N2O Framework.
+
+Для отображения стектрейса с бекенда на UI укажите настройку:
+----
+n2o.ui.message.stacktrace=true
+----
