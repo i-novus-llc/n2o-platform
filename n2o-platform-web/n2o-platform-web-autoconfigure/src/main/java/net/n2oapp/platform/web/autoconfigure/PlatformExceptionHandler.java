@@ -47,7 +47,7 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
     @Override
     public N2oException handle(CompiledQuery compiledQuery, N2oPreparedCriteria n2oPreparedCriteria, Exception e) {
         if (isMultipleErrorsException(e))
-            return handleMessageErrorsException(((RestException) e.getCause()).getErrors());
+            return handleMultipleErrorsException(((RestException) e.getCause()).getErrors());
         N2oException exception = handle(e);
         if (exception != null)
             return exception;
@@ -116,7 +116,7 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
 
                 return CollectionUtils.isEmpty(message.getErrors())
                         ? new N2oUserException(message.getMessage())
-                        : handleMessageErrorsException(message.getErrors());
+                        : handleMultipleErrorsException(message.getErrors());
 
             } else if (restClientException.getStatusCode().is5xxServerError() && message != null) {
                 return new N2oException(new RestException(message, restClientException.getStatusCode().value()));
@@ -142,7 +142,7 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
         return false;
     }
 
-    private N2oException handleMessageErrorsException(List<? extends RestMessage.BaseError> errors) {
+    private N2oException handleMultipleErrorsException(List<? extends RestMessage.BaseError> errors) {
         String message = IntStream
                 .rangeClosed(1, errors.size())
                 .mapToObj(i -> i + ") " + errors.get(i - 1).getMessage())

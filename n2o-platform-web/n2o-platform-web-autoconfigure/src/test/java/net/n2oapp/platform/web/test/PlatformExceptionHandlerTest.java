@@ -55,7 +55,7 @@ class PlatformExceptionHandlerTest {
     @Test
     void handleUserMessageFromJaxRsClient() {
         PlatformExceptionHandler handler = new PlatformExceptionHandler();
-        N2oException e = handler.handle((CompiledObject.Operation) null, null,
+        N2oException e = handler.handle((CompiledQuery) null, null,
                 new RestException(new RestMessage("Wrong data"), 400));
         assertThat(e, instanceOf(N2oUserException.class));
         N2oUserException userException = (N2oUserException) e;
@@ -68,7 +68,7 @@ class PlatformExceptionHandlerTest {
     @Test
     void handleUserMessageFromUserException() {
         PlatformExceptionHandler handler = new PlatformExceptionHandler();
-        N2oException e = handler.handle((CompiledObject.Operation) null, null,
+        N2oException e = handler.handle((CompiledQuery) null, null,
                 new UserException("Wrong data"));
         assertThat(e, instanceOf(N2oUserException.class));
         N2oUserException userException = (N2oUserException) e;
@@ -84,7 +84,7 @@ class PlatformExceptionHandlerTest {
         String body = "{\"message\":\"Unexpected error\",\"stackTrace\":" +
                 "[\"com.example.test.BusinessException: something went wrong\"," +
                 "\"\\tat com.example.test.BusinessService.someMethod(BusinessService.java:123)\"]}";
-        N2oException e = handler.handle((CompiledObject.Operation) null, null,
+        N2oException e = handler.handle((CompiledQuery) null, null,
                 HttpClientErrorException.create(HttpStatus.INTERNAL_SERVER_ERROR,
                         "Bad request",
                         HttpHeaders.EMPTY,
