@@ -39,16 +39,18 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
         if (isMultipleErrorsException(e))
             return handleMultipleErrorsException(operation, e);
         N2oException exception = handle(e);
-        if (exception != null) return exception;
+        if (exception != null)
+            return exception;
         return super.handle(operation, dataSet, e);
     }
 
     @Override
     public N2oException handle(CompiledQuery compiledQuery, N2oPreparedCriteria n2oPreparedCriteria, Exception e) {
         if (isMultipleErrorsException(e))
-            return handleMultipleErrorsException(e);
+            return handleMessageErrorsException(((RestException) e.getCause()).getErrors());
         N2oException exception = handle(e);
-        if (exception != null) return exception;
+        if (exception != null)
+            return exception;
         if (e instanceof N2oException n2oException)
             return n2oException;
         return new N2oException(e);
@@ -114,7 +116,7 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
 
                 return CollectionUtils.isEmpty(message.getErrors())
                         ? new N2oUserException(message.getMessage())
-                        : handleMessageErrorsException(message);
+                        : handleMessageErrorsException(message.getErrors());
 
             } else if (restClientException.getStatusCode().is5xxServerError() && message != null) {
                 return new N2oException(new RestException(message, restClientException.getStatusCode().value()));
@@ -140,11 +142,10 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
         return false;
     }
 
-    private N2oException handleMultipleErrorsException(Exception e) {
-        RestException restException = (RestException) e.getCause();
+    private N2oException handleMessageErrorsException(List<? extends RestMessage.BaseError> errors) {
         String message = IntStream
-                .rangeClosed(1, restException.getErrors().size())
-                .mapToObj(i -> i + ") " + restException.getErrors().get(i - 1).getMessage())
+                .rangeClosed(1, errors.size())
+                .mapToObj(i -> i + ") " + errors.get(i - 1).getMessage())
                 .collect(joining("\n"));
         return new N2oUserException(message);
     }
@@ -169,13 +170,5 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
         }
         return validationMessages.isEmpty() ? new N2oUserException(message.toString()) :
                 new N2oUserException(message.toString(), null, validationMessages);
-    }
-
-    private N2oException handleMessageErrorsException(RestMessage restMessage) {
-        String message = IntStream
-                .rangeClosed(1, restMessage.getErrors().size())
-                .mapToObj(i -> i + ") " + restMessage.getErrors().get(i - 1).getMessage())
-                .collect(joining("\n"));
-        return new N2oUserException(message);
     }
 }

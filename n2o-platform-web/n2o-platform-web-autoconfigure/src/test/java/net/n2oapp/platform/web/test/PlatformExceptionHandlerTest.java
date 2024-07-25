@@ -5,6 +5,7 @@ import net.n2oapp.framework.api.exception.N2oUserException;
 import net.n2oapp.framework.api.exception.ValidationMessage;
 import net.n2oapp.framework.api.metadata.global.dao.object.field.ObjectSimpleField;
 import net.n2oapp.framework.api.metadata.local.CompiledObject;
+import net.n2oapp.framework.api.metadata.local.CompiledQuery;
 import net.n2oapp.platform.i18n.UserException;
 import net.n2oapp.platform.jaxrs.RestException;
 import net.n2oapp.platform.jaxrs.RestMessage;
@@ -118,10 +119,11 @@ class PlatformExceptionHandlerTest {
     }
 
     /**
-     * Тест обработки пользовательских сообщений из множественных ошибок, выбрасываемых JaxRs Proxy Client
+     * Тест обработки пользовательских сообщений из множественных ошибок,
+     * выбрасываемых JaxRs Proxy Client для object operation
      */
     @Test
-    void handleMultipleErrorsFromJaxRsClient() {
+    void handleMultipleErrorsFromJaxRsClientForObject() {
         PlatformExceptionHandler handler = new PlatformExceptionHandler();
 
         ObjectSimpleField inParam1 = new ObjectSimpleField();
@@ -150,5 +152,26 @@ class PlatformExceptionHandlerTest {
         assertThat(messages.get(0).getFieldId(), is("name"));
         assertThat(messages.get(1).getMessage(), is("Не должно быть отрицательным"));
         assertThat(messages.get(1).getFieldId(), is("age"));
+    }
+
+    /**
+     * Тест обработки пользовательских сообщений из множественных ошибок,
+     * выбрасываемых JaxRs Proxy Client для query
+     */
+    @Test
+    void handleMultipleErrorsFromJaxRsClientForQuery() {
+        PlatformExceptionHandler handler = new PlatformExceptionHandler();
+        CompiledQuery query = new CompiledQuery();
+
+        RestMessage restMessage = new RestMessage(Arrays.asList(
+                new RestMessage.Error("Wrong data"),
+                new RestMessage.Error("Wrong format")
+        ));
+
+        N2oException e = handler.handle(query, null,
+                new N2oException(new RestException(restMessage, 400)));
+        assertThat(e, instanceOf(N2oUserException.class));
+        N2oUserException userException = (N2oUserException) e;
+        assertThat(userException.getUserMessage(), is("1) Wrong data\n2) Wrong format"));
     }
 }
