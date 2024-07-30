@@ -12,6 +12,7 @@
     </parent>
 
     <properties>
+        <n2o.version>7.28.1</n2o.version>
         <security.version>7.0.2</security.version>
         <jakarta-api.version>3.1.0</jakarta-api.version>
         <swagger.version>5.11.8</swagger.version>
@@ -132,7 +133,12 @@
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-web-autoconfigure</artifactId>
-                <version>6.0.0-SNAPSHOT</version>
+                <version>6.1.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.platform</groupId>
+                <artifactId>n2o-platform-starter-web</artifactId>
+                <version>6.1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
@@ -168,6 +174,33 @@
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-selection-processor</artifactId>
                 <version>6.1.0-SNAPSHOT</version>
+            </dependency>
+
+            <!--N2O Framework-->
+            <dependency>
+                <groupId>net.n2oapp.framework</groupId>
+                <artifactId>n2o-spring-boot-starter</artifactId>
+                <version>${n2o.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.framework</groupId>
+                <artifactId>n2o-api</artifactId>
+                <version>${n2o.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.framework</groupId>
+                <artifactId>n2o-engine</artifactId>
+                <version>${n2o.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.framework</groupId>
+                <artifactId>n2o-config</artifactId>
+                <version>${n2o.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.n2oapp.framework</groupId>
+                <artifactId>n2o-access</artifactId>
+                <version>${n2o.version}</version>
             </dependency>
 
             <!-- Security-admin -->
