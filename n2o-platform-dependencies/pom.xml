@@ -13,7 +13,6 @@
 
     <properties>
         <n2o.version>7.28.1</n2o.version>
-        <security.version>7.0.2</security.version>
         <jakarta-api.version>3.1.0</jakarta-api.version>
         <swagger.version>5.11.8</swagger.version>
         <swagger-annotations.version>1.6.13</swagger-annotations.version>
@@ -201,13 +200,6 @@
                 <groupId>net.n2oapp.framework</groupId>
                 <artifactId>n2o-access</artifactId>
                 <version>${n2o.version}</version>
-            </dependency>
-
-            <!-- Security-admin -->
-            <dependency>
-                <groupId>net.n2oapp.framework.security</groupId>
-                <artifactId>security-auth-common</artifactId>
-                <version>${security.version}</version>
             </dependency>
 
             <!-- Spring -->
