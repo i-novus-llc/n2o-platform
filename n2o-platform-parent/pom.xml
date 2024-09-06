@@ -234,6 +234,18 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>ci-build</id>
+            <activation>
+                <property>
+                    <name>ci.commit.sha</name>
+                </property>
+            </activation>
+            <properties>
+                <docker.env.name><!--do not delete, property overrides at ci-build--></docker.env.name>
+                <docker.image.tag>${project.version}${ci.commit.sha}${docker.env.name}</docker.image.tag>
+            </properties>
+        </profile>
     </profiles>
 
 </project>
