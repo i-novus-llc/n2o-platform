@@ -42,7 +42,6 @@
         <docker-compose.config.folder>.docker-compose</docker-compose.config.folder>
         <k8s.config.folder>.k8s</k8s.config.folder>
         <maven.build.timestamp.format>yyyyMMdd.HHmmss</maven.build.timestamp.format>
-        <docker.image.tag.unique.suffix>-${maven.build.timestamp}</docker.image.tag.unique.suffix>
     </properties>
 
     <dependencies>
@@ -233,6 +232,18 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>ci-build</id>
+            <activation>
+                <property>
+                    <name>ci.commit.sha</name>
+                </property>
+            </activation>
+            <properties>
+                <docker.env.name><!--do not delete, property overrides at ci-build--></docker.env.name>
+                <docker.image.tag>${project.version}${ci.commit.sha}${docker.env.name}</docker.image.tag>
+            </properties>
         </profile>
     </profiles>
 
