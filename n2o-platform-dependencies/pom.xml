@@ -26,6 +26,7 @@
         <google-guava.version>31.1-jre</google-guava.version>
         <joda-convert.version>2.2.1</joda-convert.version>
         <zipkin-reporter.version>2.16.3</zipkin-reporter.version>
+        <logstash.logback.version>7.2</logstash.logback.version>
     </properties>
 
     <dependencyManagement>
