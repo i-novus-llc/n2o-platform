@@ -14,6 +14,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -39,7 +40,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
 @AutoConfigureBefore(DataSourceAutoConfiguration.class)
-@Configuration
+@AutoConfiguration
 public class TestcontainersPgAutoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(TestcontainersPgAutoConfiguration.class);
