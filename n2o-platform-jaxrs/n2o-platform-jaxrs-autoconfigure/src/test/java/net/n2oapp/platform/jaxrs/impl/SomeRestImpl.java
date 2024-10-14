@@ -14,6 +14,7 @@ import org.springframework.stereotype.Controller;
 
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
+
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -29,10 +30,10 @@ public class SomeRestImpl implements SomeRest {
     private HttpHeaders httpHeaders;
 
     public static final List<SeekPivot> EXPECTED_PIVOTS = List.of(
-        SeekPivot.of("id", "54,3"),
-        SeekPivot.of("date", "1,970-01-01"),
-        SeekPivot.of("plain-text", ",ABRACA:::::DAB:::::RA\\Хыхыхы"),
-        SeekPivot.of("triplesix", ",異体字")
+            SeekPivot.of("id", "54,3"),
+            SeekPivot.of("date", "1,970-01-01"),
+            SeekPivot.of("plain-text", ",ABRACA:::::DAB:::::RA\\Хыхыхы"),
+            SeekPivot.of("triplesix", ",異体字")
     );
 
     @Override
@@ -134,10 +135,10 @@ public class SomeRestImpl implements SomeRest {
     @Override
     public SeekedPageImpl<String> searchSeeking(SeekRequest request) {
         if (
-            request.getPage() == RequestedPageEnum.NEXT &&
-            request.getSize() == 1000 &&
-            request.getSort().equals(Sort.by(List.of(Sort.Order.asc("id"), Sort.Order.desc("name")))) &&
-            request.getPivots().equals(EXPECTED_PIVOTS)
+                request.getPage() == RequestedPageEnum.NEXT &&
+                        request.getSize() == 1000 &&
+                        request.getSort().equals(Sort.by(List.of(Sort.Order.asc("id"), Sort.Order.desc("name")))) &&
+                        request.getPivots().equals(EXPECTED_PIVOTS)
         ) {
             return SeekedPageImpl.of(List.of("ok!"), true, false);
         }
@@ -152,6 +153,15 @@ public class SomeRestImpl implements SomeRest {
     @Override
     public Map<String, String> mapQueryParamViaHolder(MapParamHolder holder) {
         return holder.getMap();
+    }
+
+    @Override
+    public SomeModel queryString(String param) {
+        SomeModel someModel = new SomeModel(1L);
+        someModel.setDate(new Date());
+        someModel.setDateEnd(LocalDateTime.now());
+        someModel.setName(param);
+        return someModel;
     }
 
     private List<SomeModel> findAll(SomeCriteria criteria) {

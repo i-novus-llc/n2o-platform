@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -103,7 +104,7 @@ public interface SomeRest {
     @Path("/searchBySetOfMap")
     @ApiOperation("Поиск по карте")
     @ApiResponse(code = 200, message = "Карта")
-    Map<String,String> searchBySetOfTypedMap(@QueryParam("map") Map<String, String> setOfMap);
+    Map<String, String> searchBySetOfTypedMap(@QueryParam("map") Map<String, String> setOfMap);
 
     @GET
     @Path("/authHeader")
@@ -131,4 +132,7 @@ public interface SomeRest {
     @Path("/mapQueryParamViaHolder")
     Map<String, String> mapQueryParamViaHolder(@BeanParam MapParamHolder holder);
 
+    @GET
+    @Path("/path1")
+    SomeModel queryString(@QueryParam("param") String param);
 }

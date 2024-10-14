@@ -75,7 +75,7 @@ class FeignClientTest {
         StringBuilder expectedStringOfValues = new StringBuilder();
         StringBuilder actualStringOfValues = new StringBuilder();
         for (Method method : declaredMethods) {
-            if(method.getName().startsWith("get") && method.getParameterCount() == 0) {
+            if (method.getName().startsWith("get") && method.getParameterCount() == 0) {
                 expectedStringOfValues.append(method.invoke(expectedPage));
                 actualStringOfValues.append(method.invoke(page));
             }
@@ -107,7 +107,7 @@ class FeignClientTest {
             fail("Validation didn't work");
         } catch (Exception e) {
             assertThat(e, instanceOf(RestException.class));
-            RestException restException = (RestException)e;
+            RestException restException = (RestException) e;
             assertThat(restException.getErrors().size(), equalTo(4));
         }
     }
@@ -182,6 +182,11 @@ class FeignClientTest {
         MapParamHolder holder = new MapParamHolder();
         holder.setMap(map);
         assertThat(client.mapQueryParamViaHolder(holder), is(map));
+    }
+
+    @Test
+    void testQueryString() {
+        assertThat(client.queryString("test").getName(), is("test"));
     }
 
     @Configuration
