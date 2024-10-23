@@ -16,7 +16,7 @@
         <jakarta-api.version>3.1.0</jakarta-api.version>
         <swagger.version>5.11.8</swagger.version>
         <swagger-annotations.version>1.6.13</swagger-annotations.version>
-        <cxf.version>4.0.3</cxf.version>
+        <cxf.version>4.0.4</cxf.version>
         <commons.version>2.6</commons.version>
         <spring.cloud.version>2023.0.0</spring.cloud.version>
         <activation.version>2.1.2</activation.version>
