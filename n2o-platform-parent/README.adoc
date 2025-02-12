@@ -59,10 +59,10 @@ rdm-service:
     <rdm.version>1.4.3</rdm.version>
 </properties>
 ```
-Полученные yaml-файлы будут помещены в корне сборочной директории.
+Полученные yaml-файлы будут помещены во вложенную папку `target`.
 
 ==== Подключение
-Для включения этой функции нужно в рутовый pom-файл проекта добавить конфигурацию плагина:
+Для включения этой функции нужно в рутовый pom-файл проекта добавить следующую конфигурацию плагинов:
 ```
 <build>
     <plugins>
@@ -76,7 +76,17 @@ rdm-service:
                 </execution>
             </executions>
         </plugin>
+        <plugin>
+            <artifactId>maven-clean-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+                <execution>
+                    <id>process-docker-config</id>
+                    <phase>clean</phase>
+                </execution>
+            </executions>
+        </plugin>
     </plugins>
 </build>
 ```
-Тогда сборка конфигураций будет производиться только один раз за сборку (только для рутового pom-файла проекта) в фазе initialize.
+Тогда сборка конфигураций будет производиться только один раз за сборку (только для рутового pom-файла проекта) в фазе initialize. А при `mvn clean` сгенерированные файлы будут корректно очищаться.
