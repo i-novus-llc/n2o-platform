@@ -32,20 +32,4 @@ public class WebAutoConfiguration {
             platformExceptionHandler.setMessages(messages);
         return platformExceptionHandler;
     }
-
-    @Configuration
-    @ConditionalOnClass(name = "net.n2oapp.platform.userinfo.config.InterceptorConfig")
-    public static class RestConfiguration {
-
-        @Bean("restDataProviderEngine")
-        @ConditionalOnMissingBean(name = "restDataProviderEngine")
-        public SpringRestDataProviderEngine oauthRestDataProviderEngine(@Qualifier("platformRestTemplate") RestTemplate restTemplate,
-                                                                        @Value("${n2o.engine.rest.url}") String baseRestUrl,
-                                                                        List<RestLoggingHandler> loggingHandlers) {
-            SpringRestDataProviderEngine springRestDataProviderEngine =
-                    new SpringRestDataProviderEngine(restTemplate, dataObjectMapper(), loggingHandlers);
-            springRestDataProviderEngine.setBaseRestUrl(baseRestUrl);
-            return springRestDataProviderEngine;
-        }
-    }
 }
