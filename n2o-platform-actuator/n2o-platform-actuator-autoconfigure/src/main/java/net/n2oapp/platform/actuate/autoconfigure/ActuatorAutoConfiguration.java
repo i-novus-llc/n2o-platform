@@ -33,7 +33,7 @@ import java.util.Map;
 public class ActuatorAutoConfiguration {
 
     @Configuration
-    @ConditionalOnClass(SecurityFilterChain.class)
+    @ConditionalOnClass(value = {SecurityFilterChain.class, WebSecurityCustomizer.class})
     public static class ActuatorSecurityCustomizer {
         @Bean
         public WebSecurityCustomizer actuatorSecurityCustomizer() {
