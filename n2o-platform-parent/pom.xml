@@ -43,6 +43,7 @@
         <k8s.config.folder>.k8s</k8s.config.folder>
         <maven.build.timestamp.format>yyyyMMdd.HHmmss</maven.build.timestamp.format>
         <docker.image.tag>${project.version}-${maven.build.timestamp}</docker.image.tag>
+        <helm.chart.version>${docker.image.tag}</helm.chart.version>
     </properties>
 
     <dependencies>
