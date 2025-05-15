@@ -9,7 +9,7 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-platform-loader</artifactId>
-        <version>6.3.2-SNAPSHOT</version>
+        <version>6.3.2</version>
     </parent>
 
     <properties>
