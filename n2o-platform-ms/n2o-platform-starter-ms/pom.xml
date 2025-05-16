@@ -23,6 +23,7 @@
         <dependency>
             <groupId>net.n2oapp.platform</groupId>
             <artifactId>n2o-platform-starter-actuator</artifactId>
+            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -52,6 +53,7 @@
         <dependency>
             <groupId>net.n2oapp.platform</groupId>
             <artifactId>n2o-platform-starter-test</artifactId>
+            <type>pom</type>
             <scope>test</scope>
         </dependency>
     </dependencies>
