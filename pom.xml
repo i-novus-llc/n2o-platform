@@ -71,8 +71,8 @@
         <module>n2o-platform-web</module>
         <module>n2o-platform-test</module>
         <module>n2o-platform-initializr</module>
-<!--        <module>n2o-platform-selection</module>-->
-<!--        <module>n2o-platform-seek-paging</module>-->
+        <module>n2o-platform-selection</module>
+        <module>n2o-platform-seek-paging</module>
     </modules>
 
     <properties>
