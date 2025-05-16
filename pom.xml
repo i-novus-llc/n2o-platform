@@ -113,12 +113,6 @@
                                 </goals>
                                 <configuration>
                                     <signer>bc</signer>
-<!--
-                                    <gpgArguments>
-                                        <arg>&#45;&#45;pinentry-mode</arg>
-                                        <arg>loopback</arg>
-                                    </gpgArguments>
--->
                                 </configuration>
                             </execution>
                         </executions>
@@ -130,7 +124,7 @@
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>central</publishingServerId>
-                            <autoPublish>true</autoPublish>
+<!--                            <autoPublish>true</autoPublish>-->
                         </configuration>
                     </plugin>
                 </plugins>
