@@ -9,6 +9,7 @@
     </parent>
 
     <artifactId>n2o-platform-starter-actuator</artifactId>
+    <packaging>pom</packaging>
 
     <dependencies>
         <dependency>

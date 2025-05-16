@@ -3,6 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>n2o-platform-starter-ms</artifactId>
+    <packaging>pom</packaging>
 
     <parent>
         <artifactId>n2o-platform-ms</artifactId>

@@ -38,6 +38,25 @@
         <url>https://i-novus.ru/</url>
     </organization>
 
+    <developers>
+        <developer>
+            <name>Igor Ryabov</name>
+            <email>iryabov@i-novus.ru</email>
+        </developer>
+        <developer>
+            <name>Rushan Makhmutov</name>
+            <email>rmakhmutov@i-novus.ru</email>
+        </developer>
+        <developer>
+            <name>Ilyas Karimullin</name>
+            <email>ikarimullin@i-novus.ru</email>
+        </developer>
+        <developer>
+            <name>Artur Arifullin</name>
+            <email>aarifullin@i-novus.ru</email>
+        </developer>
+    </developers>
+
     <modules>
         <module>n2o-platform-dependencies</module>
         <module>n2o-platform-parent</module>
@@ -134,4 +153,3 @@
         </profile>
     </profiles>
 </project>
-
