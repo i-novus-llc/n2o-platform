@@ -8,7 +8,7 @@
     <parent>
         <groupId>net.n2oapp.platform</groupId>
         <artifactId>n2o-platform-quartz</artifactId>
-        <version>6.3.7</version>
+        <version>6.3.8-SNAPSHOT</version>
     </parent>
 
     <dependencies>
