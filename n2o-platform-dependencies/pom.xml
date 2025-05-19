@@ -180,12 +180,12 @@
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-selection-api</artifactId>
-                <version>6.3.7-SNAPSHOT</version>
+                <version>6.3.8-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>net.n2oapp.platform</groupId>
                 <artifactId>n2o-platform-selection-processor</artifactId>
-                <version>6.3.7-SNAPSHOT</version>
+                <version>6.3.8-SNAPSHOT</version>
             </dependency>
 
             <!--N2O Framework-->
