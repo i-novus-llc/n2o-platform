@@ -5,7 +5,7 @@
     <parent>
         <artifactId>n2o-platform-actuator</artifactId>
         <groupId>net.n2oapp.platform</groupId>
-        <version>6.3.9</version>
+        <version>6.3.10-SNAPSHOT</version>
     </parent>
 
     <artifactId>n2o-platform-starter-actuator</artifactId>
