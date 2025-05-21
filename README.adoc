@@ -8,7 +8,6 @@ image:https://img.shields.io/hexpm/l/plug.svg?style=flat[link="http://www.apache
 * dependencies - общий dependency management приложений на платформе, основан на spring boot
 * link:/n2o-platform-feign/README.adoc[feign] - стартер feign client, преднастроенная бибилиотека для создания REST-клиентов в микросервисной среде
 * link:/n2o-platform-i18n/README.adoc[i18n] - общие настройки интернационализации приложений на платформе
-* link:/n2o-platform-initializr/README.adoc[initializr] - spring initializr для генерации исходного кода приложения на платформе
 * link:/n2o-platform-jaxrs/README.adoc[jaxrs] - *_partially deprecated (use feign proxy clients)_* стартеры для создания REST клиентов и REST сервисов, отвечающих требованиям соглашений N2O UI Framework
 * link:/n2o-platform-loader/README.adoc[loader] - стартер для обмена предопределёнными метаданными между микросервисами
 * link:/n2o-platform-ms/README.adoc[ms] - стартер для создания микросервисов на основе платформы
