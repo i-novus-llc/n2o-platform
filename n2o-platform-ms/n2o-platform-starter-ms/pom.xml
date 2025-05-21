@@ -8,7 +8,7 @@
     <parent>
         <artifactId>n2o-platform-ms</artifactId>
         <groupId>net.n2oapp.platform</groupId>
-        <version>6.3.10-SNAPSHOT</version>
+        <version>6.3.10</version>
     </parent>
 
     <properties>
