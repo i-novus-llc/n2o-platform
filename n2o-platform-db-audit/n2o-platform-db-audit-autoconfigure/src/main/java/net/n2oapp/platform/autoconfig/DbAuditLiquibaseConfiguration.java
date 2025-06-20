@@ -25,7 +25,8 @@ public class DbAuditLiquibaseConfiguration {
 
     @Bean(name = "liquibase")
     @ConditionalOnMissingBean(SpringLiquibase.class)
-    public void liquibase() {
+    public SpringLiquibase liquibase() {
+        return null;
         //если в приложении не используется liquibase (обязательный bean)
     }
 
