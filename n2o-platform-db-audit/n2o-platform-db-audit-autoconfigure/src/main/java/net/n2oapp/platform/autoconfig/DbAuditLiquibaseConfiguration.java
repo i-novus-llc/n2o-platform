@@ -2,7 +2,6 @@ package net.n2oapp.platform.autoconfig;
 
 import liquibase.integration.spring.SpringLiquibase;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -16,12 +15,7 @@ import javax.sql.DataSource;
 @AutoConfigureAfter(LiquibaseAutoConfiguration.class)
 public class DbAuditLiquibaseConfiguration {
 
-    private final DataSource dataSource;
-
-    @Autowired
-    public DbAuditLiquibaseConfiguration(ObjectProvider<DataSource> dataSource) {
-        this.dataSource = dataSource.getIfUnique();
-    }
+    private final static String AUDIT_CHANGELOG_MIGRATION_PATH = "classpath:/db/changelog/audit-changelog.yaml";
 
     @Bean(name = "liquibase")
     @ConditionalOnMissingBean(SpringLiquibase.class)
@@ -32,10 +26,12 @@ public class DbAuditLiquibaseConfiguration {
 
     @Bean(name = "auditLiquibase")
     @DependsOn("liquibase")
-    public SpringLiquibase auditLiquibase() {
+    public SpringLiquibase auditLiquibase(ObjectProvider<DataSource> dataSource) {
         SpringLiquibase liquibase = new SpringLiquibase();
-        liquibase.setDataSource(dataSource);
-        liquibase.setChangeLog("classpath:/db/changelog/audit-changelog.yaml");
+        liquibase.setDataSource(dataSource.getIfUnique());
+        liquibase.setChangeLog(AUDIT_CHANGELOG_MIGRATION_PATH);
+        liquibase.setAnalyticsEnabled(false);
         return liquibase;
     }
+
 }

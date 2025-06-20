@@ -9,6 +9,8 @@
 *** https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.3-Release-Notes
 ** Spring Cloud Dependencies 2023.0.3=>2025.0.0
 ** loki-logback-appender 1.4.0=>2.0.0. Изменена xml схема конфигурации. Изменены дефолтные значения настроек. Добавлена настройка n2o.ms.loki.batch.size с дефолтным значением 1000. Данная настройка определяет количество сообщений в пакетах, отправляемых в Loki.
+** liquibase 4.24.0=>4.31.1.
+*** *Важно!* Начиная с версии liquibase 4.30, была добавлена настройка `analytic-enabled` https://docs.liquibase.com/parameters/analytics-enabled.html. Данная настройка представлена в Spring Boot 3.5 в виде `spring.liquibase.analytics-enabled`. Эта настройка по дефолту true для бесплатной версии liquibase, что приводит к отправке аналитических данных о миграциях на сервера liquibase. Настройка была по дефолту отключена в стартерах n2-platform-starter-ms и n2-platform-starter-db-audit. Приложения, не использующие данные стартеры, должны явно указывать в конфигурациях `spring.liquibase.analytics-enabled=false`.
 *** https://loki4j.github.io/loki-logback-appender/docs/migration
 * *Важно!* Изменено поведение Spring data jpa: методы репозиториев, наследующиеся от JpaRepository<T, ID>, с @Query аннотациями на базе JPQL запросов должны начинать извлечение данных в конструкциях from от сущности T из сигнатуры JpaRepository.
 Например, если объявлен репозиторий JpaRepository<Employee, Integer> с запросом
