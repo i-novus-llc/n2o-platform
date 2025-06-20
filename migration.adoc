@@ -1,5 +1,21 @@
 = Инструкции по миграции
 
+== 6.4.0
+* Переход на Java 21.
+* Ключевые обновления зависимостей:
+** Spring Boot 3.2=>3.5
+*** https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.5-Release-Notes
+*** https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.4-Release-Notes
+*** https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.3-Release-Notes
+** Spring Cloud Dependencies 2023.0.3=>2025.0.0
+** loki-logback-appender 1.4.0=>2.0.0. Изменена xml схема конфигурации. Изменены дефолтные значения настроек. Добавлена настройка n2o.ms.loki.batch.size с дефолтным значением 1000. Данная настройка определяет количество сообщений в пакетах, отправляемых в Loki.
+*** https://loki4j.github.io/loki-logback-appender/docs/migration
+* *Важно!* Изменено поведение Spring data jpa: методы репозиториев, наследующиеся от JpaRepository<T, ID>, с @Query аннотациями на базе JPQL запросов должны начинать извлечение данных в конструкциях from от сущности T из сигнатуры JpaRepository.
+Например, если объявлен репозиторий JpaRepository<Employee, Integer> с запросом
+`@Query("SELECT c FROM Contact c WHERE c.owner.id IN (?1)")`, где Contact - сущность, то исполнение метода завершится с ошибкой. Однако, если переписать в таком виде `@Query("select c from Employee e inner join e.contacts c where e.id in (?1)")`, метод будет выполняться успешно. Судя по всему Spring data определяет Contact в выше приведённом примере как DTO.
+* *Важно!* Переопределение версии org.apache.commons commons-lang3 на более старые приводит к отказу при запуске приложения. Spring Boot 3.5 не может динамически загрузить классы из старых версий commons-lang3 < 3.13.
+* Начиная с Java 21, были ужесточены правила динамического подключения java агентов. В частности, использование Mockito без дополнительной конфигурации приводит к предупреждениям во время выполнения тестов https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3. Проекты, использующие в качестве родителя n2o-boot-platform-parent, должны быть лишены проблем с Mockito.
+
 == 6.1.0
 * Возвращен модуль `n2o-platform-web`
 
