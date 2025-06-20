@@ -17,9 +17,11 @@ class JoinerTest {
     @Test
     void test() {
         EmployeeJoinerImpl joiner = new EmployeeJoinerImpl(
-            null,
-            null,
-            null
+                null,
+                null,
+                null,
+                null,
+                null
         );
         final Employee emp = new Employee();
         emp.setId(1);
