@@ -157,6 +157,10 @@ n2o.ms.loki.url=http://хост_и_порт_локи/loki/api/v1/push
 |n2o.ms.logging.json.provider.include_names, n2o.ms.logging.json.provider.exclude_names
 |net.logstash.logback.composite.LogstashVersionJsonProvider, net.logstash.logback.composite.loggingevent.LogLevelValueJsonProvider
 |Удаление ненужных провайдеров logstash.logback.JsonProvider, добавление кастомных
+
+|n2o.ms.loki.batch.size
+|1000
+|Количество сообщений в пакетах, отправляемых в Loki. Приложение перед отправкой в Loki накапливает логи в пакетах, пока не будет превышен лимит по памяти или по количеству сообщений.
 |===
 
 Для указания корректных настроек, рекомендуется ознакомиться с документацией:  link:https://github.com/logfellow/logstash-logback-encoder/blob/main/README.md[Logstash logback encoder]

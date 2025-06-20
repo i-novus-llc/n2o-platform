@@ -40,7 +40,7 @@ public class CustomLogstashLayout extends LogstashLayout {
             this.setJsonGeneratorDecorator(new PrettyPrintingJsonGeneratorDecorator());
 
         excludeProviders(properties.getJsonProviderExcludeNames());
-        includeProviders(properties.getJsonProviderIncludeNames());
+        includeProviders(properties);
     }
 
     private void excludeProviders(List<String> providerToExcludeNames) {
@@ -57,23 +57,31 @@ public class CustomLogstashLayout extends LogstashLayout {
         }
     }
 
-    private void includeProviders(List<String> jsonProviderIncludeNames) {
-        if (!CollectionUtils.isEmpty(jsonProviderIncludeNames)) {
+    private void includeProviders(LoggingProperties properties) {
+        if (!CollectionUtils.isEmpty(properties.getJsonProviderIncludeNames())) {
             JsonProviders<ILoggingEvent> providers = this.getProviders();
-            for (String jsonProviderIncludeName : jsonProviderIncludeNames) {
-                Object newProvider = null;
-                try {
-                    Class<?> providerClass = Class.forName(jsonProviderIncludeName);
-                    newProvider = providerClass.getDeclaredConstructor().newInstance();
-                } catch (Exception e) {
-                    LOG.warn("Not found class for provider name:" + jsonProviderIncludeName, e);
-                }
-                if (newProvider instanceof JsonProvider) {
-                    providers.addProvider((JsonProvider<ILoggingEvent>) newProvider);
+            for (String className : properties.getJsonProviderIncludeNames()) {
+                JsonProvider<ILoggingEvent> jsonProvider = getJsonProvider(className);
+                if (jsonProvider != null) {
+                    providers.addProvider(jsonProvider);
                 } else {
-                    LOG.warn(jsonProviderIncludeName + "is not implementation of logstash.logback.JsonProvider");
+                    LOG.warn(className + " is not implementation of " + JsonProvider.class.getName());
                 }
             }
         }
     }
+
+    private JsonProvider<ILoggingEvent> getJsonProvider(String className) {
+        Object newProvider = null;
+        try {
+            Class<?> providerClass = Class.forName(className);
+            newProvider = providerClass.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            LOG.warn("Not found class for provider name:" + className, e);
+        }
+        return newProvider instanceof JsonProvider ?
+                (JsonProvider<ILoggingEvent>) newProvider
+                : null;
+    }
+
 }
