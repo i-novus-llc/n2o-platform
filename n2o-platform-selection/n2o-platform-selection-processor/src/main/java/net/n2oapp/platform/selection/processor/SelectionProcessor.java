@@ -21,7 +21,7 @@ import static java.util.stream.Collectors.toList;
 import static net.n2oapp.platform.selection.processor.ProcessorUtil.toposort;
 
 @SupportedAnnotationTypes("net.n2oapp.platform.selection.api.Selective")
-@SupportedSourceVersion(SourceVersion.RELEASE_11)
+@SupportedSourceVersion(SourceVersion.RELEASE_21)
 public class SelectionProcessor extends AbstractProcessor {
 
     private static final String ADD_JACKSON_TYPING = "net.n2oapp.platform.selection.addJacksonTyping";
