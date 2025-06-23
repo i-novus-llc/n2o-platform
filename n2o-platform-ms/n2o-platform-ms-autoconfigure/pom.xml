@@ -12,7 +12,6 @@
 
     <properties>
         <jacoco.skip>false</jacoco.skip>
-        <awaitility.version>4.2.0</awaitility.version>
     </properties>
 
     <dependencies>
@@ -45,12 +44,6 @@
             <groupId>net.n2oapp.platform</groupId>
             <artifactId>n2o-platform-starter-test</artifactId>
             <type>pom</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.awaitility</groupId>
-            <artifactId>awaitility</artifactId>
-            <version>${awaitility.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

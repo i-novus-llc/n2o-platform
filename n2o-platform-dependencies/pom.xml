@@ -12,6 +12,7 @@
     </parent>
 
     <properties>
+        <awaitility.version>4.3.0</awaitility.version>
         <n2o.version>7.28.2</n2o.version>
         <jakarta-api.version>3.1.0</jakarta-api.version>
         <swagger.version>5.11.8</swagger.version>
@@ -400,6 +401,13 @@
                 <groupId>com.github.loki4j</groupId>
                 <artifactId>loki-logback-appender</artifactId>
                 <version>${loki-logback-appender.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.awaitility</groupId>
+                <artifactId>awaitility</artifactId>
+                <version>${awaitility.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
