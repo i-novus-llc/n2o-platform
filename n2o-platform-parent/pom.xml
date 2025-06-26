@@ -13,8 +13,7 @@
     </parent>
 
     <properties>
-<!--        required for mockito agent enable in maven-surefire-plugin-->
-        <argLine/>
+        <argLine/><!--required for mockito agent enable in maven-surefire-plugin https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3-->
 
         <java.version>21</java.version>
 
@@ -237,7 +236,7 @@
                 <artifactId>maven-deploy-plugin</artifactId>
             </plugin>
 
-<!--        required for mockito agent enable in maven-surefire-plugin-->
+<!--        required for mockito agent enable in maven-surefire-plugin https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
