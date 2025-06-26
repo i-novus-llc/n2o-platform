@@ -20,6 +20,7 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Автоматическая конфигурация интернационализации
@@ -47,20 +48,30 @@ public class I18nAutoConfiguration {
         @Bean
         MessageSource messageSource() throws IOException {
             ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-            List<String> baseNames = new ArrayList<>();
-            if (StringUtils.hasText(messageSourceProperties().getBasename())) {
-                baseNames.addAll((StringUtils.commaDelimitedListToSet(
-                        StringUtils.trimAllWhitespace(messageSourceProperties().getBasename()))));
+            MessageSourceProperties properties = messageSourceProperties();
+            messageSource.setBasenames(getBaseNames(properties));
+            if (properties.getEncoding() != null) {
+                messageSource.setDefaultEncoding(properties.getEncoding().name());
             }
-            baseNames.addAll(scanBaseNames(i18nProperties.getGlobal().getPackageName()));
-            messageSource.setBasenames(baseNames.toArray(new String[baseNames.size()]));
-            if (messageSourceProperties().getEncoding() != null) {
-                messageSource.setDefaultEncoding(messageSourceProperties().getEncoding().name());
-            }
-            messageSource.setFallbackToSystemLocale(messageSourceProperties().isFallbackToSystemLocale());
-            Optional.ofNullable(messageSourceProperties().getCacheDuration()).ifPresent(duration -> messageSource.setCacheSeconds((int)duration.toSeconds()));
-            messageSource.setAlwaysUseMessageFormat(messageSourceProperties().isAlwaysUseMessageFormat());
+            messageSource.setFallbackToSystemLocale(properties.isFallbackToSystemLocale());
+            Optional.ofNullable(properties.getCacheDuration())
+                    .ifPresent(duration -> messageSource.setCacheSeconds((int) duration.toSeconds()));
+            messageSource.setAlwaysUseMessageFormat(properties.isAlwaysUseMessageFormat());
             return messageSource;
+        }
+
+        private String[] getBaseNames(MessageSourceProperties properties) throws IOException {
+            List<String> baseNames = Optional.ofNullable(properties.getBasename())
+                    .stream()
+                    .flatMap(Collection::stream)
+                    .filter(StringUtils::hasText)
+                    .map(StringUtils::trimAllWhitespace)
+                    .map(StringUtils::commaDelimitedListToSet)
+                    .flatMap(Collection::stream)
+                    .distinct()
+                    .collect(Collectors.toCollection(ArrayList::new));
+            baseNames.addAll(scanBaseNames(i18nProperties.getGlobal().getPackageName()));
+            return baseNames.toArray(String[]::new);
         }
 
         private Set<String> scanBaseNames(String packageName) throws IOException {

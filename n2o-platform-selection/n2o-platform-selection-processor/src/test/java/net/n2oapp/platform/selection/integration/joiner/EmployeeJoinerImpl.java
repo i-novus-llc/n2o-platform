@@ -6,8 +6,10 @@ import net.n2oapp.platform.selection.integration.fetcher.OrganisationFetcherImpl
 import net.n2oapp.platform.selection.integration.fetcher.PassportFetcherImpl;
 import net.n2oapp.platform.selection.integration.fetcher.ProjectFetcherImpl;
 import net.n2oapp.platform.selection.integration.model.*;
+import net.n2oapp.platform.selection.integration.repository.ContactRepository;
 import net.n2oapp.platform.selection.integration.repository.EmployeeRepository;
 import net.n2oapp.platform.selection.integration.repository.OrganisationRepository;
+import net.n2oapp.platform.selection.integration.repository.PassportRepository;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -23,15 +25,21 @@ public class EmployeeJoinerImpl implements EmployeeJoiner<Employee, Integer> {
 
     private final EmployeeRepository employeeRepository;
     private final OrganisationRepository organisationRepository;
+    private final ContactRepository contactRepository;
+    private final PassportRepository passportRepository;
     private final OrganisationJoiner<Organisation, Integer> organisationJoiner;
 
     public EmployeeJoinerImpl(
-        EmployeeRepository employeeRepository,
-        OrganisationRepository organisationRepository,
-        OrganisationJoiner<Organisation, Integer> organisationJoiner
+            EmployeeRepository employeeRepository,
+            OrganisationRepository organisationRepository,
+            ContactRepository contactRepository,
+            PassportRepository passportRepository,
+            OrganisationJoiner<Organisation, Integer> organisationJoiner
     ) {
         this.employeeRepository = employeeRepository;
         this.organisationRepository = organisationRepository;
+        this.contactRepository = contactRepository;
+        this.passportRepository = passportRepository;
         this.organisationJoiner = organisationJoiner;
     }
 
@@ -59,9 +67,9 @@ public class EmployeeJoinerImpl implements EmployeeJoiner<Employee, Integer> {
     @Override
     public Map<Integer, List<ContactFetcher<?>>> joinContacts(List<Employee> employees, List<Integer> ids) {
         return JoinUtil.joinOneToMany(
-            () -> employeeRepository.joinContacts(ids),
-            ContactFetcherImpl::new,
-            contact -> contact.getOwner().getId()
+                () -> contactRepository.joinContacts(ids),
+                ContactFetcherImpl::new,
+                contact -> contact.getOwner().getId()
         );
     }
 
@@ -79,12 +87,12 @@ public class EmployeeJoinerImpl implements EmployeeJoiner<Employee, Integer> {
     @Override
     public Map<Integer, PassportFetcher<?>> joinPassport(List<Employee> employees, List<Integer> ids) {
         return JoinUtil.joinToOne(
-            employees,
-            () -> employeeRepository.joinPassport(ids),
-            PassportFetcherImpl::new,
-            Employee::getId,
-            employee -> mapNullable(employee.getPassport(), BaseModel::getId),
-            Passport::getId
+                employees,
+                () -> passportRepository.joinPassport(ids),
+                PassportFetcherImpl::new,
+                Employee::getId,
+                employee -> mapNullable(employee.getPassport(), BaseModel::getId),
+                Passport::getId
         );
     }
 

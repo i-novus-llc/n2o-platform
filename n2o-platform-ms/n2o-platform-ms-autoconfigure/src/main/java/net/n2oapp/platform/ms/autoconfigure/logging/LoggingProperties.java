@@ -1,5 +1,6 @@
 package net.n2oapp.platform.ms.autoconfigure.logging;
 
+import org.springframework.boot.system.ApplicationPid;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 import java.net.InetAddress;
@@ -8,6 +9,10 @@ import java.util.Collections;
 import java.util.List;
 
 public class LoggingProperties {
+
+    public final static String LABEL_PATTERN = "app=%s%nhost=%s";
+    private static final String APP_PLACEHOLDER = "${appName}";
+    private static final String PID_PLACEHOLDER = "${PID}";
 
     private static final String DEFAULT_HOST_NAME = "Unknown host";
 
@@ -50,6 +55,8 @@ public class LoggingProperties {
 
     public static final String LOKI_URL_PROPERTY = "n2o.ms.loki.url";
     public static final String LOKI_URL_DEFAULT_VALUE = "http://loki:3100/loki/api/v1/push";
+    public static final String LOKI_BATCH_SIZE_PROPERTY = "n2o.ms.loki.batch.size";
+    public static final int LOKI_BATCH_SIZE = 1000;
 
     public static final String LOKI_APPENDER_NAME = "LOKI_APPENDER";
 
@@ -78,6 +85,7 @@ public class LoggingProperties {
 
     private final Boolean lokiEnabled;
     private final String lokiUrl;
+    private final Integer lokiBatchSize;
 
     public LoggingProperties(ConfigurableEnvironment env) {
         this.hostname = getOrDefaultHostName();
@@ -102,6 +110,7 @@ public class LoggingProperties {
 
         this.lokiEnabled = env.getProperty(LOKI_ENABLED_PROPERTY, Boolean.class, Boolean.FALSE);
         this.lokiUrl = env.getProperty(LOKI_URL_PROPERTY, LOKI_URL_DEFAULT_VALUE);
+        this.lokiBatchSize = env.getProperty(LOKI_BATCH_SIZE_PROPERTY, Integer.class, LOKI_BATCH_SIZE);
     }
 
     public String getHostname() {
@@ -184,6 +193,10 @@ public class LoggingProperties {
         return lokiUrl;
     }
 
+    public Integer getLokiBatchSize() {
+        return lokiBatchSize;
+    }
+
     private String getOrDefaultHostName() {
         try {
             return InetAddress.getLocalHost().getHostName();
@@ -191,4 +204,11 @@ public class LoggingProperties {
             return DEFAULT_HOST_NAME;
         }
     }
+
+    public String getResolvedMessagePattern() {
+        return getMessagePattern()
+                .replace(APP_PLACEHOLDER, getAppName())
+                .replace(PID_PLACEHOLDER, new ApplicationPid().toString());
+    }
+
 }

@@ -16,4 +16,9 @@ public class MemoryAppender extends ListAppender<ILoggingEvent> {
                 .filter(event -> event.toString().contains(string))
                 .findFirst().orElse(null);
     }
+
+    public void clear() {
+        this.list.clear();
+    }
+
 }
