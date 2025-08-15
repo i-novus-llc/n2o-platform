@@ -5,6 +5,7 @@
 
     <artifactId>n2o-platform-jaxrs-commons</artifactId>
     <packaging>jar</packaging>
+    <name>n2o-platform-jaxrs-commons</name>
 
     <parent>
         <groupId>net.n2oapp.platform</groupId>

@@ -4,6 +4,7 @@
 
     <artifactId>n2o-platform-starter-web</artifactId>
     <packaging>pom</packaging>
+    <name>n2o-platform-starter-web</name>
 
     <parent>
         <groupId>net.n2oapp.platform</groupId>

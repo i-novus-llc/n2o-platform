@@ -5,6 +5,7 @@
 
     <artifactId>n2o-platform-web-autoconfigure</artifactId>
     <packaging>jar</packaging>
+    <name>n2o-platform-web-autoconfigure</name>
 
     <parent>
         <groupId>net.n2oapp.platform</groupId>

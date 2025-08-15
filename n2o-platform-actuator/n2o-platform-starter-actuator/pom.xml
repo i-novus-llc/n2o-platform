@@ -10,6 +10,7 @@
 
     <artifactId>n2o-platform-starter-actuator</artifactId>
     <packaging>pom</packaging>
+    <name>n2o-platform-starter-actuator</name>
 
     <dependencies>
         <dependency>

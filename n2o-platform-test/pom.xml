@@ -16,5 +16,6 @@
 
     <artifactId>n2o-platform-test</artifactId>
     <packaging>pom</packaging>
+    <name>n2o-platform-test</name>
 
 </project>
