@@ -4,6 +4,7 @@
 
     <artifactId>n2o-platform-starter-feign-client</artifactId>
     <packaging>pom</packaging>
+    <name>n2o-platform-starter-feign-client</name>
 
     <parent>
         <groupId>net.n2oapp.platform</groupId>

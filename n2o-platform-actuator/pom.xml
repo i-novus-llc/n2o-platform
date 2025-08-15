@@ -10,6 +10,7 @@
 
     <artifactId>n2o-platform-actuator</artifactId>
     <packaging>pom</packaging>
+    <name>n2o-platform-actuator</name>
 
     <modules>
         <module>n2o-platform-actuator-autoconfigure</module>
