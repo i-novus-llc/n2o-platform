@@ -11,6 +11,7 @@
 
     <artifactId>n2o-platform-i18n-autoconfigure</artifactId>
     <packaging>jar</packaging>
+    <name>n2o-platform-i18n-autoconfigure</name>
 
     <properties>
         <jacoco.skip>false</jacoco.skip>

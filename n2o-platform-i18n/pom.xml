@@ -4,6 +4,7 @@
 
     <artifactId>n2o-platform-i18n</artifactId>
     <packaging>pom</packaging>
+    <name>n2o-platform-i18n</name>
 
     <parent>
         <groupId>net.n2oapp.platform</groupId>

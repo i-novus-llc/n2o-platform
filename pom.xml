@@ -5,6 +5,7 @@
     <groupId>net.n2oapp.platform</groupId>
     <artifactId>n2o-boot-platform</artifactId>
     <packaging>pom</packaging>
+    <name>n2o-boot-platform</name>
     <version>7.1.0-SNAPSHOT</version>
 
     <parent>

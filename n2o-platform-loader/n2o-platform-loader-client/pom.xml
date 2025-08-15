@@ -5,6 +5,7 @@
 
     <artifactId>n2o-platform-loader-client</artifactId>
     <packaging>jar</packaging>
+    <name>n2o-platform-loader-client</name>
 
     <parent>
         <groupId>net.n2oapp.platform</groupId>

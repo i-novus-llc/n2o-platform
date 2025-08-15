@@ -10,6 +10,7 @@
 
     <artifactId>n2o-platform-selection</artifactId>
     <packaging>pom</packaging>
+    <name>n2o-platform-selection</name>
     <modules>
         <module>n2o-platform-selection-api</module>
         <module>n2o-platform-selection-processor</module>
