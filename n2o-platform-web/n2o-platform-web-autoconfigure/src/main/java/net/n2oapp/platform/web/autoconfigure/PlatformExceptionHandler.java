@@ -169,6 +169,6 @@ public class PlatformExceptionHandler extends N2oOperationExceptionHandler imple
                 message.append(counter++).append(") ").append(error.getMessage()).append("\n");
         }
         return validationMessages.isEmpty() ? new N2oUserException(message.toString()) :
-                new N2oUserException(message.toString(), null, validationMessages);
+                new N2oUserException(message.toString(), validationMessages);
     }
 }
