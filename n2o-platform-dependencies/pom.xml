@@ -13,7 +13,7 @@
     </parent>
 
     <properties>
-        <n2o.version>7.28.2</n2o.version>
+        <n2o.version>7.29.1</n2o.version>
         <jakarta-api.version>3.1.0</jakarta-api.version>
         <swagger.version>5.11.8</swagger.version>
         <swagger-annotations.version>1.6.13</swagger-annotations.version>
