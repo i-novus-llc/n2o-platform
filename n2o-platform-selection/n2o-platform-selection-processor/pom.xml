@@ -3,7 +3,7 @@
     <parent>
         <artifactId>n2o-platform-selection</artifactId>
         <groupId>net.n2oapp.platform</groupId>
-        <version>7.1.0</version>
+        <version>7.2.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -18,7 +18,7 @@
         <dependency>
             <groupId>net.n2oapp.platform</groupId>
             <artifactId>n2o-platform-selection-api</artifactId>
-            <version>7.1.0</version>
+            <version>7.2.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
