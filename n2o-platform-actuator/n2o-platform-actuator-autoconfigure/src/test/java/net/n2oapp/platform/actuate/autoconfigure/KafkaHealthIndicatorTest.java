@@ -14,7 +14,6 @@ import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.util.TestSocketUtils;
 
 import java.util.HashMap;
@@ -49,7 +48,6 @@ class KafkaHealthIndicatorTest {
         KafkaTemplate<String, Object> kafkaTemplate = initKafkaTemplate(kafkaEmbedded.getBrokersAsString());
 
         KafkaHealthIndicator healthIndicator = new KafkaHealthIndicator(kafkaTemplate);
-        setParameters(healthIndicator);
 
         Health health = healthIndicator.health();
 
@@ -60,8 +58,7 @@ class KafkaHealthIndicatorTest {
     void kafkaIsUpWithAdmin() {
         KafkaTemplate<String, Object> kafkaTemplate = initKafkaTemplateWithAdmin(kafkaEmbedded.getBrokersAsString());
 
-        KafkaHealthIndicator healthIndicator = new KafkaHealthIndicator(kafkaTemplate);
-        setParameters(healthIndicator);
+        KafkaHealthIndicator healthIndicator = new KafkaHealthIndicator(kafkaTemplate, 1000L);
         Health health = healthIndicator.health();
 
         assert health.getStatus() == Status.UP;
@@ -91,8 +88,7 @@ class KafkaHealthIndicatorTest {
     void kafkaIsDownWithAdmin() {
         KafkaTemplate kafkaTemplate = initKafkaTemplateWithAdmin("127.0.0.1:" + TestSocketUtils.findAvailableTcpPort());
 
-        KafkaHealthIndicator healthIndicator = new KafkaHealthIndicator(kafkaTemplate);
-        setParameters(healthIndicator);
+        KafkaHealthIndicator healthIndicator = new KafkaHealthIndicator(kafkaTemplate, 1000L);
         Health health = healthIndicator.health();
 
         assert health.getStatus() == Status.DOWN;
@@ -158,10 +154,6 @@ class KafkaHealthIndicatorTest {
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, timeout); /// timeout reduced for testing speed up
         return config;
-    }
-
-    private void setParameters(KafkaHealthIndicator healthIndicator) {
-        ReflectionTestUtils.setField(healthIndicator, "maxTimeToWaitMs", 1000L);
     }
 
 }
