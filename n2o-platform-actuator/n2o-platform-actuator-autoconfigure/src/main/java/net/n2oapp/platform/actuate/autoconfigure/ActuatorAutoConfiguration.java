@@ -1,6 +1,7 @@
 package net.n2oapp.platform.actuate.autoconfigure;
 
 import net.n2oapp.platform.actuate.health.KafkaHealthIndicator;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.health.CompositeHealthContributorConfiguration;
 import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
@@ -50,8 +51,9 @@ public class ActuatorAutoConfiguration {
 
         private final Map<String, KafkaTemplate> kafkaTemplates;
 
-        public KafkaHealthIndicatorConfiguration(Map<String, KafkaTemplate> kafkaTemplates) {
-            super(KafkaHealthIndicator::new);
+        public KafkaHealthIndicatorConfiguration(Map<String, KafkaTemplate> kafkaTemplates,
+                                                 @Value("${management.health.kafka.max-time-to-wait-ms:5000}") long maxTimeToWaitMs) {
+            super(kafkaTemplate -> new KafkaHealthIndicator(kafkaTemplate, maxTimeToWaitMs));
             this.kafkaTemplates = kafkaTemplates;
         }
 
