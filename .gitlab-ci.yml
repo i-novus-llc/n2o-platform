@@ -1,0 +1,17 @@
+include:
+  - project: ${PIPELINE_REPOSITORY_PREFIX}devenv/gitlab/pipelines
+    ref: 4.0.3
+    file:
+      - merge-request.gitlab-ci.yml
+
+build and verify:
+  variables:
+    JDK_VERSION: 'jdk21'
+
+deploy mr stand:
+  rules:
+    - when: never
+
+cleanup:
+  rules:
+    - when: never
