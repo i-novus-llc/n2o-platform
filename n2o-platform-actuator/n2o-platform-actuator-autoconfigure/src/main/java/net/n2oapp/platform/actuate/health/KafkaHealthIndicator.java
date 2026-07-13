@@ -1,7 +1,6 @@
 package net.n2oapp.platform.actuate.health;
 
 import org.apache.kafka.clients.admin.AdminClient;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.kafka.core.KafkaAdmin;
@@ -15,17 +14,22 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class KafkaHealthIndicator extends AbstractHealthIndicator {
 
-    @Value("${management.health.kafka.max-time-to-wait-ms:5000}")
-    private Long maxTimeToWaitMs;
+    private static final long DEFAULT_MAX_TIME_TO_WAIT_MS = 5000L;
 
     private static final String HEALTHCHECK_TOPIC = "test";
 
     private final KafkaTemplate kafkaTemplate;
     private final AdminClient adminClient;
+    private final long maxTimeToWaitMs;
 
     public KafkaHealthIndicator(KafkaTemplate kafkaTemplate) {
+        this(kafkaTemplate, DEFAULT_MAX_TIME_TO_WAIT_MS);
+    }
+
+    public KafkaHealthIndicator(KafkaTemplate kafkaTemplate, long maxTimeToWaitMs) {
         Assert.notNull(kafkaTemplate, "kafkaTemplate must not be null");
         this.kafkaTemplate = kafkaTemplate;
+        this.maxTimeToWaitMs = maxTimeToWaitMs;
         KafkaAdmin kafkaAdmin = kafkaTemplate.getKafkaAdmin();
         if (kafkaAdmin != null) {
             this.adminClient = AdminClient.create(kafkaAdmin.getConfigurationProperties());
