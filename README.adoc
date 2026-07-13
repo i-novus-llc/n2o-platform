@@ -1,4 +1,4 @@
-Платформа для создания микросервисов и веб-приложений на основе Spring Boot, Spring Cloud, Spring Security, и опционально Spring Data, CXF, OpenFeign, N2O UI Framework, Quartz, Postgresql, Testcontainers.
+Платформа для создания микросервисов и веб-приложений на основе Spring Boot, Spring Cloud, Spring Security, и опционально Spring Data, CXF, OpenFeign, Quartz, Postgresql, Testcontainers.
 
 image:https://img.shields.io/hexpm/l/plug.svg?style=flat[link="http://www.apache.org/licenses/LICENSE-2.0",title="License: Apache License 2"]
 
@@ -16,7 +16,6 @@ image:https://img.shields.io/hexpm/l/plug.svg?style=flat[link="http://www.apache
 * link:/n2o-platform-seek-paging/README.adoc[seek-paging] - библиотека предоставляет возможность seek-пагинации
 * link:/n2o-platform-selection/README.adoc[selection] - фреймворк, реализующий выборочное получение только необходимых данных из БД
 * link:/n2o-platform-test/README.adoc[test] - стартер для создания тестов
-* link:/n2o-platform-web/README.adoc[web] - стандартный способ подключения N2O UI Framework
 
 == Требования
 Данная версия платформы протестирована с использованием OpenJDK 17-21
