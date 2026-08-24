@@ -12,6 +12,14 @@ build and verify:
     - echo "No services in project, docker/helm build skipped"
     - touch chart.env
 
+deploy mr stand:
+  rules:
+    - when: never
+
+cleanup:
+  rules:
+    - when: never
+
 scheduled build:
   # В проекте нет docker-образов поэтому из after_script
   # шаблона убрано вычисление FULL_IMAGE_NAMES по docker-compose конфигу
@@ -22,10 +30,10 @@ scheduled build:
       - target/bom.json
     expire_in: 2 days
 
-deploy mr stand:
-  rules:
-    - when: never
+zap dast:
+  variables:
+    DAST_URI: ''
 
-cleanup:
-  rules:
-    - when: never
+defectdojo:
+  variables:
+    DEFECTDOJO_SONARQUBE_PROJECT_KEY: 'net.n2oapp.platform:n2o-boot-platform'
