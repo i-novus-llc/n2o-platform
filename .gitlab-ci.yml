@@ -31,9 +31,18 @@ scheduled build:
     expire_in: 2 days
 
 zap dast:
-  variables:
-    DAST_URI: ''
+  rules:
+    - when: never
 
 defectdojo:
   variables:
     DEFECTDOJO_SONARQUBE_PROJECT_KEY: 'net.n2oapp.platform:n2o-boot-platform'
+  # zap dast отключён, а trivy check containers в проекте без образов тоже может не попасть в пайплайн
+  needs:
+    - gitleaks scan
+    - sca check
+    - semgrep sast
+    - job: trivy check containers
+      optional: true
+    - job: zap dast
+      optional: true
