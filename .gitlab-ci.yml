@@ -3,6 +3,7 @@ include:
     ref: 4.0.3
     file:
       - merge-request.gitlab-ci.yml
+      - scheduled-checks.gitlab-ci.yml
 
 build and verify:
   variables:
