@@ -19,3 +19,30 @@ deploy mr stand:
 cleanup:
   rules:
     - when: never
+
+scheduled build:
+  # В проекте нет docker-образов поэтому из after_script
+  # шаблона убрано вычисление FULL_IMAGE_NAMES по docker-compose конфигу
+  after_script:
+    - mvn $MAVEN_RUN_OPTIONS org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DprojectType=application -DskipNotDeployed=false -DoutputFormat=json -Dverbose=true $MAVEN_PIPELINE_OPTIONS $MAVEN_EXTRA_BUILD_OPTIONS
+  artifacts:
+    paths:
+      - target/bom.json
+    expire_in: 2 days
+
+zap dast:
+  rules:
+    - when: never
+
+defectdojo:
+  variables:
+    DEFECTDOJO_SONARQUBE_PROJECT_KEY: 'net.n2oapp.platform:n2o-boot-platform'
+  # zap dast отключён, а trivy check containers в проекте без образов тоже может не попасть в пайплайн
+  needs:
+    - gitleaks scan
+    - sca check
+    - semgrep sast
+    - job: trivy check containers
+      optional: true
+    - job: zap dast
+      optional: true
