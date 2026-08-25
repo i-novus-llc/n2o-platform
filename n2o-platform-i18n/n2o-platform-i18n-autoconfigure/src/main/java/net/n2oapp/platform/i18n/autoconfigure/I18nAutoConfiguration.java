@@ -80,11 +80,15 @@ public class I18nAutoConfiguration {
             PathMatchingResourcePatternResolver r = new PathMatchingResourcePatternResolver();
             Resource[] resources = r.getResources("classpath*:" + pack + "*.properties");
             for (Resource resource : resources) {
-                int endIdx = resource.getFilename().indexOf('_');
-                if (endIdx < 0) {
-                    endIdx = resource.getFilename().indexOf(".properties");
+                String filename = resource.getFilename();
+                if (filename == null) {
+                    continue;
                 }
-                baseNames.add(pack + resource.getFilename().substring(0, endIdx));
+                int endIdx = filename.indexOf('_');
+                if (endIdx < 0) {
+                    endIdx = filename.indexOf(".properties");
+                }
+                baseNames.add(pack + filename.substring(0, endIdx));
             }
             return baseNames;
         }
