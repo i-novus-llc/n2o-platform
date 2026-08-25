@@ -74,6 +74,9 @@
     </modules>
 
     <properties>
+        <!-- Перекрывает версию из spring-boot-dependencies (1.21.2): там Docker API
+             жёстко зафиксирован на 1.32, а демон в CI требует минимум 1.40 -->
+        <testcontainers.version>1.21.4</testcontainers.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
         <central-publishing-maven-plugin.version>0.7.0</central-publishing-maven-plugin.version>

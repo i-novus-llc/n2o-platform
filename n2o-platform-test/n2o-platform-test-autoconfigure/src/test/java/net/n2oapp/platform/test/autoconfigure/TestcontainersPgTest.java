@@ -9,7 +9,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 
-@SpringBootTest(classes = Application.class)
+// DEBUG по org.testcontainers показывает, с какой версией Docker API прошёл ping
+// и был ли откат на 1.32 — без этого в логе видна только ошибка отката
+@SpringBootTest(classes = Application.class, properties = "logging.level.org.testcontainers=DEBUG")
 @EnableTestcontainersPg
 class TestcontainersPgTest {
 
