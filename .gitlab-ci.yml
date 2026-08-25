@@ -11,22 +11,6 @@ build and verify:
   script:
     - echo "No services in project, docker/helm build skipped"
     - touch chart.env
-  # печатает версии Docker API демона, с которым работает testcontainers.
-  # after_script выполняется и при падении сборки, в отличие от script.
-  after_script:
-    - |
-      echo "=== Docker API diagnostics (NNOP-273) ==="
-      echo "DOCKER_HOST=${DOCKER_HOST:-<unset>}"
-      if command -v docker >/dev/null 2>&1; then
-        docker version --format 'server={{.Server.Version}} api={{.Server.ApiVersion}} min-api={{.Server.MinAPIVersion}}' \
-          || docker version || true
-      elif command -v curl >/dev/null 2>&1; then
-        curl -s --unix-socket /var/run/docker.sock http://localhost/version || true
-      else
-        echo "ни docker, ни curl в образе недоступны"
-      fi
-      echo "--- ~/.testcontainers.properties ---"
-      cat ~/.testcontainers.properties 2>/dev/null || echo "файла нет"
 
 deploy mr stand:
   rules:
