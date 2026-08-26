@@ -6,8 +6,6 @@ include:
       - scheduled-checks.gitlab-ci.yml
 
 build and verify:
-  variables:
-    JDK_VERSION: 'jdk21'
   script:
     - echo "No services in project, docker/helm build skipped"
     - touch chart.env
