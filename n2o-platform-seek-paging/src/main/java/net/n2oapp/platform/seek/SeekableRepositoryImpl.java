@@ -83,71 +83,82 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     }
 
     private SeekedPage<T> fetch(Seekable seekable, Predicate predicate) {
-        List<T> result;
         checkSeekable(seekable);
         List<Order> orders = copyOrders(seekable);
-        boolean hasNext;
-        boolean hasPrev;
-        if (seekable.getPage() == FIRST || seekable.getPage() == LAST) {
-            result = fetchSimple(orders, predicate, seekable.getSize() + 1);
-            hasNext = seekable.getPage() == FIRST && result.size() > seekable.getSize();
-            hasPrev = seekable.getPage() == LAST && result.size() > seekable.getSize();
-            if (seekable.getPage() == LAST) {
-                Collections.reverse(result);
-                if (hasPrev) {
-                    result.remove(0);
-                }
-            } else {
-                if (hasNext)
-                    result.remove(result.size() - 1);
-            }
+        RequestedPageEnum page = seekable.getPage();
+        if (page == FIRST || page == LAST) {
+            return fetchFirstOrLast(seekable, predicate, orders, page);
+        } else if (page == NEXT || page == PREV) {
+            return fetchNextOrPrev(seekable, predicate, orders, page);
         } else {
-            List<EnrichedSeekPivot> pivots = makeList(orders, copyPivots(seekable));
-            ensureNoDuplicates(pivots);
-            result = fetchWithSeekPredicate(pivots, orders, seekable.getSize() + 1, predicate);
-            RequestedPageEnum page = seekable.getPage();
-            if (page == NEXT) {
-                hasNext = result.size() > seekable.getSize();
-                if (hasNext)
-                    result.remove(result.size() - 1);
-                hasPrev = !new JPAQuery<>(entityManager).select(Expressions.ONE).from(path).where(inverseSeekPredicate(pivots, false), predicate).limit(1).fetch().isEmpty();
-            } else if (page == PREV) {
-                hasPrev = result.size() > seekable.getSize();
-                Collections.reverse(result);
-                if (hasPrev)
-                    result.remove(0);
-                hasNext = !new JPAQuery<>(entityManager).select(Expressions.ONE).from(path).where(inverseSeekPredicate(pivots, true), predicate).limit(1).fetch().isEmpty();
-            } else {
-                throw new IllegalStateException("Unexpected page enum: " + seekable.getPage());
+            throw new IllegalStateException("Unexpected page enum: " + page);
+        }
+    }
+
+    private SeekedPage<T> fetchFirstOrLast(Seekable seekable, Predicate predicate, List<Order> orders, RequestedPageEnum page) {
+        List<T> result = fetchSimple(orders, predicate, seekable.getSize() + 1);
+        boolean hasNext = page == FIRST && result.size() > seekable.getSize();
+        boolean hasPrev = page == LAST && result.size() > seekable.getSize();
+        if (page == LAST) {
+            Collections.reverse(result);
+            if (hasPrev) {
+                result.removeFirst();
             }
+        } else if (hasNext) {
+            result.removeLast();
         }
         return SeekedPageImpl.of(result, hasNext, hasPrev);
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    private SeekedPage<T> fetchNextOrPrev(Seekable seekable, Predicate predicate, List<Order> orders, RequestedPageEnum page) {
+        List<EnrichedSeekPivot> pivots = makeList(orders, copyPivots(seekable));
+        ensureNoDuplicates(pivots);
+        List<T> result = fetchWithSeekPredicate(pivots, orders, seekable.getSize() + 1, predicate);
+        boolean hasNext;
+        boolean hasPrev;
+        if (page == NEXT) {
+            hasNext = result.size() > seekable.getSize();
+            if (hasNext)
+                result.removeLast();
+            hasPrev = existsOppositeRow(pivots, predicate, false);
+        } else {
+            hasPrev = result.size() > seekable.getSize();
+            Collections.reverse(result);
+            if (hasPrev)
+                result.removeFirst();
+            hasNext = existsOppositeRow(pivots, predicate, true);
+        }
+        return SeekedPageImpl.of(result, hasNext, hasPrev);
+    }
+
+    private boolean existsOppositeRow(List<EnrichedSeekPivot> pivots, Predicate predicate, boolean reverse) {
+        return !new JPAQuery<>(entityManager).select(Expressions.ONE).from(path).where(inverseSeekPredicate(pivots, reverse), predicate).limit(1).fetch().isEmpty();
+    }
+
     private Predicate inverseSeekPredicate(List<EnrichedSeekPivot> pivots, boolean reverse) {
         BooleanBuilder res = new BooleanBuilder();
         for (EnrichedSeekPivot pivot : pivots) {
-            Order order = pivot.order;
-            ComparableExpression<?> exp = pivot.asComparable;
-            ComparableExpressionBase castedPivot = pivot.castedValue;
-            if (castedPivot != null) {
-                BooleanExpression base;
-                if (order.isAscending()) {
-                    base = exp.loe(castedPivot);
-                } else {
-                    base = exp.goe(castedPivot);
-                }
-                if (nullabilityProvider.nullable(pivot.property) && pivot.order.getNullHandling() == Sort.NullHandling.NULLS_LAST) {
-                    if (reverse)
-                        base = base.or(pivot.property.isNotNull());
-                    else
-                        base = base.or(pivot.property.isNull());
-                }
+            BooleanExpression base = inverseBoundaryExpression(pivot, reverse);
+            if (base != null) {
                 res.and(base);
             }
         }
         return res;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private BooleanExpression inverseBoundaryExpression(EnrichedSeekPivot pivot, boolean reverse) {
+        ComparableExpressionBase castedPivot = pivot.castedValue;
+        if (castedPivot == null) {
+            return null;
+        }
+        Order order = pivot.order;
+        ComparableExpression<?> exp = pivot.asComparable;
+        BooleanExpression base = order.isAscending() ? exp.loe(castedPivot) : exp.goe(castedPivot);
+        if (nullabilityProvider.nullable(pivot.property) && order.getNullHandling() == Sort.NullHandling.NULLS_LAST) {
+            base = reverse ? base.or(pivot.property.isNotNull()) : base.or(pivot.property.isNull());
+        }
+        return base;
     }
 
     private List<T> fetchSimple(List<Order> orders, Predicate predicate, int size) {
@@ -247,33 +258,41 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         return new Order(order.isAscending() ? DESC : ASC, property, getExplicitNullHandling(order, true));
     }
 
-    @SuppressWarnings("unchecked")
     private Predicate seek(List<EnrichedSeekPivot> list) {
         BooleanBuilder res = new BooleanBuilder();
         for (int i = 0; i < list.size(); i++) {
             EnrichedSeekPivot next = list.get(i);
             if (next.castedValue == null && next.order.getNullHandling() == Sort.NullHandling.NULLS_LAST)
                 continue;
-            BooleanBuilder accum = new BooleanBuilder();
-            for (int j = 0; j < i; j++) {
-                EnrichedSeekPivot piv = list.get(j);
-                if (piv.castedValue == null)
-                    accum.and(piv.property.isNull());
-                else {
-                    accum.and(piv.property.eq(piv.castedValue));
-                }
-            }
-            if (next.castedValue == null) {
-                accum.and(next.property.isNotNull());
-            } else {
-                BooleanExpression base = compare(next);
-                if (nullabilityProvider.nullable(next.property) && next.order.getNullHandling() == Sort.NullHandling.NULLS_LAST)
-                    base = base.or(next.property.isNull());
-                accum.and(base);
-            }
+            BooleanBuilder accum = equalsPrefix(list, i);
+            accum.and(boundaryCondition(next));
             res.or(accum);
         }
         return res;
+    }
+
+    @SuppressWarnings("unchecked")
+    private BooleanBuilder equalsPrefix(List<EnrichedSeekPivot> list, int upTo) {
+        BooleanBuilder accum = new BooleanBuilder();
+        for (int j = 0; j < upTo; j++) {
+            EnrichedSeekPivot piv = list.get(j);
+            if (piv.castedValue == null)
+                accum.and(piv.property.isNull());
+            else {
+                accum.and(piv.property.eq(piv.castedValue));
+            }
+        }
+        return accum;
+    }
+
+    private BooleanExpression boundaryCondition(EnrichedSeekPivot next) {
+        if (next.castedValue == null) {
+            return next.property.isNotNull();
+        }
+        BooleanExpression base = compare(next);
+        if (nullabilityProvider.nullable(next.property) && next.order.getNullHandling() == Sort.NullHandling.NULLS_LAST)
+            base = base.or(next.property.isNull());
+        return base;
     }
 
     @SuppressWarnings("unchecked")
@@ -328,37 +347,47 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         Path<?> curr = path;
         String[] pathParts = property.split("\\.");
         for (int i = 0; i < pathParts.length; i++) {
-            String name = pathParts[i];
-            outer: do {
-                Class<?> c = curr.getClass();
-                Field superField = null;
-                try {
-                    for (Field field : c.getDeclaredFields()) {
-                        if (field.getName().equals(name)) {
-                            field.setAccessible(true);
-                            Object o = field.get(curr);
-                            Preconditions.checkArgument(o != null, "Path (or part of the path) %s is null. Entity: %s", property, curr.getMetadata().getName());
-                            if (i == pathParts.length - 1) {
-                                Preconditions.checkArgument(ComparableExpressionBase.class.isAssignableFrom(o.getClass()), "Property %s is not comparable. Entity: %s", property, curr.getMetadata().getName());
-                                return (ComparableExpressionBase<?>) o;
-                            } else {
-                                curr = (Path<?>) o;
-                                break outer;
-                            }
-                        }
-                        if (field.getName().equals("_super"))
-                            superField = field;
-                    }
-                    if (superField == null)
-                        break;
-                    superField.setAccessible(true);
-                    curr = (Path<?>) superField.get(curr);
-                } catch (IllegalAccessException e) {
-                    throw new IllegalStateException(e);
-                }
-            } while (true);
+            FieldLookup lookup = findDeclaredField(curr, pathParts[i], property);
+            curr = lookup.owner();
+            if (lookup.value() == null) {
+                continue;
+            }
+            if (i == pathParts.length - 1) {
+                Preconditions.checkArgument(ComparableExpressionBase.class.isAssignableFrom(lookup.value().getClass()), "Property %s is not comparable. Entity: %s", property, curr.getMetadata().getName());
+                return (ComparableExpressionBase<?>) lookup.value();
+            }
+            curr = (Path<?>) lookup.value();
         }
         throw new IllegalArgumentException("Property " + property + " not found. Entity: " + path.getMetadata().getName());
+    }
+
+    private FieldLookup findDeclaredField(Path<?> start, String name, String property) {
+        Path<?> curr = start;
+        while (true) {
+            Class<?> c = curr.getClass();
+            Field superField = null;
+            try {
+                for (Field field : c.getDeclaredFields()) {
+                    if (field.getName().equals(name)) {
+                        field.setAccessible(true);
+                        Object value = field.get(curr);
+                        Preconditions.checkArgument(value != null, "Path (or part of the path) %s is null. Entity: %s", property, curr.getMetadata().getName());
+                        return new FieldLookup(value, curr);
+                    }
+                    if (field.getName().equals("_super"))
+                        superField = field;
+                }
+                if (superField == null)
+                    return new FieldLookup(null, curr);
+                superField.setAccessible(true);
+                curr = (Path<?>) superField.get(curr);
+            } catch (IllegalAccessException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+    }
+
+    private record FieldLookup(Object value, Path<?> owner) {
     }
 
     private void nullabilitySanityCheck(ComparableExpressionBase<?> expression, String property) {

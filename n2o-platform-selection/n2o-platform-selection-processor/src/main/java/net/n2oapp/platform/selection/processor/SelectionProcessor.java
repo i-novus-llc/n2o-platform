@@ -74,38 +74,57 @@ public class SelectionProcessor extends AbstractProcessor {
             return false;
         TypeElement selective = annotations.iterator().next();
         List<? extends Element> elements = new ArrayList<>(roundEnv.getElementsAnnotatedWith(selective));
-        if (elements.isEmpty())
-            return false;
-        for (Element element : elements) {
-            if (!valid(element))
-                return false;
-        }
+        if (elements.isEmpty() || !allValid(elements))
+            return true;
         List<SelectionMeta> metalist = new ArrayList<>(elements.size());
         List<Map.Entry<Element, List<Element>>> toposort = toposort(elements);
-        Map<Element, SelectionMeta> index = new HashMap<>();
-        for (Map.Entry<Element, List<Element>> entry : toposort) {
-            if (init(metalist, entry))
-                return false;
-            index.put(entry.getKey(), metalist.get(metalist.size() - 1));
-        }
-        for (SelectionMeta meta : metalist) {
-            List<Element> children = toposort.stream().filter(elem -> elem.getKey().equals(meta.getTarget())).findFirst().orElseThrow().getValue();
-            meta.addChildren(metalist.stream().filter(other -> children.contains(other.getTarget())).collect(toList()));
-        }
+        Map<Element, SelectionMeta> index = initMetalist(metalist, toposort);
+        if (index == null)
+            return true;
+        linkChildren(metalist, toposort);
         for (SelectionMeta meta : metalist) {
             processProperties(metalist, meta, index);
         }
         if (addJacksonTyping) {
-            for (SelectionMeta meta : metalist) {
-                if (!meta.getChildren().isEmpty()) {
-                    meta.addJacksonTyping();
-                }
-            }
+            addJacksonTypingToRoots(metalist);
         }
         for (SelectionMeta meta : metalist) {
             serialize(meta);
         }
-        return false;
+        return true;
+    }
+
+    private boolean allValid(List<? extends Element> elements) {
+        for (Element element : elements) {
+            if (!valid(element))
+                return false;
+        }
+        return true;
+    }
+
+    private Map<Element, SelectionMeta> initMetalist(List<SelectionMeta> metalist, List<Map.Entry<Element, List<Element>>> toposort) {
+        Map<Element, SelectionMeta> index = new HashMap<>();
+        for (Map.Entry<Element, List<Element>> entry : toposort) {
+            if (init(metalist, entry))
+                return null;
+            index.put(entry.getKey(), metalist.get(metalist.size() - 1));
+        }
+        return index;
+    }
+
+    private void linkChildren(List<SelectionMeta> metalist, List<Map.Entry<Element, List<Element>>> toposort) {
+        for (SelectionMeta meta : metalist) {
+            List<Element> children = toposort.stream().filter(elem -> elem.getKey().equals(meta.getTarget())).findFirst().orElseThrow().getValue();
+            meta.addChildren(metalist.stream().filter(other -> children.contains(other.getTarget())).collect(toList()));
+        }
+    }
+
+    private void addJacksonTypingToRoots(List<SelectionMeta> metalist) {
+        for (SelectionMeta meta : metalist) {
+            if (!meta.getChildren().isEmpty()) {
+                meta.addJacksonTyping();
+            }
+        }
     }
 
     private void processProperties(List<SelectionMeta> metalist, SelectionMeta meta, Map<Element, SelectionMeta> index) {

@@ -70,29 +70,37 @@ final class Util {
         boolean identifier = false;
         for (int i = MAGIC.length(); i < encodedJson.length(); i++) {
             char c = encodedJson.charAt(i);
-            if (!identifier) {
-                if (c == LPAREN) {
-                    decodedJson.append('{');
-                } else if (c == RPAREN) {
-                    decodedJson.append('}');
-                } else if (c == QUOTE) {
-                    identifier = true;
-                    decodedJson.append('"');
-                } else if (c == COLON) {
-                    decodedJson.append(':');
-                } else if (c == COMMA) {
-                    decodedJson.append(',');
-                } else
-                    decodedJson.append(c);
-            } else {
-                if (c == QUOTE) {
-                    identifier = false;
-                    decodedJson.append('"');
-                } else
-                    decodedJson.append(c);
-            }
+            identifier = identifier ? appendInsideIdentifier(c, decodedJson) : appendOutsideIdentifier(c, decodedJson);
         }
         return decodedJson.toString();
+    }
+
+    /**
+     * @return {@code true}, если после этого символа начинается закодированный идентификатор (открывающая кавычка)
+     */
+    private static boolean appendOutsideIdentifier(char c, StringBuilder decodedJson) {
+        if (c == LPAREN) {
+            decodedJson.append('{');
+        } else if (c == RPAREN) {
+            decodedJson.append('}');
+        } else if (c == QUOTE) {
+            decodedJson.append('"');
+            return true;
+        } else if (c == COLON) {
+            decodedJson.append(':');
+        } else if (c == COMMA) {
+            decodedJson.append(',');
+        } else
+            decodedJson.append(c);
+        return false;
+    }
+
+    /**
+     * @return {@code true}, если мы всё ещё внутри закодированного идентификатора (закрывающая кавычка не встречена)
+     */
+    private static boolean appendInsideIdentifier(char c, StringBuilder decodedJson) {
+        decodedJson.append(c == QUOTE ? '"' : c);
+        return c != QUOTE;
     }
 
 }
