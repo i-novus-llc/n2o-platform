@@ -6,8 +6,6 @@ include:
       - scheduled-checks.gitlab-ci.yml
 
 build and verify:
-  variables:
-    JDK_VERSION: 'jdk21'
   script:
     - echo "No services in project, docker/helm build skipped"
     - touch chart.env
@@ -21,14 +19,21 @@ cleanup:
     - when: never
 
 scheduled build:
-  # В проекте нет docker-образов поэтому из after_script
-  # шаблона убрано вычисление FULL_IMAGE_NAMES по docker-compose конфигу
+  script:
+    - echo "No services in project, docker/helm build skipped"
+    - touch chart.env
+  # В проекте нет docker-образов. По этой причине из after_script шаблона убрано вычисление
+  # FULL_IMAGE_NAMES по docker-compose конфигу.
   after_script:
     - mvn $MAVEN_RUN_OPTIONS org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom -DprojectType=application -DskipNotDeployed=false -DoutputFormat=json -Dverbose=true $MAVEN_PIPELINE_OPTIONS $MAVEN_EXTRA_BUILD_OPTIONS
   artifacts:
     paths:
       - target/bom.json
     expire_in: 2 days
+
+trivy check containers:
+  rules:
+    - when: never
 
 zap dast:
   rules:
