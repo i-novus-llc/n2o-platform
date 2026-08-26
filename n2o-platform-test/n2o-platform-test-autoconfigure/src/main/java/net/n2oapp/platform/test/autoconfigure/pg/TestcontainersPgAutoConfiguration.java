@@ -55,7 +55,7 @@ public class TestcontainersPgAutoConfiguration {
             .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
 
     @Value("${testcontainers.pg.version:12}")
-    private static int testcontainersPgImageVersion;
+    private int testcontainersPgImageVersion;
 
     @Bean
     public static TestcontainersPgDataSourceBeanFactoryPostProcessor testcontainersPgDataSourceBeanFactoryPostProcessor() {
@@ -66,7 +66,7 @@ public class TestcontainersPgAutoConfiguration {
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "test", name = "testcontainers-pg", havingValue = "true")
     public DataSource dataSource() {
-        return new TestcontainersPgDataSourceFactory(psqlContainer()
+        return new TestcontainersPgDataSourceFactory(psqlContainer(testcontainersPgImageVersion)
                 , USERNAME
                 , PASSWORD)
                 .getTestcontainersPgDatabase();
@@ -75,8 +75,8 @@ public class TestcontainersPgAutoConfiguration {
     @Bean(destroyMethod = "stop")
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "test", name = "testcontainers-pg", havingValue = "true")
-    static GenericContainer psqlContainer() {
-        try (final GenericContainer gc = new GenericContainer<>(DockerImageName.parse(generatePgImageName()))) {
+    static GenericContainer psqlContainer(@Value("${testcontainers.pg.version:12}") int testcontainersPgImageVersion) {
+        try (final GenericContainer gc = new GenericContainer<>(DockerImageName.parse(generatePgImageName(testcontainersPgImageVersion)))) {
             gc.withEnv("POSTGRES_USER", USERNAME)
                     .withEnv("POSTGRES_PASSWORD", PASSWORD)
                     .withExposedPorts(PSQL_PORT)
@@ -85,7 +85,7 @@ public class TestcontainersPgAutoConfiguration {
         }
     }
 
-    private static String generatePgImageName() {
+    private static String generatePgImageName(int testcontainersPgImageVersion) {
         if (testcontainersPgImageVersion >= 10 && testcontainersPgImageVersion <= 12) {
             return ("inovus/postgres:" + testcontainersPgImageVersion + "-textsearch-ru");
         } else {
@@ -155,7 +155,8 @@ public class TestcontainersPgAutoConfiguration {
 
         @Override
         public void setEnvironment(Environment environment) {
-            this.factory = new TestcontainersPgDataSourceFactory(psqlContainer(), USERNAME, PASSWORD);
+            int testcontainersPgImageVersion = environment.getProperty("testcontainers.pg.version", Integer.class, 12);
+            this.factory = new TestcontainersPgDataSourceFactory(psqlContainer(testcontainersPgImageVersion), USERNAME, PASSWORD);
         }
 
         @Override
