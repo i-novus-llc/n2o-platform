@@ -46,7 +46,7 @@ public class SeekableRepositoryFactory extends JpaRepositoryFactory {
                                 entityInformation,
                                 entityManager,
                                 SimpleEntityPathResolver.INSTANCE,
-                                getField(QuerydslJpaPredicateExecutor.class, querydsl, "metadata"),
+                                getField(querydsl),
                                 metadata.getRepositoryInterface()
                             )
                         )
@@ -58,9 +58,11 @@ public class SeekableRepositoryFactory extends JpaRepositoryFactory {
         return modifiedFragment;
     }
 
-    private Object getField(Class<?> target, Object obj, String field) {
+    // target и field -- жёстко заданные константы (Spring Data класс и его внутреннее поле), не приходят извне.
+    @SuppressWarnings("java:S3011")
+    private Object getField(Object obj) {
         try {
-            Field f = target.getDeclaredField(field);
+            Field f = QuerydslJpaPredicateExecutor.class.getDeclaredField("metadata");
             f.setAccessible(true);
             return f.get(obj);
         } catch (NoSuchFieldException | IllegalAccessException e) {

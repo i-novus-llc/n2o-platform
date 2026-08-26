@@ -139,6 +139,9 @@ public abstract class RestCriteria implements Pageable {
         return !isPaged();
     }
 
+    // Копирование значений приватных полей между экземплярами одного и того же (собственного) класса criteria,
+    // имя которого не приходит извне -- reflection accessibility bypass здесь безопасен.
+    @SuppressWarnings("java:S3011")
     private RestCriteria constructNew(int pageNumber, int pageSize, List<Sort.Order> orders) {
         Class<? extends RestCriteria> c = this.getClass();
         RestCriteria criteria;

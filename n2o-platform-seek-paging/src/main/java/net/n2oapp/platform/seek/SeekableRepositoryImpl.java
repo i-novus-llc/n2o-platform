@@ -46,6 +46,8 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     private final EntityManager entityManager;
     private final NullabilityProvider nullabilityProvider;
 
+    // querydslField/pathField -- жёстко заданные внутренние поля QuerydslJpaPredicateExecutor, не приходят извне.
+    @SuppressWarnings("java:S3011")
     public SeekableRepositoryImpl(
         JpaEntityInformation<T, ?> entityInformation,
         EntityManager entityManager,
@@ -324,6 +326,9 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         return Expressions.asComparable(casted);
     }
 
+    // name/property берутся из Sort и обходят только сгенерированный QueryDSL Q-класс сущности --
+    // это метаданные путей (Path/ComparableExpressionBase) уже замапленных полей, а не произвольные/чувствительные данные.
+    @SuppressWarnings("java:S3011")
     private ComparableExpressionBase<?> findProperty(String property) {
         Path<?> curr = path;
         String[] pathParts = property.split("\\.");
