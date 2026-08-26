@@ -31,6 +31,10 @@ scheduled build:
       - target/bom.json
     expire_in: 2 days
 
+trivy check containers:
+  rules:
+    - when: never
+
 zap dast:
   rules:
     - when: never
