@@ -27,6 +27,9 @@ public class MissingGenericBean extends SpringBootCondition {
             matchMessage.andCondition(MissingGenericBean.class.getSimpleName())
                     .didNotFind("any beans").atAll();
             ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+            if (beanFactory == null) {
+                throw new IllegalStateException("Bean factory is not available in the condition context");
+            }
             String[] beanNamesForType = beanFactory.getBeanNamesForType(TypedParamConverter.class);
             if (beanNamesForType.length == 0) {
 
