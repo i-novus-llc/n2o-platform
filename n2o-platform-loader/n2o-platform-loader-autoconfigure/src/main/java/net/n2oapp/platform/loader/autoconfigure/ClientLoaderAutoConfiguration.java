@@ -148,8 +148,11 @@ public class ClientLoaderAutoConfiguration {
             @EventListener(ApplicationReadyEvent.class)
             public synchronized void start() {
                 ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-                service.schedule(super::start, properties.getDelay(), TimeUnit.SECONDS);
-                service.shutdown();
+                try {
+                    service.schedule(super::start, properties.getDelay(), TimeUnit.SECONDS);
+                } finally {
+                    service.shutdown();
+                }
             }
         };
     }
