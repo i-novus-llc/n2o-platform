@@ -16,7 +16,7 @@ public class RestException extends RuntimeException {
         this.responseStatus = responseStatus;
     }
 
-    public List<? extends RestMessage.BaseError> getErrors() {
+    public List<RestMessage.BaseError> getErrors() {
         return restMessage.getErrors();
     }
 
