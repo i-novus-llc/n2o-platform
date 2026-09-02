@@ -111,7 +111,7 @@ public class ClientLoaderAutoConfiguration {
         return new LoaderStarter(runner, properties.getRetries(), properties.getRetriesInterval()) {
             @Override
             @EventListener(ApplicationReadyEvent.class)
-            public void start() {
+            public synchronized void start() {
                 super.start();
             }
         };
@@ -124,7 +124,7 @@ public class ClientLoaderAutoConfiguration {
         return new LoaderStarter(runner, properties.getRetries(), properties.getRetriesInterval()) {
             @Override
             @PostConstruct
-            public void start() {
+            public synchronized void start() {
                 LoaderReport report = runner.run();
                 if (properties.isFailFast() && !report.isSuccess())
                     throw new IllegalStateException(report.getFails().get(0).getException());
@@ -148,8 +148,11 @@ public class ClientLoaderAutoConfiguration {
             @EventListener(ApplicationReadyEvent.class)
             public synchronized void start() {
                 ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-                service.schedule(super::start, properties.getDelay(), TimeUnit.SECONDS);
-                service.shutdown();
+                try {
+                    service.schedule(super::start, properties.getDelay(), TimeUnit.SECONDS);
+                } finally {
+                    service.shutdown();
+                }
             }
         };
     }

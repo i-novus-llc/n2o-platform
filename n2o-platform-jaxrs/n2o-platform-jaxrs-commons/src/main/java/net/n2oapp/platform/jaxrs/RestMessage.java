@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -14,11 +15,11 @@ public class RestMessage implements Serializable {
 
     private static final long serialVersionUID = 139886274946702785L;
     private String message;
-    private List<? extends BaseError> errors;
+    private List<BaseError> errors;
     private String[] stackTrace;
 
     public RestMessage(List<? extends BaseError> errors) {
-        this.errors = errors;
+        this.errors = new ArrayList<>(errors);
     }
 
     public RestMessage(String message) {
@@ -32,7 +33,7 @@ public class RestMessage implements Serializable {
         return message;
     }
 
-    public List<? extends BaseError> getErrors() {
+    public List<BaseError> getErrors() {
         return errors;
     }
 

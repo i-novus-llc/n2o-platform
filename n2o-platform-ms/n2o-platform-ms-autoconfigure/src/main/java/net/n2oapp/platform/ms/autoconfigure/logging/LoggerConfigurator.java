@@ -18,6 +18,7 @@ import java.nio.charset.Charset;
 import static java.util.Objects.nonNull;
 import static net.n2oapp.platform.ms.autoconfigure.logging.LoggingProperties.LABEL_PATTERN;
 import static net.n2oapp.platform.ms.autoconfigure.logging.LoggingProperties.LOKI_APPENDER_NAME;
+import static org.slf4j.Logger.ROOT_LOGGER_NAME;
 
 public class LoggerConfigurator {
 
@@ -42,7 +43,7 @@ public class LoggerConfigurator {
 
     private void configureJsonFormat() {
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-        Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        Logger logger = (Logger) LoggerFactory.getLogger(ROOT_LOGGER_NAME);
         if (nonNull(logger)) {
             for (String appenderName : properties.getJsonAppenderNames()) {
                 OutputStreamAppender<ILoggingEvent> appender = (OutputStreamAppender<ILoggingEvent>) logger.getAppender(appenderName);
@@ -73,7 +74,7 @@ public class LoggerConfigurator {
 
     private void configureLokiAppender() {
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-        Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        Logger root = (Logger) LoggerFactory.getLogger(ROOT_LOGGER_NAME);
 
         Loki4jAppender loki4jAppender = (Loki4jAppender) root.getAppender(LOKI_APPENDER_NAME);
         if (loki4jAppender == null) {
