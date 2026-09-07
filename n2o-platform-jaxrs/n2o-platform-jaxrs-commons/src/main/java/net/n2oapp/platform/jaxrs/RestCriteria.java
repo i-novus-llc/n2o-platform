@@ -139,6 +139,7 @@ public abstract class RestCriteria implements Pageable {
         return !isPaged();
     }
 
+    @SuppressWarnings("java:S3011")
     private RestCriteria constructNew(int pageNumber, int pageSize, List<Sort.Order> orders) {
         Class<? extends RestCriteria> c = this.getClass();
         RestCriteria criteria;
