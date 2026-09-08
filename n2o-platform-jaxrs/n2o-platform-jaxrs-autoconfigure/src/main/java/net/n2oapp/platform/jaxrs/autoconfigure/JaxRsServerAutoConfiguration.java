@@ -86,6 +86,8 @@ public class JaxRsServerAutoConfiguration {
             case "password" -> oAuthFlows.setPassword(oAuthFlow.tokenUrl(auth.getTokenUri()));
             case "clientCredentials" -> oAuthFlows.setClientCredentials(oAuthFlow.tokenUrl(auth.getTokenUri()));
             case "authorizationCode" -> oAuthFlows.setAuthorizationCode(oAuthFlow.authorizationUrl(auth.getAuthorizationUri()).tokenUrl(auth.getTokenUri()));
+            default -> throw new IllegalArgumentException(
+                "Unsupported OAuth flow: '" + auth.getFlow());
         }
 
         return new SecurityScheme().flows(oAuthFlows).type(SecurityScheme.Type.OAUTH2);
