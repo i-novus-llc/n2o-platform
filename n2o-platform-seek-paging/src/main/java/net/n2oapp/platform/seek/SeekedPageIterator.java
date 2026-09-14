@@ -194,60 +194,77 @@ public class SeekedPageIterator<T, S extends Seekable> implements Iterator<Seeke
             List<SeekPivot> res = new ArrayList<>();
             for (Sort.Order order : orders) {
                 String property = order.getProperty();
-                Iterator<String> tokensIter = new Iterator<>() {
-
-                    int i = 0;
-
-                    @Override
-                    public boolean hasNext() {
-                        return i < property.length();
-                    }
-
-                    @Override
-                    @SuppressWarnings("java:S2272")
-                    public String next() {
-                        int next = property.indexOf('.', this.i);
-                        if (next == -1) {
-                            String res = property.substring(i);
-                            i = property.length();
-                            return res;
-                        }
-                        String res = property.substring(i, next);
-                        i = next + 1;
-                        return res;
-                    }
-
-                };
-                PropertyDescriptor currDesc;
-                Object currObj = t;
-                Preconditions.checkState(tokensIter.hasNext(), "Empty property for type %s", ClassUtil.classOf(t));
-                boolean firstCall = true;
-                do {
-                    if (currObj == null)
-                        break;
-                    String next = tokensIter.next();
-                    currDesc = BeanUtils.getPropertyDescriptor(currObj.getClass(), next);
-                    if (currDesc == null && firstCall) {
-                        checkPropertyExists(tokensIter.hasNext(), t, property);
-                        next = tokensIter.next();
-                        currDesc = BeanUtils.getPropertyDescriptor(ClassUtil.classOf(t), next);
-                    }
-                    firstCall = false;
-                    checkPropertyExists(currDesc != null, t, property);
-                    Method method = currDesc.getReadMethod();
-                    Preconditions.checkState(method != null, "Can't make pivots automatically via reflection. No property accessor can be found for path %s for type %s", property, ClassUtil.classOf(t));
-                    try {
-                        currObj = method.invoke(currObj);
-                    } catch (IllegalAccessException e) {
-                        throw new IllegalStateException("Can't access property path " + property + " for type " + ClassUtil.classOf(t));
-                    } catch (InvocationTargetException e) {
-                        throw new IllegalStateException("Exception in accessor method occurred for property " + property + " for type " + ClassUtil.classOf(t), e);
-                    }
-                } while (tokensIter.hasNext());
-                if (currObj != null)
-                    res.add(SeekPivot.of(property, String.valueOf(currObj)));
+                Object value = resolveValue(t, property);
+                if (value != null)
+                    res.add(SeekPivot.of(property, String.valueOf(value)));
             }
             return res;
+        }
+
+        private Object resolveValue(T t, String property) {
+            Iterator<String> tokensIter = tokenize(property);
+            Preconditions.checkState(tokensIter.hasNext(), "Empty property for type %s", ClassUtil.classOf(t));
+            Object currObj = t;
+            boolean firstCall = true;
+            do {
+                if (currObj == null)
+                    break;
+                PropertyDescriptor currDesc = resolvePropertyDescriptor(t, property, currObj, tokensIter, firstCall);
+                firstCall = false;
+                Method method = currDesc.getReadMethod();
+                Preconditions.checkState(method != null, "Can't make pivots automatically via reflection. No property accessor can be found for path %s for type %s", property, ClassUtil.classOf(t));
+                currObj = invokeAccessor(method, currObj, t, property);
+            } while (tokensIter.hasNext());
+            return currObj;
+        }
+
+        private PropertyDescriptor resolvePropertyDescriptor(T t, String property, Object currObj, Iterator<String> tokensIter, boolean firstCall) {
+            String next = tokensIter.next();
+            PropertyDescriptor currDesc = BeanUtils.getPropertyDescriptor(currObj.getClass(), next);
+            if (currDesc == null && firstCall) {
+                checkPropertyExists(tokensIter.hasNext(), t, property);
+                next = tokensIter.next();
+                currDesc = BeanUtils.getPropertyDescriptor(ClassUtil.classOf(t), next);
+            }
+            checkPropertyExists(currDesc != null, t, property);
+            return currDesc;
+        }
+
+        private Object invokeAccessor(Method method, Object currObj, T t, String property) {
+            try {
+                return method.invoke(currObj);
+            } catch (IllegalAccessException e) {
+                throw new IllegalStateException("Can't access property path " + property + " for type " + ClassUtil.classOf(t));
+            } catch (InvocationTargetException e) {
+                throw new IllegalStateException("Exception in accessor method occurred for property " + property + " for type " + ClassUtil.classOf(t), e);
+            }
+        }
+
+        private Iterator<String> tokenize(String property) {
+            return new Iterator<>() {
+
+                int i = 0;
+
+                @Override
+                public boolean hasNext() {
+                    return i < property.length();
+                }
+
+                @Override
+                @SuppressWarnings("java:S2272")
+                public String next() {
+                    int next = property.indexOf('.', this.i);
+                    if (next == -1) {
+                        String res = property.substring(i);
+                        i = property.length();
+                        return res;
+                    }
+                    String res = property.substring(i, next);
+                    i = next + 1;
+                    return res;
+                }
+
+            };
         }
 
         private void checkPropertyExists(boolean condition, T t, String property) {
