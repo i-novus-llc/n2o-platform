@@ -68,19 +68,25 @@ public class SelectionProcessor extends AbstractProcessor {
         return SUPPORTED_OPTIONS;
     }
 
+
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        generate(annotations, roundEnv);
+        return false;
+    }
+
+    private void generate(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if (annotations.isEmpty())
-            return false;
+            return;
         TypeElement selective = annotations.iterator().next();
         List<? extends Element> elements = new ArrayList<>(roundEnv.getElementsAnnotatedWith(selective));
         if (elements.isEmpty() || !allValid(elements))
-            return true;
+            return;
         List<SelectionMeta> metalist = new ArrayList<>(elements.size());
         List<Map.Entry<Element, List<Element>>> toposort = toposort(elements);
         Map<Element, SelectionMeta> index = initMetalist(metalist, toposort);
         if (index == null)
-            return true;
+            return;
         linkChildren(metalist, toposort);
         for (SelectionMeta meta : metalist) {
             processProperties(metalist, meta, index);
@@ -91,7 +97,6 @@ public class SelectionProcessor extends AbstractProcessor {
         for (SelectionMeta meta : metalist) {
             serialize(meta);
         }
-        return true;
     }
 
     private boolean allValid(List<? extends Element> elements) {
