@@ -22,6 +22,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
@@ -54,9 +55,6 @@ public class TestcontainersPgAutoConfiguration {
             .withTimes(2)
             .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS));
 
-    @Value("${testcontainers.pg.version:12}")
-    private static int testcontainersPgImageVersion;
-
     @Bean
     public static TestcontainersPgDataSourceBeanFactoryPostProcessor testcontainersPgDataSourceBeanFactoryPostProcessor() {
         return new TestcontainersPgDataSourceBeanFactoryPostProcessor();
@@ -65,18 +63,23 @@ public class TestcontainersPgAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "test", name = "testcontainers-pg", havingValue = "true")
-    public DataSource dataSource() {
-        return new TestcontainersPgDataSourceFactory(psqlContainer()
-                , USERNAME
-                , PASSWORD)
+    public DataSource dataSource(GenericContainer psqlContainer) {
+        return new TestcontainersPgDataSourceFactory(psqlContainer,
+                USERNAME,
+                PASSWORD)
                 .getTestcontainersPgDatabase();
     }
 
     @Bean(destroyMethod = "stop")
+    @Lazy
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "test", name = "testcontainers-pg", havingValue = "true")
-    static GenericContainer psqlContainer() {
-        try (final GenericContainer gc = new GenericContainer<>(DockerImageName.parse(generatePgImageName()))) {
+    GenericContainer psqlContainer(@Value("${testcontainers.pg.version:12}") int testcontainersPgImageVersion) {
+        return createPsqlContainer(testcontainersPgImageVersion);
+    }
+
+    private static GenericContainer createPsqlContainer(int testcontainersPgImageVersion) {
+        try (final GenericContainer gc = new GenericContainer<>(DockerImageName.parse(generatePgImageName(testcontainersPgImageVersion)))) {
             gc.withEnv("POSTGRES_USER", USERNAME)
                     .withEnv("POSTGRES_PASSWORD", PASSWORD)
                     .withExposedPorts(PSQL_PORT)
@@ -85,7 +88,8 @@ public class TestcontainersPgAutoConfiguration {
         }
     }
 
-    private static String generatePgImageName() {
+
+    private static String generatePgImageName(int testcontainersPgImageVersion) {
         if (testcontainersPgImageVersion >= 10 && testcontainersPgImageVersion <= 12) {
             return ("inovus/postgres:" + testcontainersPgImageVersion + "-textsearch-ru");
         } else {
@@ -155,7 +159,8 @@ public class TestcontainersPgAutoConfiguration {
 
         @Override
         public void setEnvironment(Environment environment) {
-            this.factory = new TestcontainersPgDataSourceFactory(psqlContainer(), USERNAME, PASSWORD);
+            int testcontainersPgImageVersion = environment.getProperty("testcontainers.pg.version", Integer.class, 12);
+            this.factory = new TestcontainersPgDataSourceFactory(createPsqlContainer(testcontainersPgImageVersion), USERNAME, PASSWORD);
         }
 
         @Override
