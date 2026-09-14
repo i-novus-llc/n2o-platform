@@ -3,6 +3,8 @@
 == 7.2.0
 * Из платформы исключён модуль `n2o-platform-web`, который использовался для трансляции пользовательских ошибок (`UserException`) от бекенда на фронтенд и отображение стектрейса на UI при непредвиденных ошибках REST-сервисов
 * Из dependency management платформы удалены зависимости N2O Framework (`n2o-spring-boot-starter`, `n2o-api`, `n2o-engine`, `n2o-config`, `n2o-access`) и свойство `n2o.version`.
+* Обновлён Spring Cloud Dependencies 2025.0.0=>2025.0.3.
+Вместе с BOM обновляются версии `spring-cloud-*` 4.3.0=>4.3.3 и `feign` 13.6=>13.6.1.
 
 
 == 7.0.0
