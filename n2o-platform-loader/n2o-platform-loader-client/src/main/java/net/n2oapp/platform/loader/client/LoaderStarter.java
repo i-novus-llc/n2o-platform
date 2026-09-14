@@ -52,8 +52,11 @@ public class LoaderStarter {
                         .collect(Collectors.toList()));
                 retries--;
                 ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-                service.schedule(this::start, retriesInterval, TimeUnit.SECONDS);
-                service.shutdown();
+                try {
+                    service.schedule(this::start, retriesInterval, TimeUnit.SECONDS);
+                } finally {
+                    service.shutdown();
+                }
             }
         }
 

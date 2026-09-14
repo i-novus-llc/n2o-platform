@@ -5,10 +5,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.ComparableExpression;
-import com.querydsl.core.types.dsl.ComparableExpressionBase;
-import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.*;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import net.n2oapp.platform.jaxrs.seek.*;
@@ -46,6 +43,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
     private final EntityManager entityManager;
     private final NullabilityProvider nullabilityProvider;
 
+    @SuppressWarnings("java:S3011")
     public SeekableRepositoryImpl(
         JpaEntityInformation<T, ?> entityInformation,
         EntityManager entityManager,
@@ -54,17 +52,14 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         Class<?> repositoryInterface
     )  {
         super(entityInformation, entityManager, resolver, metadata);
+        EntityPath<T> entityPath = resolver.createPath(entityInformation.getJavaType());
+        this.path = entityPath;
+        this.querydsl = new Querydsl(entityManager, new PathBuilder<>(entityPath.getType(), entityPath.getMetadata()));
         try {
-            Field querydslField = QuerydslJpaPredicateExecutor.class.getDeclaredField("querydsl");
-            Field pathField = QuerydslJpaPredicateExecutor.class.getDeclaredField("path");
-            querydslField.setAccessible(true);
-            pathField.setAccessible(true);
-            this.querydsl = (Querydsl) querydslField.get(this);
-            this.path = (EntityPath<?>) pathField.get(this);
             NullabilityProvided nullabilityProvided = repositoryInterface.getAnnotation(NullabilityProvided.class);
             Class<? extends NullabilityProvider> nullabilityProviderClass = nullabilityProvided == null ? DefaultNullabilityProvider.class : nullabilityProvided.by();
             this.nullabilityProvider = nullabilityProviderClass.getConstructor().newInstance();
-        } catch (Exception e) {
+        } catch (ReflectiveOperationException e) {
             throw new BeanCreationException("Can't instantiate seekable repository", e);
         }
         this.entityPrefix = resolver.createPath(entityInformation.getJavaType()).getMetadata().getName();
@@ -324,6 +319,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         return Expressions.asComparable(casted);
     }
 
+    @SuppressWarnings("java:S3011")
     private ComparableExpressionBase<?> findProperty(String property) {
         Path<?> curr = path;
         String[] pathParts = property.split("\\.");
