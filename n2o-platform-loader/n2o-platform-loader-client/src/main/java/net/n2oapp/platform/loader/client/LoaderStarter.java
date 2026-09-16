@@ -51,11 +51,8 @@ public class LoaderStarter {
                         .map(LoaderReport.Fail::getCommand)
                         .collect(Collectors.toList()));
                 retries--;
-                ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-                try {
+                try (ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor()) {
                     service.schedule(this::start, retriesInterval, TimeUnit.SECONDS);
-                } finally {
-                    service.shutdown();
                 }
             }
         }
