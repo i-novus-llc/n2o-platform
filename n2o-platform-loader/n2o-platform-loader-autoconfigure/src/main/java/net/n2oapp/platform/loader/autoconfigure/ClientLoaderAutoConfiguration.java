@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -147,9 +148,7 @@ public class ClientLoaderAutoConfiguration {
             @Override
             @EventListener(ApplicationReadyEvent.class)
             public synchronized void start() {
-                try (ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor()) {
-                    service.schedule(super::start, properties.getDelay(), TimeUnit.SECONDS);
-                }
+                CompletableFuture.delayedExecutor(properties.getDelay(), TimeUnit.SECONDS).execute(this::start);
             }
         };
     }

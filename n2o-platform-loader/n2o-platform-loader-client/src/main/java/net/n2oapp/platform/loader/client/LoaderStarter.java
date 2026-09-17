@@ -3,6 +3,7 @@ package net.n2oapp.platform.loader.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -51,9 +52,7 @@ public class LoaderStarter {
                         .map(LoaderReport.Fail::getCommand)
                         .collect(Collectors.toList()));
                 retries--;
-                try (ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor()) {
-                    service.schedule(this::start, retriesInterval, TimeUnit.SECONDS);
-                }
+                CompletableFuture.delayedExecutor(retriesInterval, TimeUnit.SECONDS).execute(this::start);
             }
         }
 
