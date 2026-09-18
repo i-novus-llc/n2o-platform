@@ -338,7 +338,6 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         return Expressions.asComparable(casted);
     }
 
-    @SuppressWarnings("java:S3011")
     private ComparableExpressionBase<?> findProperty(String property) {
         Path<?> curr = path;
         String[] pathParts = property.split("\\.");
@@ -357,6 +356,7 @@ public class SeekableRepositoryImpl<T> extends QuerydslJpaPredicateExecutor<T> i
         throw new IllegalArgumentException("Property " + property + " not found. Entity: " + path.getMetadata().getName());
     }
 
+    @SuppressWarnings("java:S3011")
     private FieldLookup findDeclaredField(Path<?> start, String name, String property) {
         Path<?> curr = start;
         while (true) {

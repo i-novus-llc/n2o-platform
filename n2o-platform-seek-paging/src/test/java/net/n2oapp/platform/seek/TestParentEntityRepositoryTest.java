@@ -193,6 +193,17 @@ public class TestParentEntityRepositoryTest extends SeekPagingTest {
     }
 
     @Test
+    public void testUnknownSortProperty() {
+        SeekRequest request = new SeekRequest();
+        request.setSort(Sort.by(Sort.Order.asc("unknownProperty")));
+        request.setPage(RequestedPageEnum.NEXT);
+        request.setSize(1);
+        Exception exception = assertThrows(Exception.class, () -> repository.findAll(request));
+        assertTrue(exception.getCause() instanceof IllegalArgumentException);
+        assertTrue(exception.getCause().getMessage().contains("unknownProperty"));
+    }
+
+    @Test
     public void testBoundaries() {
         SeekRequest request = new SeekRequest();
         request.setSort(Sort.by(List.of(Sort.Order.asc(ID))));
