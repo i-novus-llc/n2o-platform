@@ -79,7 +79,7 @@
         <central-publishing-maven-plugin.version>0.7.0</central-publishing-maven-plugin.version>
         <testcontainers.version>1.21.4</testcontainers.version>
 <!--        Станет неактуально при переходе на spring boot 4-->
-        <tomcat.version>10.1.58</tomcat.version>
+        <tomcat.version>10.1.59</tomcat.version>
     </properties>
 
     <build>
